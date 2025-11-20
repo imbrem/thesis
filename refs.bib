@@ -1,0 +1,97 @@
+@article{xia-20-itrees,
+  author    = {Li{-}yao Xia and
+               Yannick Zakowski and
+               Paul He and
+               Chung{-}Kil Hur and
+               Gregory Malecha and
+               Benjamin C. Pierce and
+               Steve Zdancewic},
+  title     = {Interaction trees: representing recursive and impure programs in Coq},
+  journal   = {Proc. {ACM} Program. Lang.},
+  volume    = {4},
+  number    = {{POPL}},
+  pages     = {51:1--51:32},
+  year      = {2020},
+  url       = {https://doi.org/10.1145/3371119},
+  doi       = {10.1145/3371119},
+  timestamp = {Sun, 19 Jan 2025 14:47:51 +0100},
+  biburl    = {https://dblp.org/rec/journals/pacmpl/XiaZHHMPZ20.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{chappe-25-ctrees,
+  author    = {Chappe, Nicolas and Henrio, Ludovic and Zakowski, Yannick},
+  title     = {Monadic Interpreters for Concurrent Memory Models: Executable Semantics of a Concurrent Subset of LLVM IR},
+  year      = {2025},
+  isbn      = {9798400713477},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  url       = {https://doi.org/10.1145/3703595.3705890},
+  doi       = {10.1145/3703595.3705890},
+  abstract  = {Monadic interpreters have gained attention as a powerful tool for modeling and reasoning about first order languages.        In particular in the Coq ecosystem, the Choice Tree (CTree) library provides generic tools to craft such interpreters in presence of divergence, stateful effects, failure, and non-determinism.        This monadic approach allows the definition of semantics for programming languages that are modular in its effects, compositional w.r.t. its syntax, and executable.                This paper demonstrates the use of CTrees to formalize a semantics for concurrency and weak memory models.        We instantiate the approach over a minimal concurrent subset of LLVM IR.        Our semantics is built in successive stages, interpreting each aspect of the semantics separately.        In particular, a stage encodes multi-threading as an interleaving semantics, and        another implements a weak memory model that supports various LLVM memory orderings.        Furthermore, the modularity of the approach makes it possible to plug a different source language or memory model by changing a single interpretation phase.        By leveraging the notions of (bi)similarity on CTrees, we establish the equational theory of our constructions,         show how to transport equivalences through our layered construction, and prove simulation results between memory models.        Finally, our model is executable, hence the semantics can be tested by extraction to OCaml.},
+  booktitle = {Proceedings of the 14th ACM SIGPLAN International Conference on Certified Programs and Proofs},
+  pages     = {283–298},
+  numpages  = {16},
+  keywords  = {Concurrency, Coq, LLVM, Semantics},
+  location  = {Denver, CO, USA},
+  series    = {CPP '25}
+}
+
+@article{brookes-96-sc-abstract,
+  author    = {Stephen D. Brookes},
+  title     = {Full Abstraction for a Shared-Variable Parallel Language},
+  journal   = {Inf. Comput.},
+  volume    = {127},
+  number    = {2},
+  pages     = {145--163},
+  year      = {1996},
+  url       = {https://doi.org/10.1006/inco.1996.0056},
+  doi       = {10.1006/INCO.1996.0056},
+  timestamp = {Fri, 12 Feb 2021 22:16:48 +0100},
+  biburl    = {https://dblp.org/rec/journals/iandc/Brookes96.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{siddharth-24-peephole,
+  author    = {Bhat, Siddharth and Keizer, Alex and Hughes, Chris and Goens, Andr\'{e}s and Grosser, Tobias},
+  title     = {{Verifying Peephole Rewriting in SSA Compiler IRs}},
+  booktitle = {15th International Conference on Interactive Theorem Proving (ITP 2024)},
+  pages     = {9:1--9:20},
+  series    = {Leibniz International Proceedings in Informatics (LIPIcs)},
+  isbn      = {978-3-95977-337-9},
+  issn      = {1868-8969},
+  year      = {2024},
+  volume    = {309},
+  editor    = {Bertot, Yves and Kutsia, Temur and Norrish, Michael},
+  publisher = {Schloss Dagstuhl -- Leibniz-Zentrum f{\"u}r Informatik},
+  address   = {Dagstuhl, Germany},
+  url       = {https://drops.dagstuhl.de/entities/document/10.4230/LIPIcs.ITP.2024.9},
+  urn       = {urn:nbn:de:0030-drops-207372},
+  doi       = {10.4230/LIPIcs.ITP.2024.9},
+  annote    = {Keywords: compilers, semantics, mechanization, MLIR, SSA, regions, peephole rewrites}
+}
+
+@article{allen-70-cfa,
+  author     = {Allen, Frances E.},
+  title      = {Control flow analysis},
+  year       = {1970},
+  issue_date = {July 1970},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {5},
+  number     = {7},
+  issn       = {0362-1340},
+  url        = {https://doi.org/10.1145/390013.808479},
+  doi        = {10.1145/390013.808479},
+  journal    = {SIGPLAN Not.},
+  month      = {jul},
+  pages      = {1–19},
+  numpages   = {19}
+}
+
+@misc{cranelift,
+  author = {Cranelift Development Team},
+  title  = {Cranelift: A Simple, Fast WebAssembly Code Generator},
+  year   = 2023,
+  url    = {https://github.com/bytecodealliance/wasmtime/tree/main/cranelift}
+}
