@@ -105,6 +105,15 @@ One of the earliest compiler IRs introduced is _register transfer language_ (_RT
 #let where(t, L) = $#t thick ms("where") {#L}$
 #let letstmt(x, a, t) = $ms("let") #x = #a seq #t$
 #let letexpr(x, a, e) = $ms("let") #x = #a seq #e$
+#let bhyp(x, A) = $#x : #A$
+#let lhyp(ℓ, A) = $#ℓ (#A)$
+#let hasty(Γ, ε, a, A) = $#Γ |-- #a : #A^#ε$
+#let haslb(Γ, r, L) = $#Γ |-- #r : #L$
+#let issubst(γ, Γ, Δ) = $#γ : #Γ => #Δ$
+#let lbsubst(Γ, σ, L, K) = $#Γ |-- #σ : #L => #K$
+#let isop(f, A, B, ε) = $#f : #A ->^#ε #B$
+#let lupg(γ) = $upright(↑)#γ$
+#let rupg(γ) = $#γ upright(↑)$
 
 RTL programs consists of a _control-flow graph_ (CFG) $G$ 
   with a distinguished, nameless entry block. 
@@ -473,6 +482,270 @@ by repeatedly applying a set of known-good rules,
   and, moreover, dramatically simplifies the form of the rules themselves.
 
 #todo[figure: grammar for isotopessa]
+
+= Type Theory
+
+We now give a formal account of #todo-inline[isotopessa], starting with the types. 
+Our types are first order, 
+  and consists of binary sums $A + B$, products $A times.o B$, the unit type $mb(1)$, 
+  and the empty type $mb(0)$, 
+  all parameterised over a set of base types $X in cal(T)$. 
+We write our set of types as $ms("Ty")(X)$.
+
+A (variable) _context_ $Γ$ is a list of _typing hypotheses_ $bhyp(x, A)$, 
+  where $x$ is a variable name and $A$ is the type of that variable. 
+Similarly, 
+  we define a _label-context_ to be a list of _labels_ $lhyp(ℓ, A)$, 
+  where $A$ is the parameter type that must be passed on a jump to the label $ℓ$. 
+The grammar for types, contexts, and label-contexts is given in Figure~#todo-inline[fig:ssa-types].
+
+#todo[figure: grammar for isotopessa types, contexts, and label-contexts]
+
+Our grammar in Figure~#todo-inline[fig:ssa-grammar] was implicitly parameterised over a set of 
+  _primitive instructions_ $f in cal(I)$. 
+In particular, 
+  for each pair $A, B in ms("Ty")(X)$ we specify a set of primitive instructions $f in cal(I)(A, B)$, 
+  with a subset of _pure instructions_ $cal(I)_bot (A, B)$. 
+To allow us to write $cal(I)_ε$ for an _effect_ $ε in {top, bot}$, 
+  we denote $cal(I)_top (A, B) := cal(I)(A, B)$. 
+In general, we define $cal(I)_ε = union.big_(A, B) cal(I)_ε (A, B)$, 
+  and $cal(I) = union.big_ε cal(I)_ε$.
+
+We'll call a tuple $S g = (cal(T), cal(I))$ of types and instructions over these types 
+  an _#todo-inline[isotopessa]-signature_, 
+  and, for the rest of this section, work over a fixed signature.
+
+#todo[change to definition list]
+
+As shown in Figure~#todo-inline[fig:ssa-grammar], 
+  #todo-inline[isotopessa] terms are divided into two syntactic categories, 
+  each associated with a judgement:
+- _Expressions_ $a, b, c, e$, 
+  which are typed with the judgement $hasty(Γ, ε, a, A)$, 
+  which says that under the typing context $Γ$, 
+    the expression $a$ has type $A$ and effect $ε$. 
+  We say a term is _pure_ if it has effect $bot$; 
+  note that whether an expression is pure or not depends both on the expression itself 
+    and on the purity of the variables used in the expression; 
+  this is to allow reasoning about impure substitutions.
+- _Regions_ $r, s, t$, 
+  which recursively define a lexically-scoped SSA program with a single entry 
+    and (potentially) multiple exits. 
+  This is typed with the judgement $haslb(Γ, r, ms("L"))$, 
+  which states that given that $Γ$ is live at the unique entry point, 
+    $r$ will either loop forever or branch to one of the exit labels in $ℓ(A) in ms("L")$ 
+      with an argument of type $A$.
+
+The typing rules for expressions are given in Figure~#todo-inline[fig:ssa-expr-rules]. 
+In particular, expressions may be built up from the following fairly standard primitives:
+- A variable $x$ in the context $Γ$, as typed by #todo-inline[rle:var].
+- A _primitive instruction_ $f in cal(I)_ε (A, B)$ applied to an expression $hasty(Γ, ε, a, A)$, 
+  typed by #todo-inline[rle:op]
+- Unary and binary _let-bindings_, 
+  typed by #todo-inline[rle:let₁] and #todo-inline[rle:let₂] respectively
+- A _pair_ of expressions $hasty(Γ, ε, a, A)$, $hasty(Γ, ε, b, B)$, 
+  typed by #todo-inline[rle:pair]. 
+  Operationally, we interpret this as executing $a$, and then $b$, 
+    and returning the pair of their values.
+- An empty tuple $()$, which types in any context by #todo-inline[rle:unit]
+- Injections, typed by #todo-inline[rle:inl] and #todo-inline[rle:inr]
+- Pattern matching on sum types, typed by #todo-inline[rle:case]. 
+  Operationally, we interpret this as executing $e$, 
+    and then, if $e$ is a left injection $ι_l x$, executing $a$ with its value ($x$), 
+    otherwise executing $b$.
+- An operator $ms("abort") e$ allowing us to abort execution if given a value of the empty type. 
+  Since the empty type is a 0-ary sum type, 
+    $ms("abort")$ can be seen as a $ms("case")$ with no branches. 
+  Since the empty type is uninhabited, execution can never reach an $ms("abort")$. 
+  This can be viewed as a typesafe version of the `unreachable` instruction in LLVM IR.
+
+Traditional presentations of SSA use a boolean type instead of sum types. 
+Naturally, booleans can be encoded with sum types as $mb(1) + mb(1)$. 
+If-then-else is then a $ms("case")$ which ignores the unit payloads, 
+  so that $ite(e_1, e_2, e_3) := caseexpr2(e_1, (), e_2, (), e_3)$.
+
+#todo[figure: rules for typing isotopessa expressions]
+
+We now move on to _regions_, which can be typed as follows:
+- A branch to a label $ℓ$ with pure argument $a$, typed with #todo-inline[rle:br].
+- Unary and binary _let-bindings_, 
+  typed by #todo-inline[rle:let₁-r] and #todo-inline[rle:let₂-r] respectively
+- Pattern matching on sum types, typed by #todo-inline[rle:case-r]. 
+  Operationally, we interpret this as executing the expression $e$, 
+    and then, if $e$ is a left injection $ι_l x$, executing $r$ with its value ($x$), 
+    otherwise executing $s$.
+- _$ms("where")$-blocks_ of the form "$where(r, (wbranch(ℓ_i, x_i, t_i))_i)$", 
+  which consist of a collection of mutually recursive regions $wbranch(ℓ_i, x_i, t_i)$ 
+    and a _terminator region_ $r$ which may branch to one of $ℓ_i$ or an exit label.
+
+#todo[figure: rules for typing isotopessa regions]
+
+== Metatheory
+
+We can now begin to state the syntactic metatheory of #todo-inline[isotopessa]. 
+One of the most important metatheorems, 
+  and a basic sanity check of our type theory, 
+  is _weakening_; 
+  essentially, if something typechecks in a context $Δ$, 
+    and $Γ$ contains all the variables of $Δ$ 
+      (written $Γ ≤ Δ$, pronounced "$Γ$ _weakens_ $Δ$"), 
+  then it should typecheck in the context $Γ$ as well. 
+Here, the context with fewer variables appears on the _right_, 
+  allowing us to compose typing judgements likeso
+$ Γ ≤ Δ ==> haslb(Δ, r, ms("L")) ==> haslb(Γ, r, ms("L")) $
+As our theory has two types of context; 
+  we'd also like to define _label-weakening_ $ms("L") ≤ ms("K")$, 
+  which we should be able to apply in the same manner:
+$ haslb(Γ, r, ms("L")) ==> ms("L") ≤ ms("K") ==> haslb(Γ, r, ms("K")) $
+If a region $r$ typechecks with exit labels $ms("L")$, 
+  and $ms("K")$ contains every label in $ms("L")$, 
+  then $r$ should obviously also typecheck in $ms("K")$. 
+It follows that in the judgement $ms("L") ≤ ms("K")$ 
+  the context with fewer labels appears on the _left_-hand side of the judgement: 
+  this corresponds precisely to the fact that label-weakening (injection into a coproduct) 
+    is semantically dual to variable-weakening (projection from a product), 
+  and hence the order is flipped.
+
+We give the (standard) formal rules for weakening $Γ ≤ Δ$, and their duals, 
+  in the first part of Figure~#todo-inline[fig:ssa-meta-rules].
+- #todo-inline[rle:wk-nil] and #todo-inline[rle:lwk-nil] say that the empty (label) context weakens itself,
+- #todo-inline[rle:wk-skip] says that if $Γ$ weakens $Δ$, 
+  then $Γ, x : A$ also weakens $Δ$ for arbitrary (fresh) $x$. 
+  Dually, #todo-inline[rle:lwk-skip] says that if $ms("L")$ weakens $ms("K")$, 
+    then $ms("L")$ also weakens $ms("K"), lhyp(ℓ, A)$ for arbitrary (fresh) $ℓ$.
+- #todo-inline[rle:wk-cons] says that if $Γ$ weakens $Δ$, 
+  then $Γ$ with $bhyp(x, A)$ added weakens $Δ, bhyp(x, A)$. 
+  Likewise, #todo-inline[rle:lwk-cons] says that if $ms("L")$ weakens $ms("K")$, 
+    then $ms("L")$ with $lhyp(ℓ, A)$ added weakens $ms("K"), lhyp(ℓ, A)$.
+
+It is easy to see that (label) weakening defined in this manner induces a partial order on (label) contexts. 
+Our weakening lemma is then as follows:
+
+#todo[proper lemma; proof from a package]
+
+#let lemma(title, body) = block[
+  *Lemma* (#title). #body
+]
+
+#lemma[Weakening][
+  Given $Γ ≤ Δ$, $ε ≤ ε'$, we have that:
+  + If $hasty(Δ, ε, a, A)$, then $hasty(Γ, ε', a, A)$
+  + If $ms("L") ≤ ms("K")$ and $haslb(Δ, r, ms("L"))$, then $haslb(Γ, r, ms("K"))$
+  + If $issubst(γ, Δ, Ξ)$, then $issubst(γ, Γ, Ξ)$
+  + If $lbsubst(Δ, σ, ms("L"), ms("K"))$, then $lbsubst(Γ, σ, ms("L"), ms("K"))$
+]
+
+#let proof(body) = block[
+  _Proof._ #body #h(1fr) $qed$
+]
+
+#proof[
+  These are formalized as:
+  + `Term.Wf.wk` in `Typing/Term/Basic.lean`
+  + `Region.Wf.wk` in `Typing/Region/Basic.lean`
+  + Follows from `Term.Subst.Wf.comp` in `Typing/Term/Subst.lean`
+  + Follows from `Region.Subst.Wf.vsubst` in `Typing/Region/LSubst.lean`
+]
+
+#todo[figure: rules for typing isotopessa weakening and substitution]
+
+The validity of variable weakening hinges on the fact that all the variables in $Δ$ 
+  are also available with the same type in $Γ$, 
+  i.e., if $hasty(Δ, ε, x, A) ==> hasty(Γ, ε, x, A)$, 
+    then anything which can be typed in $Δ$ can be typed in $Γ$. 
+So while weakening on _terms_ is just the identity, 
+  weakening on _derivations_ is essentially replacing "variables from $Δ$" with "variables from $Γ$." 
+Since none of our typing rules, other than $ms("var")$, make use of variable names, 
+  we might ask whether we can repeat essentially the same reasoning to reason about the well-typedness 
+    of replacing variables in $Γ$ with arbitrary pure expressions of the same type 
+      (i.e., perform a substitution).
+
+An assignment of such variables $γ : x |-> γ_x$ is called a _substitution_, 
+  which we can type with the judgement $issubst(γ, Γ, Δ)$ 
+    as per the rules given in Figure~#todo-inline[fig:ssa-meta-rules]. 
+In particular,
+- #todo-inline[rle:sb-nil] says that the empty substitution takes every context to the empty context.
+- #todo-inline[rle:sb-cons] says that if $γ$ takes $Γ$ to $Δ$ and $hasty(Γ, bot, e, A)$, 
+  then $γ$ with the additional substitution $x |-> e$ adjoined takes $Γ$ to $Δ, bhyp(x, A)$
+
+To _use_ a substitution, we simply need to perform standard capture-avoiding substitution 
+  (see Figure~#todo-inline[fig:ssa-subst-def] in the appendix). 
+Substitution satisfies the _substitution lemma_ as follows:
+
+#lemma[Substitution][
+  Given $issubst(γ, Γ, Δ)$, we have that:
+  + $hasty(Δ, ε, a, A) ==> hasty(Γ, ε, [γ]a, A)$
+  + $haslb(Δ, r, ms("L")) ==> haslb(Γ, [γ]r, ms("L"))$
+  + $issubst(γ_2, Δ, Ξ) ==> issubst([γ]γ_2, Γ, Ξ)$
+  + $lbsubst(σ, Γ, ms("L"), ms("K")) ==> lbsubst([γ]σ, Δ, ms("L"), ms("K"))$
+]
+
+#proof[
+  These are formalized as:
+  + `Term.Wf.subst` in `Typing/Term/Subst.lean`
+  + `Region.Wf.vsubst` in `Typing/Region/VSubst.lean`
+  + `Term.Subst.Wf.comp` in `Typing/Term/Subst.lean`
+  + `Region.Subst.Wf.vsubst` in `Typing/Region/LSubst.lean`
+]
+
+Note in particular that this allows us to take the _composition_ 
+  $issubst([γ']γ, Γ', Δ)$ of substitutions $issubst(γ', Γ', Γ)$ and $issubst(γ, Γ, Δ)$; 
+  the composition associates as expected: 
+    $[[γ_1]γ_2]γ_3 = [γ_1]([γ_2]γ_3)$, 
+  and has identity $[ms("id")]γ = γ$, 
+  yielding a category of substitutions with variable contexts $Γ$ as objects.
+
+Given a substitution $issubst(γ, Γ, Δ)$ and context $Ξ$ disjoint from $Γ$ and $Δ$, 
+  we may define a "left extension" operation $lupg(dot.c)_Ξ$ 
+    yielding $issubst(lupg(γ)_Ξ, Ξ\, Γ, Ξ\, Δ)$ 
+  which appends the identity substitution for each variable in $Ξ$ in the obvious manner:
+$ lupg(γ)_(dot.c) = γ quad lupg(γ)_(Ξ, bhyp(x, A)) = x |-> x, lupg(γ)_Ξ $
+We may similarly define a "right extension" operation $rupg(dot.c)_Ξ$ 
+  yielding $issubst(rupg(γ)_Ξ, Γ\, Ξ, Δ\, Ξ)$ as follows:
+$ rupg(γ)_(dot.c) = γ quad rupg(γ)_(Ξ, bhyp(x, A)) = rupg(γ)_Ξ, x |-> x $
+In particular, we note that the identity substitution on $Γ$ can be written as $rupg(dot.c)_Γ$; 
+  in general, we have $[γ]a = [lupg(Γ)_Ξ]a = [rupg(γ)_Ξ]a$. 
+We will usually infer $Ξ$ from context.
+
+One other particularly important form of substitution is that of substituting an expression $a$ 
+  for an individual variable $x$, 
+  which we will write $[a\/x] := lupg((x |-> a))$.
+
+Finally, just as we can generalize weakening by substituting expressions for variables via substitution, 
+  we can generalize label weakening by substituting _labels_ for _(parametrized) regions_ 
+    via _label substitution_. 
+In particular, 
+  a label-substitution $lbsubst(Γ, σ, ms("L"), ms("K"))$ 
+    maps every label $ℓ(A) in ms("L")$ to a region $haslb((Γ, x : A), r, ms("K"))$ 
+      parametrized by $x : A$. 
+As shown in Figure~#todo-inline[fig:ssa-label-subst-def], 
+  we may then define label-substitution recursively in the obvious manner, 
+  mapping $ms("br") ℓ a$ to $[a\/x]r$ as a base case. 
+Composition of label-substitutions is pointwise. 
+This allows us to state _label substitution_ as follows:
+
+#lemma[Label substitution][
+  Given $lbsubst(Γ, σ, ms("L"), ms("K"))$, we have that
+  + $haslb(Γ, r, ms("L")) ==> haslb(Γ, [σ]r, ms("K"))$
+  + $lbsubst(Γ, κ, ms("L"), ms("J")) ==> lbsubst(Γ, [σ]κ, ms("K"), ms("J"))$
+]
+
+#proof[
+  These are formalized as:
+  + `Region.Wf.lsubst` in `Typing/Region/LSubst.lean`
+  + `Region.Subst.Wf.comp` in `Typing/Region/LSubst.lean`
+]
+
+We may similarly define left and right extensions 
+  $lbsubst(Γ, lupg(σ)_(ms("K")), ms("L")\, ms("J"), ms("K")\, ms("J"))$ 
+  and $lbsubst(Γ, rupg(σ)_(ms("K")), ms("L")\, ms("J"), ms("K")\, ms("J"))$ 
+  for label substitutions $lbsubst(Γ, σ, ms("L"), ms("K"))$ in the obvious manner:
+$ rupg(σ)_(dot.c) &= σ quad rupg(σ)_(ms("K"), ℓ(A)) &= rupg(σ)_(ms("K")), ℓ(x) |-> brb(ℓ, x) \
+  lupg(σ)_(dot.c) &= σ quad lupg(σ)_(ms("K"), ℓ(A)) &= ℓ(x) |-> brb(ℓ, x), lupg(σ)_(ms("K")) $
+As for variable substitutions, we will often omit $ms("L")$ when it is clear from the context.
+We also define the shorthand $[ℓ \/ κ] = [lupg((κ(x) |-> brb(ℓ, x)))]$ for single-label substitutions.
+
+#todo[figure: capture-avoiding label substitution for isotopessa regions and label substitutions]
 
 = Refinement
 
