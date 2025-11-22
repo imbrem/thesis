@@ -97,9 +97,14 @@ One of the earliest compiler IRs introduced is _register transfer language_ (_RT
 #let linr(v) = $ι_r med #v$
 #let labort(v) = $ms("abort") #v$
 #let seq = $; thick$
-#let casestmt2(o, vl, bl, vr, br) = $ms("case") #o thick {linl(vl) : #bl seq linr(vr) : #br}$
 #let brb(ℓ, v) = $ms("br") #ℓ thick #v$
 #let retb(v) = $ms("ret") #v$
+#let caseexpr2(e, x, a, y, b) = $ms("case") #e thick {linl(#x) : #a seq linr(#y) : #b}$
+#let casestmt2(e, x, s, y, t) = $ms("case") #e thick {linl(#x) : #s seq linr(#y) : #t}$
+#let wbranch(ℓ, x, t) = $#ℓ (#x) : #t$
+#let where(t, L) = $#t thick ms("where") {#L}$
+#let letstmt(x, a, t) = $ms("let") #x = #a; #t$
+#let letexpr(x, a, e) = $ms("let") #x = #a; #e$
 
 RTL programs consists of a _control-flow graph_ (CFG) $G$ 
   with a distinguished, nameless entry block. 
@@ -108,7 +113,7 @@ Each node of the CFG corresponds to a _basic block_ $β$,
     (hence the name _3-address code_, referring to the typical three variables $x, y, z$) 
   followed by a _terminator_ $τ$, 
     which can be a (conditional) branch to another basic block. 
-We give a grammar for 3-address code in @rtl-grammar, 
+We give a grammar for RTL code in @rtl-grammar, 
   with some slight adjustments to the usual presentation:
 
 #todo[introduce destructures more smoothly? consider $n$-ary case?]
@@ -328,9 +333,141 @@ For example, in Figure~#todo-inline[fig:fact-bba]:
 
 == Type-theoretic SSA
 
-= Type-Theoretic SSA
+An important insight provided by the BBA format, 
+  as discussed by @appel-98-ssa and @kelsey-95-cps, 
+  is that a program in SSA form can be interpreted as a collection of tail-recursive functions, 
+    where each basic block and branch correspond to a function and tail call, respectively. 
+This yields a natural framework for defining the semantics of SSA and reasoning about optimizations.
 
-#todo[TOPLAS + refinement here]
+A program in BBA is not quite a functional program, 
+  because scoping is dominance-based rather than lexically scoped. 
+However, it turns out to be very easy to convert dominance-based scoping into lexical scoping. 
+Observe that the function corresponding to a given basic block $B$ 
+  can only be called by other blocks $B'$ having that basic block's parent $P = ms("parent")(B)$ 
+    as an ancestor in the dominance tree 
+      (as, otherwise, the parent would not actually dominate the block, 
+        since we could get to $B$ through $B'$ without passing through $P$). 
+Moreover, 
+  the variables _visible_ in $B$ are exactly the variables visible at the end of $P$; 
+  i.e., the variables visible in $P$ and those defined in $P$.
+
+So if we make the dominance tree explicit in the syntax and tie the binding of variables to this tree structure, 
+  then lexical and dominance-based scoping become one and the same. 
+We use this observation to introduce _lexical SSA_ in Figure~#todo-inline[fig:lex-ssa]. 
+The key idea of this syntax is to, 
+  rather than treating the control-flow graph $G$ as a flat collection of basic blocks 
+    (with a distinguished block), 
+  to instead consider (subtrees of) the dominance tree $r$, 
+    with the root of the tree implicitly being the entry block. 
+We call such subtrees _regions_: 
+  we note that they have a single entry (the root) and multiple exits (the leaves), 
+  and so generalize the more standard concept of a single-entry-single-exit region in a CFG.
+
+In particular, 
+  a _region_ $r$ generalizes a basic block $β$ by annotating the terminator $τ$ 
+    with a list $L$ of _labeled branches_ "$wbranch(ℓ_i, x_i, t_i)$," 
+  yielding a _$ms("where")$-block_ "$where(τ, L)$." 
+Each $ℓ_i$ can only be branched to by $τ$ and the regions $t_i$, 
+  thus syntactically enforcing that the basic block at the root of $r$ 
+    (made up of its instructions and terminators) 
+  _dominates_ all the basic blocks in the subregions $t_i$ 
+    (which can only be reached through $r$). 
+The data of a region $r$ is thus exactly the data contained in a basic block $β$ 
+  (its instructions and terminator) 
+  together with a set of subregions dominated by $r$; 
+  in C++-like pseudocode, we might represent a region as in Figure~#todo-inline[fig:ssa-data].
+
+Regions allow us to enforce dominance-based scoping simply by making the variables defined in $r$ 
+  visible only in the $t_i$, 
+  which, as previously stated, _must_ be dominated by $r$; 
+  i.e., dominance based scoping becomes lexical scoping of $ms("where")$-blocks. 
+It is easy to see 
+  (we demonstrate this more rigorously in Section~#todo-inline[ssec:ssa-normal]) 
+  that, given a CFG $G$, 
+    there exists some way to annotate its topological sort w.r.t. the dominance relation 
+      with $ms("where")$-blocks 
+    to obtain a region $r$ which is lexically well-scoped 
+      if and only if $C$ is a valid SSA program; 
+we illustrate this process on our running example in Figure~#todo-inline[fig:dominance-to-lexical]. 
+Conversely, 
+  erasing the $ms("where")$-blocks from a region $r$ and giving the root a name 
+    trivially yields a (topologically sorted!) SSA program, 
+  establishing an isomorphism between lexical SSA and standard SSA.
+
+#todo[figure: grammar for lexically-scoped SSA]
+
+#todo[figure: data encoded by the grammar (C++ code)]
+
+#todo[figure: conversion from dominance-based scoping to explicit lexical scoping]
+
+Lexical scoping allows us to apply many of techniques developed in type theory and functional programming 
+  for reasoning about program transformations. 
+Indeed, 
+  the result of our conversion to lexical scoping looks a lot like the correspondence 
+    between SSA and CPS described in @kelsey-95-cps. 
+We can use this correspondence to guide us in developing an _equational theory_ for SSA programs, 
+  with the goal of enabling compositional reasoning about program transformations such as:
+- _Control-flow rewrites_, 
+  such as jump-threading or fusing two identical branches of an $ms("if")$-statement
+- _Algebraic rewrites_, 
+  such as simplifying arithmetic expressions
+- Combinations of the two, 
+  such as rewriting "$ms("if") x > 0 thick ms("then") 0 - x thick ms("else") x$" to "$ms("abs")(x)$".
+  #todo[use the same syntax for ITE everywhere?]
+
+To help achieve this, we will slightly generalize our syntax by:
++ Fusing the syntactic categories $o, v$ of operations and values 
+  into the syntactic category $a$ of _expressions_ <ssa-change-val>
++ Fusing the syntactic category $τ$ of terminators 
+  into the syntactic category of regions $r$. <ssa-change-reg>
++ Extending expressions $a$ to allow _let-expressions_ "$letexpr(x, a, b)$" 
+  and _case-expressions_ "$caseexpr2(a, x, b, y, c)$" <ssa-change-expr>
+
+This leaves us with our final language, #todo-inline[isotopessa], 
+  the resulting grammar for which is given in Figure~#todo-inline[fig:ssa-grammar]. 
+It is easy to see that these changes add no expressive power to lexical SSA: 
+  we can desugar (1) by introducing names for anonymous sub-expressions, 
+  (2) by introducing names for anonymous sub-regions, 
+  and (3) by floating out let-bindings and case-statements in the obvious manner, 
+    introducing labels as necessary; 
+  we discuss this in more detail in Section~#todo-inline[ssec:ssa-normal].
+
+Change (1) allows us to effectively reason about _substitution_: 
+  replacing the value of a variable (which is a value $v$) 
+    with its definition (which is an instruction $o$). 
+This can be used as a building block for optimizations 
+  such as common subexpression elimination and global value numbering; 
+  combined with change (3), 
+    we can also reason algebraically about "branching" operations 
+      like conditional move and absolute value.
+
+On the other hand, 
+  (2) lets us replace an unconditional branch $brb(ℓ, a)$ 
+    (which is a terminator $τ$) 
+  with the code _pointed to_ by the label $ℓ$ (which is a region $r$), 
+  allowing us to perform the jump-threading optimization
+$ where(letstmt(x, a, brb(ℓ, b)), wbranch(ℓ, y, r))
+  equiv where(letstmt(x, a, letstmt(y, b, r)), wbranch(ℓ, y, r)) $
+While both sides of this equation are valid lexical SSA programs, 
+  by loosening our syntax slightly, 
+  we can _unconditionally_ replace jumps with regions, 
+    without worrying about jumps nested in case statements or fusing $ms("where")$-blocks. 
+This, especially combined with change (3), 
+  makes it much easier to verify optimizations such as
+$ & where(casestmt2(a, x, brb(ℓ, (ι_r x)), x, brb(ℓ, (ι_l x))),
+      wbranch(ℓ, y, casestmt2(y, z, ms("ret") (ι_r z), z, ms("ret") (ι_l z)))) \
+  &equiv casestmt2(a, 
+    x, casestmt2(ι_r x, z, ms("ret") (ι_r z), z, ms("ret") (ι_l z)), \
+    & #h(2em) x, casestmt2(ι_l x, z, ms("ret") (ι_r z), z, ms("ret") (ι_l z))) \
+  &equiv casestmt2(a,
+    x, ms("ret")(ι_l x),
+    x, ms("ret")(ι_r x))
+  equiv ms("ret") (casestmt2(a, x, ι_l x, x, ι_r x))
+  equiv ms("ret") a $
+by repeatedly applying a set of known-good rules, 
+  and, moreover, dramatically simplifies the form of the rules themselves.
+
+#todo[figure: grammar for isotopessa]
 
 = Refinement
 
