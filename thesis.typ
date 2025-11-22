@@ -205,11 +205,11 @@ subexpression.
 
 #todo[figure: imperative factorial]
 
-#todo[figure: 3-address factorial]
+#todo[figure: RTL factorial]
 
 While functional languages typically rely on _lexical scoping_, 
   where the scope of a variable is determined by its position within the code's nested structure, 
-  3-address code uses a different scoping mechanism based on _dominance_. 
+  RTL uses a different scoping mechanism based on _dominance_. 
 In particular, 
   a variable $x$ is considered to be in scope at a specific point $P$ 
     if and only if all execution paths from the program's entry point to $P$ 
@@ -253,7 +253,7 @@ The classical solution is to introduce _$φ$-nodes_,
   which select a value based on the predecessor block from which control arrived. 
 We give the lowering of our program into SSA with $φ$-nodes in Figure~#todo-inline[fig:fact-ssa].
 
-@cytron-91-ssa-intro introduced the first efficient algorithm to lower a program in 3-address code to valid SSA 
+@cytron-91-ssa-intro introduced the first efficient algorithm to lower a program in RTL to valid SSA 
   while introducing a minimum number of $φ$-nodes, 
   making SSA practical for widespread use as an intermediate representation. 
 Unfortunately, $φ$-nodes do not have an obvious operational semantics.
@@ -277,7 +277,7 @@ Note that this is a strict superset of the variables visible for a normal instru
     such that _every_ path from the entry block to the definition of $x$ goes through $y$, 
     rather than only those paths which also go through $S$.
 
-#todo[figure: 3-address code vs SSA with phi-nodes]
+#todo[figure: RTL vs SSA with phi-nodes]
 
 While this rule can be quite confusing, 
   and in particular makes it non-obvious how to assign an operational semantics to $φ$-nodes, 
