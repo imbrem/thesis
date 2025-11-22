@@ -103,8 +103,8 @@ One of the earliest compiler IRs introduced is _register transfer language_ (_RT
 #let casestmt2(e, x, s, y, t) = $ms("case") #e thick {linl(#x) : #s seq linr(#y) : #t}$
 #let wbranch(ℓ, x, t) = $#ℓ (#x) : #t$
 #let where(t, L) = $#t thick ms("where") {#L}$
-#let letstmt(x, a, t) = $ms("let") #x = #a; #t$
-#let letexpr(x, a, e) = $ms("let") #x = #a; #e$
+#let letstmt(x, a, t) = $ms("let") #x = #a seq #t$
+#let letexpr(x, a, e) = $ms("let") #x = #a seq #e$
 
 RTL programs consists of a _control-flow graph_ (CFG) $G$ 
   with a distinguished, nameless entry block. 
@@ -242,9 +242,11 @@ We can intuitively think of each variable as being defined by an immutable $ms("
 A given basic block can be converted to SSA form by numbering each definition of a variable,
   effectively changing references to $x$ to references to $x_t$, i.e. "$x$ at time $t$." 
 For example, we could rewrite
-$ x &= 3y + 5; &quad& ms("let") x_0 &= 3y + 5 \
-  x &= 3x + 2; &approx& ms("let") x_1 &= 3x_0 + 2 \
-  ms("ret") (3x + 1) &&&  ms("ret") (3x_1 + 1) $
+#align(center, stack(dir: ltr, spacing: 3em,
+  $ & x = 3y + 5 ; \ & x = 3x + 2; \ & retb((3x + 1))$,
+  align(horizon, $≈$),
+  $ & x_0 = 3y + 5 ; \ & x_1 = 3x_0 + 2 ; \ & retb((3x_1 + 1))$
+))
 This transformation enables algebraic reasoning about expressions involving each $x_t$. 
 However, 
   since we can only define a variable once in SSA form, 
@@ -454,7 +456,9 @@ While both sides of this equation are valid lexical SSA programs,
     without worrying about jumps nested in case statements or fusing $ms("where")$-blocks. 
 This, especially combined with change (3), 
   makes it much easier to verify optimizations such as
-$ & where(casestmt2(a, x, brb(ℓ, (ι_r x)), x, brb(ℓ, (ι_l x))),
+#todo[clean up optimization here]
+$ 
+  & where(casestmt2(a, x, brb(ℓ, (ι_r x)), x, brb(ℓ, (ι_l x))),
       wbranch(ℓ, y, casestmt2(y, z, ms("ret") (ι_r z), z, ms("ret") (ι_l z)))) \
   &equiv casestmt2(a, 
     x, casestmt2(ι_r x, z, ms("ret") (ι_r z), z, ms("ret") (ι_l z)), \
@@ -463,7 +467,8 @@ $ & where(casestmt2(a, x, brb(ℓ, (ι_r x)), x, brb(ℓ, (ι_l x))),
     x, ms("ret")(ι_l x),
     x, ms("ret")(ι_r x))
   equiv ms("ret") (casestmt2(a, x, ι_l x, x, ι_r x))
-  equiv ms("ret") a $
+  equiv ms("ret") a 
+$
 by repeatedly applying a set of known-good rules, 
   and, moreover, dramatically simplifies the form of the rules themselves.
 
