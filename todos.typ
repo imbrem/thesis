@@ -7,3 +7,5 @@
 ]
 
 #let todo(it) = block(todo-inline(it))
+
+#let total-todos = context counter("todos").final().at(0)

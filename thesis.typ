@@ -1,8 +1,29 @@
 #import "@preview/curryst:0.6.0": prooftree, rule, rule-set
 #import "@preview/simplebnf:0.1.1": *
 
+#import "@preview/wordometer:0.1.5": word-count, total-words
+#show: word-count.with(exclude: <no-wc>)
+
+#let max-words = 60000
+#let percent-done = context {
+  calc.round(decimal((100 * state("wordometer").final().words) / max-words), digits: 3)
+}
+#let p-doom = context { 
+  let prop-done = state("wordometer").final().words / max-words
+  if prop-done > 0.9 {
+    [*LOW*]
+  } else if prop-done > 0.5 {
+    [*MEDIUM*]
+  } else {
+    [*HIGH*]
+  }
+}
+
 #import "thesis-template.typ": *
-#import "todos.typ": todo, todo-inline
+#import "todos.typ": todo, todo-inline, total-todos
+
+#let ms(txt) = $sans(txt)$
+#let mb(txt) = $bold(txt)$
 
 #set text(lang: "en")
 
@@ -15,6 +36,14 @@
 
 #align(center + horizon)[
   #todo("make a title page; preferably as a template")
+]
+
+#align(center + horizon)[
+  *The current word count is* $#total-words slash #max-words ≈ #percent-done%$ complete.
+
+  *There are $#total-todos$ TODOs remaining*
+
+  $P(ms("doom"))$ is currently *#p-doom*
 ]
 
 #pagebreak()
@@ -46,33 +75,118 @@
 
 == From Three Address Code to SSA
 
+#todo[$n$-ary or binary presentation?]
+
 Directly optimizing a source language can be difficult, 
   because surface languages are often very large and have features 
     (such as type inference and overloading) 
   which make it difficult to express sound program equivalences. 
 Elaborating a surface language to a simpler intermediate representation makes it easier to write program analyses and optimizations. 
-One of the earliest compiler IRs introduced is _three-address code_ @allen-70-cfa (also known as _register transfer language (RTL)_).
+One of the earliest compiler IRs introduced is _register transfer language_ (_RTL_) @allen-70-cfa,
+  commonly referred to as _three-address code_.
 
-#let ms(txt) = $sans(txt)$
-#let mb(txt) = $bold(txt)$
+#let ite(o, l, r) = $ms("if") #o thick { #l } ms("else") { #r }$
+#let linl(v) = $ι_l med #v$
+#let linr(v) = $ι_r med #v$
+#let labort(v) = $ms("abort") #v$
+#let seq = $; thick$
+#let casestmt2(o, vl, bl, vr, br) = $ms("case") #o thick {linl(vl) : #bl seq linr(vr) : #br}$
+#let brb(ℓ, v) = $ms("br") #ℓ thick #v$
+#let retb(v) = $ms("ret") #v$
 
-#let ite(o, l, r) = $ms("if") #o { #l } ms("else") { #r }$
-#let casestmt2(o, vl, bl, vr, br) = $ms("case") #o {ι_l #vl : #bl ; ι_r #vr : #br}$
-
-3-address programs consists of a _control-flow graph_ (CFG) $G$ with a distinguished, nameless entry block. 
+RTL programs consists of a _control-flow graph_ (CFG) $G$ 
+  with a distinguished, nameless entry block. 
 Each node of the CFG corresponds to a _basic block_ $β$, 
-  which is a straight-line sequence of \emph{instructions} $x = f(y, z)$ 
-    (hence the name \emph{3-address code}, referring to the typical three variables $x, y, z$) 
+  which is a straight-line sequence of _instructions_ $x = f(y, z)$ 
+    (hence the name _3-address code_, referring to the typical three variables $x, y, z$) 
   followed by a _terminator_ $τ$, 
     which can be a (conditional) branch to another basic block. 
-We give a grammar for 3-address code in Figure~#todo-inline("3-address grammar"), 
+We give a grammar for 3-address code in Figure~#todo-inline[3-address grammar], 
   with some slight adjustments to the usual presentation:
+
+#todo[introduce destructures more smoothly? consider $n$-ary case?]
+
+  #todo[mention that case statements can also be nested?]
 
 - _Constants_ $c$ are interpreted as nullary instructions $c()$.
 - _Conditional branches_ $ite(x, τ, τ')$ are desugared to 
     case-statements $casestmt2(x, y, τ, z, τ')$ on a Boolean $x : mb(1) + mb(1)$. 
   This is equivalent in power to regular conditional branches, 
     while allowing our work to generalize easily to higher-level settings as well.
+- _Return statements_ $retb(v)$ are desugared to branches $brb(ℓ_ms("exit"), v)$ 
+    to a distinguished exit label $ℓ_ms("exit")$. 
+  In particular, 
+    this allows a return-statement to appear in the branch of a case-statement or if-statement.
+
+#figure(
+  [
+    #stack(
+      dir: ltr,
+      spacing: 3em,
+      bnf(
+        Prod(
+          $v$,
+          annot: $ms("Val")$,
+          {
+            Or[$x$][_variable_]
+            Or[$(v, v')$][_tuple_]
+            Or[$()$][_unit_]
+          }
+        )
+      ),
+      bnf(
+        Prod(
+          $o$,
+          annot: $ms("Inst")$,
+          {
+            Or[$v$][_value_]
+            Or[$f med v$][_operation_]
+            Or[$linl(v)$][_left injection_]
+            Or[$linr(v)$][_right injection_]
+            Or[$labort(v)$][_abort_]
+          }
+        )
+      )
+    )
+    #stack(
+      dir: ltr,
+      spacing: 3em,
+      bnf(
+        Prod(
+          $β$,
+          annot: $ms("BB")$,
+          {
+            Or[$x = o seq β$][_assign_]
+            Or[$(x, y) = o seq β$][_destructure_]
+            Or[$τ$][_terminator_]
+          }
+        )
+      ),
+      bnf(
+        Prod(
+          $τ$,
+          annot: $ms("Trm")$,
+          {
+            Or[$brb(ℓ, o)$][_branch_]
+            Or[$casestmt2(o, x, τ, y, τ')$][_case_]
+          }
+        )
+      )
+    )
+    #bnf(
+      Prod(
+        $β$,
+        annot: $ms("CFG")$,
+        {
+          Or[$β$][_entry block_]
+          Or[$G seq ℓ : β$][_labeled basic block_]
+        }
+      )
+    )
+  ],
+  caption: [Grammar for RTL],
+  kind: image
+)
 
 /*
 Directly optimizing a source language can be difficult, because surface languages are often
