@@ -75,13 +75,6 @@
 
 == From RTL to SSA
 
-/*
-TRANSLATION NOTES: 
-- We change references to 3-address code to RTL
-- We try to split up paragraphs to be 1-idea-per-line in the source text 
-  (this renders to the same output, but helps with version control/diffing)
-*/
-
 #todo[$n$-ary or binary presentation?]
 
 Directly optimizing a source language can be difficult, 
@@ -105,12 +98,12 @@ One of the earliest compiler IRs introduced is _register transfer language_ (_RT
 #let where(t, L) = $#t thick ms("where") {#L}$
 #let letstmt(x, a, t) = $ms("let") #x = #a seq #t$
 #let letexpr(x, a, e) = $ms("let") #x = #a seq #e$
-#let bhyp(x, A) = $#x : #A$
+#let bhyp(x, A, q: []) = $#x : #A^#q$
 #let lhyp(ℓ, A) = $#ℓ (#A)$
-#let hasty(Γ, ε, a, A) = $#Γ |-- #a : #A^#ε$
-#let haslb(Γ, r, L) = $#Γ |-- #r : #L$
+#let hasty(Γ, ε, a, A) = $#Γ ⊢_#ε #a : #A$
+#let haslb(Γ, r, L) = $#Γ ⊢ #r triangle.stroked.small.r #L$
 #let issubst(γ, Γ, Δ) = $#γ : #Γ => #Δ$
-#let lbsubst(Γ, σ, L, K) = $#Γ |-- #σ : #L => #K$
+#let lbsubst(Γ, σ, L, K) = $#Γ ⊢ #σ : #L arrow.r.long.squiggly #K$
 #let isop(f, A, B, ε) = $#f : #A ->^#ε #B$
 #let lupg(γ) = $upright(↑)#γ$
 #let rupg(γ) = $#γ upright(↑)$
@@ -485,6 +478,8 @@ by repeatedly applying a set of known-good rules,
 
 = Type Theory
 
+#todo[fuse with refined account of SSA]
+
 We now give a formal account of #todo-inline[isotopessa], starting with the types. 
 Our types are first order, 
   and consists of binary sums $A + B$, products $A times.o B$, the unit type $mb(1)$, 
@@ -610,7 +605,7 @@ We give the (standard) formal rules for weakening $Γ ≤ Δ$, and their duals,
   in the first part of Figure~#todo-inline[fig:ssa-meta-rules].
 - #todo-inline[rle:wk-nil] and #todo-inline[rle:lwk-nil] say that the empty (label) context weakens itself,
 - #todo-inline[rle:wk-skip] says that if $Γ$ weakens $Δ$, 
-  then $Γ, x : A$ also weakens $Δ$ for arbitrary (fresh) $x$. 
+  then $Γ, bhyp(x, A)$ also weakens $Δ$ for arbitrary (fresh) $x$. 
   Dually, #todo-inline[rle:lwk-skip] says that if $ms("L")$ weakens $ms("K")$, 
     then $ms("L")$ also weakens $ms("K"), lhyp(ℓ, A)$ for arbitrary (fresh) $ℓ$.
 - #todo-inline[rle:wk-cons] says that if $Γ$ weakens $Δ$, 
@@ -716,11 +711,11 @@ Finally, just as we can generalize weakening by substituting expressions for var
     via _label substitution_. 
 In particular, 
   a label-substitution $lbsubst(Γ, σ, ms("L"), ms("K"))$ 
-    maps every label $ℓ(A) in ms("L")$ to a region $haslb((Γ, x : A), r, ms("K"))$ 
-      parametrized by $x : A$. 
+    maps every label $ℓ(A) in ms("L")$ to a region $haslb((Γ, bhyp(x, A)), r, ms("K"))$ 
+      parametrized by $bhyp(x, A)$. 
 As shown in Figure~#todo-inline[fig:ssa-label-subst-def], 
   we may then define label-substitution recursively in the obvious manner, 
-  mapping $ms("br") ℓ a$ to $[a\/x]r$ as a base case. 
+  mapping $brb(ℓ, a)$ to $[a\/x]r$ as a base case. 
 Composition of label-substitutions is pointwise. 
 This allows us to state _label substitution_ as follows:
 
@@ -781,7 +776,7 @@ We also define the shorthand $[ℓ \/ κ] = [lupg((κ(x) |-> brb(ℓ, x)))]$ for
 
 #todo[the basics: CSE, GVN, DCE, SCCP, peephole @siddharth-24-peephole]
 
-#todo[E-graphs @cranelift]
+#todo[E-graphs @cranelift; see also Peggy]
 
 #todo[Vectorization]
 
@@ -800,6 +795,26 @@ We also define the shorthand $[ℓ \/ κ] = [lupg((κ(x) |-> brb(ℓ, x)))]$ for
 == Trace Models
 
 #todo[Stream actions, pomsets, and TSO]
+
+= Formalization of SSA
+
+#todo[link down here for type theory discussion, once we've moved to refined account]
+
+== `discretion`
+
+#todo[describe discretion library; premonoidal port]
+
+== `debruijn-ssa`
+
+#todo[describe debruijn-ssa library]
+
+== `refined-ssa`
+
+#todo[describe refined-ssa library]
+
+== `ln-ssa`
+
+#todo[describe ln-ssa library, if we've got anything by the end...]
 
 = Future Work
 
