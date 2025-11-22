@@ -73,7 +73,14 @@
 
 = Static Single Assignment (SSA)
 
-== From Three Address Code to SSA
+== From RTL to SSA
+
+/*
+TRANSLATION NOTES: 
+- We change references to 3-address code to RTL
+- We try to split up paragraphs to be 1-idea-per-line in the source text 
+  (this renders to the same output, but helps with version control/diffing)
+*/
 
 #todo[$n$-ary or binary presentation?]
 
@@ -101,7 +108,7 @@ Each node of the CFG corresponds to a _basic block_ $β$,
     (hence the name _3-address code_, referring to the typical three variables $x, y, z$) 
   followed by a _terminator_ $τ$, 
     which can be a (conditional) branch to another basic block. 
-We give a grammar for 3-address code in Figure~#todo-inline[3-address grammar], 
+We give a grammar for 3-address code in @rtl-grammar, 
   with some slight adjustments to the usual presentation:
 
 #todo[introduce destructures more smoothly? consider $n$-ary case?]
@@ -186,7 +193,15 @@ We give a grammar for 3-address code in Figure~#todo-inline[3-address grammar],
   ],
   caption: [Grammar for RTL],
   kind: image
-)
+) <rtl-grammar>
+
+As a concrete example, consider the simple imperative program to compute $10!$ given in
+Figure~#todo-inline("imperative factorial"). We can normalize our code into RTL, as in
+Figure~#todo-inline("RTL factorial"), by:
+- Converting structured control flow (e.g., $ms("while")$) into unstructured jumps between basic
+blocks labelled $ms("start")$, $ms("loop")$, and $ms("body")$.
+- Converting composite expressions like $a * (i + 1)$ into a sequence of definitions naming each
+subexpression.
 
 /*
 Directly optimizing a source language can be difficult, because surface languages are often
