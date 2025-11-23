@@ -105,6 +105,7 @@ One of the earliest compiler IRs introduced is _register transfer language_ (_RT
 #let issubst(γ, Γ, Δ) = $#γ : #Γ => #Δ$
 #let lbsubst(Γ, σ, L, K) = $#Γ ⊢ #σ : #L arrow.r.long.squiggly #K$
 #let isop(f, A, B, ε) = $#f : #A ->^#ε #B$
+#let tmeq(Γ, ε, a, b, A) = $#Γ ⊢_#ε #a equiv #b : #A$
 #let lupg(γ) = $upright(↑)#γ$
 #let rupg(γ) = $#γ upright(↑)$
 
@@ -742,9 +743,139 @@ We also define the shorthand $[ℓ \/ κ] = [lupg((κ(x) |-> brb(ℓ, x)))]$ for
 
 #todo[figure: capture-avoiding label substitution for isotopessa regions and label substitutions]
 
-= Refinement
+= Equational Theory
 
-#todo[TOPLAS + refinement here]
+== Expressions
+
+We can now give an equational theory for #ms()[IsotopeSSA] expressions. In particular, we will
+inductively define an equivalence relation
+$
+tmeq(Gamma, epsilon, a, a', A)
+$
+on terms $a, a'$ for each context $Gamma$, effect $epsilon$, and type $A$. For each of the rules
+we will present, we assume the rule is valid if and only if _both sides_ of the rule are
+well-typed. We also assume that variables are $alpha$-converted as appropriate to avoid shadowing;
+our formalization uses de Bruijn indices, but we stick with names in this exposition for simplicity.
+
+The rules for this relation can be roughly split into _rewriting rules_, which denote when two
+particular expressions have equivalent semantics, and _congruence rules_, which govern how
+rewrites can be composed to enable equational reasoning. In particular, our congruence rules, given
+in #todo[Figure: fig:ssa-expr-congr-rules], consist of:
+- #todo-inline[refl], #todo-inline[symm], #todo-inline[trans], which state that
+  $tmeq(Gamma, epsilon, dot, dot, A)$ is reflexive, transitive, and symmetric respectively
+  for each choice of $Gamma, epsilon, A$, and therefore an equivalence relation.
+- #todo-inline[let₁], #todo-inline[let₂], #todo-inline[pair], #todo-inline[inl], #todo-inline[inr], #todo-inline[case], and
+  #todo-inline[abort], which state that $tmeq(Gamma, epsilon, dot, dot, A)$ is a _congruence_
+  with respect to the corresponding expression constructor, and, in particular, that the expression
+  constructors are well-defined functions on the quotient of expressions up to $equiv$.
+
+We also include the following _type-directed_ rules as part of our congruence relation:
+- #todo-inline[initial], which equates _all_ terms in a context containing the empty type
+  $mb(0)$, since we will deem any such context to be _unreachable_ by control flow. In
+  particular, any instruction or function call returning $mb(0)$ is assumed to diverge. 
+- #todo-inline[terminal], which equates all _pure_ terms of unit type $mb(1)$. Note that
+  _impure_ terms may be disequal, since while their result values are the same, their side
+  effects may differ!
+
+#todo[Figure: Congruence rules for #ms()[IsotopeSSA] expressions.
+Rules: refl, trans, symm, let₁, pair, let₂, inl, inr, case, abort, initial, terminal]
+
+We may group the rest of our rules according to the relevant constructor, i.e. #ms()[let] (unary and
+binary) and #ms()[case]. In particular, for unary #ms()[let], we have the following rules,
+summarized in #todo[Figure: fig:ssa-unary-let-expr]:
+- #todo-inline[let₁-β], which allows us to substitute the bound variable in $x$ the
+  let-statement $letexpr(x, a, b)$ with its definition $a$, yielding $[a slash x]b$. Note that we require
+  $hasty(Gamma, bot, a, A)$; i.e., $a$ must be _pure_.
+
+- #todo-inline[let₁-η], which is the standard $eta$-rule for #ms()[let]. This is included as a
+  separate rule since, while it follows trivially from $beta$ for pure $a$, we also want to
+  consider _impure_ expressions.
+  
+- Rules #todo-inline[let₁-op], #todo-inline[let₁-let₁], #todo-inline[let₁-let₂],
+  #todo-inline[let₁-abort], and #todo-inline[let₁-case] which allow us to "pull" a let-statement out of
+  any of the other expression constructors; operationally, this is saying that the bound expression
+  we pull out is evaluated before the rest of the #ms()[let]-binding.
+  
+  For example, #todo-inline[let₁-case] says that, if both
+  $letexpr(z, casestmt2(e, x, a, y, b), d)$ and
+  $casestmt2(e, x, letexpr(z, a, d), y, letexpr(z, b, d))$,
+  are well typed, then both must have the same behaviour:
+  + Compute $e$
+  + If $e = linl(e_l)$, compute $[e_l slash x]a$, else, if $e = linr(e_r)$, compute $[e_r slash y]b$;
+    store this value as $z$
+  + Compute $d$ given our value for $z$
+  Note in particular that, since both sides are well-typed, $d$ cannot depend on either $x$ or $y$.
+
+#todo[Figure: Rewriting rules for #ms()[IsotopeSSA] unary #ms()[let] expressions.
+Rules: let₁-β, let₁-η, let₁-op, let₁-let₁, let₁-let₂, let₁-abort, let₁-case]
+
+Handling the other type constructors is a little simpler: by providing a "binding" rule, we
+generally only need to specify how to interact with $ms("let")_1$, as well as an $eta$ and $beta$
+rule; interactions with the other constructors can then be derived. For example, consider the rules
+for $ms("let")_2$ given in #todo-inline[fig:ssa-let2-case-expr]; we have:
+- #todo-inline[let₂-η], which is the standard $eta$-rule for binary #ms()[let]-bindings
+- #todo-inline[let₂-pair], which acts like a slightly generalized $beta$-rule, since we can
+  derive $beta$ reduction as follows: given pure $hasty(Gamma, bot, a, A)$ and
+  $hasty(Gamma, bot, b, B)$, we have
+  $
+  (letexpr((x, y), (a, b), c)) 
+  equiv (letexpr(x, a, letexpr(y, b, c)))
+  equiv ([a slash x](letexpr(y, b, c)))
+  equiv ([a slash x][b slash y]c)
+  $
+  We state the rule in a more general form to allow for impure $a$ and $b$, as well as to simplify
+  certain proofs.
+- #todo-inline[let₂-bind], which allows us to "pull" out the bound value of a binary
+  #ms()[let]-expression into its own unary #ms()[let]-expression; operationally, this just says that
+  we execute the bound value before executing the binding itself.
+
+This is enough to allow us to define our interactions with the other expression constructors: for
+example, to show that we can lift an operation $f$ out of a binary #ms()[let]-binding, rather than
+adding a separate rule, we can instead derive (types omitted for simplicity) it from
+#todo-inline[let₂-bind] and #todo-inline[let₁-op] as follows:
+$
+(letexpr((x, y), f space a, b))
+&equiv (letexpr(z_f, f space a, letexpr((x, y), z, b))) \
+&equiv (letexpr(z_a, a, letexpr(z_f, f space z_a, letexpr((x, y), z, b)))) \
+&equiv (letexpr(z_a, a, letexpr((x, y), f space z_a, b)))
+$
+
+#todo[Figure: Rewriting rules for #ms()[IsotopeSSA] binary #ms()[let] and #ms()[case] expressions.
+Rules: let₂-pair, let₂-η, let₂-bind, case-inl, case-inr, case-η, case-bind]
+
+Similarly, it is enough to give $eta$, $beta$, and binding rules for #todo-inline[case] expressions. 
+In particular, we have that
+- #todo-inline[case-inl] and #todo-inline[case-inr] serve as $beta$-reduction rules, telling us that
+  #ms()[case]-expressions given an injection as an argument have the expected operational behaviour.
+  Note that we reduce to a #ms()[let]-expression rather than perform a substitution to allow for
+  impure discriminants.
+- #todo-inline[case-η] is the standard $eta$-rule for #ms()[case]-expressions.
+- #todo-inline[case-bind] allows us to "pull" out the bound value of the discriminant into
+  it's own #ms()[let]-expression; again, operationally, this just says that we need to evaluate
+  the discriminant before executing the #ms()[case]-expression.
+
+It's interesting that this is enough, along with the #todo-inline[let-case] rule and friends, to derive the
+distributivity properties we would expect well-behaved #ms()[case]-expressions to have. For example,
+we have that
+$
+f(casestmt2(e, x, a, y, b)) 
+&equiv (letexpr(z, casestmt2(e, x, a, y, b), f space z)) \
+&equiv casestmt2(e, x, letexpr(z, a, f space z), y, letexpr(z, b, f space z)) \
+&equiv casestmt2(e, x, f space a, y, f space b)
+$
+and likewise for more complicated distributivity properties involving, e.g., #ms()[let]-bindings.
+
+The case for the other constructors is even more convenient: no additional rules are required
+at all to handle operations, pairs, and injections. For example, we can derive the expected
+bind-rule for operations as follows:
+$
+f space a equiv (letexpr(y, f space a, y))
+equiv (letexpr(x, a, letexpr(y, f space x, y)))
+equiv (letexpr(x, a, f space x))
+$
+
+This completes the equational theory for #ms()[IsotopeSSA] terms; in #todo-inline[Section: ssec:completeness], we
+will show that this is enough to state a completeness theorem.
 
 = Lowering to SSA
 
