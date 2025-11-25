@@ -78,8 +78,6 @@
 
 == From RTL to SSA
 
-#todo[$n$-ary or binary presentation?]
-
 Directly optimizing a source language can be difficult, 
   because surface languages are often very large and have features 
     (such as type inference and overloading) 
@@ -98,7 +96,11 @@ Each node of the CFG corresponds to a _basic block_ $β$,
 We give a grammar for RTL code in @rtl-grammar, 
   with some slight adjustments to the usual presentation:
 
+#todo[parametrized by primitive operations]
+
 - _Instructions_ $(x_1,...,x_n) = o$ can return $n$ results
+  #todo[separation of tuples and $n$-ary returns; unlike e.g. MLIR. 
+        Tuples as primitives make our life easier.]
 - _Constants_ $c$ are interpreted as nullary instructions $c()$.
 - _Conditional branches_ $ite(x, τ, τ')$ are desugared to 
     case-statements $casestmt2(x, y, τ, z, τ')$ on a Boolean $x : mb(1) + mb(1)$. 
@@ -111,6 +113,10 @@ We give a grammar for RTL code in @rtl-grammar,
 
 #figure(
   [
+    #todo[name destructure better]
+    #todo[fix annotations et al.]
+    #todo[fix style here...]
+    #todo[figure placement...]
     #stack(
       dir: ltr,
       spacing: 3em,
@@ -143,7 +149,7 @@ We give a grammar for RTL code in @rtl-grammar,
         Prod(
           $f$,
           {
-            Or[$p$][_primitive op_]
+            Or[$p$][_primitive_]
             Or[$ι_k$][_injection_]
             Or[$ms("abort")$][_unreachable_]
           }
@@ -159,7 +165,7 @@ We give a grammar for RTL code in @rtl-grammar,
           annot: $ms("BB")$,
           {
             Or[$x = o seq β$][_assign_]
-            Or[$(x, y) = o seq β$][_destructure_]
+            Or[$(V) = o seq β$][_destructure_]
             Or[$τ$][_terminator_]
           }
         )
@@ -187,20 +193,19 @@ We give a grammar for RTL code in @rtl-grammar,
     )
   ],
   caption: [Grammar for RTL],
-  kind: image
+  kind: image,
+  placement: auto
 ) <rtl-grammar>
 
 As a concrete example, consider the simple imperative program to compute $10!$ given in
 Figure~#todo-inline("imperative factorial"). We can normalize our code into RTL, as in
 Figure~#todo-inline("RTL factorial"), by:
 - Converting structured control flow (e.g., $ms("while")$) into unstructured jumps between basic
-blocks labelled $ms("start")$, $ms("loop")$, and $ms("body")$.
+  blocks labelled $ms("start")$, $ms("loop")$, and $ms("body")$.
 - Converting composite expressions like $a * (i + 1)$ into a sequence of definitions naming each
-subexpression.
+  subexpression.
 
-#todo[figure: imperative factorial]
-
-#todo[figure: RTL factorial]
+#todo[figure: imperative factorial ==> RTL factorial]
 
 While functional languages typically rely on _lexical scoping_, 
   where the scope of a variable is determined by its position within the code's nested structure, 
