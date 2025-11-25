@@ -1201,7 +1201,8 @@ label-substitutions: this is just the obvious pointwise extension of the equival
 terms and regions respectively. We give the rules for this relation in
 Figure #todo-inline[ref] in the interests of explicitness.
 
-*Lemma (Congruence (Label Substitution))*: Given $#lbseq([$sigma$], [$sigma'$], [$Gamma$], [ms("L")], [ms("K")])$, we have that
+*Lemma (Congruence (Label Substitution))*: 
+  Given $#lbseq($sigma$, $sigma'$, $Gamma$, $ms("L")$, $ms("K")$)$, we have that
 
 + $#lbeq([$Gamma$], [$r$], [$r'$], [ms("L")]) ==> #lbeq([$Gamma$], [[[$sigma$]r]], [[[$sigma'$]r']], [ms("K")])$
 + $#lbseq([$kappa$], [$kappa'$], [$Gamma$], [ms("L")], [ms("J")])
