@@ -36,6 +36,10 @@
 
 #align(center + horizon)[
   #todo("make a title page; preferably as a template")
+  #todo("fix definition/theorem/proof")
+  #todo("fix equation numbering")
+  #todo("put notation, proof lore in a header file and import it")
+  #todo("factor into multiple per-chapter files???")
 ]
 
 #align(center + horizon)[
@@ -106,6 +110,10 @@ One of the earliest compiler IRs introduced is _register transfer language_ (_RT
 #let lbsubst(Γ, σ, L, K) = $#Γ ⊢ #σ : #L arrow.r.long.squiggly #K$
 #let isop(f, A, B, ε) = $#f : #A ->^#ε #B$
 #let tmeq(Γ, ε, a, b, A) = $#Γ ⊢_#ε #a equiv #b : #A$
+#let lbeq(Γ, r, s, L) = $#Γ ⊢ #r equiv #s triangle.stroked.small.r #L$
+#let tmseq(γ, γp, Γ, Δ) = $#γ equiv #γp : #Γ => #Δ$
+#let lbseq(σ, σp, Γ, L, K) = $#Γ ⊢ #σ equiv #σp : #L arrow.r.long.squiggly #K$
+#let cfgsubst(branches) = $⟨#branches⟩$
 #let lupg(γ) = $upright(↑)#γ$
 #let rupg(γ) = $#γ upright(↑)$
 
@@ -874,8 +882,342 @@ equiv (letexpr(x, a, letexpr(y, f space x, y)))
 equiv (letexpr(x, a, f space x))
 $
 
-This completes the equational theory for #ms()[IsotopeSSA] terms; in #todo-inline[Section: ssec:completeness], we
-will show that this is enough to state a completeness theorem.
+This completes the equational theory for #ms()[IsotopeSSA] terms; 
+  in #todo-inline[Section: ssec:completeness], 
+  we will show that this is enough to state a completeness theorem.
+
+== Regions
+
+We now come to the equational theory for regions, which is similar to that for terms, except that we
+also need to support control-flow graphs. As before, we will split our rules into a set of
+_congruence rules_ and, for each region constructor, _rewriting rules_ based on that
+constructor's semantics. Our congruence rules, given in #todo[Figure: fig:ssa-reg-congr-rules], are
+quite standard; we have:
+- As for terms, #todo-inline[refl], #todo-inline[trans], and #todo-inline[symm] state that
+  $lbeq(Gamma, dot, dot, ms("L"))$ is an equivalence relation for all $Gamma$, $ms("L")$.
+- Similarly, #todo-inline[let₁], #todo-inline[let₂], #todo-inline[case], and #todo-inline[cfg] state that
+  $lbeq(Gamma, dot, dot, ms("L"))$ is a congruence over the respective region constructors;
+  _as well as_ the equivalence relation on terms $tmeq(Gamma, epsilon, dot, dot, A)$.
+- #todo-inline[initial] states that any context containing the empty type $mb(0)$ equates all
+  regions, by a similar reasoning to the rules for terms. Note that we do not require an analogue to
+  the #todo-inline[terminal] rule (for example, for regions targeting $ms("L") = lhyp(ℓ, mb(1))$),
+  since it will follow from the version for terms; this is good, since the concept of a "pure"
+  region has not yet been defined.
+
+Our rewriting rules for unary #ms()[let]-statements, given in #todo[Figure: fig:ssa-reg-unary-let], are
+analogous to those for unary #ms()[let]-expressions:
+- #todo-inline[let₁-β] allows us to perform $beta$-reduction of _pure_ expressions
+  into regions; unlike for terms, we do not need an $eta$-rule
+- Exactly like for #ms()[let]-expressions, #todo-inline[let₁-op], #todo-inline[let₁-let₁],
+  #todo-inline[let₁-let₂], #todo-inline[let₁-abort], and #todo-inline[let₁-case] allow us to pull out nested
+  subexpressions of the bound value of a #ms()[let]-statement into their own unary #ms()[let]-statement
+
+Similarly to expressions, binary #ms()[let]-statements and #ms()[case]-statements need only the obvious
+$beta$ rule and binding rule, with all the interactions with other constructors derivable; these
+rules are given in #todo[Figure: fig:ssa-reg-let2-case-expr]. Note in particular that $eta$-rules are
+not necessary, as these are derivable from binding and the $eta$-rules for expressions.
+
+#todo[Figure: Congruence rules for #ms()[IsotopeSSA] regions.
+Rules: refl, trans, symm, let₁, let₂, case, cfg, initial]
+
+#todo[Figure: Rewriting rules for #ms()[IsotopeSSA] unary #ms()[let]-statements.
+Rules: let₁-β, let₁-op, let₁-let₁, let₁-let₂, let₁-case, let₁-abort]
+
+#todo[Figure: Rewriting rules for #ms()[IsotopeSSA] binary #ms()[let]-statements and #ms()[case]-statements.
+Rules: let₂-pair, let₂-bind, case-inl, case-inr, case-bind]
+
+Dealing with #ms()[where]-blocks, on the other hand, is a little bit more complicated, as shown by the
+number of rules in #todo[Figure: fig:ssa-where-rules]. One difficulty is that, unlike the other region
+constructors, we will need an $eta$-rule as well as _two_ $beta$-rules. The latter are simple
+enough to state:
+- For $ℓ_k$ defined in a #ms()[where]-block, #todo-inline[cfg-β₁] says that we can replace a
+  branch to $ℓ_k$ with argument $a$ with a #ms()[let]-statement binding $a$ to the corresponding
+  body $t_k$'s argument $x_k$.
+- For $kappa$ _not_ defined in a #ms()[where]-block, #todo-inline[cfg-β₂] says that
+  a branch to $kappa$ within the #ms()[where]-block has the same semantics as if the #ms()[where]-block
+  was not there; hence, it can be removed.
+
+To state our $eta$-rule, however, we will need to introduce some more machinery. Given a mapping
+from a set of labels $ℓ_i$ to associated regions $t_i$, we may define the _control-flow
+graph substitution_ $cfgsubst((wbranch(ℓ_i, x_i, t_i),)_i)$ pointwise as follows:
+$
+cfgsubst((wbranch(ℓ_i, x_i, t_i),)_i) space kappa space a
+:= (where(brb(kappa, a), (wbranch(ℓ_i, x_i, t_i),)_i))
+$
+In general, we may derive, for any label-context $ms("L")$ (assuming $cfgsubst(dot)$ acts uniformly
+on the labels $kappa$ in $ms("L")$ as described above), the following rule #todo-inline[cfgs].
+
+Our $eta$-rule, #todo-inline[cfg-η], says that any #ms()[where]-block of the form
+$where(r, (wbranch(ℓ_i, x_i, t_i),)_i)$ has the same semantics as the label-substitution
+$[cfgsubst((wbranch(ℓ_i, x_i, t_i),)_i)]r$, which in effect propagates the where-block to the
+branches of $r$, if any. While we called this rule #todo-inline[cfg-η], it also functions similarly
+to a binding rule in that it allows us to derive many of the expected commutativity properties of
+#ms()[where]; for example, we have that
+$
+where(letexpr(y, a, r), (wbranch(ℓ_i, x_i, brb(ℓ_j, a_j)),)_i)
+&equiv [cfgsubst((wbranch(ℓ_i, x_i, brb(ℓ_j, a_j)),)_i)](letexpr(y, a, r)) \
+&equiv letexpr(y, a, [cfgsubst((wbranch(ℓ_i, x_i, brb(ℓ_j, a_j)),)_i)]r) \
+&equiv letexpr(y, a, where(r, (wbranch(ℓ_i, x_i, brb(ℓ_j, a_j)),)_i))
+$
+One particularly important application of the $eta$-rule for control-flow graphs is in validating
+the rewrite #todo-inline[case2cfg], which allows us to convert a #ms()[case]-statement into a #ms()[where]-block with two branches.
+
+In addition, we also add as an axiom the ability to get rid of a
+single, trivially nested #ms()[where]-block; this is given as the rule
+#todo-inline[codiag].
+
+
+To be able to soundly perform equational rewriting, we will need the _uniformity_ property,
+which is described by the rule #todo-inline[uni]. In essence, this lets us commute pure expressions with
+loop bodies, enabling rewrites (in imperative style) like
+$
+ms("loop") space {x = x + 1 ; ms("if") space p space 3x space {ms("ret") space 3x}}
+quad equiv quad
+y = 3x ; ms("loop") space {y = y + 3 ; ms("if") space p space y space {ms("ret") space y}}
+$ <eqn:simple-loop-comm>
+Note that substitution alone would not allow us to derive #todo-inline[eqn:simple-loop-comm] above,
+since $x$ and $y$ change each iteration, and hence, in SSA, would need to become parameters as
+follows:
+#todo[eqn:loop-comm-ssa]
+The actual rule is quite complicated, so let's break it down point by point. Assume we are given:
+- A region $haslb(#$Gamma, bhyp(y, B)$, s, #$ms("L"), kappa(B)$)$ taking "input" $y$ of type
+  $B$ and, as "output," jumping to a label $kappa$ with an argument of type $B$. We'll
+  interpret branches to any other label (i.e. any label in $ms("L")$) as a (divergent) "side
+  effect."
+- A region $haslb(#$Gamma, bhyp(x, A)$, t, #$ms("L"), ℓ(A)$)$ taking "input" $x$ of type
+  $A$ and, as "output," jumping to a label $ℓ$ with an argument of type $A$.
+- A _pure_ expression $hasty(#$Gamma, bhyp(x, A)$, bot, e, B)$ parameterised by a value
+  $x$ of type $A$
+
+Suppose further that the following condition holds:
+$
+lbeq(#$Gamma, bhyp(x, A)$, [e slash y]s, where(t, wbranch(ℓ, x, brb(kappa, e))),
+  #$ms("L"), kappa(B)$)
+$
+That is, the following two programs are equivalent:
++ Given input $x$, evaluate $e$ and, taking it's output to be input $y$, evaluate $s$,
+  (implicitly) yielding as output a new value of $y$. In imperative pseudocode,
+  $
+  y = e ; y = s
+  $
++ Given input $x$, evaluate $t$ and, taking it's output to be the _new_ value of $x$,
+  evaluate $e$, (implicitly) yielding as output a new value $y$. In imperative pseudocode,
+  $
+  x = t ; y = e
+  $
+
+_Then_, for any well-typed entry block $haslb(Gamma, r, #$ms("L"), ℓ(A)$)$ (which can produce
+an appropriate input $x : A$ at label $ℓ$), we have that
+$
+lbeq(Gamma, where((where(r, wbranch(ℓ, x, brb(kappa, e)))),
+  wbranch(kappa, y, s)), where(r, t), ms("L"))
+$
+i.e., in imperative pseudocode,
+$
+x = r ; y = e ; ms("loop") space {y = s} &equiv x = r ; ms("loop") space {x = t}
+$
+since
+$
+y = e ; y = s ; y = s ; dots.h 
+space equiv space
+x = t ; y = e ; y = s ; dots.h 
+space equiv space
+x = t ; x = t ; y = e ; dots.h 
+space equiv space dots.h
+$
+where $s$ and $t$ may branch out of the loop.
+
+Note that, due to #todo-inline[let₁-β], #todo-inline[cfg-η], and #todo-inline[cfg-β₁], this is
+equivalent to the rule #todo-inline[uni'] shown in #todo-inline[eqn:uni-variant]:
+$
+lbeq(
+  #$Gamma, bhyp(x, A)$,
+  [e slash y]s,
+  [ℓ(x) arrow.bar brb(kappa, e)]t,
+  #$ms("L"), kappa(B)$)
+==>
+lbeq(Gamma,
+  (where(([ℓ(x) arrow.bar brb(kappa, e)]r), wbranch(kappa, y, s))),
+  (where(r, wbranch(ℓ, x, t))),
+  ms("L"))
+$ <eqn:uni-variant>
+where $haslb(Gamma, r, #$ms("L"), ℓ(A)$)$, $hasty(#$Gamma, bhyp(x, A)$, bot, e, B)$, 
+$haslb(#$Gamma, bhyp(y, B)$, s, #$ms("L"), kappa(B)$)$, and $haslb(#$Gamma, bhyp(x, A)$, t, #$ms("L"), ℓ(A)$)$.
+Going back to our concrete example from #todo-inline[eqn:loop-comm-ssa], if we first substitute the
+let-binding $y = 3x$ on the RHS, we get the equivalence shown in #todo-inline[eqn:loop-comm-red].
+#todo[eqn:loop-comm-red: SSA loop commutation after substitution]
+
+Now, instantiate #todo-inline[uni'] #todo-inline[eqn:uni-variant] by taking:
+- $s = letexpr(y', y + 3, ms("if") space p space y' space {ms("ret") space y'} space ms("else") space {brb(kappa, y')})$ 
+  to be the loop body on the RHS
+- $e = 3x$
+- $r = brb(ℓ, x)$
+- $t = letstmt(x', y + 1, ms("if") space p space 3x' space {ms("ret") space 3x'} space ms("else") space {brb(ℓ, x')})$
+  to be the loop body on the LHS
+
+It's easy to see that $(where(([ℓ(x) arrow.bar brb(kappa, e)]r), wbranch(kappa, y, s)))$ and
+$(where(r, t))$ are syntactically equal to the _RHS_ and _LHS_ of our desired result
+#todo-inline[eqn:loop-comm-red]. So, it suffices to verify that
+$
+Gamma, bhyp(x, A) &⊢ [e slash y]s \
+&equiv letexpr(y', 3x + 3, ms("if") space p space y' space {ms("ret") space y'} space ms("else") space {brb(kappa, y')}) \
+&equiv letexpr(y', 3(x + 1), ms("if") space p space y' space {ms("ret") space y'} space ms("else") space {brb(kappa, y')}) \
+&equiv letexpr(x', x + 1,
+    letexpr(y', 3x', ms("if") space p space y' space {ms("ret") space y'} space ms("else") space {brb(kappa, y')})) \
+&equiv letexpr(x', x + 1,
+    ms("if") space p space 3x' space {ms("ret") space 3x'} space ms("else") space {brb(kappa, 3x')}) \
+&equiv [ℓ(x) arrow.bar brb(kappa, e)]t
+$
+as desired.
+
+The reason why we require $e$ to be _pure_ in the uniformity rule is that impure expressions do
+not necessarily commute with infinite loops, even if they commute with any finite number of
+iterations of the loop. For example, if $ms("hi")$ is some effectful operation (say, printing
+"hello"), it is quite obvious that,
+$
+ms("hi") ; x = x + 1 ; ms("if") space x = y space {ms("ret") space y}
+&equiv 
+x = x + 1 
+; ms("if") space x = y space {ms("hi") ; ms("ret") space y} 
+; ms("hi")
+$
+whereas
+$
+ms("hi") ; ms("loop") space {x = x + 1 ; ms("if") space x = y space {ms("ret") space y}}
+&equiv.not
+ms("loop") space {x = x + 1 ; ms("if") space x = y space {ms("hi") ; ms("ret") space y}} ; ms("hi")
+$
+since, in particular, we may have $y lt.eq x$, in which case the loop will never exit and hence
+$ms("hi")$ will never be executed.
+
+#todo[Figure: Rewriting rules for #ms()[IsotopeSSA] #ms()[where]-blocks.
+Rules: cfg-β₁, cfg-β₂, cfg-η, codiag, uni, dinat]
+
+#todo[Figure: Dinaturality for where-blocks (side-by-side code comparison)]
+
+The derivable rule #todo-inline[uni'] (Equation #todo-inline[ref]) illuminates a very important
+potential use for uniformity; namely, formalizing rewrites like those in
+Figure #todo-inline[ref]. In particular, consider a program of the form 
+#todo[equation]
+where 
+- $#haslb($Gamma$, $r$, $ms("L"), ℓ(A)$)$
+- $#haslb($Gamma, y : B$, $s$, $ms("L"), ℓ(A)$)$
+- $#tmseq($Gamma, bhyp(x, A)$, $⊥$, $e$, $B$)$ is pure
+
+Then we have that
+
+#todo[Equation: multline derivation of substitution commutativity]
+
+and therefore that
+
+#todo[Equation: multline derivation of where-block equivalence]
+
+In particular, for example, we can then easily derive the rewrite from Figure #todo-inline[ref]
+to Figure #todo-inline[ref] by noting the _equalities_ (an equivalence would be enough, of
+course)
+
+#todo[Equation: align derivation showing loop branch equality]
+
+and
+
+#todo[Equation: multline showing let-binding equality]
+
+Rewrites like this are an instance of the principle we call _dinaturality_, which, for
+structured control-flow, can be best expressed as an equivalence between the control-flow graphs in
+Figure #todo-inline[ref]. Unlike in the case of uniformity, however, this is true even when
+the program fragment $P$ is _impure_, since, unlike in the case of general uniformity, we do
+not commute $P$ over an infinite number of iterations. Our final rewriting rule, #todo-inline[dinat],
+generalises the above rewrite from sequential composition on a structured control-flow graph to
+label substitution on an arbitrary control-flow graph. 
+
+#todo[Figure: TikZ diagram showing dinaturality on a structured loop (control-flow graph equivalence)]
+
+We require a separate rule for impure dinaturality as it allows us to relate unary and $n$-ary
+#ms()[where]-blocks and, in particular, use this relationship to interconvert between data-flow and
+control-flow. This means we now have enough equations to derive the flattening of nested
+#ms()[where]-blocks:
+
+#todo[Equation: cfg-fuse rule showing where-block flattening with proof tree]
+
+Rather than directly giving derivation trees for such auxiliary rules, it is more convenient to
+give a denotational proof. However, the completeness of our equational theory (proved in
+Section #todo-inline[ref]) means that the semantic equality implies the existence of the
+requisite derivation tree. A proof can be found in Lemma #todo-inline[ref] in the appendix.
+This is one of the benefits of having a completeness result: it lets us switch freely between
+equational and denotational modes of reasoning. 
+
+There are some other basic rules we may want to use which turn out to be
+derivable from our existing set. For example, while re-ordering labels in a #ms("where")-block looks
+like a no-op in our named syntax, to rigorously justify the following rule actually requires
+dinaturality (with the permutation done via a label-substitution):
+#todo[permutation]
+Note the implicit use of the fact that if some region $r$ typechecks in some label-context $ms(L)$,
+then it typechecks in any permutation of $ms(L)$, which is again proven by label-substitution.
+
+== Metatheory
+
+We can now begin to investigate the metatheoretic properties of our equational theory. As a first
+sanity check, we can verify that weakening, label-weakening, and loosening of effects all respect
+our equivalence relation, as stated in the following lemma:
+
+#todo[fix this...]
+
+*Lemma (Weakening (Rewriting))*: Given $Gamma lt.eq Delta$, $ms("L") lt.eq ms("K")$, and $epsilon lt.eq epsilon'$, we have that
+
++ $#tmeq([$Delta$], [$epsilon$], [$a$], [$a'$], [$A$]) ==> #tmeq([$Gamma$], [$epsilon'$], [$a$], [$a'$], [$A$])$
++ $#lbeq([$Delta$], [$r$], [$r'$], [ms("L")]) ==> #lbeq([$Gamma$], [$r$], [$r'$], [ms("K")])$
+
+*Proof*: These are formalized as:
+
++ `Term.InS.wk_congr` and `Term.InS.wk_eff_congr` in 
+  `Rewrite/Term/Setoid.lean`
++ `Region.InS.vwk_congr` and `Region.InS.lwk_congr` in
+  `Rewrite/Region/Setoid.lean`
+
+It is straightforward to verify that these are indeed equivalence relations.  In fact, it turns out
+that substitution and label-substitution both respect these equivalences, in the following precise
+sense:
+
+*Lemma (Congruence (Substitution))*: Given $#tmseq([$gamma$], [$gamma'$], [$Gamma$], [$Delta$])$, we have that
+
++ $#tmeq([$Delta$], [$epsilon$], [$a$], [$a'$], [$A$])
+  ==> #tmeq([$Gamma$], [$epsilon$], [[[$gamma$]a]], [[[$gamma'$]a']], [$A$])$
++ $#lbeq([$Delta$], [$r$], [$r'$], [ms("L")]) 
+  ==> #lbeq([$Gamma$], [[[$gamma$]r]], [[[$gamma'$]r']], [ms("L")])$
++ $#tmseq([$rho$], [$rho'$], [$Delta$], [$Xi$])
+  ==> #tmseq([[[$gamma$]rho]], [[[$gamma'$]rho']], [$Gamma$], [$Xi$])$
++ $#lbseq([$sigma$], [$sigma'$], [$Delta$], [ms("L")], [ms("K")])
+  ==> #lbseq([[[$gamma$]sigma]], [[[$gamma'$]sigma']], [$Gamma$], [ms("L")], [ms("K")])$
+
+*Proof*: These are formalized as:
+
++ `Term.InS.subst_congr` in `Rewrite/Term/Setoid.lean`
++ `Region.InS.vsubst_congr` in `Rewrite/Region/Setoid.lean`
++ `Term.Subst.InS.comp_congr` in `Rewrite/Term/Setoid.lean`
++ `Region.Subst.InS.vsubst_congr` in `Rewrite/Region/LSubst.lean`
+
+In particular, note that this lemma uses an equivalence relation on substitutions and
+label-substitutions: this is just the obvious pointwise extension of the equivalence relation on
+terms and regions respectively. We give the rules for this relation in
+Figure #todo-inline[ref] in the interests of explicitness.
+
+*Lemma (Congruence (Label Substitution))*: Given $#lbseq([$sigma$], [$sigma'$], [$Gamma$], [ms("L")], [ms("K")])$, we have that
+
++ $#lbeq([$Gamma$], [$r$], [$r'$], [ms("L")]) ==> #lbeq([$Gamma$], [[[$sigma$]r]], [[[$sigma'$]r']], [ms("K")])$
++ $#lbseq([$kappa$], [$kappa'$], [$Gamma$], [ms("L")], [ms("J")])
+  ==> #lbseq([[[$sigma$]kappa]], [[[$sigma'$]kappa']], [$Gamma$], [ms("K")], [ms("J")])$
+
+*Proof*: These are formalized as:
+
++ `Region.InS.lsubst_congr` in `Rewrite/Region/LSubst.lean`
++ `Region.LSubst.InS.comp_congr` in `Rewrite/Region/LSubst.lean`
+
+This means, in particular, that, substitution and label-substitution are well-defined operators on
+equivalence classes of terms, which will come in handy later as we set out to prove completeness
+in Section #todo-inline[ref].
+
+#todo[Figure: Rules for the equivalence relation on #ms()[IsotopeSSA] substitutions and label-substitutions.
+Rules: sb-nil, sb-cons, sb-skip-l, sb-skip-r, ls-nil, ls-cons, ls-skip-l, ls-skip-r, sb-id, ls-id]
 
 = Lowering to SSA
 
