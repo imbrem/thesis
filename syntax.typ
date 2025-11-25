@@ -1,19 +1,37 @@
 #let ms(txt) = $sans(txt)$
 #let mb(txt) = $bold(txt)$
 
-#let ite(o, l, r) = $ms("if") #o thick { #l } ms("else") { #r }$
+#let klet = $ms("let")$
+#let kmut = $ms("mut")$
+#let kwhile = $ms("while")$
+#let kif = $ms("if")$
+#let kelse = $ms("else")$
+#let kbr = $ms("br")$
+#let kabort = $ms("abort")$
+#let kbr = $ms("br")$
+#let kret = $ms("ret")$
+#let kcase = $ms("case")$
+#let kwhere = $ms("where")$
+
+#let ite(o, l, r) = $kif #o thick { #l } kelse { #r }$
 #let linl(v) = $ι_l med #v$
 #let linr(v) = $ι_r med #v$
-#let labort(v) = $ms("abort") #v$
+#let labort(v) = $kabort #v$
 #let seq = $; thick$
-#let brb(ℓ, v) = $ms("br") #ℓ thick #v$
-#let retb(v) = $ms("ret") #v$
-#let caseexpr2(e, x, a, y, b) = $ms("case") #e thick {linl(#x) : #a seq linr(#y) : #b}$
-#let casestmt2(e, x, s, y, t) = $ms("case") #e thick {linl(#x) : #s seq linr(#y) : #t}$
+#let brb(ℓ, ..vs) = if vs.pos().len() == 0 {
+  $kbr #ℓ$
+} else {
+  $kbr #ℓ thick #vs.pos().at(0)$
+}
+#let retb(v) = $kret #v$
+#let caseexpr(e, B) = $kcase #e thick { #B }$
+#let casestmt(e, B) = $kcase #e thick { #B }$
+#let caseexpr2(e, x, a, y, b) = $kcase #e thick {linl(#x) : #a seq linr(#y) : #b}$
+#let casestmt2(e, x, s, y, t) = $kcase #e thick {linl(#x) : #s seq linr(#y) : #t}$
 #let wbranch(ℓ, x, t) = $#ℓ (#x) : #t$
-#let where(t, L) = $#t thick ms("where") {#L}$
-#let letstmt(x, a, t) = $ms("let") #x = #a seq #t$
-#let letexpr(x, a, e) = $ms("let") #x = #a seq #e$
+#let where(t, L) = $#t thick kwhere {#L}$
+#let letstmt(x, a, t) = $klet #x = #a seq #t$
+#let letexpr(x, a, e) = $klet #x = #a seq #e$
 #let bhyp(x, A, q: []) = $#x : #A^#q$
 #let lhyp(ℓ, A) = $#ℓ (#A)$
 #let hasty(Γ, ε, a, A) = $#Γ ⊢_#ε #a : #A$
