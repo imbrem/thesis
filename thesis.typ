@@ -209,8 +209,10 @@ consider the simple imperative program to compute $10!$ given in <imperative-fac
 We can normalize our code into RTL, as in <rtl-factorial>, by:
 - Converting structured control flow (e.g., $ms("while")$) into unstructured jumps between basic
   blocks labelled $ms("start")$, $ms("loop")$, and $ms("body")$.
-- Converting composite expressions like $a * (i + 1)$ into a sequence of definitions naming each
-  subexpression.
+- Converting composite expressions 
+    like $a * (i + 1)$ 
+  into a sequence of definitions naming each subexpression. 
+  Here, expressions like $a + b$ are syntactic sugar for primitive operations $+ (a, b)$.
 
 #subpar.grid(
   align: bottom,
@@ -291,6 +293,7 @@ if and only if its unique definition site $D_x$ strictly dominates $P$.
 A given basic block can be converted to SSA form by numbering each definition of a variable,
 effectively changing references to $x$ to references to $x_t$, i.e. "$x$ at time $t$."
 For example, we could rewrite
+#todo[fix alignment here, because this bothers me...]
 #align(center, stack(
   dir: ltr,
   spacing: 3em,
@@ -307,14 +310,16 @@ naïvely trying to lower the program in Figure~#todo-inline[fig:fact-3addr] into
 since the reference to $i$ in the right-hand-side of the statement $i = i + 1$
 can refer to _either_ the previous value of $i$ from the last iteration of the loop
 _or_ the original value $i = 1$.
-The classical solution is to introduce _$φ$-nodes_,
+The classical solution is to introduce _$ϕ$-nodes_,
 which select a value based on the predecessor block from which control arrived.
-We give the lowering of our program into SSA with $φ$-nodes in Figure~#todo-inline[fig:fact-ssa].
+We give the lowering of our program into SSA with $ϕ$-nodes in Figure~#todo-inline[fig:fact-ssa].
 
-@cytron-91-ssa-intro introduced the first efficient algorithm to lower a program in RTL to valid SSA
-while introducing a minimum number of $φ$-nodes,
-making SSA practical for widespread use as an intermediate representation.
-Unfortunately, $φ$-nodes do not have an obvious operational semantics.
+#todo[fix text citations :(]
+Cytron et al. @cytron-91-ssa-intro
+  introduced the first efficient algorithm to lower a program in RTL to valid SSA 
+    while introducing a minimum number of $ϕ$-nodes,
+  making SSA practical for widespread use as an intermediate representation.
+Unfortunately, $ϕ$-nodes do not have an obvious operational semantics.
 
 Additionally,
 they require us to adopt more complex scoping rules than simple dominance-based scoping.
@@ -324,50 +329,50 @@ $i_0$ evaluates to 1 if we came from $ms("start")$ and to $i_1$ if we came from 
 Similarly,
 $a_0$ evaluates to either 1 or $a_1$ based on the predecessor block.
 This does not obey dominance-based scoping,
-since $i_0$ and $i_1$ are defined _after_ the $φ$-nodes $i_0$, $a_0$ that reference them,
+since $i_0$ and $i_1$ are defined _after_ the $ϕ$-nodes $i_0$, $a_0$ that reference them,
 which seems counterintuitive -- after all, variables are typically used after they are defined.
 In fact,
-since the value of a $φ$-node is determined by which basic block is our immediate predecessor,
-we instead need to use the rule that expressions in $φ$-node branches with source $S$
+since the value of a $ϕ$-node is determined by which basic block is our immediate predecessor,
+we instead need to use the rule that expressions in $ϕ$-node branches with source $S$
 can use any variable $y$ defined at the _end_ of $S$.
 Note that this is a strict superset of the variables visible for a normal instruction $x$,
 which can only use variables $y$ which _dominate_ $x$ -- i.e.,
 such that _every_ path from the entry block to the definition of $x$ goes through $y$,
 rather than only those paths which also go through $S$.
 
-#todo[figure: RTL vs SSA with phi-nodes]
+#todo[figure: RTL vs SSA with $ϕ$-nodes]
 
 While this rule can be quite confusing,
-and in particular makes it non-obvious how to assign an operational semantics to $φ$-nodes,
-the fact that the scoping for $φ$-node branches is based on the source block,
-rather than the block in which the $φ$-node itself appears,
+and in particular makes it non-obvious how to assign an operational semantics to $ϕ$-nodes,
+the fact that the scoping for $ϕ$-node branches is based on the source block,
+rather than the block in which the $ϕ$-node itself appears,
 hints at a possible solution.
 By _moving_ the expression in each branch to the _call-site_,
 we can transition to an isomorphic syntax called basic blocks with arguments (BBA),
 as illustrated in Figure~#todo-inline[fig:fact-bba].
 In this approach,
-each $φ$-node -- since it lacks side effects and has scoping rules independent of its position in the basic block,
+each $ϕ$-node -- since it lacks side effects and has scoping rules independent of its position in the basic block,
 depending only on the source of each branch --
 can be moved to the top of the block.
-This reorganization allows us to treat each $φ$-node as equivalent to an argument for the basic block,
+This reorganization allows us to treat each $ϕ$-node as equivalent to an argument for the basic block,
 with the corresponding values passed at the jump site.
-Converting a program from BBA format back to standard SSA form with $φ$-nodes is straightforward:
-introduce a $φ$-node for each argument of a basic block,
-and for each branch corresponding to the $φ$-node,
+Converting a program from BBA format back to standard SSA form with $ϕ$-nodes is straightforward:
+introduce a $ϕ$-node for each argument of a basic block,
+and for each branch corresponding to the $ϕ$-node,
 add an argument to the jump instruction from the appropriate source block.
 We give a formal grammar for basic blocks-with-arguments SSA in Figure~#todo-inline[fig:bba-grammar].
 #footnote[
   Many variants of SSA do not allow variables to appear alone on the right-hand side of assignments,
-  such as $x = y; β$.
+    such as $x = y; β$.
   We do not incorporate this restriction,
-  though we could by normalizing even further and substituting $[y\/x]β$ instead.
+    though we could by normalizing even further and substituting $[y slash x]β$ instead.
 ]
 Note that this grammar no longer needs a separate terminator for returns:
 we can treat the return point as a distinguished label (with argument) that a program can jump to.
 
 #todo[figure: grammar for basic blocks-with-arguments SSA]
 
-This allows us to use dominance-based scoping without any special cases for $φ$-nodes.
+This allows us to use dominance-based scoping without any special cases for $ϕ$-nodes.
 When considering basic blocks,
 this means that a variable is visible within the block $D$ where it is defined,
 starting from the point of its definition.
@@ -1354,4 +1359,4 @@ in Section #todo-inline[ref].
 
 #todo[literally an infinite pile]
 
-#bibliography("refs.bib")
+#bibliography("refs.bib", style: "acm-edited.csl")
