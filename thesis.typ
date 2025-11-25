@@ -22,8 +22,7 @@
 #import "thesis-template.typ": *
 #import "todos.typ": todo, todo-inline, total-todos
 
-#let ms(txt) = $sans(txt)$
-#let mb(txt) = $bold(txt)$
+#import "syntax.typ": *
 
 #set text(lang: "en")
 
@@ -89,34 +88,6 @@ Elaborating a surface language to a simpler intermediate representation makes it
 One of the earliest compiler IRs introduced is _register transfer language_ (_RTL_) @allen-70-cfa,
   commonly referred to as _three-address code_.
 
-#let ite(o, l, r) = $ms("if") #o thick { #l } ms("else") { #r }$
-#let linl(v) = $ι_l med #v$
-#let linr(v) = $ι_r med #v$
-#let labort(v) = $ms("abort") #v$
-#let seq = $; thick$
-#let brb(ℓ, v) = $ms("br") #ℓ thick #v$
-#let retb(v) = $ms("ret") #v$
-#let caseexpr2(e, x, a, y, b) = $ms("case") #e thick {linl(#x) : #a seq linr(#y) : #b}$
-#let casestmt2(e, x, s, y, t) = $ms("case") #e thick {linl(#x) : #s seq linr(#y) : #t}$
-#let wbranch(ℓ, x, t) = $#ℓ (#x) : #t$
-#let where(t, L) = $#t thick ms("where") {#L}$
-#let letstmt(x, a, t) = $ms("let") #x = #a seq #t$
-#let letexpr(x, a, e) = $ms("let") #x = #a seq #e$
-#let bhyp(x, A, q: []) = $#x : #A^#q$
-#let lhyp(ℓ, A) = $#ℓ (#A)$
-#let hasty(Γ, ε, a, A) = $#Γ ⊢_#ε #a : #A$
-#let haslb(Γ, r, L) = $#Γ ⊢ #r triangle.stroked.small.r #L$
-#let issubst(γ, Γ, Δ) = $#γ : #Γ => #Δ$
-#let lbsubst(Γ, σ, L, K) = $#Γ ⊢ #σ : #L arrow.r.long.squiggly #K$
-#let isop(f, A, B, ε) = $#f : #A ->^#ε #B$
-#let tmeq(Γ, ε, a, b, A) = $#Γ ⊢_#ε #a equiv #b : #A$
-#let lbeq(Γ, r, s, L) = $#Γ ⊢ #r equiv #s triangle.stroked.small.r #L$
-#let tmseq(γ, γp, Γ, Δ) = $#γ equiv #γp : #Γ => #Δ$
-#let lbseq(σ, σp, Γ, L, K) = $#Γ ⊢ #σ equiv #σp : #L arrow.r.long.squiggly #K$
-#let cfgsubst(branches) = $⟨#branches⟩$
-#let lupg(γ) = $upright(↑)#γ$
-#let rupg(γ) = $#γ upright(↑)$
-
 RTL programs consists of a _control-flow graph_ (CFG) $G$ 
   with a distinguished, nameless entry block. 
 Each node of the CFG corresponds to a _basic block_ $β$, 
@@ -127,10 +98,7 @@ Each node of the CFG corresponds to a _basic block_ $β$,
 We give a grammar for RTL code in @rtl-grammar, 
   with some slight adjustments to the usual presentation:
 
-#todo[introduce destructures more smoothly? consider $n$-ary case?]
-
-  #todo[mention that case statements can also be nested?]
-
+- _Instructions_ $(x_1,...,x_n) = o$ can return $n$ results
 - _Constants_ $c$ are interpreted as nullary instructions $c()$.
 - _Conditional branches_ $ite(x, τ, τ')$ are desugared to 
     case-statements $casestmt2(x, y, τ, z, τ')$ on a Boolean $x : mb(1) + mb(1)$. 
@@ -152,21 +120,32 @@ We give a grammar for RTL code in @rtl-grammar,
           annot: $ms("Val")$,
           {
             Or[$x$][_variable_]
-            Or[$(v, v')$][_tuple_]
-            Or[$()$][_unit_]
+            Or[$(V)$][_tuple_]
+          }
+        ),
+        Prod(
+          $V$,
+          {
+            Or[$·$][]
+            Or[$x, V$][]
           }
         )
       ),
       bnf(
         Prod(
           $o$,
-          annot: $ms("Inst")$,
+          annot: $ms("Op")$,
           {
             Or[$v$][_value_]
-            Or[$f med v$][_operation_]
-            Or[$linl(v)$][_left injection_]
-            Or[$linr(v)$][_right injection_]
-            Or[$labort(v)$][_abort_]
+            Or[$f med v$][_application_]
+          }
+        ),
+        Prod(
+          $f$,
+          {
+            Or[$p$][_primitive op_]
+            Or[$ι_k$][_injection_]
+            Or[$ms("abort")$][_unreachable_]
           }
         )
       )
