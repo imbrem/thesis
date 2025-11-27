@@ -1,3 +1,10 @@
+#let title-page(
+  title,
+  author
+) = [
+  #title()
+]
+
 #let statement-of-originality-text = [
   #[
     This thesis is the result of my own work and includes nothing which is the outcome of work done

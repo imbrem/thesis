@@ -5,6 +5,7 @@
 #import "@preview/wordometer:0.1.5": total-words, word-count
 #show: word-count.with(exclude: <no-wc>)
 
+#let production = false;
 
 #let max-words = 60000
 #let percent-done = context {
@@ -29,26 +30,48 @@
 #set text(lang: "en")
 
 #set document(
-  title: [Categorical imperative programming:
-    a type theory and denotational semantics for Static Single Assignment (SSA) form],
+  title: [Categorical imperative programming: type theory, refinement, and semantics for SSA],
+  author: "Jad-Elkhaleq Ghalayini",
+  date: datetime(day: 12, month: 1, year: 2026),
 )
 
-#title()
-
 #align(center + horizon)[
-  #todo("make a title page; preferably as a template")
-  #todo("fix definition/theorem/proof")
-  #todo("fix equation numbering")
-  #todo("put notation, proof lore in a header file and import it")
-  #todo("factor into multiple per-chapter files???")
-]
+  #title()
 
-#align(center + horizon)[
-  *The current word count is* $#total-words slash #max-words ≈ #percent-done%$ complete.
+  #context document.author.at(0)
 
-  *There are $#total-todos$ TODOs remaining*
+  \
 
-  $P(ms("doom"))$ is currently *#p-doom*
+  \
+
+  #context document.date.display("[month repr:long] [year]")
+
+  \
+
+  \
+
+
+  #image("ucam-cs-colour.svg", width: 15em)
+
+  \
+
+  \
+
+  \
+
+  #align(center, [
+    #box(height: 7em, width: 30em, stroke: black)[
+      #if not production {
+        [
+          *The current word count is* $#total-words slash #max-words ≈ #percent-done%$ complete.
+
+          *There are $#total-todos$ TODOs remaining*
+
+          $P(ms("doom"))$ is currently *#p-doom*
+        ]
+      }
+    ] <no-wc>
+  ])
 ]
 
 #pagebreak()
@@ -209,9 +232,9 @@ consider the simple imperative program to compute $10!$ given in <imperative-fac
 We can normalize our code into RTL, as in <rtl-factorial>, by:
 - Converting structured control flow (e.g., $ms("while")$) into unstructured jumps between basic
   blocks labelled $ms("start")$, $ms("loop")$, and $ms("body")$.
-- Converting composite expressions 
-    like $a * (i + 1)$ 
-  into a sequence of definitions naming each subexpression. 
+- Converting composite expressions
+  like $a * (i + 1)$
+  into a sequence of definitions naming each subexpression.
   Here, expressions like $a + b$ are syntactic sugar for primitive operations $+ (a, b)$.
 
 #subpar.grid(
@@ -316,9 +339,9 @@ We give the lowering of our program into SSA with $ϕ$-nodes in Figure~#todo-inl
 
 #todo[fix text citations :(]
 Cytron et al. @cytron-91-ssa-intro
-  introduced the first efficient algorithm to lower a program in RTL to valid SSA 
-    while introducing a minimum number of $ϕ$-nodes,
-  making SSA practical for widespread use as an intermediate representation.
+introduced the first efficient algorithm to lower a program in RTL to valid SSA
+while introducing a minimum number of $ϕ$-nodes,
+making SSA practical for widespread use as an intermediate representation.
 Unfortunately, $ϕ$-nodes do not have an obvious operational semantics.
 
 Additionally,
@@ -363,9 +386,9 @@ add an argument to the jump instruction from the appropriate source block.
 We give a formal grammar for basic blocks-with-arguments SSA in Figure~#todo-inline[fig:bba-grammar].
 #footnote[
   Many variants of SSA do not allow variables to appear alone on the right-hand side of assignments,
-    such as $x = y; β$.
+  such as $x = y; β$.
   We do not incorporate this restriction,
-    though we could by normalizing even further and substituting $[y slash x]β$ instead.
+  though we could by normalizing even further and substituting $[y slash x]β$ instead.
 ]
 Note that this grammar no longer needs a separate terminator for returns:
 we can treat the return point as a distinguished label (with argument) that a program can jump to.
