@@ -11,6 +11,7 @@
 #let kbr = $ms("br")$
 #let kret = $ms("ret")$
 #let kcase = $ms("case")$
+#let kswitch = $ms("switch")$
 #let kwhere = $ms("where")$
 
 #let ite(o, l, r) = $kif #o thick { #l } kelse { #r }$
@@ -26,13 +27,14 @@
 #let retb(v) = $kret #v$
 #let caseexpr(e, B) = $kcase #e thick { #B }$
 #let casestmt(e, B) = $kcase #e thick { #B }$
+#let switchstmt(e, B) = $kswitch #e thick { #B }$
 #let caseexpr2(e, x, a, y, b) = $kcase #e thick {linl(#x) : #a seq linr(#y) : #b}$
 #let casestmt2(e, x, s, y, t) = $kcase #e thick {linl(#x) : #s seq linr(#y) : #t}$
 #let wbranch(ℓ, x, t) = $#ℓ (#x) : #t$
 #let where(t, L) = $#t thick kwhere {#L}$
 #let letstmt(x, a, t) = $klet #x = #a seq #t$
 #let letexpr(x, a, e) = $klet #x = #a seq #e$
-#let bhyp(x, A, q: []) = $#x : #A^#q$
+#let bhyp(x, A, ..vs) = $#x : #A^(#vs.pos().at(0, default: none))$
 #let lhyp(ℓ, A) = $#ℓ (#A)$
 #let hasty(Γ, ε, a, A) = $#Γ ⊢_#ε #a : #A$
 #let haslb(Γ, r, L) = $#Γ ⊢ #r triangle.stroked.small.r #L$

@@ -1,9 +1,11 @@
 #let todos = counter("todos")
 
 #let todo-inline(it) = [
-  #set text(red)
-  *TODO #context todos.display():* #it
-  #todos.step()
+  #[
+    #set text(red)
+    *TODO #context todos.display():* #it
+    #todos.step()
+  ] <no-wc>
 ]
 
 #let todo(it) = block(todo-inline(it))

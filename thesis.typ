@@ -78,9 +78,15 @@
 
 #statement-of-originality
 
-#todo[What's the right way to format this?]
+#todo[
 
-#todo[Do we put the acknowledgements here or after the abstract?]
+  We should factor this template, and have a global TODOs list, maybe outside the document...
+
+  What's the right way to format this?
+
+  Do we put the acknowledgements here or after the abstract?
+
+]
 
 #pagebreak()
 
@@ -107,18 +113,28 @@ Directly optimizing a source language can be difficult,
 because surface languages are often very large and have features
 (such as type inference and overloading)
 which make it difficult to express sound program equivalences.
-Elaborating a surface language to a simpler intermediate representation makes it easier to write program analyses and optimizations.
+Elaborating a surface language to a simpler intermediate representation
+makes it easier to write program analyses and optimizations.
 One of the earliest compiler IRs introduced is _register transfer language_ (_RTL_) @allen-70-cfa,
 commonly referred to as _three-address code_.
 
-RTL programs consists of a _control-flow graph_ (CFG) $G$
+An RTL program consists of a _control-flow graph_ (CFG) $G$
 with a distinguished, nameless entry block.
 Each node of the CFG corresponds to a _basic block_ $β$,
 which is a straight-line sequence of _instructions_ $x = f(y, z)$
-(hence the name _3-address code_, referring to the typical three variables $x, y, z$)
+// (hence the name _3-address code_, referring to the typical three variables $x, y, z$)
 followed by a _terminator_ $τ$,
+which tells us where to transfer control next.
+
+In @rtl-grammar, we give a formal presentation of the syntax of RTL parametrized by a set of
+primitive instructions $p ∈ cal(I)$.
+
 which can be a (conditional) branch to another basic block.
-We give a grammar for RTL code in @rtl-grammar,
+
+
+
+
+We give a grammar for RTL in @rtl-grammar,
 with some slight adjustments to the usual presentation:
 
 #todo[parametrized by primitive operations]
