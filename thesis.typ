@@ -2,28 +2,13 @@
 #import "@preview/simplebnf:0.1.1": *
 #import "@preview/subpar:0.2.2"
 
-#import "@preview/wordometer:0.1.5": total-words, word-count
+#import "@preview/wordometer:0.1.5": word-count
 #show: word-count.with(exclude: <no-wc>)
 
 #let production = false;
 
-#let max-words = 60000
-#let percent-done = context {
-  calc.round(decimal((100 * state("wordometer").final().words) / max-words), digits: 3)
-}
-#let p-doom = context {
-  let prop-done = state("wordometer").final().words / max-words
-  if prop-done > 0.9 {
-    [*LOW*]
-  } else if prop-done > 0.5 {
-    [*MEDIUM*]
-  } else {
-    [*HIGH*]
-  }
-}
-
 #import "thesis-template.typ": *
-#import "todos.typ": todo, todo-inline, total-todos
+#import "todos.typ": todo, todo-inline, total-todos, stats-box
 
 #import "syntax.typ": *
 
@@ -59,19 +44,7 @@
 
   \
 
-  #align(center, [
-    #box(height: 7em, width: 30em, stroke: black)[
-      #if not production {
-        [
-          *The current word count is* $#total-words slash #max-words ≈ #percent-done%$ complete.
-
-          *There are $#total-todos$ TODOs remaining*
-
-          $P(ms("doom"))$ is currently *#p-doom*
-        ]
-      }
-    ] <no-wc>
-  ])
+  #stats-box(production)
 ]
 
 #pagebreak()
@@ -87,6 +60,10 @@
   Do we put the acknowledgements here or after the abstract?
 
 ]
+
+#todo[go make a proper listing function for code...]
+
+#todo[go follow the outline I came up with with Neel...]
 
 #pagebreak()
 
@@ -127,44 +104,32 @@ followed by a _terminator_ $τ$,
 which tells us where to transfer control next.
 
 In @rtl-grammar, we give a formal presentation of the syntax of RTL parametrized by a set of
-primitive instructions $p ∈ cal(I)$.
+primitive instructions $p ∈ cal(I)$. Our grammar is intentionally minimal, with many important 
+features implemented via syntax sugar:
+- _Constants_ $c$ are represented as nullary instructions $c()$.
+- _Conditional branches_ $ite(x, τ, τ')$ are desugared to 
+  _switch-statements_ 
+  $
+  switchstmt(o, lb("tt"): τ seq lb("ff"): τ')
+  $
+  where $lb("tt"), lb("ff") ∈ ;b("Bool")$ are distinguished labels.
+  In general, for every finite set of labels $lb("l") ∈ lb("L")$, 
+  we postulate an _enumeration type_ with members of the form $lb("l")_lb("L")$;
+  where $lb("L")$ is clear from context, we omit it.
+  #todo[work on text about enumerations]
 
-which can be a (conditional) branch to another basic block.
-
-
-
-
-We give a grammar for RTL in @rtl-grammar,
-with some slight adjustments to the usual presentation:
-
-#todo[parametrized by primitive operations]
-
-- _Instructions_ $(x_1,...,x_n) = o$ can return $n$ results
-  #todo[separation of tuples and $n$-ary returns; unlike e.g. MLIR.
-    Tuples as primitives make our life easier.]
-- _Constants_ $c$ are interpreted as nullary instructions $c()$.
-- _Conditional branches_ $ite(x, τ, τ')$ are desugared to
-  case-statements $casestmt2(x, y, τ, z, τ')$ on a Boolean $x : mb(1) + mb(1)$.
-  This is equivalent in power to regular conditional branches,
-  while allowing our work to generalize easily to higher-level settings as well.
-- _Return statements_ $retb(v)$ are desugared to branches $brb(ℓ_ms("exit"), v)$
-  to a distinguished exit label $ℓ_ms("exit")$.
-  In particular,
-  this allows a return-statement to appear in the branch of a case-statement or if-statement.
+#todo[$V$ acts as both a pattern _and_ a value. Add a footnote about this!]
 
 #figure(
+  placement: auto,
   [
-    #todo[name destructure better]
-    #todo[fix annotations et al.]
-    #todo[fix style here...]
-    #todo[figure placement...]
-    #stack(
-      dir: ltr,
-      spacing: 3em,
+    #grid(
+      align: left,
+      columns: 3,
+      gutter: 1.5em,
       bnf(
         Prod(
           $v$,
-          annot: $ms("Val")$,
           {
             Or[$x$][_variable_]
             Or[$(V)$][_tuple_]
@@ -181,7 +146,6 @@ with some slight adjustments to the usual presentation:
       bnf(
         Prod(
           $o$,
-          annot: $ms("Op")$,
           {
             Or[$v$][_value_]
             Or[$f med v$][_application_]
@@ -191,18 +155,13 @@ with some slight adjustments to the usual presentation:
           $f$,
           {
             Or[$p$][_primitive_]
-            Or[$ι_k$][_injection_]
+            Or[$lb("l")_lb("L")$][_label_]
           },
         ),
       ),
-    )
-    #stack(
-      dir: ltr,
-      spacing: 3em,
       bnf(
         Prod(
           $β$,
-          annot: $ms("BB")$,
           {
             Or[$x = o seq β$][_assign_]
             Or[$(V) = o seq β$][_destructure_]
@@ -213,7 +172,6 @@ with some slight adjustments to the usual presentation:
       bnf(
         Prod(
           $τ$,
-          annot: $ms("CBr")$,
           {
             Or[$brb(ℓ)$][_branch_]
             Or[$casestmt(o, B)$][_case_]
@@ -227,33 +185,33 @@ with some slight adjustments to the usual presentation:
           },
         ),
       ),
-    )
-    #bnf(
-      Prod(
-        $β$,
-        annot: $ms("CFG")$,
-        {
-          Or[$β$][_entry block_]
-          Or[$G seq ℓ : β$][_labeled basic block_]
-        },
+      bnf(
+        Prod(
+          $β$,
+          {
+            Or[$β$][_entry block_]
+            Or[$G seq ℓ : β$][_labeled basic block_]
+          },
+        ),
+        )
       ),
-    )
   ],
   caption: [Grammar for RTL],
   kind: image,
 ) <rtl-grammar>
 
 As a concrete example,
-consider the simple imperative program to compute $10!$ given in <imperative-factorial>.
-We can normalize our code into RTL, as in <rtl-factorial>, by:
+consider the simple imperative program to compute $10!$ given in @imperative-factorial.
+We can compile this program into RTL, yielding the code in @rtl-factorial, by:
 - Converting structured control flow (e.g., $ms("while")$) into unstructured jumps between basic
-  blocks labelled $ms("start")$, $ms("loop")$, and $ms("body")$.
+  blocks.
 - Converting composite expressions
   like $a * (i + 1)$
   into a sequence of definitions naming each subexpression.
   Here, expressions like $a + b$ are syntactic sugar for primitive operations $+ (a, b)$.
 
 #subpar.grid(
+  placement: auto,
   align: bottom,
   figure(
     [$
@@ -271,7 +229,7 @@ We can normalize our code into RTL, as in <rtl-factorial>, by:
       \
     $],
     caption: [
-      As an imperative program
+      As an imperative program \ \
     ],
   ),
   <imperative-factorial>,
@@ -281,16 +239,16 @@ We can normalize our code into RTL, as in <rtl-factorial>, by:
                   & n = 10 seq \
                   & i = 1 seq \
                   & a = 1 seq \
-                  & kbr ms("loop") seq \
-      ms("loop"): & ite(i < n, brb(ms("body")), retb(a)) seq \
-      ms("body"): & t = i + 1 seq \
+                  & kbr lb("loop") seq \
+      lb("loop"): & ite(i < n, brb(lb("body")), retb(a)) seq \
+      lb("body"): & t = i + 1 seq \
                   & a = a * t seq \
                   & i = i + 1 seq \
-                  & kbr ms("loop") \
+                  & kbr lb("loop") \
                   \
     $],
     caption: [
-      As RTL
+      As RTL \ \
     ],
   ),
   <rtl-factorial>,
@@ -341,17 +299,16 @@ For example, we could rewrite
   $& x_0 = 3y + 5 ; \ & x_1 = 3x_0 + 2 ; \ & retb((3x_1 + 1))$,
 ))
 This transformation enables algebraic reasoning about expressions involving each $x_t$.
-However,
-since we can only define a variable once in SSA form,
+However, since we can only define a variable once in SSA form,
 expressing programs with loops and branches becomes challenging.
 For example,
-naïvely trying to lower the program in Figure~#todo-inline[fig:fact-3addr] into SSA form would not work,
+naïvely trying to lower the program in @rtl-factorial into SSA form would not work,
 since the reference to $i$ in the right-hand-side of the statement $i = i + 1$
 can refer to _either_ the previous value of $i$ from the last iteration of the loop
 _or_ the original value $i = 1$.
 The classical solution is to introduce _$ϕ$-nodes_,
 which select a value based on the predecessor block from which control arrived.
-We give the lowering of our program into SSA with $ϕ$-nodes in Figure~#todo-inline[fig:fact-ssa].
+We give the lowering of our program into SSA with $ϕ$-nodes in @ssa-ϕ
 
 #todo[fix text citations :(]
 Cytron et al. @cytron-91-ssa-intro
@@ -360,11 +317,12 @@ while introducing a minimum number of $ϕ$-nodes,
 making SSA practical for widespread use as an intermediate representation.
 Unfortunately, $ϕ$-nodes do not have an obvious operational semantics.
 
+#todo[explain $lb("entry")$]
+
 Additionally,
 they require us to adopt more complex scoping rules than simple dominance-based scoping.
-For example,
-in the basic block $ms("loop")$ in Figure~#todo-inline[fig:fact-ssa],
-$i_0$ evaluates to 1 if we came from $ms("start")$ and to $i_1$ if we came from $ms("body")$.
+For example, in the basic block $lb("loop")$ in @ssa-ϕ,
+$i_0$ evaluates to 1 if we came from $lb("entry")$ and to $i_1$ if we came from $lb("body")$.
 Similarly,
 $a_0$ evaluates to either 1 or $a_1$ based on the predecessor block.
 This does not obey dominance-based scoping,
@@ -378,6 +336,59 @@ Note that this is a strict superset of the variables visible for a normal instru
 which can only use variables $y$ which _dominate_ $x$ -- i.e.,
 such that _every_ path from the entry block to the definition of $x$ goes through $y$,
 rather than only those paths which also go through $S$.
+
+#todo[color @ssa-ϕ listing to match TOPLAS paper...]
+
+#subpar.grid(
+  placement: auto,
+  align: bottom,
+
+  figure(
+    [$
+                  & n = 10 seq \
+                  & i = 1 seq \
+                  & a = 1 seq \
+                  & kbr lb("loop") seq \
+      lb("loop"): & ite(i < n, brb(lb("body")), retb(a)) seq \
+      lb("body"): & t = i + 1 seq \
+                  & a = a * t seq \
+                  & i = i + 1 seq \
+                  & kbr lb("loop") \
+                  \ \ \ \ \ \
+    $],
+    caption: [
+      As RTL \ \
+    ],
+  ),
+  <rtl-factorial2>,
+
+  figure(
+    [$
+                  & n = 10 seq \
+                  & i₀ = 1 seq \
+                  & a₀ = 1 seq \
+                  & kbr lb("loop") seq \
+      lb("loop"): & i₁ = #phistmt($lb("entry") : i₀, lb("body") : i₂$) \
+                  & a₁ = #phistmt($lb("entry") : a₀, lb("body") : a₂$) \
+                  & ite(i₁ < n, brb(lb("body")), retb(a₁)) seq \
+      lb("body"): & t = i₁ + 1 seq \
+                  & a₂ = a₁ * t seq \
+                  & i₂ = i₁ + 1 seq \
+                  & kbr lb("loop") \
+                  \
+    $],
+    caption: [
+      A SSA with ϕ-nodes \ \
+    ],
+  ),
+  <ssa-ϕ>,
+
+  columns: (1fr, 1fr),
+  caption: [
+    A simple, slightly suboptimal program to compute 10! via multiplication in a loop,
+    represented as typical imperative code and in RTL.
+  ],
+)
 
 #todo[figure: RTL vs SSA with $ϕ$-nodes]
 
@@ -418,13 +429,13 @@ starting from the point of its definition.
 It continues to be visible in all subsequent blocks $P$
 that are strictly dominated by $D$ in the control-flow graph (CFG).
 For example, in Figure~#todo-inline[fig:fact-bba]:
-- $ms("start")$ strictly dominates $ms("loop")$ and $ms("body")$;
-  thus, the variable $n$ defined in $ms("start")$ is visible in $ms("loop")$ and $ms("body")$.
+- $ms("entry")$ strictly dominates $ms("loop")$ and $ms("body")$;
+  thus, the variable $n$ defined in $ms("entry")$ is visible in $ms("loop")$ and $ms("body")$.
 - $ms("loop")$ strictly dominates $ms("body")$;
   therefore, the parameters $i_0$, $a_0$ to $ms("loop")$ are visible in $ms("body")$
   without the need to pass them as parameters.
 - $ms("body")$ does _not_ strictly dominate $ms("loop")$,
-  since there is a path from $ms("start")$ to $ms("loop")$ that does not pass through $ms("body")$.
+  since there is a path from $ms("entry")$ to $ms("loop")$ that does not pass through $ms("body")$.
 
 #todo[figure: SSA with phi-nodes vs basic-blocks with arguments]
 

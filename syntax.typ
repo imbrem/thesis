@@ -1,5 +1,6 @@
 #let ms(txt) = $sans(txt)$
 #let mb(txt) = $bold(txt)$
+#let lb(txt) = $mono(txt)$
 
 #let klet = $ms("let")$
 #let kmut = $ms("mut")$
@@ -28,8 +29,9 @@
 #let caseexpr(e, B) = $kcase #e thick { #B }$
 #let casestmt(e, B) = $kcase #e thick { #B }$
 #let switchstmt(e, B) = $kswitch #e thick { #B }$
-#let caseexpr2(e, x, a, y, b) = $kcase #e thick {linl(#x) : #a seq linr(#y) : #b}$
-#let casestmt2(e, x, s, y, t) = $kcase #e thick {linl(#x) : #s seq linr(#y) : #t}$
+#let caseexpr2(e, x, a, y, b) = caseexpr(e, $linl(#x) : #a seq linr(#y) : #b$)
+#let casestmt2(e, x, s, y, t) = casestmt(e, $linl(#x) : #s seq linr(#y) : #t$)
+#let phistmt(branches) = $ϕ thick { #branches }$
 #let wbranch(ℓ, x, t) = $#ℓ (#x) : #t$
 #let where(t, L) = $#t thick kwhere {#L}$
 #let letstmt(x, a, t) = $klet #x = #a seq #t$
