@@ -14,6 +14,8 @@
 
 #set text(lang: "en")
 
+#set heading(numbering: "1.")
+
 #set document(
   title: [Categorical imperative programming: type theory, refinement, and semantics for SSA],
   author: "Jad-Elkhaleq Ghalayini",
@@ -90,35 +92,44 @@ Directly optimizing a source language can be difficult,
 because surface languages are often very large and have features
 (such as type inference and overloading)
 which make it difficult to express sound program equivalences.
-Elaborating a surface language to a simpler intermediate representation
-makes it easier to write program analyses and optimizations.
+On the other hand, compiling naïvely to executable code and _then_ optimizing is equally challenging,
+if it is even feasible to write a one-pass compiler for a given high-level language at all. 
+This is because, 
+just as programming languages are designed to be written (and hopefully, read) by humans, 
+machine code is designed to be efficiently _executed_ by hardware (or an interpreter), 
+and is therefore often difficult both to analyze and to generate from high-level constructs.
+//
+Compiler writers deal with this by using _intermediate representations (IRs)_:
+- Like programming languages, they are designed to be read and written, rather than executed, but
+- Like executable code, they are designed to be processed by _machines_, rather than people
+
+#todo[segue to RTL]
+
 One of the earliest compiler IRs introduced is _register transfer language_ (_RTL_) @allen-70-cfa,
 commonly referred to as _three-address code_.
-
 An RTL program consists of a _control-flow graph_ (CFG) $G$
 with a distinguished, nameless entry block.
 Each node of the CFG corresponds to a _basic block_ $β$,
-which is a straight-line sequence of _instructions_ $x = f(y, z)$
+which is a straight-line sequence of _assignments_ $x = f(y, z)$
 // (hence the name _3-address code_, referring to the typical three variables $x, y, z$)
 followed by a _terminator_ $τ$,
 which tells us where to transfer control next.
 
 In @rtl-grammar, we give a formal presentation of the syntax of RTL parametrized by a set of
-primitive instructions $p ∈ cal(I)$. Our grammar is intentionally minimal, with many important 
-features implemented via syntax sugar:
-- _Constants_ $c$ are represented as nullary instructions $c()$.
+_primitive instructions_ $p ∈ cal(I)$. 
+Our grammar is intentionally minimal, with many important features implemented via syntax sugar:
+- _Constants_ $c$ are represented as nullary primitive instructions $c()$.
+- _Operations_ $o$ always return a single value of fixed type;
+  operations producing multiple values are treated as returning a tuple
 - _Conditional branches_ $ite(x, τ, τ')$ are desugared to 
   _switch-statements_ 
   $
   switchstmt(o, lb("tt"): τ seq lb("ff"): τ')
   $
-  where $lb("tt"), lb("ff") ∈ ;b("Bool")$ are distinguished labels.
+  where $lb("tt"), lb("ff") ∈ tbool$ are distinguished labels.
   In general, for every finite set of labels $lb("l") ∈ lb("L")$, 
   we postulate an _enumeration type_ with members of the form $lb("l")_lb("L")$;
   where $lb("L")$ is clear from context, we omit it.
-  #todo[work on text about enumerations]
-
-#todo[$V$ acts as both a pattern _and_ a value. Add a footnote about this!]
 
 #figure(
   placement: auto,
@@ -196,15 +207,21 @@ features implemented via syntax sugar:
         )
       ),
   ],
-  caption: [Grammar for RTL],
+  caption: [
+    Grammar for RTL. 
+    Note that variable lists $V$ may appear on both the left-hand side and right-hand side of 
+    assignments.
+  ],
   kind: image,
 ) <rtl-grammar>
 
 As a concrete example,
 consider the simple imperative program to compute $10!$ given in @imperative-factorial.
 We can compile this program into RTL, yielding the code in @rtl-factorial, by:
-- Converting structured control flow (e.g., $ms("while")$) into unstructured jumps between basic
-  blocks.
+- Converting structured control flow (e.g., $ms("while")$) into unstructured jumps 
+  between basic blocks $lb("body")$ and $lb("loop")$.
+  While, in our formalism, the entry block has no name, 
+  we will adopt the convention of calling it $lb("entry")$.
 - Converting composite expressions
   like $a * (i + 1)$
   into a sequence of definitions naming each subexpression.
@@ -263,29 +280,65 @@ We can compile this program into RTL, yielding the code in @rtl-factorial, by:
 While functional languages typically rely on _lexical scoping_,
 where the scope of a variable is determined by its position within the code's nested structure,
 RTL uses a different scoping mechanism based on _dominance_.
-In particular,
-a variable $x$ is considered to be in scope at a specific point $P$
-if and only if all execution paths from the program's entry point to $P$
-pass through a definition $D$ for $x$.
-In this case, we say that the definition $D$ _dominates_ $P$.
-The relation on basic blocks "$A$ dominates $B$" can in fact be viewed as a tree rooted at the entry block:
-every pair of basic blocks $A, B$ have a least common ancestor $C$ which dominates them both;
-we call this tree the _dominator tree_ @cytron-91-ssa-intro.
 
-Even though three address code was designed to simplify flow analysis,
-many optimizations remain difficult to express in this format.
-Because a variable's value may be set by multiple definitions throughout the program's execution,
+Informally, 
+we don't want to assign a meaning to programs in which variables are used before they are defined. 
+If $cal(D)_x$ and $cal(U)_x$ denote the set of program points at which a variable $x$ is defined and used respectively, 
+what we want is that every program execution reaching any point in $cal(U)_x$ must first pass through some element of $cal(D)_x$. 
+In general, it is undecidable whether this property holds, 
+and so we need to use a safe approximation.
+
+Given a graph $G = (V, E)$ and a fixed _entry node_ $e ∈ V$, 
+we say a set of nodes $D$ _dominates_ a node $u$ if every path from $e$ to $u$ must first pass through some $d ∈ D$. 
+Likewise, we say a single node $d$ dominates $u$ if ${d}$ does.
+If we take 
+- $G$ to be our control-flow graph, with vertices basic blocks and edges jumps in the program text
+- $e = β_lb("entry")$ to be our entry block
+it is clear that if $β₁$ dominates $β₂$ no program execution can reach $β₂$ without first having run $β₁$.
+This is an over-approximation of our desired property, 
+because some jumps may appear in the program text but never be taken at runtime 
+(we call such jumps _unreachable_).
+
+We note that, in general, the relation on basic blocks "$β₁$ dominates $β₂$" can in fact be viewed as a 
+tree rooted at the entry block: every pair of basic blocks $β₁, β₂$ have a least common ancestor 
+$β$ which dominates them both.
+We call this tree the _dominator tree_ @cytron-91-ssa-intro.
+
+It follows that we may consider a variable usage in a block $β$ in-scope if and only if either:
+- $x$ is defined earlier in $β$
+- $x$ is defined in some basic block $β'$ which dominates $β$
+  -- i.e., one of $β$'s ancestors in the dominator tree defines $x$.
+
+Equivalently, we can hew closer to our original definition and instead consider a graph of 
+_instructions_, where
+- An _assignment_ has a single outgoing edge to the next instruction
+- A _terminator_ has an outgoing edge to each target appearing within it
+Then, a usage of $x$ in an instruction $i$ is in scope if and only if it is dominated by an assignment to $x$.
+This conveniently replicates the traditional definition of a basic block as 
+a maximal straight-line sequence of non control-flow instructions.
+We will give a more formal treatment of RTL programs as graphs in @cfgs.
+
+While three-address code is dramatically simpler to reason about than high-level imperative languages,
+everything is complicated by the fact that variable may have multiple definitions.
+For example, the definition above has a hidden quantifer:
+to check that a variable is in scope at a given point $u$, 
+we need to check whether _any_ definition of $x$ dominates $u$.
+While this specifically is not too hard, generally, 
+all our analyses are significantly complicated by the fact of having to keep track of 
+which definitions of $x$ may have set its current value at a given point.
+In particular,
+because a variable's value may be set by multiple definitions throughout the program's execution,
 variables do not have stable values,
 and so it is not in general safe to substitute a definition for a variable.
+
 To improve our ability to reason about programs,
 we introduce the _static single assignment_ restriction,
 originally proposed by @alpern-88-ssa-original,
 which states that every variable must be defined at exactly one point in the program.
 Because there is a unique definition for each variable, substitution is valid.
-
 We can intuitively think of each variable as being defined by an immutable $ms("let")$-binding,
 and a variable $x$ is in scope at a program point $P$,
-if and only if its unique definition site $D_x$ strictly dominates $P$.
+if and only if its _unique_ definition site $D_x$ dominates $P$.
 
 A given basic block can be converted to SSA form by numbering each definition of a variable,
 effectively changing references to $x$ to references to $x_t$, i.e. "$x$ at time $t$."
@@ -310,14 +363,11 @@ The classical solution is to introduce _$ϕ$-nodes_,
 which select a value based on the predecessor block from which control arrived.
 We give the lowering of our program into SSA with $ϕ$-nodes in @ssa-ϕ
 
-#todo[fix text citations :(]
 Cytron et al. @cytron-91-ssa-intro
 introduced the first efficient algorithm to lower a program in RTL to valid SSA
 while introducing a minimum number of $ϕ$-nodes,
 making SSA practical for widespread use as an intermediate representation.
 Unfortunately, $ϕ$-nodes do not have an obvious operational semantics.
-
-#todo[explain $lb("entry")$]
 
 Additionally,
 they require us to adopt more complex scoping rules than simple dominance-based scoping.
@@ -1335,75 +1385,9 @@ in Section #todo-inline[ref].
 #todo[Figure: Rules for the equivalence relation on #ms()[IsotopeSSA] substitutions and label-substitutions.
   Rules: sb-nil, sb-cons, sb-skip-l, sb-skip-r, ls-nil, ls-cons, ls-skip-l, ls-skip-r, sb-id, ls-id]
 
-= Lowering to SSA
+= Control-Flow Graphs
 
-#todo[λiter ↔ Type Theoretic SSA]
-
-#todo[Type Theoretic SSA ⊇ ANF]
-
-#todo[ANF ⊇ Lexical SSA]
-
-#todo[⇒ λiter ↔ Lexical SSA]
-
-#todo[Lexical SSA ↔ Graph SSA]
-
-= Denotational Semantics of SSA
-
-#todo[TOPLAS + refinement here]
-
-= Simple Models of SSA
-
-#todo[Partiality]
-
-#todo[Nondeterminism]
-
-#todo[Elgot monad transformers]
-
-#todo[Heaps and printing]
-
-= Verified Optimizations
-
-#todo[the basics: CSE, GVN, DCE, SCCP, peephole @siddharth-24-peephole]
-
-#todo[E-graphs @cranelift; see also Peggy]
-
-#todo[Vectorization]
-
-#todo[`mem2reg`]
-
-= Memory Models for SSA
-
-== Brookes Models
-
-#todo[Brookes-style @brookes-96-sc-abstract concurrency models]
-
-== Interaction Trees and Choice Trees
-
-#todo[ITrees @xia-20-itrees and CTrees @chappe-25-ctrees]
-
-== Trace Models
-
-#todo[Stream actions, pomsets, and TSO]
-
-= Formalization of SSA
-
-#todo[link down here for type theory discussion, once we've moved to refined account]
-
-== `discretion`
-
-#todo[describe discretion library; premonoidal port]
-
-== `debruijn-ssa`
-
-#todo[describe debruijn-ssa library]
-
-== `refined-ssa`
-
-#todo[describe refined-ssa library]
-
-== `ln-ssa`
-
-#todo[describe ln-ssa library, if we've got anything by the end...]
+<cfgs>
 
 = Future Work
 

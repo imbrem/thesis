@@ -15,6 +15,8 @@
 #let kswitch = $ms("switch")$
 #let kwhere = $ms("where")$
 
+#let tbool = $mb("2")$
+
 #let ite(o, l, r) = $kif #o thick { #l } kelse { #r }$
 #let linl(v) = $ι_l med #v$
 #let linr(v) = $ι_r med #v$
