@@ -549,10 +549,10 @@ the body of $β_lb("jump")$ tail-calls the function corresponding to $β_lb("des
 Observe that any $β_lb("dom")$ which _strictly_ dominates $β_lb("dest")$ must _also_ dominate 
 $β_lb("jump")$, as otherwise, 
 - By definition, 
-  there is a path from $β_lb("entry")$ to $β_lb("jump")$ which does not pass through $β_lb("parent")$
+  there is a path from $β_lb("entry")$ to $β_lb("jump")$ which does not pass through $β_lb("dom")$
 - And therefore, by appending the jump from $β_lb("jump")$ to $β_lb("dest")$ to this path,
-  we obtain a path from $β_lb("entry")$ to $β_lb("dest")$ which does not pass through $β_lb("parent")$
-- Contradicting the fact that $β_lb("parent")$ dominates $β_lb("dest")$
+  we obtain a path from $β_lb("entry")$ to $β_lb("dest")$ which does not pass through $β_lb("dom")$
+- Contradicting the fact that $β_lb("dom")$ dominates $β_lb("dest")$!
 
 #todo[finish explanation]
 
