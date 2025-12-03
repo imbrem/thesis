@@ -218,14 +218,16 @@ Our grammar is intentionally minimal, with many important features implemented v
 As a concrete example,
 consider the simple imperative program to compute $10!$ given in @imperative-factorial.
 We can compile this program into RTL, yielding the code in @rtl-factorial, by:
-- Converting structured control flow (e.g., $ms("while")$) into unstructured jumps 
-  between basic blocks $lb("body")$ and $lb("loop")$.
-  While, in our formalism, the entry block has no name, 
-  we will adopt the convention of calling it $lb("entry")$.
 - Converting composite expressions
   like $a * (i + 1)$
   into a sequence of definitions naming each subexpression.
   Here, expressions like $a + b$ are syntactic sugar for primitive operations $+ (a, b)$.
+- Converting structured control flow (e.g., $ms("while")$) into unstructured jumps 
+  between basic blocks, generating labels $lb("body")$ and $lb("loop")$ as necessary.
+  While, in our formalism, the entry block has no name, 
+  we will adopt the convention of assigning it the label $lb("entry")$.
+
+  In general, we refer to the basic block with label $lb("label")$ as $β_lb("label")$.
 
 #subpar.grid(
   placement: auto,
@@ -304,29 +306,35 @@ tree rooted at the entry block: every pair of basic blocks $β₁, β₂$ have a
 $β$ which dominates them both.
 We call this tree the _dominator tree_ @cytron-91-ssa-intro.
 
+#todo[come up with a convention for definition sets, later...]
+
 It follows that we may consider a variable usage in a block $β$ in-scope if and only if either:
 - $x$ is defined earlier in $β$
-- $x$ is defined in some basic block $β'$ which dominates $β$
-  -- i.e., one of $β$'s ancestors in the dominator tree defines $x$.
+- The set $ms("defs")(x)$ of basic blocks in which $x$ is defined _stricly_ dominates $β$.
+
+  In general, we say a set of nodes $D$ strictly dominates a node $u$ if $D backslash {n}$ dominates $n$. 
+  Likewise, $d$ strictly dominates $u$ if ${d} backslash {u}$ dominates $u$, i.e., 
+  if $d$ dominates $u$ and $u ≠ d$ 
+  (since no nodes are dominated by the empty set).
+
+#todo[pull this down?]
 
 Equivalently, we can hew closer to our original definition and instead consider a graph of 
 _instructions_, where
 - An _assignment_ has a single outgoing edge to the next instruction
 - A _terminator_ has an outgoing edge to each target appearing within it
-Then, a usage of $x$ in an instruction $i$ is in scope if and only if it is dominated by an assignment to $x$.
+Then, a usage of $x$ in an instruction $i$ is in scope if and only if
+$i$ is strictly dominated by the set of assignments to $x$.
 This conveniently replicates the traditional definition of a basic block as 
 a maximal straight-line sequence of non control-flow instructions.
 We will give a more formal treatment of RTL programs as graphs in @cfgs.
 
+#todo[fix this text]
+
 While three-address code is dramatically simpler to reason about than high-level imperative languages,
 everything is complicated by the fact that variable may have multiple definitions.
-For example, the definition above has a hidden quantifer:
-to check that a variable is in scope at a given point $u$, 
-we need to check whether _any_ definition of $x$ dominates $u$.
-While this specifically is not too hard, generally, 
-all our analyses are significantly complicated by the fact of having to keep track of 
-which definitions of $x$ may have set its current value at a given point.
-In particular,
+For example, the definition of dominance above uses a set of definitions $ms("defs")(x)$,
+Likewise
 because a variable's value may be set by multiple definitions throughout the program's execution,
 variables do not have stable values,
 and so it is not in general safe to substitute a definition for a variable.
@@ -361,7 +369,7 @@ can refer to _either_ the previous value of $i$ from the last iteration of the l
 _or_ the original value $i = 1$.
 The classical solution is to introduce _$ϕ$-nodes_,
 which select a value based on the predecessor block from which control arrived.
-We give the lowering of our program into SSA with $ϕ$-nodes in @ssa-ϕ
+We give the lowering of our program into SSA with $ϕ$-nodes in @ϕ-factorial
 
 Cytron et al. @cytron-91-ssa-intro
 introduced the first efficient algorithm to lower a program in RTL to valid SSA
@@ -371,7 +379,7 @@ Unfortunately, $ϕ$-nodes do not have an obvious operational semantics.
 
 Additionally,
 they require us to adopt more complex scoping rules than simple dominance-based scoping.
-For example, in the basic block $lb("loop")$ in @ssa-ϕ,
+For example, in the basic block $lb("loop")$ in @ϕ-factorial,
 $i_0$ evaluates to 1 if we came from $lb("entry")$ and to $i_1$ if we came from $lb("body")$.
 Similarly,
 $a_0$ evaluates to either 1 or $a_1$ based on the predecessor block.
@@ -382,12 +390,12 @@ In fact,
 since the value of a $ϕ$-node is determined by which basic block is our immediate predecessor,
 we instead need to use the rule that expressions in $ϕ$-node branches with source $S$
 can use any variable $y$ defined at the _end_ of $S$.
-Note that this is a strict superset of the variables visible for a normal instruction $x$,
-which can only use variables $y$ which _dominate_ $x$ -- i.e.,
-such that _every_ path from the entry block to the definition of $x$ goes through $y$,
+Note that this is a strict superset of the variables visible for a normal instruction $i$,
+which can only use variables $y$ which _dominate_ $i$ -- i.e.,
+such that _every_ path from the entry block to the definition of $i$ goes through $y$,
 rather than only those paths which also go through $S$.
 
-#todo[color @ssa-ϕ listing to match TOPLAS paper...]
+#todo[color @ϕ-factorial listing to match TOPLAS paper...]
 
 #subpar.grid(
   placement: auto,
@@ -431,7 +439,7 @@ rather than only those paths which also go through $S$.
       A SSA with ϕ-nodes \ \
     ],
   ),
-  <ssa-ϕ>,
+  <ϕ-factorial>,
 
   columns: (1fr, 1fr),
   caption: [
@@ -440,8 +448,6 @@ rather than only those paths which also go through $S$.
   ],
 )
 
-#todo[figure: RTL vs SSA with $ϕ$-nodes]
-
 While this rule can be quite confusing,
 and in particular makes it non-obvious how to assign an operational semantics to $ϕ$-nodes,
 the fact that the scoping for $ϕ$-node branches is based on the source block,
@@ -449,7 +455,7 @@ rather than the block in which the $ϕ$-node itself appears,
 hints at a possible solution.
 By _moving_ the expression in each branch to the _call-site_,
 we can transition to an isomorphic syntax called basic blocks with arguments (BBA),
-as illustrated in Figure~#todo-inline[fig:fact-bba].
+as illustrated in @bba-factorial.
 In this approach,
 each $ϕ$-node -- since it lacks side effects and has scoping rules independent of its position in the basic block,
 depending only on the source of each branch --
@@ -460,7 +466,7 @@ Converting a program from BBA format back to standard SSA form with $ϕ$-nodes i
 introduce a $ϕ$-node for each argument of a basic block,
 and for each branch corresponding to the $ϕ$-node,
 add an argument to the jump instruction from the appropriate source block.
-We give a formal grammar for basic blocks-with-arguments SSA in Figure~#todo-inline[fig:bba-grammar].
+We give a formal grammar for basic blocks-with-arguments SSA in @bba-grammar.
 #footnote[
   Many variants of SSA do not allow variables to appear alone on the right-hand side of assignments,
   such as $x = y; β$.
@@ -470,7 +476,15 @@ We give a formal grammar for basic blocks-with-arguments SSA in Figure~#todo-inl
 Note that this grammar no longer needs a separate terminator for returns:
 we can treat the return point as a distinguished label (with argument) that a program can jump to.
 
-#todo[figure: grammar for basic blocks-with-arguments SSA]
+#figure(
+  todo[this],
+  caption: todo-inline[BBA grammar]
+) <bba-grammar>
+
+#figure(
+  todo[this],
+  caption: todo-inline[BBA factorial]
+) <bba-factorial>
 
 This allows us to use dominance-based scoping without any special cases for $ϕ$-nodes.
 When considering basic blocks,
@@ -487,30 +501,97 @@ For example, in Figure~#todo-inline[fig:fact-bba]:
 - $ms("body")$ does _not_ strictly dominate $ms("loop")$,
   since there is a path from $ms("entry")$ to $ms("loop")$ that does not pass through $ms("body")$.
 
-#todo[figure: SSA with phi-nodes vs basic-blocks with arguments]
-
 == Type-theoretic SSA
 
 An important insight provided by the BBA format,
 as discussed by @appel-98-ssa and @kelsey-95-cps,
-is that a program in SSA form can be interpreted as a collection of tail-recursive functions,
+is that a program in SSA form can be interpreted as a collection of mutually tail-recursive functions,
 where each basic block and branch correspond to a function and tail call, respectively.
 This yields a natural framework for defining the semantics of SSA and reasoning about optimizations.
 
-A program in BBA is not quite a functional program,
+A program in SSA, however, is not quite a functional program,
 because scoping is dominance-based rather than lexically scoped.
-However, it turns out to be very easy to convert dominance-based scoping into lexical scoping.
-Observe that the function corresponding to a given basic block $B$
-can only be called by other blocks $B'$ having that basic block's parent $P = ms("parent")(B)$
-as an ancestor in the dominance tree
+It's easy enough to go from a functional program to SSA: 
+just flatten everything, forgetting the scoping information 
+(α-renaming labels and variables as necessary to guarantee uniqueness);
+the result is trivially dominance-scoped.
+
+Our goal, therefore, 
+is to develop a simple strategy to insert brackets into any well-formed SSA program 
+(up to permutation of basic blocks)
+to obtain a lexically scoped functional program.
+Let's begin by focusing on variables.
+A block $β$ can only use variables defined in the blocks which dominate it
+-- i.e., defined in its ancestors in the dominator tree.
+Flipping this around, the variables defined in $β$ can only be _used_ by its descendants; i.e., 
+by blocks in its dominator subtree, or _region_, $r = ms("maxRegion")(β)$.
+The natural strategy this suggests is therefore to have lexical scopes correspond to subtrees of the
+dominator tree. One way to go about this is to:
+- Re-order the basic blocks in our SSA program so that they form a breadth-first traversal of the 
+  dominator tree
+- For every basic block $β$ in the dominator tree, add an opening bracket after that block's label and
+  a closing bracket after that block's last descendant in the dominator tree
+  -- i.e., such that the blocks between the opening and closing brackets are precisely those dominated by $β$.
+
+In particular, each pair of brackets ${ r }$ encloses:
+- A basic block $β$, consisting as usual of assignments $x_i = o_i$ followed by a terminator $τ$
+- A sequence of bracketed basic block definitions $ℓ_j : { β_j }$
+The rules for variable visibility are the obvious ones: 
+$x_i$ is visible in $o_k$ for $k > i$, and in arbitrary $β_j$. 
+On the other hand, 
+since the child basic blocks $ℓ_j$ correspond to _mutually_ recursive functions, 
+we will treat them like a `let rec`, with all $ℓ_j$ visible in each $β_j$.
+
+To see that this works, consider basic blocks $β_lb("jump")$ and $β_lb("dest")$, where 
+$β_lb("jump")$ contains a jump to $β_lb("dest")$, or, equivalently, 
+the body of $β_lb("jump")$ tail-calls the function corresponding to $β_lb("dest")$.
+
+Observe that any $β_lb("dom")$ which _strictly_ dominates $β_lb("dest")$ must _also_ dominate 
+$β_lb("jump")$, as otherwise, 
+- By definition, 
+  there is a path from $β_lb("entry")$ to $β_lb("jump")$ which does not pass through $β_lb("parent")$
+- And therefore, by appending the jump from $β_lb("jump")$ to $β_lb("dest")$ to this path,
+  we obtain a path from $β_lb("entry")$ to $β_lb("dest")$ which does not pass through $β_lb("parent")$
+- Contradicting the fact that $β_lb("parent")$ dominates $β_lb("dest")$
+
+#todo[finish explanation]
+
+/*
+On the other hand, if $β_lb("dom")$
+
+In particular, letting $β_lb("parent")$ denote $β_lb("dest")$'s parent in the dominator tree
+#footnote[
+  Since the entry block has no name, it cannot be called, 
+  therefore $β_lb("dest")$ cannot be the entry block and so must have a parent in the dominator tree 
+  (which of course might be the entry block).
+],
+$β_lb("parent")$ must dominate _every_ basic block $β_lb("jump")$ containing a jump to $β_lb("dest")$.
+
+
+Observe that $β_lb("parent")$ _must_ dominate $β_lb("jump")$, as otherwise, 
+- By definition, 
+  there is a path from $β_lb("entry")$ to $β_lb("jump")$ which does not pass through $β_lb("parent")$
+- And therefore, by appending the jump from $β_lb("jump")$ to $β_lb("dest")$ to this path,
+  we obtain a path from $β_lb("entry")$ to $β_lb("dest")$ which does not pass through $β_lb("parent")$
+- Contradicting the fact that $β_lb("parent")$ dominates $β_lb("dest")$!
+
+
+Observe that if $β_lb("call")$ calls the function corresponding to a given basic block $β_lb("def")$,
+then $β_lb("def")$
+
+$β₁$ as ancestor in the dominance tree
 (as, otherwise, the parent would not actually dominate the block,
-since we could get to $B$ through $B'$ without passing through $P$).
+since we could get to $β₂$ through $β₁$ without passing through $P$).
 Moreover,
 the variables _visible_ in $B$ are exactly the variables visible at the end of $P$;
 i.e., the variables visible in $P$ and those defined in $P$.
 
 So if we make the dominance tree explicit in the syntax and tie the binding of variables to this tree structure,
 then lexical and dominance-based scoping become one and the same.
+*/
+
+#todo[rework lexical SSA text, we already did this]
+
 We use this observation to introduce _lexical SSA_ in Figure~#todo-inline[fig:lex-ssa].
 The key idea of this syntax is to,
 rather than treating the control-flow graph $G$ as a flat collection of basic blocks
