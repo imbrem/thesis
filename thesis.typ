@@ -82,11 +82,29 @@
 
 = Introduction
 
-#todo[start at the middle]
+#todo[
+  TFW I need a thesis statement
+]
+
+#todo[
+  Not a thesis statement (Neel); contributions:
+  - We give a formal framework for reasoning about SSA
+  - We give a categorical semantics
+  - We show these are the _same_: sound and _complete_
+  - We use this to talk about imperative programming in general (RTL lore)
+]
+
+#todo[what is an IR]
+
+#todo[what is SSA at a high level; briefly describe RTL as part of the "up from assembly narrative"]
+
+#todo[our actual contributions and why they matter]
 
 = Static Single Assignment (SSA)
 
 == From RTL to SSA
+
+#todo[pull up to beginning of introduction]
 
 Directly optimizing a source language can be difficult,
 because surface languages are often very large and have features
@@ -103,7 +121,21 @@ Compiler writers deal with this by using _intermediate representations (IRs)_:
 - Like programming languages, they are designed to be read and written, rather than executed, but
 - Like executable code, they are designed to be processed by _machines_, rather than people
 
-#todo[segue to RTL]
+- A good IR is simple: has a few features which compose well together
+- It's easy to _generate_ from high-level source code
+- But it also has lots of _invariants_, making it easy to _analyze_ and _rewrite_ while preserving soundness
+- And it also needs to be easy to _lower_ to executable code
+- Two natural ways to derive an IR
+  - Go "upwards" from machine code, regularizing it to make it easier to read, write, and analyze
+    - This is the "classical" approach used by compilers like LLVM
+  - Go "downwards" from high-level code, desugaring features and making things easier for machines to read, write, and analyze
+    - Modern compilers often do this many times as part of _lowering passes_; the first attempt at this is usually called a HIR, and then you can recursively apply this until you get to either assembly (Forth/Lisp style) or the low-level IR defined upwards (the usual). 
+
+      If you apply this to HIR you get MIR
+    - In practice, compilers may go back and forth between RTL and SSA; e.g. Rust's MIR is a constrained RTL, which goes to LLVM SSA, which goes down to the SelectionDAG (RTL), which then goes down to ASM (machine code)
+  - We have semantics for all these stages except the very top and bottom. Another multi-stage technology along these lines is MLIR, so this naturally acts as a semantics for a well-behaved subset of MLIR
+
+#todo[what is RTL, and why is it a cool IR]
 
 One of the earliest compiler IRs introduced is _register transfer language_ (_RTL_) @allen-70-cfa,
 commonly referred to as _three-address code_.
@@ -185,7 +217,7 @@ Our grammar is intentionally minimal, with many important features implemented v
           $τ$,
           {
             Or[$brb(ℓ)$][_branch_]
-            Or[$casestmt(o, B)$][_case_]
+            Or[$switchstmt(o, B)$][_case_]
           },
         ),
         Prod(
@@ -218,7 +250,7 @@ Our grammar is intentionally minimal, with many important features implemented v
 As a concrete example,
 consider the simple imperative program to compute $10!$ given in @imperative-factorial.
 We can compile this program into RTL, yielding the code in @rtl-factorial, by:
-- Converting composite expressions
+- Converting composite
   like $a * (i + 1)$
   into a sequence of definitions naming each subexpression.
   Here, expressions like $a + b$ are syntactic sugar for primitive operations $+ (a, b)$.
