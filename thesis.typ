@@ -350,7 +350,19 @@ We can compile this program into RTL, yielding the code in @rtl-factorial, by:
   ],
 )
 
-#todo[fix this text]
+#todo[
+  fix this text:
+
+  incorporate the standard constprop/GVN/SCCP SSA argument
+  - stick with just constant propagation
+  - abstractly, "want to lookup a variable's definition fast because this is good and dataflow is bad"
+    - notice: in RTL we want to do this _a lot_
+    - So we need to do a dataflow analysis to figure out this information
+    - And then carry this information around in our other analyses...
+    - But it breaks over and over again
+    - RTL + this analysis is just SSA, so why not keep it around
+      - As a fun aside, LLVM actually breaks SSA _all the time_ but then recomputes it. That's why we don't _always_ use SSA, some phases are better for RTL...
+]
 
 While three-address code is dramatically simpler to reason about than high-level imperative languages,
 everything is complicated by the fact that variable may have multiple definitions.
@@ -532,6 +544,31 @@ For example, in Figure~#todo-inline[fig:fact-bba]:
   - then segue to Appel's ideas, and how we can do the equivalence
 ]
 
+#todo[
+  We start by introducing RTL and SSA.
+
+  Everyone already believes in SSA, so the new thing we're trying to convince people of (that they don't know yet) is that _variables should be variables_
+
+  - Not locally nameless _at first_ because we want to use variable names to motivate optimizations like constant propagation
+    - We already give the following argument
+    - Normally, constant propagation / GVN / SCCP is irritating dataflow
+    - We show that in SSA we don't need dataflow; we can just look up the variable's unique definition. So $n^2$ to $n$
+    - But, Appel says SSA is just functional programming, and looking up the variable's unique definition is therefore just substitution
+    - In general, in the functional world
+      - We prove things by induction, so we need binding
+      - Our power tools are:
+        - Local rewrites (peepholes), which work fine in the regular IR world too!
+        - _Substitution_, which is a global rewrite of a pure value; the IR world suffers with this one and SSA makes it easier
+        - And that's because SSA _is_ functional programming
+        - Our _other_ power tool is abstract interpretation, which is our answer to dataflow analysis
+        - To do a good abstract interpretation you need to be able to do induction on your program. But... a graph of state transformers is bad for induction!
+        - So we need something to do induction on
+        - Thankfully, SSA is functional programming!
+      - The other thing abstract interpretation et al give us is that we can interpret functional programs in weird domains, where imperative stuff doesn't make sense
+        - But if SSA is functional programming, we can interpret SSA there too!
+        - Not part of the main line of the argument, shunt somewhere else; the point of this section is to _get to lexical SSA_
+]
+
 #notes[
   Weird syntax idea, we discussed this and you rejected it for TOPLAS but makes sense for thesis:
   no where-blocks, just curly braces.
@@ -698,7 +735,12 @@ So if we make the dominance tree explicit in the syntax and tie the binding of v
 then lexical and dominance-based scoping become one and the same.
 */
 
-#todo[rework lexical SSA text, we already did this]
+#todo[
+  rework lexical SSA text, we already did this
+  - I told you how to make lexical SSA
+  - Here's it's grammar
+  - A formal analysis of the algorithm and friends is over in the dark places
+]
 
 We use this observation to introduce _lexical SSA_ in Figure~#todo-inline[fig:lex-ssa].
 The key idea of this syntax is to,
@@ -748,6 +790,17 @@ establishing an isomorphism between lexical SSA and standard SSA.
 #todo[figure: conversion from dominance-based scoping to explicit lexical scoping]
 
 == Type-Theoretic SSA
+
+#todo[
+  - SSA is great because we can do substitution
+  - Lexical SSA is great because we can do induction, but it's also the same thing as SSA, we get _strictly more power_
+    - Just like SSA is RTL but we keep reaching definitions around...
+      - ϕ-nodes are precisely multiple reaching definitions _reified_
+    - Likewise, Lexical SSA is SSA but we keep the dominance tree around
+      - And guess what, we need to compute that all the time as well!
+      - But it gives us the ability to do induction, so not breaking it is relatively easy since if we _do_ break the dominance tree in general we go from good SSA to ill-scoped SSA which is invalid
+        - So lexical SSA is a much smaller jump from SSA than SSA is from RTL, since there are valid rewrites which break the SSA property but leave us with valid RTL, but there's no real way to rewrite valid SSA while breaking the dominance tree since that also breaks scopin
+]
 
 Lexical scoping allows us to apply many of techniques developed in type theory and functional programming
 for reasoning about program transformations.
