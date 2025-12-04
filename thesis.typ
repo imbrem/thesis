@@ -290,7 +290,7 @@ what we want is that every program execution reaching any point in $cal(U)_x$ mu
 In general, it is undecidable whether this property holds, 
 and so we need to use a safe approximation.
 
-Given a graph $G = (V, E)$ and a fixed _entry node_ $e ∈ V$, 
+Given a _pointed graph_ $G = (V, E)$ equipped with a fixed _entry node_ $e ∈ V$, 
 we say a set of nodes $D$ _dominates_ a node $u$ if every path from $e$ to $u$ must first pass through some $d ∈ D$. 
 Likewise, we say a single node $d$ dominates $u$ if ${d}$ does.
 If we take 
@@ -301,12 +301,19 @@ This is an over-approximation of our desired property,
 because some jumps may appear in the program text but never be taken at runtime 
 (we call such jumps _unreachable_).
 
-We note that, in general, the relation on basic blocks "$β₁$ dominates $β₂$" can in fact be viewed as a 
-tree rooted at the entry block: every pair of basic blocks $β₁, β₂$ have a least common ancestor 
-$β$ which dominates them both.
-We call this tree the _dominator tree_ @cytron-91-ssa-intro.
+//TODO: just write things in terms of dominator trees, or punt to formalism in CFG section
 
-#todo[come up with a convention for definition sets, later...]
+We note that, in general, the relation on basic blocks "$β₁$ dominates $β₂$" in a CFG $G$ can in 
+fact be viewed as a tree rooted at the entry block: every pair of basic blocks 
+$β₁, β₂$ have a least common ancestor $β$ which dominates them both.
+We call this tree the _dominator tree_ @cytron-91-ssa-intro.
+#footnote[
+  One edge case is that, by our definition, a basic block $β_lb("dead")$ which is _unreachable_ 
+  from $β_lb("entry")$ is dominated by _every_ basic block $β$ in the CFG.
+  We will simply assume that every CFG is assigned _some_ dominator tree $ms("dom")(G)$ rooted at 
+  $β_lb("entry")$ equal to the graph-theoretic dominance relation on all reachable $(β, β')$, 
+  and say that $β$ dominates $β'$ iff $(β, β') ∈ ms("dom")(G)$.
+]
 
 It follows that we may consider a variable usage in a block $β$ in-scope if and only if either:
 - $x$ is defined earlier in $β$
@@ -316,8 +323,6 @@ It follows that we may consider a variable usage in a block $β$ in-scope if and
   Likewise, $d$ strictly dominates $u$ if ${d} backslash {u}$ dominates $u$, i.e., 
   if $d$ dominates $u$ and $u ≠ d$ 
   (since no nodes are dominated by the empty set).
-
-#todo[pull this down?]
 
 Equivalently, we can hew closer to our original definition and instead consider a graph of 
 _instructions_, where
