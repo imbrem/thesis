@@ -506,7 +506,7 @@ For example, in Figure~#todo-inline[fig:fact-bba]:
 - $ms("body")$ does _not_ strictly dominate $ms("loop")$,
   since there is a path from $ms("entry")$ to $ms("loop")$ that does not pass through $ms("body")$.
 
-== Type-theoretic SSA
+== Lexically Scoped SSA
 
 An important insight provided by the BBA format,
 as discussed by @appel-98-ssa and @kelsey-95-cps,
@@ -644,6 +644,8 @@ establishing an isomorphism between lexical SSA and standard SSA.
 
 #todo[figure: conversion from dominance-based scoping to explicit lexical scoping]
 
+== Type-Theoretic SSA
+
 Lexical scoping allows us to apply many of techniques developed in type theory and functional programming
 for reasoning about program transformations.
 Indeed,
@@ -735,6 +737,8 @@ and the empty type $mb(0)$,
 all parameterised over a set of base types $X in cal(T)$.
 We write our set of types as $ms("Ty")(X)$.
 
+#todo[add lore about _quantities/resources/usages_, fix notation]
+
 A (variable) _context_ $Γ$ is a list of _typing hypotheses_ $bhyp(x, A)$,
 where $x$ is a variable name and $A$ is the type of that variable.
 Similarly,
@@ -778,6 +782,8 @@ each associated with a judgement:
   which states that given that $Γ$ is live at the unique entry point,
   $r$ will either loop forever or branch to one of the exit labels in $ℓ(A) in ms("L")$
   with an argument of type $A$.
+
+#todo[make things $n$-ary]
 
 The typing rules for expressions are given in Figure~#todo-inline[fig:ssa-expr-rules].
 In particular, expressions may be built up from the following fairly standard primitives:
