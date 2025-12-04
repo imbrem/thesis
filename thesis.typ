@@ -16,6 +16,10 @@
 
 #set heading(numbering: "1.")
 
+#let scaffold(content) = [
+  #content
+]
+
 #set document(
   title: [Categorical imperative programming: type theory, refinement, and semantics for SSA],
   author: "Jad-Elkhaleq Ghalayini",
@@ -86,25 +90,6 @@
   TFW I need a thesis statement
 ]
 
-#todo[
-  Not a thesis statement (Neel); contributions:
-  - We give a formal framework for reasoning about SSA
-  - We give a categorical semantics
-  - We show these are the _same_: sound and _complete_
-  - We use this to talk about imperative programming in general (RTL lore)
-]
-
-#todo[what is an IR]
-
-#todo[what is SSA at a high level; briefly describe RTL as part of the "up from assembly narrative"]
-
-#todo[our actual contributions and why they matter]
-
-= Static Single Assignment (SSA)
-
-== From RTL to SSA
-
-#todo[pull up to beginning of introduction]
 
 Directly optimizing a source language can be difficult,
 because surface languages are often very large and have features
@@ -118,24 +103,71 @@ machine code is designed to be efficiently _executed_ by hardware (or an interpr
 and is therefore often difficult both to analyze and to generate from high-level constructs.
 //
 Compiler writers deal with this by using _intermediate representations (IRs)_:
-- Like programming languages, they are designed to be read and written, rather than executed, but
-- Like executable code, they are designed to be processed by _machines_, rather than people
 
-- A good IR is simple: has a few features which compose well together
-- It's easy to _generate_ from high-level source code
-- But it also has lots of _invariants_, making it easy to _analyze_ and _rewrite_ while preserving soundness
-- And it also needs to be easy to _lower_ to executable code
-- Two natural ways to derive an IR
-  - Go "upwards" from machine code, regularizing it to make it easier to read, write, and analyze
-    - This is the "classical" approach used by compilers like LLVM
-  - Go "downwards" from high-level code, desugaring features and making things easier for machines to read, write, and analyze
-    - Modern compilers often do this many times as part of _lowering passes_; the first attempt at this is usually called a HIR, and then you can recursively apply this until you get to either assembly (Forth/Lisp style) or the low-level IR defined upwards (the usual). 
+#scaffold[
+  - Like programming languages, they are designed to be read and written, rather than executed, but
+  - Like executable code, they are designed to be processed by _machines_, rather than people
 
-      If you apply this to HIR you get MIR
-    - In practice, compilers may go back and forth between RTL and SSA; e.g. Rust's MIR is a constrained RTL, which goes to LLVM SSA, which goes down to the SelectionDAG (RTL), which then goes down to ASM (machine code)
-  - We have semantics for all these stages except the very top and bottom. Another multi-stage technology along these lines is MLIR, so this naturally acts as a semantics for a well-behaved subset of MLIR
+  - A good IR is simple: has a few features which compose well together
+  - It's easy to _generate_ from high-level source code
+  - But it also has lots of _invariants_, making it easy to _analyze_ and _rewrite_ while preserving soundness
+    - Talk about analysis passes and dataflow
+      - Classical IRs are _very good at this_, but they're often underspecified because of imperativity, see: simulation arguments
+    - Talk about _optimization passes_
+      - Easy to generate code with correct semantics
+        - And, very importantly, easy to _inline_: meaning _compositional_
+          - High-level languages often make inlining _hard_ because the normies don't prove   substitution
+      - Peephole rewriting is important and needs to be sound
+      - Control-flow rewriting is import and needs to be sound
+      - _Fusing these_ is often where the suffering begins, see conditional move instruction
+    - Talk about abstract interpretation ==> needs to be easy to do induction on, few cases
+      - Classical IRs are _very bad at this_; this is our contribution!
+  - And it also needs to be easy to _lower_ to executable code
+  - Two natural ways to derive an IR
+    - Go "upwards" from machine code, regularizing it to make it easier to read, write, and analyze
+      - This is the "classical" approach used by compilers like LLVM
+    - Go "downwards" from high-level code, desugaring features and making things easier for machines to read, write, and analyze
+      - Modern compilers often do this many times as part of _lowering passes_; the first attempt at this is usually called a HIR, and then you can recursively apply this until you get to either assembly (Forth/Lisp style) or the low-level IR defined upwards (the usual). 
 
-#todo[what is RTL, and why is it a cool IR]
+        If you apply this to HIR you get MIR
+      - In practice, compilers may go back and forth between RTL and SSA; e.g. Rust's MIR is a constrained RTL, which goes to LLVM SSA, which goes down to the SelectionDAG (RTL), which then goes down to ASM (machine code)
+    - We have semantics for all these stages except the very top and bottom. Another multi-stage technology along these lines is MLIR, so this naturally acts as a semantics for a well-behaved subset of MLIR
+
+    - Completeness (our big theoretical contributions) means: 
+      - _we get to use category theory without any additional assumptions_
+      - _we get to check whether our actual models are compatible with standard compiler transformations in an implementation-independent, generalizable manner_
+        - Neel says: the completeness theorem means that our equations give us a complete API that both the compiler writer can depend on and the model designer can target. i.e.,
+          - This gives us an API which can be shared by
+          - Model designers and hardware people, who need to show that their model allows common compiler optimizations by showing that it forms an isotope SSA model
+            - Going back, what they need to show is that $ms("SSACongr")(cal(R)) = cal(R)$
+              where $cal(R)$ is the set of rewrites validated by their model.
+
+              What we give is the function $ms("SSACongr")(cal(R))$
+          
+          - Compiler writers, who _need_ to show that their optimizations are compatible with our model + their set of assumptions. You can _always_ do this with a large enough set of assumptions (though of course the assumption might simply be "transformation always holds" since they're allowed to be quantified as long as they respect weakening + substitution)!
+
+            That is, given assumptions $cal(R)$, their optimizations must hold in $ms("SSACongr")(cal(R))$, so we tell them exactly how to derive things from a set of _primitve_ assumptions in a model-independent way: the compiler writers only need the kernel generating the assumptions, not either the entire set of assumptions or the model (which are basically the same thing if you're a classical mathematician).
+]
+
+#todo[what is an IR]
+
+#todo[what is SSA at a high level; briefly describe RTL as part of the "up from assembly narrative"]
+
+#todo[our actual contributions and why they matter]
+
+#todo[
+  Not a thesis statement (Neel); contributions:
+  - We give a formal framework for reasoning about SSA
+  - We give a categorical semantics
+  - We show these are the _same_: sound and _complete_
+  - We use this to talk about imperative programming in general (RTL lore)
+]
+
+= Static Single Assignment (SSA)
+
+== From RTL to SSA
+
+#todo[what is RTL, and why is it a cool IR, in more detail]
 
 One of the earliest compiler IRs introduced is _register transfer language_ (_RTL_) @allen-70-cfa,
 commonly referred to as _three-address code_.
