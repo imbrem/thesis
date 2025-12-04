@@ -350,75 +350,6 @@ We can compile this program into RTL, yielding the code in @rtl-factorial, by:
   ],
 )
 
-#todo[
-  J Random Semiprogrammer says RTL and WHILE are state transformers on the heap (Neel: stacks, Appel's mind changed).
-
-  We want to explain why thinking about variables as variables is even a good idea at all.
-]
-
-#todo[deal with this jump, might want to try another tack since scoping is a later section]
-
-#notes[
-  We put the scoping discussion first because later, when we introducd $ϕ$-nodes, we use the complexity of scoping as part of the argument for why to do BBA.
-
-  But this doesn't make much sense in terms of flow because we want to talk about SSA first and _then_ lexical SSA, and now the stuff about scoping and dominance is split across sections. So go fix that.
-]
-
-While functional languages typically rely on _lexical scoping_,
-where the scope of a variable is determined by its position within the code's nested structure,
-RTL uses a different scoping mechanism based on _dominance_.
-
-Informally, 
-we don't want to assign a meaning to programs in which variables are used before they are defined. 
-If $cal(D)_x$ and $cal(U)_x$ denote the set of program points at which a variable $x$ is defined and used respectively, 
-what we want is that every program execution reaching any point in $cal(U)_x$ must first pass through some element of $cal(D)_x$. 
-In general, it is undecidable whether this property holds, 
-and so we need to use a safe approximation.
-
-Given a _pointed graph_ $G = (V, E)$ equipped with a fixed _entry node_ $e ∈ V$, 
-we say a set of nodes $D$ _dominates_ a node $u$ if every path from $e$ to $u$ must first pass through some $d ∈ D$. 
-Likewise, we say a single node $d$ dominates $u$ if ${d}$ does.
-If we take 
-- $G$ to be our control-flow graph, with vertices basic blocks and edges jumps in the program text
-- $e = β_lb("entry")$ to be our entry block
-it is clear that if $β₁$ dominates $β₂$ no program execution can reach $β₂$ without first having run $β₁$.
-This is an over-approximation of our desired property, 
-because some jumps may appear in the program text but never be taken at runtime 
-(we call such jumps _unreachable_).
-
-//TODO: just write things in terms of dominator trees, or punt to formalism in CFG section
-
-We note that, in general, the relation on basic blocks "$β₁$ dominates $β₂$" in a CFG $G$ can in 
-fact be viewed as a tree rooted at the entry block: every pair of basic blocks 
-$β₁, β₂$ have a least common ancestor $β$ which dominates them both.
-We call this tree the _dominator tree_ @cytron-91-ssa-intro.
-#footnote[
-  One edge case is that, by our definition, a basic block $β_lb("dead")$ which is _unreachable_ 
-  from $β_lb("entry")$ is dominated by _every_ basic block $β$ in the CFG.
-  We will simply assume that every CFG is assigned _some_ dominator tree $ms("dom")(G)$ rooted at 
-  $β_lb("entry")$ equal to the graph-theoretic dominance relation on all reachable $(β, β')$, 
-  and say that $β$ dominates $β'$ iff $(β, β') ∈ ms("dom")(G)$.
-]
-
-It follows that we may consider a variable usage in a block $β$ in-scope if and only if either:
-- $x$ is defined earlier in $β$
-- The set $ms("defs")(x)$ of basic blocks in which $x$ is defined _stricly_ dominates $β$.
-
-  In general, we say a set of nodes $D$ strictly dominates a node $u$ if $D backslash {n}$ dominates $n$. 
-  Likewise, $d$ strictly dominates $u$ if ${d} backslash {u}$ dominates $u$, i.e., 
-  if $d$ dominates $u$ and $u ≠ d$ 
-  (since no nodes are dominated by the empty set).
-
-Equivalently, we can hew closer to our original definition and instead consider a graph of 
-_instructions_, where
-- An _assignment_ has a single outgoing edge to the next instruction
-- A _terminator_ has an outgoing edge to each target appearing within it
-Then, a usage of $x$ in an instruction $i$ is in scope if and only if
-$i$ is strictly dominated by the set of assignments to $x$.
-This conveniently replicates the traditional definition of a basic block as 
-a maximal straight-line sequence of non control-flow instructions.
-We will give a more formal treatment of RTL programs as graphs in @cfgs.
-
 #todo[fix this text]
 
 While three-address code is dramatically simpler to reason about than high-level imperative languages,
@@ -593,6 +524,91 @@ For example, in Figure~#todo-inline[fig:fact-bba]:
 
 == Lexically Scoped SSA
 
+#todo[
+  fix this text:
+  - first off, address why we should care about scoping, why it's not just a state transformer
+  - adjust definitions of dominance to SSA; put stuff about domination by a _set_ in later RTL 
+    section
+  - then segue to Appel's ideas, and how we can do the equivalence
+]
+
+#notes[
+  Weird syntax idea, we discussed this and you rejected it for TOPLAS but makes sense for thesis:
+  no where-blocks, just curly braces.
+
+  Neel says: go do it
+]
+
+#todo[
+  J Random Semiprogrammer says RTL and WHILE are state transformers on the heap (Neel: stacks, Appel's mind changed).
+
+  We want to explain why thinking about variables as variables is even a good idea at all.
+]
+
+#todo[deal with this jump, might want to try another tack since scoping is a later section]
+
+#notes[
+  In the original, we put the scoping discussion first because later, when we introducd $ϕ$-nodes, we use the complexity of scoping as part of the argument for why to do BBA.
+
+  But this doesn't make much sense in terms of flow because we want to talk about SSA first and _then_ lexical SSA, and now the stuff about scoping and dominance is split across sections. So go fix that.
+]
+
+
+While functional languages typically rely on _lexical scoping_,
+where the scope of a variable is determined by its position within the code's nested structure,
+RTL uses a different scoping mechanism based on _dominance_.
+
+Informally, 
+we don't want to assign a meaning to programs in which variables are used before they are defined. 
+If $cal(D)_x$ and $cal(U)_x$ denote the set of program points at which a variable $x$ is defined and used respectively, 
+what we want is that every program execution reaching any point in $cal(U)_x$ must first pass through some element of $cal(D)_x$. 
+In general, it is undecidable whether this property holds, 
+and so we need to use a safe approximation.
+
+Given a _pointed graph_ $G = (V, E)$ equipped with a fixed _entry node_ $e ∈ V$, 
+we say a set of nodes $D$ _dominates_ a node $u$ if every path from $e$ to $u$ must first pass through some $d ∈ D$. 
+Likewise, we say a single node $d$ dominates $u$ if ${d}$ does.
+If we take 
+- $G$ to be our control-flow graph, with vertices basic blocks and edges jumps in the program text
+- $e = β_lb("entry")$ to be our entry block
+it is clear that if $β₁$ dominates $β₂$ no program execution can reach $β₂$ without first having run $β₁$.
+This is an over-approximation of our desired property, 
+because some jumps may appear in the program text but never be taken at runtime 
+(we call such jumps _unreachable_).
+
+//TODO: just write things in terms of dominator trees, or punt to formalism in CFG section
+
+We note that, in general, the relation on basic blocks "$β₁$ dominates $β₂$" in a CFG $G$ can in 
+fact be viewed as a tree rooted at the entry block: every pair of basic blocks 
+$β₁, β₂$ have a least common ancestor $β$ which dominates them both.
+We call this tree the _dominator tree_ @cytron-91-ssa-intro.
+#footnote[
+  One edge case is that, by our definition, a basic block $β_lb("dead")$ which is _unreachable_ 
+  from $β_lb("entry")$ is dominated by _every_ basic block $β$ in the CFG.
+  We will simply assume that every CFG is assigned _some_ dominator tree $ms("dom")(G)$ rooted at 
+  $β_lb("entry")$ equal to the graph-theoretic dominance relation on all reachable $(β, β')$, 
+  and say that $β$ dominates $β'$ iff $(β, β') ∈ ms("dom")(G)$.
+]
+
+It follows that we may consider a variable usage in a block $β$ in-scope if and only if either:
+- $x$ is defined earlier in $β$
+- The set $ms("defs")(x)$ of basic blocks in which $x$ is defined _stricly_ dominates $β$.
+
+  In general, we say a set of nodes $D$ strictly dominates a node $u$ if $D backslash {n}$ dominates $n$. 
+  Likewise, $d$ strictly dominates $u$ if ${d} backslash {u}$ dominates $u$, i.e., 
+  if $d$ dominates $u$ and $u ≠ d$ 
+  (since no nodes are dominated by the empty set).
+
+Equivalently, we can hew closer to our original definition and instead consider a graph of 
+_instructions_, where
+- An _assignment_ has a single outgoing edge to the next instruction
+- A _terminator_ has an outgoing edge to each target appearing within it
+Then, a usage of $x$ in an instruction $i$ is in scope if and only if
+$i$ is strictly dominated by the set of assignments to $x$.
+This conveniently replicates the traditional definition of a basic block as 
+a maximal straight-line sequence of non control-flow instructions.
+We will give a more formal treatment of RTL programs as graphs in @cfgs.
+
 An important insight provided by the BBA format,
 as discussed by @appel-98-ssa and @kelsey-95-cps,
 is that a program in SSA form can be interpreted as a collection of mutually tail-recursive functions,
@@ -631,6 +647,8 @@ $x_i$ is visible in $o_k$ for $k > i$, and in arbitrary $β_j$.
 On the other hand, 
 since the child basic blocks $ℓ_j$ correspond to _mutually_ recursive functions, 
 we will treat them like a `let rec`, with all $ℓ_j$ visible in each $β_j$.
+
+#todo[but not outside the scope]
 
 To see that this works, consider basic blocks $β_lb("jump")$ and $β_lb("dest")$, where 
 $β_lb("jump")$ contains a jump to $β_lb("dest")$, or, equivalently, 
