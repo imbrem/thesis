@@ -20,6 +20,10 @@
   #content
 ]
 
+#let notes(content) = [
+  #content <no-wc>
+]
+
 #set document(
   title: [Categorical imperative programming: type theory, refinement, and semantics for SSA],
   author: "Jad-Elkhaleq Ghalayini",
@@ -185,6 +189,7 @@ Our grammar is intentionally minimal, with many important features implemented v
 - _Constants_ $c$ are represented as nullary primitive instructions $c()$.
 - _Operations_ $o$ always return a single value of fixed type;
   operations producing multiple values are treated as returning a tuple
+- #todo[talk about binding and destructuring, move footnote about $(V)$ here!]
 - _Conditional branches_ $ite(x, τ, τ')$ are desugared to 
   _switch-statements_ 
   $
@@ -293,6 +298,8 @@ We can compile this program into RTL, yielding the code in @rtl-factorial, by:
 
   In general, we refer to the basic block with label $lb("label")$ as $β_lb("label")$.
 
+  #todo[in general how to do this obviously depends on the source language; we given an algorithm for WHILE in bleh]
+
 #subpar.grid(
   placement: auto,
   align: bottom,
@@ -342,6 +349,20 @@ We can compile this program into RTL, yielding the code in @rtl-factorial, by:
     represented as typical imperative code and in RTL.
   ],
 )
+
+#todo[
+  J Random Semiprogrammer says RTL and WHILE are state transformers on the heap (Neel: stacks, Appel's mind changed).
+
+  We want to explain why thinking about variables as variables is even a good idea at all.
+]
+
+#todo[deal with this jump, might want to try another tack since scoping is a later section]
+
+#notes[
+  We put the scoping discussion first because later, when we introducd $ϕ$-nodes, we use the complexity of scoping as part of the argument for why to do BBA.
+
+  But this doesn't make much sense in terms of flow because we want to talk about SSA first and _then_ lexical SSA, and now the stuff about scoping and dominance is split across sections. So go fix that.
+]
 
 While functional languages typically rely on _lexical scoping_,
 where the scope of a variable is determined by its position within the code's nested structure,
