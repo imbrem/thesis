@@ -94,6 +94,83 @@
   TFW I need a thesis statement
 ]
 
+#todo[
+  High level:
+  - Step 1: we want an MVP thesis, which is:
+    - The type theory of TOPLAS, but refined and with λiter
+      - Sandwich:
+        - Introduction:
+          - Buildup RTL => SSA => LexSSA in language to go from states to variables
+          - Buildup LexSSA ⊆ LexSSA ExpTree [mention Cranelift as prior art]
+                           ⊆ LexSSA CaseExpTree [conditional moves, don't introduce big branches]
+                           ⊆ LexSSA λiter [natural generalization, mention ML, Peggy, and RVSDG as prior art]
+          - Buildup LexSSA λiter ⊆ TTSSA λiter
+          - Expressions first (as classical), control later (as this is us, but prior art too see Peggy)
+          - Power is the same, and since ⊆ rather than $=>$ type theory for top level gives us type theory for everything else
+            - (But, not a type theory for RTL and SSA; see MVP₃)
+        - Body:
+          - Chapter 1: TT following POPL; _no quantities_, _no effects_
+            - TT for λiter
+              - NO talk about quantities; DO LATER
+              - NO _extended_ talk about effects; DO LATER
+              - But do note, when stating substitution theorem, that just because the term _makes sense_ doesn't mean the substitution is _valid_
+              - Unlike POPL instead of coproducts we have enums. This will be more familiar to complier folks, but we need to discuss how booleans and coproducts are just a special case.
+            - TT for λSSA (parametric over expression language instantiate for λiter)
+              - Talk about labels
+              - This is a lot easier than before, since instead of coproducts we have enums. So a label is a glorified enum. 
+            - Pure syntatic metatheory of:
+              - Substitution
+              - Label-substitution
+          - Chapter 2: 
+            - Expo:
+              - Motivate refinement by means of effects as below
+              - Introduce λiter type theory with effects parametrized by primitive effects on terms
+              - Motivate usage tracking by means of _advanced_ refinements
+                - `unspec` would always need to be a refinement without usage tracking
+                - but _with_ usage tracking, linear use is not a refinement!
+              - Introduce λiter type theory with _only_ usage tracking
+
+              - Observation:
+                - λiter with effects is trivial, λssa with effects is trivial
+                - λiter with usage introduces a complex concept: _splitting_
+
+
+            - Pure and impure `let x = read(); (x, x) ≠ (read(), read())`
+            - But, _refinement_ (point to probabilistic programming and friends)
+
+              `let x = unspec(); (x, x) ≠ (unspec(), unspec())`
+
+              but
+
+              `let x = unspec(); (x, x) <- (unspec(), unspec())`
+
+              Note: for `nondet`, people will think Prolog rather than C
+          - And this depends both _usage_ and _effect_ of sub-expressions, so we need to track both
+
+              `let x = unspec(); e = e` for `e ∉ fv(x)`
+
+              On the other hand,
+
+              `let x = ub(); e -> [ub()/x]e`
+
+              but
+
+              `let x = ub(); e = e` if `e` _pure_ and `x ∈ fv(e)`.
+
+              - In power paper:
+                
+                - Axiomatization of `ub` is:
+                  - I can send it forwards in time
+                  - I can replace it with anything
+                - _Therefore_, when combined with `case`
+                  - I can send arbitrary information about anything _purely_ computable forwards in time
+                  - I can safely _remove_ information sent forwards in time, so my compiler can do this aggressively
+          - So, let's start with λiter
+            - Type theory of λiter with _only effects_
+            - Type theory of λiter with _only quantities_
+              
+]
+
 
 Directly optimizing a source language can be difficult,
 because surface languages are often very large and have features
@@ -802,6 +879,23 @@ establishing an isomorphism between lexical SSA and standard SSA.
         - So lexical SSA is a much smaller jump from SSA than SSA is from RTL, since there are valid rewrites which break the SSA property but leave us with valid RTL, but there's no real way to rewrite valid SSA while breaking the dominance tree since that also breaks scopin
 ]
 
+#todo[
+  - I want a substitution principle for SSA so I'm going to extend instructions to expressions
+  - We want value substitutions and loops are not values
+]
+
+#todo[
+  Neel says no:
+  - We start with $ms("SSA")(ms("Inst"))$
+  - We want substitution to work
+  - We have $∀E, ms("Subst")(E) ==> ms("Subst")(ms("SSA")(E))$
+  - Alas, $¬ms("Subst")(ms("Inst"))$
+  - But, $∀E, ms("SSA")(E) ≅ ms("SSA")(ms("Inst"))$
+  - So pick an $E$
+    - Cranelift says $ms("ETree")(ms("Inst"))$
+    - Let's go max generality and say λiter
+]
+
 Lexical scoping allows us to apply many of techniques developed in type theory and functional programming
 for reasoning about program transformations.
 Indeed,
@@ -882,7 +976,28 @@ and, moreover, dramatically simplifies the form of the rules themselves.
 
 #todo[figure: grammar for isotopessa]
 
+#todo[
+  What we work towards is:
+  - SSA is parametrized by an expression language.
+    - The standard one is "one instruction"
+    - But, even in practice, Cranelift and friends use expression trees...
+    - And fun things like Peggy use fun things like loops
+    - We have λiter which everything above is a subset of
+  - Separately, _type theoretic SSA_ is parametrized by an expression language
+  - Recall the ladder components: 
+    - $∀ E . ms("TySSA")(E) ≅ ms("SSA")(E)$
+    - $∀ E . ms("TySSA")(E) ≅ ms("TySSA")(ms("Op"))$
+]
+
 = Type Theory
+
+#notes[
+  - We introduce λiter at the end of section 2 as our expression language
+  - We want to mention that our expression language has the same power as SSA and give a pointer to 
+    the proof down at the end (post-completeness)
+  - Minimize forward references considered harmful
+  - 
+]
 
 #todo[fuse with refined account of SSA]
 
