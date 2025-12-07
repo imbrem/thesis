@@ -212,6 +212,133 @@ For example, six of the 13 most invoked passes in the LLVM compiler are spent
 discovering and restoring invariants such as SSA or canonical loop forms @reissmann-19-rvsdg.
 
 #scaffold[
+  - It is generally accepted that IRs are useful
+  - It is generally accepted that SSA is the "standard" IR, 
+    and many other IRs are variants and dialects of SSA
+
+  Usually, though:
+  - Study of IRs, including SSA, is _informal_ and based on engineering practice
+    without any rigorous mathematical model for correctness
+  
+  So we want to argue:
+  - IRs need a _formal_ semantics to:
+    - _Verify_ optimizations are correct
+    - Provide a _framework_ for
+      - Developing new optimizations (IR $=>$ IR)
+      - Generalizing optimizations across different platforms
+    - _Verify_ the _relationships_ between
+      - Different IRs
+      - Source languages and IRs
+      - IRs and target languages
+  - We provide a formal semantics for SSA because:
+    - SSA is the canonical IR, and _therefore_
+    - A semantics for SSA can be used to provide semantics for _other_ imperative IRs
+    - And all these semantic models can be rigorously proven _equivalent_
+    - Giving us a theory of categorical imperative programming (title drop)
+]
+
+#block-note[
+  - _Specific_ intermediate representations each strike a different balance between 
+    simplicity and regularity (via invariants)
+    - A smaller IR is often both simpler and more regular, but
+    - More invariants $=>$ less simple, _so_ harder to generate and rewrite
+    - Less invariants $=>$ more simple, _but_ harder to analyze and optimize
+
+  - In general, a compiler looks like
+    $
+      ms("MyCompiler") : ms("Language")_1 => ms("Language")_2
+    $
+    while preserving, or rather _refining_, semantics.
+
+    An _optimizer_ is therefore a special case which looks like
+    $
+      ms("MyOptimizer") : ms("Language") => ms("Language")
+    $
+
+    Here, the language is usually an IR.
+
+    An optimizer might more specifically _read_ the input IR (_analysis_) and then, as necessary,
+    _rewrite_ parts of the input IR (_rewriting_ or _transformation_) based on the results of the
+    analysis. So while we model it as a function from IR to IR, in implementation, it is actually
+    a mutable imperative rewriter on the IR _data structure_.
+
+    So an _optimizing compiler_ with a single IR in the middle might look like
+
+    $
+      ms("MyOC") : ms("Source") 
+        =>^ms("Generation") ms("IR") 
+        =>^ms("Optimization") ms("IR") 
+        =>^ms("Lowering") ms("Target")
+    $
+
+    A real compiler often uses _multiple_ IRs each with specialized optimization and analysis 
+    functions.
+
+    So notice:
+    - _Simplicity_ generally makes things easier to _write_. So if $ms("IR")$ is simple:
+      - $ms("Generation")$ is easier since we write $ms("IR")$
+      - _Rewriting_ is easier since we already know what we need to do 
+        (by analysis, reading the IR)
+        and it's easy to generate valid IR
+    - _Regularity_ generally makes this easier to _read_. So if $ms("IR")$ is regular:
+      - $ms("Lowering")$ is easier since we read $ms("IR")$
+      - _Analysis_ is easier since we can make more assumptions about the IR 
+        and hence consider fewer edge cases.
+
+        Note even a very simple language can have many edge cases in _analysis_, 
+        even (in fact _especially_) if it has few edge cases in its _definition_.
+    
+    This is precisely why we need an $ms("IR")$, 
+    because both these goals are orthogonal to the usual goals of both
+    programming language design and
+    executable language design.
+
+    Executable languages are rarely either regular or simple: 
+    they have lots of flexibility and edge cases 
+    to take advantage of the unique features of a given processor's architecutre and
+    extract maximum performance.
+
+    Likewise, programming languages need to be simple and regular to _humans_,
+    but this is often very different from mathematical simplicity and regularity.
+    Humans find it very convenient, for example,
+    to be able to write both `x.find()` and `find(x)` depending on what type of function `find` is,
+    and this extra context makes things more readable.
+    It's now also double the effort writing a compiler, since we've got two cases instead of one.
+    So we want to normalize everything 
+    to the standard `find(x)` form as early as possible to avoid duplicating work.
+
+    Notice, this is totally separate from optimization: 
+    the two programs have essentially the _same_ performance characteristics, size, and complexity.
+    This is about _regularity_ and _simplicity_: 
+    by enforcing everything be in a normal form, 
+    a program operating on IR has to deal with fewer cases.
+    This is essentially a proof by induction, and we want as few base cases as possible.
+
+    A good programming language focuses on making things readable,
+    which often requires making things _short_.
+
+    An IR on the other hand should be _maximally explicit_ 
+    even if no one would ever want to type the entire program, 
+    for the exact same reason:
+    it's much easier for a machine to reason about a fully explicit expression,
+    since we don't need to take as much context into account.
+
+    As an example, 
+    a source language might have an expression with type-dependent meaning,
+    like `a + b`.
+    - If `a, b` are integers, `a + b` means `addInt a b`
+    - If `a, b` are floats, `a + b` means `addFloat a b`
+    - If `a, b` are strings, `a + b` means `concatString a b`
+
+    Having an IR reason about `+` is a pain, since we both:
+    - Need to do cases on type information when rewriting `+`
+    - Have an additional case in our expression language itself, namely the `+` case
+
+    Lowering everything to fully explicit typed functions right at the beginning is hence
+    almost universally applied in compiler design.
+]
+
+#scaffold[
   - But it also has lots of _invariants_, making it easy to _analyze_ and _rewrite_ while preserving soundness
     - Talk about analysis passes and dataflow
       - Classical IRs are _very good at this_, but they're often underspecified because of imperativity, see: simulation arguments
