@@ -4,7 +4,7 @@
 
 #let todo-inline(it) = [
   #[
-    #set text(red)
+    #set text(red.darken(20%))
     *TODO #context todos.display():* #it
     #todos.step()
   ] <no-wc>
@@ -52,9 +52,11 @@
 )
 
 #let scaffold(content) = [
+  #set text(yellow.darken(50%))
   #content
 ]
 
 #let block-notes(content) = [
+  #set text(green.darken(50%))
   #content <no-wc>
 ]

@@ -248,7 +248,12 @@ An RTL program consists of a _control-flow graph_ (CFG) $G$
 with a distinguished, nameless entry block.
 Each node of the CFG corresponds to a _basic block_ $β$,
 which is a straight-line sequence of _assignments_ $x = f(y, z)$
-// (hence the name _3-address code_, referring to the typical three variables $x, y, z$)
+#footnote[
+  Hence the name "3-address code," referring to the three variables $x, y, z$.
+  Assignments $x = y + z$ are often referred to as _quads_ @aho-11-dragon, 
+  since they have four arguments: 
+  three variables, and the operator $+$.
+]
 followed by a _terminator_ $τ$,
 which tells us where to transfer control next.
 
@@ -256,9 +261,12 @@ In @rtl-grammar, we give a formal presentation of the syntax of RTL parametrized
 _primitive instructions_ $p ∈ cal(I)$. 
 Our grammar is intentionally minimal, with many important features implemented via syntax sugar:
 - _Constants_ $c$ are represented as nullary primitive instructions $c()$.
-- _Operations_ $o$ always return a single value of fixed type;
-  operations producing multiple values are treated as returning a tuple
-- #todo[talk about binding and destructuring, move footnote about $(V)$ here!]
+- _Operations_ $o$ always return a single value of fixed type; in particular,
+- Operations can produce multiple values by returning a tuple; which can be de-structured by
+  assigning it to a tuple of variables $(V)$ #footnote[
+    Note the unusual fact that this means the production $(V)$ for a variable list may appear on 
+    both the left-hand side and right-hand side of an assignment.
+  ]
 - _Conditional branches_ $ite(x, τ, τ')$ are desugared to 
   _switch-statements_ 
   $
