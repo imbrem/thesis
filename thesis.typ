@@ -164,7 +164,12 @@
 ]
 
 
-Directly optimizing a source language can be difficult,
+#todo[
+  maybe: explain what a compiler is at a high-level because the intro both sets the tone and pads
+  wordcount
+]
+
+Directly optimizing a source language can be difficult, 
 because surface languages are often very large and have features
 (such as type inference and overloading)
 which make it difficult to express sound program equivalences.
@@ -176,20 +181,44 @@ machine code is designed to be efficiently _executed_ by hardware (or an interpr
 and is therefore often difficult both to analyze and to generate from high-level constructs.
 //
 Compiler writers deal with this by using _intermediate representations (IRs)_:
+- Like programming languages, they are designed to be read and written, rather than executed, but
+- Like executable code, they are designed to be processed by _machines_, rather than people
+
+A good IR is _simple_: it has a few features which compose well in a predictable manner. 
+This makes it
+- Easy to _generate_ from high-level source code
+- Easy to _lower_ to low-level executable code
+- Easy to _analyze_ to determine both properties of programs and program equivalence
+
+In particular, a good intermediate representation should be _regular_, in both colloquial senses:
+- It should have few to no edge cases in the interpretation of its constructs
+- Equivalent programs should map to similar, or preferably the same, IR, as much as possible
+
+To achieve this, we want our IR to have rigorous _invariants_: for example, we might require
+- Operations have only pure expressions as arguments, or even
+- Operations have only variables or constants as arguments (yielding _A-normal form_, or _ANF_)
+- Loops always take canonical, structured forms 
+  (this is always possible due to the Böhm-Jacopini theorem @bohm-66-structured)
+
+Invariants make both analysis and lowering much easier to reason about and implement, since
+there are both fewer cases to consider
+and, when considering each case, we have more assumptions to work with.
+//
+However, this is a double-edged sword: 
+the more invariants we have, the more difficult it is both to 
+_generate_ our intermediate representation
+and, if we've discovered an optimization opportunity, to _rewrite_ it while preserving invariants.
+For example, six of the 13 most invoked passes in the LLVM compiler are spent 
+discovering and restoring invariants such as SSA or canonical loop forms @reissmann-19-rvsdg.
 
 #scaffold[
-  - Like programming languages, they are designed to be read and written, rather than executed, but
-  - Like executable code, they are designed to be processed by _machines_, rather than people
-
-  - A good IR is simple: has a few features which compose well together
-  - It's easy to _generate_ from high-level source code
   - But it also has lots of _invariants_, making it easy to _analyze_ and _rewrite_ while preserving soundness
     - Talk about analysis passes and dataflow
       - Classical IRs are _very good at this_, but they're often underspecified because of imperativity, see: simulation arguments
     - Talk about _optimization passes_
       - Easy to generate code with correct semantics
         - And, very importantly, easy to _inline_: meaning _compositional_
-          - High-level languages often make inlining _hard_ because the normies don't prove   substitution
+          - High-level languages often make inlining _hard_ because the normies don't prove substitution
       - Peephole rewriting is important and needs to be sound
       - Control-flow rewriting is import and needs to be sound
       - _Fusing these_ is often where the suffering begins, see conditional move instruction
