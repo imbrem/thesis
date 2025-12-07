@@ -8,21 +8,13 @@
 #let production = false;
 
 #import "thesis-template.typ": *
-#import "todos.typ": todo, todo-inline, total-todos, stats-box
+#import "todos.typ": *
 
 #import "syntax.typ": *
 
 #set text(lang: "en")
 
 #set heading(numbering: "1.")
-
-#let scaffold(content) = [
-  #content
-]
-
-#let notes(content) = [
-  #content <no-wc>
-]
 
 #set document(
   title: [Categorical imperative programming: type theory, refinement, and semantics for SSA],
@@ -646,7 +638,7 @@ For example, in Figure~#todo-inline[fig:fact-bba]:
         - Not part of the main line of the argument, shunt somewhere else; the point of this section is to _get to lexical SSA_
 ]
 
-#notes[
+#block-notes[
   Weird syntax idea, we discussed this and you rejected it for TOPLAS but makes sense for thesis:
   no where-blocks, just curly braces.
 
@@ -661,7 +653,7 @@ For example, in Figure~#todo-inline[fig:fact-bba]:
 
 #todo[deal with this jump, might want to try another tack since scoping is a later section]
 
-#notes[
+#block-notes[
   In the original, we put the scoping discussion first because later, when we introducd $ϕ$-nodes, we use the complexity of scoping as part of the argument for why to do BBA.
 
   But this doesn't make much sense in terms of flow because we want to talk about SSA first and _then_ lexical SSA, and now the stuff about scoping and dominance is split across sections. So go fix that.
@@ -919,7 +911,9 @@ To help achieve this, we will slightly generalize our syntax by:
 + Extending expressions $a$ to allow _let-expressions_ "$letexpr(x, a, b)$"
   and _case-expressions_ "$caseexpr2(a, x, b, y, c)$" <ssa-change-expr>
 
-This leaves us with our final language, #todo-inline[isotopessa],
+#todo[while rewriting, make sure to fix numbering]
+
+This leaves us with our final language, #ssa-calc,
 the resulting grammar for which is given in Figure~#todo-inline[fig:ssa-grammar].
 It is easy to see that these changes add no expressive power to lexical SSA:
 we can desugar (1) by introducing names for anonymous sub-expressions,
@@ -991,12 +985,24 @@ and, moreover, dramatically simplifies the form of the rules themselves.
 
 = Type Theory
 
-#notes[
+#block-notes[
   - We introduce λiter at the end of section 2 as our expression language
   - We want to mention that our expression language has the same power as SSA and give a pointer to 
     the proof down at the end (post-completeness)
   - Minimize forward references considered harmful
-  - 
+]
+
+#todo[
+  Question for Neel:
+  - Start with SSA _or_ Start with #iter-calc
+    - #iter-calc makes some sense...
+]
+
+#margin-note[
+  ...
+][
+   To be at the margins of society, I'd have to 
+   live in a society.
 ]
 
 #todo[fuse with refined account of SSA]

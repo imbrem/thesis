@@ -1,7 +1,26 @@
+// == Fonts ==
+
 #let ms(txt) = $sans(txt)$
 #let mb(txt) = $bold(txt)$
 #let lb(txt) = $mono(txt)$
 
+// == Branding ==
+
+// Flat
+#let while-flat = $ms("IMP")$
+#let rtl-flat = $ms("RTL")$
+#let ssa-flat = $ms("SSA")$
+#let ssa-a-flat = $ms("SSA")_ms("A")$
+#let rtl-a-flat = $ms("RTL")_ms("A")$
+
+// λ
+#let rtl-calc = $λ_ms("rtl")$
+#let ssa-calc = $λ_ms("ssa")$
+#let iter-calc=  $λ_ms("iter")$
+
+// == Syntax ==
+
+// Keywords
 #let klet = $ms("let")$
 #let kmut = $ms("mut")$
 #let kwhile = $ms("while")$
@@ -15,8 +34,20 @@
 #let kswitch = $ms("switch")$
 #let kwhere = $ms("where")$
 
+// Types
 #let tbool = $mb("2")$
 
+// Syntax macros
+// TODO: separate into
+// - core (λrtl)
+// - sugar (RTL, etc...)
+// - judgement 
+//   - Γ ⊢ a : A
+//   - Γ ⊢ r ▷ L
+// - refinement 
+//   - Γ ⊢ a ->> a' : A
+//   - Γ ⊢ r ->> r' ▷ L
+// - meta (substitution, etc...)
 #let ite(o, l, r) = $kif #o thick { #l } kelse { #r }$
 #let linl(v) = $ι_l med #v$
 #let linr(v) = $ι_r med #v$

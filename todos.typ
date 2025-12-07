@@ -1,3 +1,5 @@
+#import "@preview/drafting:0.2.2"
+
 #let todos = counter("todos")
 
 #let todo-inline(it) = [
@@ -43,3 +45,16 @@
     }
   ] <no-wc>
 ])
+
+#let margin-note(content, note) = drafting.margin-note(
+  content,
+  [ #note <no-wc> ]
+)
+
+#let scaffold(content) = [
+  #content
+]
+
+#let block-notes(content) = [
+  #content <no-wc>
+]
