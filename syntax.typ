@@ -2,7 +2,7 @@
 
 #let ms(txt) = $sans(txt)$
 #let mb(txt) = $bold(txt)$
-#let lb(txt) = $mono(txt)$
+#let lb(txt, annot : none) = $mono(txt)_annot$
 
 // == Branding ==
 
@@ -18,60 +18,88 @@
 #let ssa-calc = $λ_ms("ssa")$
 #let iter-calc=  $λ_ms("iter")$
 
-// == Syntax ==
+// == Tokens ==
 
 // Keywords
+
+// Basic
 #let klet = $ms("let")$
-#let kmut = $ms("mut")$
-#let kwhile = $ms("while")$
+#let kbr = $ms("br")$
+#let kcase = $ms("case")$
+#let kiter = $ms("iter")$
+
+// Sugar
 #let kif = $ms("if")$
 #let kelse = $ms("else")$
-#let kbr = $ms("br")$
+#let kwhile = $ms("while")$
+#let kmut = $ms("mut")$
 #let kabort = $ms("abort")$
-#let kbr = $ms("br")$
 #let kret = $ms("ret")$
-#let kcase = $ms("case")$
 #let kswitch = $ms("switch")$
-#let kwhere = $ms("where")$
+
+// Standard names
+#let ninl = $lb("i")_lb("l")$
+#let ninr = $lb("i")_lb("r")$
+#let nbr = $lb("b")$
+#let ncn = $lb("c")$
 
 // Types
 #let tbool = $mb("2")$
 
-// Syntax macros
-// TODO: separate into
-// - core (λrtl)
-// - sugar (RTL, etc...)
-// - judgement 
-//   - Γ ⊢ a : A
-//   - Γ ⊢ r ▷ L
-// - refinement 
-//   - Γ ⊢ a ->> a' : A
-//   - Γ ⊢ r ->> r' ▷ L
-// - meta (substitution, etc...)
-#let ite(o, l, r) = $kif #o thick { #l } kelse { #r }$
-#let linl(v) = $ι_l med #v$
-#let linr(v) = $ι_r med #v$
-#let labort(v) = $kabort #v$
+// Punctuation
 #let seq = $; thick$
+
+// == Syntax ==
+
+// Syntax for expressions
+  
+/// A branch of a case statement
+#let ebr(ℓ, x, b) = $#ℓ (#x) : #b$
+
+/// A let expression
+#let elet(x, a, e) = $klet #x = #a seq #e$
+
+/// A case expression
+#let ecase(e, B) = $kcase #e thick { #B }$
+
+/// An iteration expression
+#let eiter(e, x, b) = $kiter #e thick { #ebr(ncn, x, b) }$
+
+// Statements
+
 #let brb(ℓ, ..vs) = if vs.pos().len() == 0 {
   $kbr #ℓ$
 } else {
   $kbr #ℓ thick #vs.pos().at(0)$
 }
 #let retb(v) = $kret #v$
-#let caseexpr(e, B) = $kcase #e thick { #B }$
 #let casestmt(e, B) = $kcase #e thick { #B }$
-#let switchstmt(e, B) = $kswitch #e thick { #B }$
-#let caseexpr2(e, x, a, y, b) = caseexpr(e, $linl(#x) : #a seq linr(#y) : #b$)
-#let casestmt2(e, x, s, y, t) = casestmt(e, $linl(#x) : #s seq linr(#y) : #t$)
-#let phistmt(branches) = $ϕ thick { #branches }$
-#let wbranch(ℓ, x, t) = $#ℓ (#x) : #t$
-#let where(t, L) = $#t thick kwhere {#L}$
 #let letstmt(x, a, t) = $klet #x = #a seq #t$
-#let letexpr(x, a, e) = $klet #x = #a seq #e$
+
+#let sbr(ℓ, x, b) = $#ℓ (#x) : #b$
+//TODO: think about type annotations here...
+#let lbb(ℓ, x, t) = $#ℓ (#x) : #t$
+
+// Syntax sugar
+
+/// A binary case expression
+#let ecase2(e, x, a, y, b) = ecase(e, $ebr(ninl, #x, #a) seq ebr(ninr, #y, #b)$)
+
+// Statements
+#let ite(o, l, r) = $kif #o thick { #l } kelse { #r }$
+#let switchstmt(e, B) = $kswitch #e thick { #B }$
+#let linl(v) = $ninl med #v$
+#let linr(v) = $ninr med #v$
+#let casestmt2(e, x, s, y, t) = casestmt(e, $sbr(ninl, #x, #s) seq  sbr(ninr, #y, #t)$)
+
+// Other languages
+#let phistmt(branches) = $ϕ thick { #branches }$
+
+// Judgements
+
 #let bhyp(x, A, ..vs) = $#x : #A^(#vs.pos().at(0, default: none))$
 #let lhyp(ℓ, A) = $#ℓ (#A)$
-#let hasty(Γ, ε, a, A) = $#Γ ⊢_#ε #a : #A$
+#let hasty(Γ, a, A) = $#Γ ⊢ #a : #A$
 #let haslb(Γ, r, L) = $#Γ ⊢ #r triangle.stroked.small.r #L$
 #let issubst(γ, Γ, Δ) = $#γ : #Γ => #Δ$
 #let lbsubst(Γ, σ, L, K) = $#Γ ⊢ #σ : #L arrow.r.long.squiggly #K$

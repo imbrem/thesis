@@ -94,8 +94,8 @@
         - Introduction:
           - Buildup RTL => SSA => LexSSA in language to go from states to variables
           - Buildup LexSSA ⊆ LexSSA ExpTree [mention Cranelift as prior art]
-                           ⊆ LexSSA CaseExpTree [conditional moves, don't introduce big branches]
-                           ⊆ LexSSA λiter [natural generalization, mention ML, Peggy, and RVSDG as prior art]
+            ⊆ LexSSA CaseExpTree [conditional moves, don't introduce big branches]
+            ⊆ LexSSA λiter [natural generalization, mention ML, Peggy, and RVSDG as prior art]
           - Buildup LexSSA λiter ⊆ TTSSA λiter
           - Expressions first (as classical), control later (as this is us, but prior art too see Peggy)
           - Power is the same, and since ⊆ rather than $=>$ type theory for top level gives us type theory for everything else
@@ -109,11 +109,11 @@
               - Unlike POPL instead of coproducts we have enums. This will be more familiar to complier folks, but we need to discuss how booleans and coproducts are just a special case.
             - TT for λSSA (parametric over expression language instantiate for λiter)
               - Talk about labels
-              - This is a lot easier than before, since instead of coproducts we have enums. So a label is a glorified enum. 
+              - This is a lot easier than before, since instead of coproducts we have enums. So a label is a glorified enum.
             - Pure syntatic metatheory of:
               - Substitution
               - Label-substitution
-          - Chapter 2: 
+          - Chapter 2:
             - Expo:
               - Motivate refinement by means of effects as below
               - Introduce λiter type theory with effects parametrized by primitive effects on terms
@@ -139,28 +139,28 @@
               Note: for `nondet`, people will think Prolog rather than C
           - And this depends both _usage_ and _effect_ of sub-expressions, so we need to track both
 
-              `let x = unspec(); e = e` for `e ∉ fv(x)`
+            `let x = unspec(); e = e` for `e ∉ fv(x)`
 
-              On the other hand,
+            On the other hand,
 
-              `let x = ub(); e -> [ub()/x]e`
+            `let x = ub(); e -> [ub()/x]e`
 
-              but
+            but
 
-              `let x = ub(); e = e` if `e` _pure_ and `x ∈ fv(e)`.
+            `let x = ub(); e = e` if `e` _pure_ and `x ∈ fv(e)`.
 
-              - In power paper:
-                
-                - Axiomatization of `ub` is:
-                  - I can send it forwards in time
-                  - I can replace it with anything
-                - _Therefore_, when combined with `case`
-                  - I can send arbitrary information about anything _purely_ computable forwards in time
-                  - I can safely _remove_ information sent forwards in time, so my compiler can do this aggressively
+            - In power paper:
+
+              - Axiomatization of `ub` is:
+                - I can send it forwards in time
+                - I can replace it with anything
+              - _Therefore_, when combined with `case`
+                - I can send arbitrary information about anything _purely_ computable forwards in time
+                - I can safely _remove_ information sent forwards in time, so my compiler can do this aggressively
           - So, let's start with λiter
             - Type theory of λiter with _only effects_
             - Type theory of λiter with _only quantities_
-              
+
 ]
 
 
@@ -169,10 +169,10 @@ because surface languages are often very large and have features
 (such as type inference and overloading)
 which make it difficult to express sound program equivalences.
 On the other hand, compiling naïvely to executable code and _then_ optimizing is equally challenging,
-if it is even feasible to write a one-pass compiler for a given high-level language at all. 
-This is because, 
-just as programming languages are designed to be written (and hopefully, read) by humans, 
-machine code is designed to be efficiently _executed_ by hardware (or an interpreter), 
+if it is even feasible to write a one-pass compiler for a given high-level language at all.
+This is because,
+just as programming languages are designed to be written (and hopefully, read) by humans,
+machine code is designed to be efficiently _executed_ by hardware (or an interpreter),
 and is therefore often difficult both to analyze and to generate from high-level constructs.
 //
 Compiler writers deal with this by using _intermediate representations (IRs)_:
@@ -200,13 +200,13 @@ Compiler writers deal with this by using _intermediate representations (IRs)_:
     - Go "upwards" from machine code, regularizing it to make it easier to read, write, and analyze
       - This is the "classical" approach used by compilers like LLVM
     - Go "downwards" from high-level code, desugaring features and making things easier for machines to read, write, and analyze
-      - Modern compilers often do this many times as part of _lowering passes_; the first attempt at this is usually called a HIR, and then you can recursively apply this until you get to either assembly (Forth/Lisp style) or the low-level IR defined upwards (the usual). 
+      - Modern compilers often do this many times as part of _lowering passes_; the first attempt at this is usually called a HIR, and then you can recursively apply this until you get to either assembly (Forth/Lisp style) or the low-level IR defined upwards (the usual).
 
         If you apply this to HIR you get MIR
       - In practice, compilers may go back and forth between RTL and SSA; e.g. Rust's MIR is a constrained RTL, which goes to LLVM SSA, which goes down to the SelectionDAG (RTL), which then goes down to ASM (machine code)
     - We have semantics for all these stages except the very top and bottom. Another multi-stage technology along these lines is MLIR, so this naturally acts as a semantics for a well-behaved subset of MLIR
 
-    - Completeness (our big theoretical contributions) means: 
+    - Completeness (our big theoretical contributions) means:
       - _we get to use category theory without any additional assumptions_
       - _we get to check whether our actual models are compatible with standard compiler transformations in an implementation-independent, generalizable manner_
         - Neel says: the completeness theorem means that our equations give us a complete API that both the compiler writer can depend on and the model designer can target. i.e.,
@@ -216,7 +216,7 @@ Compiler writers deal with this by using _intermediate representations (IRs)_:
               where $cal(R)$ is the set of rewrites validated by their model.
 
               What we give is the function $ms("SSACongr")(cal(R))$
-          
+
           - Compiler writers, who _need_ to show that their optimizations are compatible with our model + their set of assumptions. You can _always_ do this with a large enough set of assumptions (though of course the assumption might simply be "transformation always holds" since they're allowed to be quantified as long as they respect weakening + substitution)!
 
             That is, given assumptions $cal(R)$, their optimizations must hold in $ms("SSACongr")(cal(R))$, so we tell them exactly how to derive things from a set of _primitve_ assumptions in a model-independent way: the compiler writers only need the kernel generating the assumptions, not either the entire set of assumptions or the model (which are basically the same thing if you're a classical mathematician).
@@ -250,31 +250,31 @@ Each node of the CFG corresponds to a _basic block_ $β$,
 which is a straight-line sequence of _assignments_ $x = f(y, z)$
 #footnote[
   Hence the name "3-address code," referring to the three variables $x, y, z$.
-  Assignments $x = y + z$ are often referred to as _quads_ @aho-11-dragon, 
-  since they have four arguments: 
+  Assignments $x = y + z$ are often referred to as _quads_ @aho-11-dragon,
+  since they have four arguments:
   three variables, and the operator $+$.
 ]
 followed by a _terminator_ $τ$,
 which tells us where to transfer control next.
 
 In @rtl-grammar, we give a formal presentation of the syntax of RTL parametrized by a set of
-_primitive instructions_ $p ∈ cal(I)$. 
+_primitive instructions_ $p ∈ cal(I)$.
 Our grammar is intentionally minimal, with many important features implemented via syntax sugar:
 - _Constants_ $c$ are represented as nullary primitive instructions $c()$.
 - _Operations_ $o$ always return a single value of fixed type; in particular,
 - Operations can produce multiple values by returning a tuple; which can be de-structured by
   assigning it to a tuple of variables $(V)$ #footnote[
-    Note the unusual fact that this means the production $(V)$ for a variable list may appear on 
+    Note the unusual fact that this means the production $(V)$ for a variable list may appear on
     both the left-hand side and right-hand side of an assignment.
   ]
-- _Conditional branches_ $ite(x, τ, τ')$ are desugared to 
-  _switch-statements_ 
+- _Conditional branches_ $ite(x, τ, τ')$ are desugared to
+  _switch-statements_
   $
-  switchstmt(o, lb("tt"): τ seq lb("ff"): τ')
+    switchstmt(o, lb("tt"): τ seq lb("ff"): τ')
   $
   where $lb("tt"), lb("ff") ∈ tbool$ are distinguished labels.
-  In general, for every finite set of labels $lb("l") ∈ lb("L")$, 
-  we postulate an _enumeration type_ with members of the form $lb("l")_lb("L")$;
+  In general, for every finite set of labels $lb("l") ∈ lb("L")$,
+  we postulate an _enumeration type_ with members of the form $lb("l", annot: lb("L"))$;
   where $lb("L")$ is clear from context, we omit it.
 
 #figure(
@@ -283,79 +283,52 @@ Our grammar is intentionally minimal, with many important features implemented v
     #grid(
       align: left,
       columns: 3,
-      gutter: 1.5em,
+      gutter: (2em, 0em),
       bnf(
-        Prod(
-          $v$,
-          {
-            Or[$x$][_variable_]
-            Or[$(V)$][_tuple_]
-          },
-        ),
-        Prod(
-          $V$,
-          {
-            Or[$·$][]
-            Or[$x, V$][]
-          },
-        ),
+        Prod($v$, {
+          Or[$x$][_variable_]
+          Or[$(V)$][_tuple_]
+        }),
+        Prod($V$, {
+          Or[$·$][]
+          Or[$x, V$][]
+        }),
       ),
       bnf(
-        Prod(
-          $o$,
-          {
-            Or[$v$][_value_]
-            Or[$f med v$][_application_]
-          },
-        ),
-        Prod(
-          $f$,
-          {
-            Or[$p$][_primitive_]
-            Or[$lb("l")_lb("L")$][_label_]
-          },
-        ),
+        Prod($o$, {
+          Or[$v$][_value_]
+          Or[$f med v$][_application_]
+        }),
+        Prod($f$, {
+          Or[$p$][_primitive_]
+          Or[$lb("l", annot: lb("L"))$][_label_]
+        }),
       ),
+      bnf(Prod($β$, {
+        Or[$x = o seq β$][_assign_]
+        Or[$(V) = o seq β$][_destructure_]
+        Or[$τ$][_terminator_]
+      })),
+
       bnf(
-        Prod(
-          $β$,
-          {
-            Or[$x = o seq β$][_assign_]
-            Or[$(V) = o seq β$][_destructure_]
-            Or[$τ$][_terminator_]
-          },
-        ),
+        Prod($τ$, {
+          Or[$brb(ℓ)$][_branch_]
+          Or[$switchstmt(o, B)$][_case_]
+        }),
+        Prod($B$, {
+          Or[$·$][]
+          Or[$brb(ℓ), B$][]
+        }),
       ),
-      bnf(
-        Prod(
-          $τ$,
-          {
-            Or[$brb(ℓ)$][_branch_]
-            Or[$switchstmt(o, B)$][_case_]
-          },
-        ),
-        Prod(
-          $B$,
-          {
-            Or[$·$][]
-            Or[$brb(ℓ), B$][]
-          },
-        ),
-      ),
-      bnf(
-        Prod(
-          $β$,
-          {
-            Or[$β$][_entry block_]
-            Or[$G seq ℓ : β$][_labeled basic block_]
-          },
-        ),
-        )
-      ),
+      bnf(Prod($β$, {
+        Or[$β$][_entry block_]
+        Or[$G seq ℓ : β$][_labeled basic block_]
+      })),
+    ),
   ],
   caption: [
-    Grammar for RTL. 
-    Note that variable lists $V$ may appear on both the left-hand side and right-hand side of 
+    Grammar for RTL.
+    Note that variable lists $V$ may appear on both the left-hand side and right-hand side of
     assignments.
   ],
   kind: image,
@@ -368,9 +341,9 @@ We can compile this program into RTL, yielding the code in @rtl-factorial, by:
   like $a * (i + 1)$
   into a sequence of definitions naming each subexpression.
   Here, expressions like $a + b$ are syntactic sugar for primitive operations $+ (a, b)$.
-- Converting structured control flow (e.g., $ms("while")$) into unstructured jumps 
+- Converting structured control flow (e.g., $ms("while")$) into unstructured jumps
   between basic blocks, generating labels $lb("body")$ and $lb("loop")$ as necessary.
-  While, in our formalism, the entry block has no name, 
+  While, in our formalism, the entry block has no name,
   we will adopt the convention of assigning it the label $lb("entry")$.
 
   In general, we refer to the basic block with label $lb("label")$ as $β_lb("label")$.
@@ -522,7 +495,12 @@ rather than only those paths which also go through $S$.
                   & a = a * t seq \
                   & i = i + 1 seq \
                   & kbr lb("loop") \
-                  \ \ \ \ \ \
+                  \
+                  \
+                  \
+                  \
+                  \
+                  \
     $],
     caption: [
       As RTL \ \
@@ -588,12 +566,12 @@ we can treat the return point as a distinguished label (with argument) that a pr
 
 #figure(
   todo[this],
-  caption: todo-inline[BBA grammar]
+  caption: todo-inline[BBA grammar],
 ) <bba-grammar>
 
 #figure(
   todo[this],
-  caption: todo-inline[BBA factorial]
+  caption: todo-inline[BBA factorial],
 ) <bba-factorial>
 
 This allows us to use dominance-based scoping without any special cases for $ϕ$-nodes.
@@ -616,7 +594,7 @@ For example, in Figure~#todo-inline[fig:fact-bba]:
 #todo[
   fix this text:
   - first off, address why we should care about scoping, why it's not just a state transformer
-  - adjust definitions of dominance to SSA; put stuff about domination by a _set_ in later RTL 
+  - adjust definitions of dominance to SSA; put stuff about domination by a _set_ in later RTL
     section
   - then segue to Appel's ideas, and how we can do the equivalence
 ]
@@ -672,35 +650,35 @@ While functional languages typically rely on _lexical scoping_,
 where the scope of a variable is determined by its position within the code's nested structure,
 RTL uses a different scoping mechanism based on _dominance_.
 
-Informally, 
-we don't want to assign a meaning to programs in which variables are used before they are defined. 
-If $cal(D)_x$ and $cal(U)_x$ denote the set of program points at which a variable $x$ is defined and used respectively, 
-what we want is that every program execution reaching any point in $cal(U)_x$ must first pass through some element of $cal(D)_x$. 
-In general, it is undecidable whether this property holds, 
+Informally,
+we don't want to assign a meaning to programs in which variables are used before they are defined.
+If $cal(D)_x$ and $cal(U)_x$ denote the set of program points at which a variable $x$ is defined and used respectively,
+what we want is that every program execution reaching any point in $cal(U)_x$ must first pass through some element of $cal(D)_x$.
+In general, it is undecidable whether this property holds,
 and so we need to use a safe approximation.
 
-Given a _pointed graph_ $G = (V, E)$ equipped with a fixed _entry node_ $e ∈ V$, 
-we say a set of nodes $D$ _dominates_ a node $u$ if every path from $e$ to $u$ must first pass through some $d ∈ D$. 
+Given a _pointed graph_ $G = (V, E)$ equipped with a fixed _entry node_ $e ∈ V$,
+we say a set of nodes $D$ _dominates_ a node $u$ if every path from $e$ to $u$ must first pass through some $d ∈ D$.
 Likewise, we say a single node $d$ dominates $u$ if ${d}$ does.
-If we take 
+If we take
 - $G$ to be our control-flow graph, with vertices basic blocks and edges jumps in the program text
 - $e = β_lb("entry")$ to be our entry block
 it is clear that if $β₁$ dominates $β₂$ no program execution can reach $β₂$ without first having run $β₁$.
-This is an over-approximation of our desired property, 
-because some jumps may appear in the program text but never be taken at runtime 
+This is an over-approximation of our desired property,
+because some jumps may appear in the program text but never be taken at runtime
 (we call such jumps _unreachable_).
 
 //TODO: just write things in terms of dominator trees, or punt to formalism in CFG section
 
-We note that, in general, the relation on basic blocks "$β₁$ dominates $β₂$" in a CFG $G$ can in 
-fact be viewed as a tree rooted at the entry block: every pair of basic blocks 
+We note that, in general, the relation on basic blocks "$β₁$ dominates $β₂$" in a CFG $G$ can in
+fact be viewed as a tree rooted at the entry block: every pair of basic blocks
 $β₁, β₂$ have a least common ancestor $β$ which dominates them both.
 We call this tree the _dominator tree_ @cytron-91-ssa-intro.
 #footnote[
-  One edge case is that, by our definition, a basic block $β_lb("dead")$ which is _unreachable_ 
+  One edge case is that, by our definition, a basic block $β_lb("dead")$ which is _unreachable_
   from $β_lb("entry")$ is dominated by _every_ basic block $β$ in the CFG.
-  We will simply assume that every CFG is assigned _some_ dominator tree $ms("dom")(G)$ rooted at 
-  $β_lb("entry")$ equal to the graph-theoretic dominance relation on all reachable $(β, β')$, 
+  We will simply assume that every CFG is assigned _some_ dominator tree $ms("dom")(G)$ rooted at
+  $β_lb("entry")$ equal to the graph-theoretic dominance relation on all reachable $(β, β')$,
   and say that $β$ dominates $β'$ iff $(β, β') ∈ ms("dom")(G)$.
 ]
 
@@ -708,18 +686,18 @@ It follows that we may consider a variable usage in a block $β$ in-scope if and
 - $x$ is defined earlier in $β$
 - The set $ms("defs")(x)$ of basic blocks in which $x$ is defined _stricly_ dominates $β$.
 
-  In general, we say a set of nodes $D$ strictly dominates a node $u$ if $D backslash {n}$ dominates $n$. 
-  Likewise, $d$ strictly dominates $u$ if ${d} backslash {u}$ dominates $u$, i.e., 
-  if $d$ dominates $u$ and $u ≠ d$ 
+  In general, we say a set of nodes $D$ strictly dominates a node $u$ if $D backslash {n}$ dominates $n$.
+  Likewise, $d$ strictly dominates $u$ if ${d} backslash {u}$ dominates $u$, i.e.,
+  if $d$ dominates $u$ and $u ≠ d$
   (since no nodes are dominated by the empty set).
 
-Equivalently, we can hew closer to our original definition and instead consider a graph of 
+Equivalently, we can hew closer to our original definition and instead consider a graph of
 _instructions_, where
 - An _assignment_ has a single outgoing edge to the next instruction
 - A _terminator_ has an outgoing edge to each target appearing within it
 Then, a usage of $x$ in an instruction $i$ is in scope if and only if
 $i$ is strictly dominated by the set of assignments to $x$.
-This conveniently replicates the traditional definition of a basic block as 
+This conveniently replicates the traditional definition of a basic block as
 a maximal straight-line sequence of non control-flow instructions.
 We will give a more formal treatment of RTL programs as graphs in @cfgs.
 
@@ -731,23 +709,23 @@ This yields a natural framework for defining the semantics of SSA and reasoning 
 
 A program in SSA, however, is not quite a functional program,
 because scoping is dominance-based rather than lexically scoped.
-It's easy enough to go from a functional program to SSA: 
-just flatten everything, forgetting the scoping information 
+It's easy enough to go from a functional program to SSA:
+just flatten everything, forgetting the scoping information
 (α-renaming labels and variables as necessary to guarantee uniqueness);
 the result is trivially dominance-scoped.
 
-Our goal, therefore, 
-is to develop a simple strategy to insert brackets into any well-formed SSA program 
+Our goal, therefore,
+is to develop a simple strategy to insert brackets into any well-formed SSA program
 (up to permutation of basic blocks)
 to obtain a lexically scoped functional program.
 Let's begin by focusing on variables.
 A block $β$ can only use variables defined in the blocks which dominate it
 -- i.e., defined in its ancestors in the dominator tree.
-Flipping this around, the variables defined in $β$ can only be _used_ by its descendants; i.e., 
+Flipping this around, the variables defined in $β$ can only be _used_ by its descendants; i.e.,
 by blocks in its dominator subtree, or _region_, $r = ms("maxRegion")(β)$.
 The natural strategy this suggests is therefore to have lexical scopes correspond to subtrees of the
 dominator tree. One way to go about this is to:
-- Re-order the basic blocks in our SSA program so that they form a breadth-first traversal of the 
+- Re-order the basic blocks in our SSA program so that they form a breadth-first traversal of the
   dominator tree
 - For every basic block $β$ in the dominator tree, add an opening bracket after that block's label and
   a closing bracket after that block's last descendant in the dominator tree
@@ -756,21 +734,21 @@ dominator tree. One way to go about this is to:
 In particular, each pair of brackets ${ r }$ encloses:
 - A basic block $β$, consisting as usual of assignments $x_i = o_i$ followed by a terminator $τ$
 - A sequence of bracketed basic block definitions $ℓ_j : { β_j }$
-The rules for variable visibility are the obvious ones: 
-$x_i$ is visible in $o_k$ for $k > i$, and in arbitrary $β_j$. 
-On the other hand, 
-since the child basic blocks $ℓ_j$ correspond to _mutually_ recursive functions, 
+The rules for variable visibility are the obvious ones:
+$x_i$ is visible in $o_k$ for $k > i$, and in arbitrary $β_j$.
+On the other hand,
+since the child basic blocks $ℓ_j$ correspond to _mutually_ recursive functions,
 we will treat them like a `let rec`, with all $ℓ_j$ visible in each $β_j$.
 
 #todo[but not outside the scope]
 
-To see that this works, consider basic blocks $β_lb("jump")$ and $β_lb("dest")$, where 
-$β_lb("jump")$ contains a jump to $β_lb("dest")$, or, equivalently, 
+To see that this works, consider basic blocks $β_lb("jump")$ and $β_lb("dest")$, where
+$β_lb("jump")$ contains a jump to $β_lb("dest")$, or, equivalently,
 the body of $β_lb("jump")$ tail-calls the function corresponding to $β_lb("dest")$.
 
-Observe that any $β_lb("dom")$ which _strictly_ dominates $β_lb("dest")$ must _also_ dominate 
-$β_lb("jump")$, as otherwise, 
-- By definition, 
+Observe that any $β_lb("dom")$ which _strictly_ dominates $β_lb("dest")$ must _also_ dominate
+$β_lb("jump")$, as otherwise,
+- By definition,
   there is a path from $β_lb("entry")$ to $β_lb("jump")$ which does not pass through $β_lb("dom")$
 - And therefore, by appending the jump from $β_lb("jump")$ to $β_lb("dest")$ to this path,
   we obtain a path from $β_lb("entry")$ to $β_lb("dest")$ which does not pass through $β_lb("dom")$
@@ -783,15 +761,15 @@ On the other hand, if $β_lb("dom")$
 
 In particular, letting $β_lb("parent")$ denote $β_lb("dest")$'s parent in the dominator tree
 #footnote[
-  Since the entry block has no name, it cannot be called, 
-  therefore $β_lb("dest")$ cannot be the entry block and so must have a parent in the dominator tree 
+  Since the entry block has no name, it cannot be called,
+  therefore $β_lb("dest")$ cannot be the entry block and so must have a parent in the dominator tree
   (which of course might be the entry block).
 ],
 $β_lb("parent")$ must dominate _every_ basic block $β_lb("jump")$ containing a jump to $β_lb("dest")$.
 
 
-Observe that $β_lb("parent")$ _must_ dominate $β_lb("jump")$, as otherwise, 
-- By definition, 
+Observe that $β_lb("parent")$ _must_ dominate $β_lb("jump")$, as otherwise,
+- By definition,
   there is a path from $β_lb("entry")$ to $β_lb("jump")$ which does not pass through $β_lb("parent")$
 - And therefore, by appending the jump from $β_lb("jump")$ to $β_lb("dest")$ to this path,
   we obtain a path from $β_lb("entry")$ to $β_lb("dest")$ which does not pass through $β_lb("parent")$
@@ -831,8 +809,8 @@ and so generalize the more standard concept of a single-entry-single-exit region
 
 In particular,
 a _region_ $r$ generalizes a basic block $β$ by annotating the terminator $τ$
-with a list $L$ of _labeled branches_ "$wbranch(ℓ_i, x_i, t_i)$,"
-yielding a _$ms("where")$-block_ "$where(τ, L)$."
+with a list $L$ of _labeled branches_ #todo-inline[or w branch...]//"$wbranch(ℓ_i, x_i, t_i)$,"
+yielding a _$ms("where")$-block_ " #todo-inline[no more where...] //$where(τ, L)$."
 Each $ℓ_i$ can only be branched to by $τ$ and the regions $t_i$,
 thus syntactically enforcing that the basic block at the root of $r$
 (made up of its instructions and terminators)
@@ -916,8 +894,8 @@ To help achieve this, we will slightly generalize our syntax by:
   into the syntactic category $a$ of _expressions_ <ssa-change-val>
 + Fusing the syntactic category $τ$ of terminators
   into the syntactic category of regions $r$. <ssa-change-reg>
-+ Extending expressions $a$ to allow _let-expressions_ "$letexpr(x, a, b)$"
-  and _case-expressions_ "$caseexpr2(a, x, b, y, c)$" <ssa-change-expr>
++ Extending expressions $a$ to allow _let-expressions_ "$elet(x, a, b)$"
+  and _case-expressions_ "$ecase2(a, x, b, y, c)$" <ssa-change-expr>
 
 #todo[while rewriting, make sure to fix numbering]
 
@@ -944,17 +922,21 @@ On the other hand,
 (which is a terminator $τ$)
 with the code _pointed to_ by the label $ℓ$ (which is a region $r$),
 allowing us to perform the jump-threading optimization
+#todo[no more where]
+/*
 $
   where(letstmt(x, a, brb(ℓ, b)), wbranch(ℓ, y, r))
   equiv where(letstmt(x, a, letstmt(y, b, r)), wbranch(ℓ, y, r))
 $
+*/
 While both sides of this equation are valid lexical SSA programs,
 by loosening our syntax slightly,
 we can _unconditionally_ replace jumps with regions,
 without worrying about jumps nested in case statements or fusing $ms("where")$-blocks.
 This, especially combined with change (3),
 makes it much easier to verify optimizations such as
-#todo[clean up optimization here]
+#todo[clean up optimization here; also no more where]
+/*
 $
   & where(
       casestmt2(a, x, brb(ℓ, (ι_r x)), x, brb(ℓ, (ι_l x))),
@@ -973,6 +955,7 @@ $
     equiv ms("ret") (casestmt2(a, x, ι_l x, x, ι_r x))
     equiv ms("ret") a
 $
+*/
 by repeatedly applying a set of known-good rules,
 and, moreover, dramatically simplifies the form of the rules themselves.
 
@@ -986,7 +969,7 @@ and, moreover, dramatically simplifies the form of the rules themselves.
     - And fun things like Peggy use fun things like loops
     - We have λiter which everything above is a subset of
   - Separately, _type theoretic SSA_ is parametrized by an expression language
-  - Recall the ladder components: 
+  - Recall the ladder components:
     - $∀ E . ms("TySSA")(E) ≅ ms("SSA")(E)$
     - $∀ E . ms("TySSA")(E) ≅ ms("TySSA")(ms("Op"))$
 ]
@@ -995,10 +978,55 @@ and, moreover, dramatically simplifies the form of the rules themselves.
 
 #block-note[
   - We introduce λiter at the end of section 2 as our expression language
-  - We want to mention that our expression language has the same power as SSA and give a pointer to 
+  - We want to mention that our expression language has the same power as SSA and give a pointer to
     the proof down at the end (post-completeness)
   - Minimize forward references considered harmful
 ]
+
+#figure(
+  placement: auto,
+  [
+    #grid(
+      align: left,
+      columns: 3,
+      gutter: (4em, 0em),
+      bnf(
+        Prod(
+          $e$,
+          {
+            Or[$x$][_variable_]
+            Or[$f med e$][_application_]
+            Or[$(E)$][_tuple_]
+            Or[$elet(x, e_1, e_2)$][_let-binding_]
+            Or[$elet((V), e_1, e_2)$][_destructure_]
+            Or[$ecase(e, C)$][_cases_]
+            Or[$eiter(e_1, x, e_2)$][_iteration_]
+          },
+        ),
+      ),
+      bnf(
+        Prod(
+          $E$,
+          {
+            Or[$·$][_nil_]
+            Or[$e, E$][_cons_]
+          },
+        ),
+        Prod(
+          $C$,
+          {
+            Or[$·$][_nil_]
+            Or[$ebr(lb("l"), x, a) seq C$][_cons_]
+          },
+        ),
+      )
+    )
+  ],
+  caption: [
+    Grammar for #iter-calc
+  ],
+  kind: image,
+) <iter-calc-grammar>
 
 #todo[
   Question for Neel:
@@ -1006,14 +1034,9 @@ and, moreover, dramatically simplifies the form of the rules themselves.
     - #iter-calc makes some sense...
 ]
 
-#margin-note[
-  ...
-][
-   To be at the margins of society, I'd have to 
-   live in a society.
-]
-
 #todo[fuse with refined account of SSA]
+
+/*
 
 We now give a formal account of #ssa-calc, starting with the types.
 Our types are first order,
@@ -1108,13 +1131,20 @@ We now move on to _regions_, which can be typed as follows:
   Operationally, we interpret this as executing the expression $e$,
   and then, if $e$ is a left injection $ι_l x$, executing $r$ with its value ($x$),
   otherwise executing $s$.
-- _$ms("where")$-blocks_ of the form "$where(r, (wbranch(ℓ_i, x_i, t_i))_i)$",
+- #todo[while you're rewriting this, no more where]
+  /*
+  _$ms("where")$-blocks_ of the form "$where(r, (wbranch(ℓ_i, x_i, t_i))_i)$",
   which consist of a collection of mutually recursive regions $wbranch(ℓ_i, x_i, t_i)$
   and a _terminator region_ $r$ which may branch to one of $ℓ_i$ or an exit label.
+  */
+
+*/
 
 #todo[figure: rules for typing isotopessa regions]
 
 == Metatheory
+
+/*
 
 We can now begin to state the syntactic metatheory of #todo-inline[isotopessa].
 One of the most important metatheorems,
@@ -1467,6 +1497,8 @@ enough to state:
   a branch to $kappa$ within the #ms()[where]-block has the same semantics as if the #ms()[where]-block
   was not there; hence, it can be removed.
 
+#todo[no more where]
+/*
 To state our $eta$-rule, however, we will need to introduce some more machinery. Given a mapping
 from a set of labels $ℓ_i$ to associated regions $t_i$, we may define the _control-flow
 graph substitution_ $cfgsubst((wbranch(ℓ_i, x_i, t_i),)_i)$ pointwise as follows:
@@ -1474,9 +1506,12 @@ $
   cfgsubst((wbranch(ℓ_i, x_i, t_i),)_i) space kappa space a
   := (where(brb(kappa, a), (wbranch(ℓ_i, x_i, t_i),)_i))
 $
+*/
 In general, we may derive, for any label-context $ms("L")$ (assuming $cfgsubst(dot)$ acts uniformly
 on the labels $kappa$ in $ms("L")$ as described above), the following rule #todo-inline[cfgs].
 
+#todo[no more where]
+/*
 Our $eta$-rule, #todo-inline[cfg-η], says that any #ms()[where]-block of the form
 $where(r, (wbranch(ℓ_i, x_i, t_i),)_i)$ has the same semantics as the label-substitution
 $[cfgsubst((wbranch(ℓ_i, x_i, t_i),)_i)]r$, which in effect propagates the where-block to the
@@ -1489,6 +1524,7 @@ $
   &equiv letexpr(y, a, [cfgsubst((wbranch(ℓ_i, x_i, brb(ℓ_j, a_j)),)_i)]r) \
   &equiv letexpr(y, a, where(r, (wbranch(ℓ_i, x_i, brb(ℓ_j, a_j)),)_i))
 $
+*/
 One particularly important application of the $eta$-rule for control-flow graphs is in validating
 the rewrite #todo-inline[case2cfg], which allows us to convert a #ms()[case]-statement into a #ms()[where]-block with two branches.
 
@@ -1520,12 +1556,15 @@ The actual rule is quite complicated, so let's break it down point by point. Ass
   $x$ of type $A$
 
 Suppose further that the following condition holds:
+#todo[no more where]
+/*
 $
   lbeq(
     #$Gamma, bhyp(x, A)$, [e slash y]s, where(t, wbranch(ℓ, x, brb(kappa, e))),
     #$ms("L"), kappa(B)$
   )
 $
+*/
 That is, the following two programs are equivalent:
 + Given input $x$, evaluate $e$ and, taking it's output to be input $y$, evaluate $s$,
   (implicitly) yielding as output a new value of $y$. In imperative pseudocode,
@@ -1540,6 +1579,8 @@ That is, the following two programs are equivalent:
 
 _Then_, for any well-typed entry block $haslb(Gamma, r, #$ms("L"), ℓ(A)$)$ (which can produce
 an appropriate input $x : A$ at label $ℓ$), we have that
+#todo[also no more where]
+/*
 $
   lbeq(
     Gamma, where(
@@ -1548,6 +1589,7 @@ $
     ), where(r, t), ms("L")
   )
 $
+*/
 i.e., in imperative pseudocode,
 $
   x = r ; y = e ; ms("loop") space {y = s} & equiv x = r ; ms("loop") space {x = t}
@@ -1565,6 +1607,8 @@ where $s$ and $t$ may branch out of the loop.
 
 Note that, due to #todo-inline[let₁-β], #todo-inline[cfg-η], and #todo-inline[cfg-β₁], this is
 equivalent to the rule #todo-inline[uni'] shown in #todo-inline[eqn:uni-variant]:
+#todo[yet less where]
+/*
 $
   lbeq(
     #$Gamma, bhyp(x, A)$,
@@ -1580,6 +1624,7 @@ $
     ms("L")
   )
 $ <eqn:uni-variant>
+*/
 where $haslb(Gamma, r, #$ms("L"), ℓ(A)$)$, $hasty(#$Gamma, bhyp(x, A)$, bot, e, B)$,
 $haslb(#$Gamma, bhyp(y, B)$, s, #$ms("L"), kappa(B)$)$, and $haslb(#$Gamma, bhyp(x, A)$, t, #$ms("L"), ℓ(A)$)$.
 Going back to our concrete example from #todo-inline[eqn:loop-comm-ssa], if we first substitute the
@@ -1594,8 +1639,11 @@ Now, instantiate #todo-inline[uni'] #todo-inline[eqn:uni-variant] by taking:
 - $t = letstmt(x', y + 1, ms("if") space p space 3x' space {ms("ret") space 3x'} space ms("else") space {brb(ℓ, x')})$
   to be the loop body on the LHS
 
+#todo[also no more where]
+/*
 It's easy to see that $(where(([ℓ(x) arrow.bar brb(kappa, e)]r), wbranch(kappa, y, s)))$ and
 $(where(r, t))$ are syntactically equal to the _RHS_ and _LHS_ of our desired result
+*/
 #todo-inline[eqn:loop-comm-red]. So, it suffices to verify that
 $
   Gamma, bhyp(x, A) &⊢ [e slash y]s \
@@ -1761,6 +1809,7 @@ in Section #todo-inline[ref].
 
 #todo[Figure: Rules for the equivalence relation on #ms()[IsotopeSSA] substitutions and label-substitutions.
   Rules: sb-nil, sb-cons, sb-skip-l, sb-skip-r, ls-nil, ls-cons, ls-skip-l, ls-skip-r, sb-id, ls-id]
+*/
 
 = Control-Flow Graphs
 
