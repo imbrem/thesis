@@ -270,7 +270,7 @@ Our grammar is intentionally minimal, with many important features implemented v
 - _Conditional branches_ $ite(x, τ, τ')$ are desugared to
   _switch-statements_
   $
-    switchstmt(o, lb("tt"): τ seq lb("ff"): τ')
+    sswitch(o, lb("tt"): τ seq lb("ff"): τ')
   $
   where $lb("tt"), lb("ff") ∈ tbool$ are distinguished labels.
   In general, for every finite set of labels $lb("l") ∈ lb("L")$,
@@ -313,7 +313,7 @@ Our grammar is intentionally minimal, with many important features implemented v
       bnf(
         Prod($τ$, {
           Or[$brb(ℓ)$][_branch_]
-          Or[$switchstmt(o, B)$][_case_]
+          Or[$sswitch(o, B)$][_case_]
         }),
         Prod($B$, {
           Or[$·$][]
@@ -514,8 +514,8 @@ rather than only those paths which also go through $S$.
                   & i₀ = 1 seq \
                   & a₀ = 1 seq \
                   & kbr lb("loop") seq \
-      lb("loop"): & i₁ = #phistmt($lb("entry") : i₀, lb("body") : i₂$) \
-                  & a₁ = #phistmt($lb("entry") : a₀, lb("body") : a₂$) \
+      lb("loop"): & i₁ = #eϕ($lb("entry") : i₀, lb("body") : i₂$) \
+                  & a₁ = #eϕ($lb("entry") : a₀, lb("body") : a₂$) \
                   & ite(i₁ < n, brb(lb("body")), retb(a₁)) seq \
       lb("body"): & t = i₁ + 1 seq \
                   & a₂ = a₁ * t seq \

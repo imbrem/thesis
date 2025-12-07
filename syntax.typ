@@ -53,7 +53,7 @@
 
 // Syntax for expressions
   
-/// A branch of a case statement
+/// A branch in a case expression
 #let ebr(ℓ, x, b) = $#ℓ (#x) : #b$
 
 /// A let expression
@@ -67,33 +67,44 @@
 
 // Statements
 
+/// An unconditional branch
 #let brb(ℓ, ..vs) = if vs.pos().len() == 0 {
   $kbr #ℓ$
 } else {
   $kbr #ℓ thick #vs.pos().at(0)$
 }
-#let retb(v) = $kret #v$
-#let casestmt(e, B) = $kcase #e thick { #B }$
-#let letstmt(x, a, t) = $klet #x = #a seq #t$
 
+/// A let statement
+#let slet(x, a, t) = $klet #x = #a seq #t$
+
+/// A case statement
+#let scase(e, B) = $kcase #e thick { #B }$
+
+/// A branch in a case statement
 #let sbr(ℓ, x, b) = $#ℓ (#x) : #b$
-//TODO: think about type annotations here...
+
+/// A labelled basic block
 #let lbb(ℓ, x, t) = $#ℓ (#x) : #t$
 
 // Syntax sugar
 
+/// A return statement
+#let retb(v) = $kret #v$
+
+/// An if-then-else
+#let ite(o, l, r) = $kif #o thick { #l } kelse { #r }$
+
+/// A switch statement
+#let sswitch(e, B) = $kswitch #e thick { #B }$
+
 /// A binary case expression
 #let ecase2(e, x, a, y, b) = ecase(e, $ebr(ninl, #x, #a) seq ebr(ninr, #y, #b)$)
 
-// Statements
-#let ite(o, l, r) = $kif #o thick { #l } kelse { #r }$
-#let switchstmt(e, B) = $kswitch #e thick { #B }$
-#let linl(v) = $ninl med #v$
-#let linr(v) = $ninr med #v$
-#let casestmt2(e, x, s, y, t) = casestmt(e, $sbr(ninl, #x, #s) seq  sbr(ninr, #y, #t)$)
+/// A binary case statement
+#let scase2(e, x, s, y, t) = scase(e, $sbr(ninl, #x, #s) seq  sbr(ninr, #y, #t)$)
 
-// Other languages
-#let phistmt(branches) = $ϕ thick { #branches }$
+/// A φ-expression
+#let eϕ(branches) = $ϕ thick { #branches }$
 
 // Judgements
 
