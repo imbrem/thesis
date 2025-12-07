@@ -1,6 +1,23 @@
 #import "@preview/curryst:0.6.0": prooftree, rule, rule-set
 #import "@preview/simplebnf:0.1.1": *
 #import "@preview/subpar:0.2.2"
+#import "@preview/lemmify:0.1.8": *
+#import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
+
+#let (
+  theorem, lemma, corollary,
+  remark, proposition, example,
+  proof, rules: thm-rules
+) = default-theorems("thm-group", lang: "en")
+
+#let (
+  definition,
+  rules: thm-rules-b
+) = default-theorems("thm-group-b")
+
+#show: thm-rules
+
+#show: thm-rules-b
 
 #import "@preview/wordometer:0.1.5": word-count
 #show: word-count.with(exclude: <no-wc>)
@@ -2012,6 +2029,82 @@ in Section #todo-inline[ref].
 
 == Poset-Enriched Categories
 
+// At a high level, our goal is to assign a denotational semantics $⟦hasty(Γ, a, A)⟧$ 
+// to every well-typed #iter-calc program $hasty(Γ, a, A)$.
+
+We will begin with a brief overview of basic category theory, in which we will take the opportunity
+to fix notations. Recall the definition of a category $cal(C)$:
+
+#definition(name: "Category")[
+  A category $cal(C)$ is given by:
+  - A set of _objects_ $|cal(C)|$
+  - For each pair of objects $A, B in |cal(C)|$, a set of _morphisms_ $cal(C)(A, B)$.
+    We call this set a _hom-set_.
+  - For each object $A in |cal(C)|$, an _identity morphism_ $id_A : cal(C)(A, A)$
+  - A binary operation, $- med ; -$, mapping each pair of morphisms $f : cal(C)(A, B)$ and $g : cal(C)(B, C)$
+    to their _composition_ $f ; g : cal(C)(A, C)$
+  
+  Such that:
+  - For all $A, B: |cal(C)|$, $id_A ; f = f ; id_B = f$
+  - For all $f: cal(C)(A, B), g: cal(C)(B, C), h: cal(C)(C, D)$, $(f ; g) ; h = f ; (g ; h)$
+]
+
+#todo[clean]
+
+We follow the convention in computer science and define composition "forwards" as $f ; g$.
+If we interpret objects $A, B$ as _states_ 
+and morphisms $f: cal(C)(A, B), g : cal(C)(B, C)$ as _transformations between states_,
+then their _sequential composition_
+$
+  #diagram(cell-size: 15mm, $
+    A edge(f, ->) & B edge(g, ->) & C
+  $)
+$ 
+is precisely $f ; g : cal(C)(A, C)$: the composite path from $A$ to $C$ through $B$.
+Viewing morphisms in a category as diagrams, the laws of a category become graphically obvious:
+if the identity transformation from $A$ to $A$ is doing nothing, i.e. the null path, then the
+axiom that 
+$
+id_A ; f = f ; id_B = f
+$ 
+becomes the (trivial) equation on diagrams
+$
+  #diagram(cell-size: 15mm, $
+    A edge(f, ->) & B
+  $)
+  quad = quad
+  #diagram(cell-size: 15mm, $
+    A edge(f, ->) & B
+  $)
+  quad = quad
+  #diagram(cell-size: 15mm, $
+    A edge(f, ->) & B
+  $)
+$ 
+Likewise, the associativity axiom becomes the (trivial) equation
+$
+  #diagram(cell-size: 15mm, $
+    A edge(f, ->) & B edge(g, ->) & C edge(h, ->) & D
+  $)
+$
+
+#todo[note on size issues. We use Grothendieck-Tarski, deal with it.]
+
+#todo[lore on categories being paths]
+
+#todo[lore on rewriting, explain $->>$]
+
+#definition(name: "Poset-enriched category")[
+  A category $cal(C)$ is _poset-enriched_ if every hom-set $cal(C)(A, B)$ is equipped with a 
+  partial order $->>$ _compatible_ with compostion, i.e.,
+  for all $f, f': cal(C)(A, B)$ and $g, g': cal(C)(B, C)$,
+  $
+    (f ->> f') ∧ (g ->> g') ==> (f ; g ->> f' ; g')
+  $
+]
+
+#todo[explain $->>$ notation some more]
+
 #todo[
   - Recall definition of a category for the compiler people in the audience, use opportunty to fix notation
   - Briefly recall notion of an _enriched_ category; 
@@ -2021,6 +2114,11 @@ in Section #todo-inline[ref].
   - Recall basic category-theoretic notions; give poset-enrichments:
     - products
     - coproducts
+]
+
+#todo[
+  - By the end of this section, the reader knows poset-enriched categories
+  - Optionally, $V$-enriched for concrete $V$
 ]
 
 == Freyd Categories
