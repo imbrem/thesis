@@ -646,7 +646,7 @@ For example, in Figure~#todo-inline[fig:fact-bba]:
         - Not part of the main line of the argument, shunt somewhere else; the point of this section is to _get to lexical SSA_
 ]
 
-#block-notes[
+#block-note[
   Weird syntax idea, we discussed this and you rejected it for TOPLAS but makes sense for thesis:
   no where-blocks, just curly braces.
 
@@ -661,7 +661,7 @@ For example, in Figure~#todo-inline[fig:fact-bba]:
 
 #todo[deal with this jump, might want to try another tack since scoping is a later section]
 
-#block-notes[
+#block-note[
   In the original, we put the scoping discussion first because later, when we introducd $ϕ$-nodes, we use the complexity of scoping as part of the argument for why to do BBA.
 
   But this doesn't make much sense in terms of flow because we want to talk about SSA first and _then_ lexical SSA, and now the stuff about scoping and dominance is split across sections. So go fix that.
@@ -993,7 +993,7 @@ and, moreover, dramatically simplifies the form of the rules themselves.
 
 = Type Theory
 
-#block-notes[
+#block-note[
   - We introduce λiter at the end of section 2 as our expression language
   - We want to mention that our expression language has the same power as SSA and give a pointer to 
     the proof down at the end (post-completeness)
@@ -1015,7 +1015,7 @@ and, moreover, dramatically simplifies the form of the rules themselves.
 
 #todo[fuse with refined account of SSA]
 
-We now give a formal account of #todo-inline[isotopessa], starting with the types.
+We now give a formal account of #ssa-calc, starting with the types.
 Our types are first order,
 and consists of binary sums $A + B$, products $A times.o B$, the unit type $mb(1)$,
 and the empty type $mb(0)$,

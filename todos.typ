@@ -51,12 +51,22 @@
   [ #note <no-wc> ]
 )
 
+#let margin-todo(content, it) = drafting.margin-note(
+  content,
+  [ 
+    [
+      #set text(red.darken(20%))
+      *TODO #context todos.display():* #it
+    ] <no-wc> 
+  ]
+)
+
 #let scaffold(content) = [
   #set text(yellow.darken(50%))
   #content
 ]
 
-#let block-notes(content) = [
+#let block-note(content) = [
   #set text(green.darken(50%))
   #content <no-wc>
 ]
