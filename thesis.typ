@@ -1143,6 +1143,11 @@ and, moreover, dramatically simplifies the form of the rules themselves.
 
 = Type Theory
 
+#todo[
+  At a high level:
+  - $lb("L")$ is a list of labels and types; here $lb("l")$ is sugar for $lb("l")(mb(1))$
+]
+
 #block-note[
   - We introduce λiter at the end of section 2 as our expression language
   - We want to mention that our expression language has the same power as SSA and give a pointer to
@@ -1202,6 +1207,10 @@ and, moreover, dramatically simplifies the form of the rules themselves.
 ]
 
 #todo[fuse with refined account of SSA]
+
+== Effect Systems
+
+<effect-system>
 
 /*
 
@@ -1977,6 +1986,89 @@ in Section #todo-inline[ref].
 #todo[Figure: Rules for the equivalence relation on #ms()[IsotopeSSA] substitutions and label-substitutions.
   Rules: sb-nil, sb-cons, sb-skip-l, sb-skip-r, ls-nil, ls-cons, ls-skip-l, ls-skip-r, sb-id, ls-id]
 */
+
+= Category Theory
+
+#todo[
+  - High-level overview diagram
+  - Todo: mapping from _computational_ to _mathematical_ structures:
+    - Poset-enriched categories are _sequential composition_ of computer programs.
+
+      Two directions from here:
+
+      - Coproducts are the same as _branching control flow_
+        - If we want to add loops, we get an _iterative category_,
+          but, this is not well-behaved with some advanced loop optimizations
+        - To make things well-behaved, we add a _uniformity condition_ and get an _Elgot category_
+      
+      - Premonoidal are the same as _sequential composition with linear variables_ 
+        (linear means can be used _exactly_ once)
+
+        - A _semicartesian_ premonoidal category is  _sequential composition with affine variables_.
+          We will study these later!
+
+        - 
+]
+
+== Poset-Enriched Categories
+
+#todo[
+  - Recall definition of a category for the compiler people in the audience, use opportunty to fix notation
+  - Briefly recall notion of an _enriched_ category; 
+    - check nLab for what Set-enriched categories are called as a subset as I always forget
+    - we want this because if I have time I want a future work section on lattice enrichment and I want to share notation
+  - Specialize to poset-enriched categories, fix refinement notation which is opposite from usual convention so make this clear but way nicer for compilers
+  - Recall basic category-theoretic notions; give poset-enrichments:
+    - products
+    - coproducts
+]
+
+== Freyd Categories
+
+#todo[
+  - Corresponds to _sequential program composition_
+  - Recall monoidal categories
+  - Separately, recall Kleisli categories over a strong monad 
+    (see Moggi @moggi-91-monad)
+  - Alas, Kleisli category is only monoidal if (and only if) the monad is commutative
+  - Introduce _premonoidal_ categories as generalized monoidal categories 
+    (see Power @power-97-premonoidal);
+    theorem: every kleisli category over a strong monad is premonoidal
+  - Issue: want to duplicate variables
+  - Introduce _Freyd categories_ as premonoidal categories with Cartesian subcategory $cal(C)_⊥$
+  - Introduce _Distributive Freyd categories_ as premonoidal 
+]
+
+== Elgot Categories
+
+#todo[
+  - Corresponds to _general control flow_
+  - Pre-iterative structure
+  - Iterative structure
+  - Elgot structure w.r.t. subcategory $cal(C)_⊥$
+  - Connection to traces; cite Hyland and Hasegawa @hasegawa-02-trace
+  - Distributivity, strong Elgot category
+]
+
+== Effectful Categories
+
+#todo[
+  - Consider notion of an _effect system_ from @effect-system
+  - Given a poset-enriched category, can get an _effectful category_ by (definition)
+  - Can define:
+    - Effectful premonoidal category
+    - Effectful Freyd category
+    - Effectful distributive category
+]
+
+= Semantics of #iter-calc
+
+#todo[
+  - Semantics of types
+  - Semantics of contexts
+  - Semantics of contexts with usage
+  - Semantics of
+]
 
 = Control-Flow Graphs
 
