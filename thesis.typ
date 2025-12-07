@@ -468,24 +468,35 @@ Our grammar is intentionally minimal, with many important features implemented v
 
       bnf(
         Prod($τ$, {
-          Or[$brb(ℓ)$][_branch_]
+          Or[$brb(lb("l"))$][_branch_]
           Or[$sswitch(o, B)$][_case_]
         }),
         Prod($B$, {
           Or[$·$][]
-          Or[$brb(ℓ), B$][]
+          Or[$ssbr(lb("l₁"), brb(lb("l₂"))), B$][]
         }),
       ),
-      bnf(Prod($β$, {
-        Or[$β$][_entry block_]
-        Or[$G seq ℓ : β$][_labeled basic block_]
+      bnf(Prod($G$, {
+        Or[$β$][_entry_]
+        Or[$G seq lb("l") : β$][]
+      })),
+      bnf(Prod($lb("L")$, {
+        Or[$·$][]
+        Or[$lb("l"), lb("L")$][]
       })),
     ),
   ],
   caption: [
     Grammar for RTL.
-    Note that variable lists $V$ may appear on both the left-hand side and right-hand side of
-    assignments.
+
+    /*
+    #block-note[
+      Here, $G$ is not always a valid graph, because a label may point to more than one basic block.
+      Once we _typecheck_ our syntax, this case, and numerous other mistakes (e.g. adding an integer
+      to a string) are statically ruled out, leaving us only with well-formed RTL programs we can
+      assign a meaning to.
+    ]
+    */
   ],
   kind: image,
 ) <rtl-grammar>

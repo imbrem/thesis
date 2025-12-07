@@ -97,6 +97,9 @@
 /// A switch statement
 #let sswitch(e, B) = $kswitch #e thick { #B }$
 
+/// A branch in a switch statement
+#let ssbr(ℓ, b) = $#ℓ : #b$
+
 /// A binary case expression
 #let ecase2(e, x, a, y, b) = ecase(e, $ebr(ninl, #x, #a) seq ebr(ninr, #y, #b)$)
 
