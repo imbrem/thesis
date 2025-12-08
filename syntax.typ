@@ -14,9 +14,41 @@
 #let rtl-a-flat = $ms("RTL")_ms("A")$
 
 // λ
-#let rtl-calc = $λ_ms("rtl")$
-#let ssa-calc = $λ_ms("ssa")$
-#let iter-calc=  $λ_ms("iter")$
+#let rtl-calc(..xs) = if xs.pos().at(0, default: none) == none { 
+    $λ_ms("rtl")$ 
+  } else { 
+    $λ_ms("rtl")[#xs.pos().at(0)]$ 
+  }
+
+#let grtl-calc(..xs) = if xs.pos().at(0, default: none) == none { 
+    $λ_ms("rtl")^*$ 
+  } else { 
+    $λ_ms("rtl")^*[#xs.pos().at(0)]$ 
+  }
+
+#let ssa-calc(..xs) = if xs.pos().at(0, default: none) == none { 
+    $λ_ms("ssa")$ 
+  } else { 
+    $λ_ms("ssa")[#xs.pos().at(0)]$ 
+  }
+
+#let gssa-calc(..xs) = if xs.pos().at(0, default: none) == none { 
+    $λ_ms("ssa")^*$ 
+  } else { 
+    $λ_ms("ssa")^*[#xs.pos().at(0)]$ 
+  }
+
+#let iter-calc(..xs) = if xs.pos().at(0, default: none) == none {
+  $λ_ms("iter")$
+} else {
+  $λ_ms("iter")[#xs.pos().at(0)]$
+}
+
+#let case-calc(..xs) = if xs.pos().at(0, default: none) == none {
+  $λ_ms("case")$
+} else {
+  $λ_ms("case")[#xs.pos().at(0)]$
+}
 
 // == Tokens ==
 
@@ -44,7 +76,14 @@
 #let ncn = $lb("c")$
 
 // Types
+#let tzero = $mb("0")$
+#let tunit = $mb("1")$
 #let tbool = $mb("2")$
+#let tlist(A) = $mb("List") med #A$
+
+// Categories
+#let opc(C) = $#C^ms("op")$
+#let opm(f) = $#f^ms("op")$
 
 // Punctuation
 #let seq = $; thick$

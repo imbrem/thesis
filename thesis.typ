@@ -228,6 +228,7 @@ and, if we've discovered an optimization opportunity, to _rewrite_ it while pres
 For example, six of the 13 most invoked passes in the LLVM compiler are spent 
 discovering and restoring invariants such as SSA or canonical loop forms @reissmann-19-rvsdg.
 
+/*
 #scaffold[
   - It is generally accepted that IRs are useful
   - It is generally accepted that SSA is the "standard" IR, 
@@ -394,6 +395,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
             That is, given assumptions $cal(R)$, their optimizations must hold in $ms("SSACongr")(cal(R))$, so we tell them exactly how to derive things from a set of _primitve_ assumptions in a model-independent way: the compiler writers only need the kernel generating the assumptions, not either the entire set of assumptions or the model (which are basically the same thing if you're a classical mathematician).
 ]
+*/
 
 #todo[what is an IR]
 
@@ -410,6 +412,52 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 ]
 
 = Static Single Assignment (SSA)
+
+== From RTL to SSA
+
+== Lexical SSA
+
+== Expressions and Substitution
+
+== Type-Theoretic SSA
+
+= Type Theory
+
+== Typing Rules
+
+=== Expressions
+
+=== Regions
+
+=== Metatheory
+
+== Expressions
+
+=== Effects
+
+=== Linearity
+
+=== Refinement
+
+== Regions
+
+=== Effects
+
+=== Linearity
+
+=== Refinement
+
+= Normalization
+
+== Compiling #gssa-calc(iter-calc()) to #iter-calc()
+
+== Compiling #iter-calc() to #ssa-calc()
+
+== Normalizing #gssa-calc(iter-calc()) to #gssa-calc()
+
+== Normalizing #gssa-calc() to #ssa-calc()
+
+/*
 
 == From RTL to SSA
 
@@ -2004,6 +2052,8 @@ in Section #todo-inline[ref].
   Rules: sb-nil, sb-cons, sb-skip-l, sb-skip-r, ls-nil, ls-cons, ls-skip-l, ls-skip-r, sb-id, ls-id]
 */
 
+*/
+
 = Category Theory
 
 #todo[
@@ -2027,7 +2077,7 @@ in Section #todo-inline[ref].
         - 
 ]
 
-== Poset-Enriched Categories
+== Enriched Categories
 
 // At a high level, our goal is to assign a denotational semantics $⟦hasty(Γ, a, A)⟧$ 
 // to every well-typed #iter-calc program $hasty(Γ, a, A)$.
@@ -2048,8 +2098,6 @@ to fix notations. Recall the definition of a category $cal(C)$:
   - For all $A, B: |cal(C)|$, $id_A ; f = f ; id_B = f$
   - For all $f: cal(C)(A, B), g: cal(C)(B, C), h: cal(C)(C, D)$, $(f ; g) ; h = f ; (g ; h)$
 ]
-
-#todo[clean]
 
 We follow the convention in computer science and define composition "forwards" as $f ; g$.
 If we interpret objects $A, B$ as _states_ 
@@ -2087,6 +2135,139 @@ $
     A edge(f, ->) & B edge(g, ->) & C edge(h, ->) & D
   $)
 $
+
+#definition(name: "Isomorphism")[
+  We say a morphism $f : cal(C)(A, B)$ is an _isomorphism_ if there exists a morphism
+  $g : cal(C)(B, A)$ such that $f ; g = id_A$ and $g ; f = id_B$. 
+  As any such _inverse morphism_ $g$, if it exists, is unique, we write it as $f^(-1)$.
+  
+  Two objects $A, B : |cal(C)|$ are _isomorphic_, written $A ≈ B$, if there exists
+  an isomorphism $f : cal(C)(A, B)$.
+]
+
+#definition(name: "Opposite Category")[
+  Given a category $cal(C)$, we define it's opposite category $opc(cal(C))$ to have
+  - Objects $|opc(cal(C))| = |cal(C)|$
+  - Morphisms $opc(cal(C))(A, B) = { opm(f) | f ∈ cal(C)(B, A) }$
+    #footnote[
+      This is in bijection with $cal(C)(B, A)$ 
+      // (and is usually defined to be equal to it!)
+      but we add the $opm(-)$-tag to avoid confusion.
+    ].
+  - Composition given by $opm(f) ; opm(g) = opm((g ; f))$
+]
+
+#definition(name: "Terminal Object, Initial Object")[
+  An object $tunit : |cal(C)|$ is _terminal_ if for every object $A : |cal(C)|$,
+  there exists a _unique_ morphism into it $!_A : cal(C)(A, tunit)$.
+  
+  Dually, an object $tzero : |cal(C)|$ is _initial_ if for every object $A : |cal(C)|$,
+  there exists a _unique_ morphism out of it $0_A : cal(C)(tzero, A)$.
+
+  We note that terminal and initial objects are unique up to isomorphism; 
+  that is, if $tunit$ and $tunit'$ are terminal objects, then $tunit ≈ tunit'$, and likewise for
+  initial objects.
+  //
+  Hence we will often speak of "the" terminal object $tunit$ and "the" initial object $tzero$.
+]
+
+#todo[fix this this is not a good discussion]
+
+The existence of the opposite category means that for every structure $cal(S)$ 
+defined on arbitrary categories $cal(C)$,
+we can immediately ask whether $cal(S)$ exists on the _opposite category_ $opc(cal(C))$. 
+If it does, this naturally induces a structure $opc(cal(S))$ on $cal(C)$ as well,
+the _dual_ of $cal(S)$.
+
+As an example of this,
+- A category $cal(C)$ has an initial object if and only if $opc(cal(C))$ has a terminal object;
+  so the terminal object is dual to the initial object
+- Likewise, a category $cal(C)$ has a terminal object if and only if $opc(cal(C))$ has an initial object;
+  so the initial object is dual to the terminal object
+- In general, if $cal(S)$ is dual to $opc(cal(S))$, then $opc(cal(S))$ is dual to $cal(S)$. 
+  In particular, this means that $opc(opc(cal(S))) = cal(S)$
+
+In general, we get the dual structure $opc(cal(S))$ to $cal(S)$ 
+by flipping the direction of all morphisms in the
+definition of $cal(S)$.
+
+#definition(name: "Product")[
+  Given a collection of objects $A_i : |cal(C)|$ for some indexing set $I$, 
+  we say that an object $P: |cal(C)|$ is their _product_ if there exist: 
+  - Morphisms $π_i : cal(C)(P, A_i)$ and
+  - For each object $X : |cal(C)|$, 
+    given a collection of morphisms $f_i : cal(C)(X, A_i)$ for each $i ∈ I$,
+    a _unique_ morphism $⟨f_i⟩_(i ∈ I) : cal(C)(X, P)$ 
+    (the _product_ of the $f_i$)
+    such that
+    $
+      ∀ j : I . ⟨f_i⟩_(i ∈ I) ; π_j = f_j
+    $
+
+    That is, for arbitrary $g : cal(C)(X, P)$, we have that
+    $
+       (∀ j ∈ I . g ; π_j = f_j) <==> g = ⟨f_i⟩_(i ∈ I)
+    $
+
+  We note that the product $P$ of a collection of objects $A_i$ is unique up to isomorphism;
+  that is, if $P$ and $P'$ are products of $A_i$, then $P ≈ P'$.
+  Furthermore, an object is the product of the empty collection if and only if it is terminal.
+
+  We say a category $cal(C)$ is _cartesian_ if it has _all finite products_; 
+  i.e. if there exists a function 
+  $Π : tlist(|cal(C)|) → |cal(C)|$ 
+  #footnote[
+    In particular, we are assuming _chosen_ finite (co)products. 
+    In foundations with the axiom of choice, this is equivalent to finite products, 
+    but it is a lot easier to formalize in a theorem prover.
+  ]
+  such that
+  - For $L = [A_1,...,A_n]$, $Π L$ is a product of $A_i$, and, in particular,
+  - $Π []$ is equal to the terminal object $tunit$
+  
+  In general, we write 
+  - $Π_i A_i := Π [A_1,...,A_n]$
+  - $A × B := Π [A, B]$
+]
+
+A coproduct, then, is just the dual notion to a product:
+
+#definition(name: "Coproduct")[
+  Given a collection of objects $A_i : |cal(C)|$ for some indexing set $I$, 
+  we say that an object $C: |cal(C)|$ is their _coproduct_ if there exist: 
+  - Morphisms $ι_i : cal(C)(A_i, C)$ and
+  - For each object $X : |cal(C)|$, 
+    given a collection of morphisms $f_i : cal(C)(A_i, X)$ for each $i ∈ I$,
+    a _unique_ morphism $[f_i]_(i ∈ I) : cal(C)(C, X)$ 
+    (the _coproduct_ of the $f_i$)
+    such that
+    $
+      ∀ j : I . ι_j ; [f_i]_(i ∈ I) = f_j
+    $
+
+    That is, for arbitrary $g : cal(C)(C, X)$, we have that
+    $
+       (∀ j ∈ I . ι_j ; g = f_j) <==> g = [f_i]_(i ∈ I)
+    $
+
+  We note that the coproduct $C$ of a collection of objects $A_i$ is unique up to isomorphism;
+  that is, if $C$ and $C'$ are coproducts of $A_i$, then $C ≈ C'$.
+  Furthermore, an object is the product of the empty collection if and only if it is initial.
+
+  We say a category $cal(C)$ is _cocartesian_ if it has _all finite coproducts_; 
+  i.e. if there exists a function 
+  $Σ : tlist(|cal(C)|) → |cal(C)|$ such that
+  - For $L = [A_1,...,A_n]$, $Σ L$ is a coproduct of $A_i$, and, in particular,
+  - $Σ []$ is equal to the initial object $tzero$
+  
+  In general, we write 
+  - $Σ_i A_i := Σ [A_1,...,A_n]$
+  - $A + B := Σ [A, B]$
+]
+
+
+
+/*
 
 #todo[note on size issues. We use Grothendieck-Tarski, deal with it.]
 
@@ -2151,7 +2332,7 @@ $
 == Effectful Categories
 
 #todo[
-  - Consider notion of an _effect system_ from @effect-system
+  - Consider notion of an _effect system_ from // @effect-system
   - Given a poset-enriched category, can get an _effectful category_ by (definition)
   - Can define:
     - Effectful premonoidal category
@@ -2159,7 +2340,9 @@ $
     - Effectful distributive category
 ]
 
-= Semantics of #iter-calc
+*/
+
+= Semantics of #iter-calc()
 
 #todo[
   - Semantics of types
