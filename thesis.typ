@@ -2189,6 +2189,12 @@ $
   such that
   - $F$ preserves identities: $F id_A = id_(F A)$
   - $F$ preserves composition: $F (f ; g) = (F f) ; (F g)$
+
+  We say a functor $F$ is _faithful_ if its action on objects is _injective_; i.e.,
+  $
+    ∀ f, g : cal(C)(A, B) . F f = F g <==> f = g
+  $
+  #todo[probably: clarify that only needs to be injective _on each hom-set_]
 ]
 
 Given functors $F : cal(C)_1 -> cal(C)_2$ and $G : cal(C)_2 -> cal(C)_3$, we may define their 
@@ -2308,8 +2314,21 @@ Some important properties of products include:
   
   Likewise, $tunit × A ≈ A$.
 
-- $A × Π L = Π (A :: L)$.
-  In particular, 
+- $A × Π L = Π (A :: L)$, with canonical isomorphims (for $L$ of length $n$)
+  $
+  ⟨π_1^(A × Π L), (π_2^(A × Π L) ; π_1^(Π L)), ..., (π_2^(A × Π L) ; π_n^(Π L))⟩ 
+  & : A × Π L -> Π (A :: L)
+  \
+  ⟨π_1^(Π (A :: L)), ⟨π_(1 + 1)^(Π (A :: L)),...,π_(n + 1)^(Π (A :: L))⟩⟩
+  & : Π (A :: L) -> A × Π L
+  $
+
+- $Π [A] ≈ A$, with canonical isomorphisms $π^(Π [A]) : Π [A] → A$ and $⟨id_A⟩ : A → Π [A]$
+
+- In particular, this yields an isomorphism $Π L × Π L' ≈ Π (L · L')$ by induction,
+  where $·$ is list concatenation.
+
+- It follows that $A × (B × C) ≈ Π[A, B, C] ≈ (A × B) × C$
 
 // - $Π L × A ≈ Π (L · [A])$.
 //   In particular, given a list $L = [A_1,...,A_n]$, we have canonical isomorphisms
@@ -2353,45 +2372,109 @@ A coproduct, then, is just the dual notion to a product:
   - $A + B := Σ [A, B]$
 ]
 
+Similarly to products, coproducts satisfy some basic algebraic properties
+
+- $A + B ≈ B + A$
+
+- $A + tzero ≈ A$
+
+- $A + Σ L ≈ Σ (A :: L)$
+
+- $Σ [A] ≈ A$
+
+- $Σ L + Σ L' ≈ Σ (L · L')$
+
+- $A + (B + C) ≈ Σ [A, B, C] ≈ (A + B) + C$
+
 #definition(name: "Concrete Category")[
-  A _concrete category_ $cal(C)$ is a category $cal(C)$ equipped with a functor 
-  $U : cal(C) → ms("Set")$ 
+  A _concrete category_ $cal(V)$ is a category equipped with a faithful functor 
+  $U : cal(V) → ms("Set")$ 
 ]
 
-/*
+#todo[rewrite this]
 
-#todo[note on size issues. We use Grothendieck-Tarski, deal with it.]
+We can think of a concrete category $cal(V)$ as "sets with extra structure":
 
-#todo[lore on categories being paths]
+- Each object $A ∈ |cal(V)|$ corresponds to a set $U A$; in particular, 
+  we will write $a ∈ A$ to mean $a ∈ U A$
+- Each morphism $f : cal(V)(A, B)$ corresponds to a _unique_ function $U f : U A → U B$.
 
-#todo[lore on rewriting, explain $->>$]
+  In particular, since $U$ is faithful, 
+  we can ask whether an arbitrary function $g : U A → U B$
+  "is a $cal(V)$-morphism from $A$ to $B$"; 
+  i.e., whether there exists $f : cal(V)(A, B)$ such that $U f = g$. 
+  If there exists such an $f$, it is unique; 
+  hence, we can identify the morphisms $cal(V)(A, B)$ 
+  with the subset of functions $U A → U B$ which "are $cal(V)(A, B)$ morphisms."
 
-#definition(name: "Poset-enriched category")[
-  A category $cal(C)$ is _poset-enriched_ if every hom-set $cal(C)(A, B)$ is equipped with a 
-  partial order $->>$ _compatible_ with compostion, i.e.,
-  for all $f, f': cal(C)(A, B)$ and $g, g': cal(C)(B, C)$,
+  We hence justify the further abuse of notation and write
+
+  - $f : A → B$ to mean $U f : U A → U B$ where this would not cause confusion, and, in particular
+
+  - Given $a ∈ A$, we define $f(a) ∈ B$ to mean $(U f)(a) ∈ U B$
+
+As a concrete example, consider the category of partially-ordered sets and monotone functions $ms("Pos")$. 
+An object of $ms("Pos")$ is a partially-ordered set $(X, scripts(≤)_X)$, 
+and a morphism $f: (X, scripts(≤)_X) → (Y, scripts(≤)_Y)$ is a monotone function $f : X → Y$, i.e.
+a function $f$ such that
+$
+  ∀ x_1, x_2 ∈ X . (x_1 scripts(≤)_X x_2) ==> (f(x_1) scripts(≤)_Y f(x_2))
+$
+
+We can directly equip $ms("Pos")$ with the structure of a concrete category by taking 
+$U(X, scripts(≤)_X) = X$ and $U f = f$. 
+Our abuse of notation is then precisely the usual mathematical convention of, for example,
+specifying "a monotone function $f : ℕ → pset(X)$" without explicitly specifying that
+$ℕ$ is ordered with the usual $≤$ relation on the naturals and
+$pset(X)$ is ordered with the subset relation $⊆$.
+
+
+Another particularly import example is the category of sets $ms("Set")$, which is trivially a 
+concrete category by taking $U$ to be the identity functor.
+
+#definition(name: "Concretely Cartesian Category")[
+  A concrete category $cal(V)$ is _concretely cartesian_ if it has all finite products and 
   $
-    (f ->> f') ∧ (g ->> g') ==> (f ; g ->> f' ; g')
+    ∀ [A_1,...,A_n] . U(Π [A_1,...,A_n]) = Π [U A_1,...,U A_n]
   $
 ]
 
-#todo[explain $->>$ notation some more]
+All the concrete categories in this paper will be concrerely cartesian.
 
-#todo[
-  - Recall definition of a category for the compiler people in the audience, use opportunty to fix notation
-  - Briefly recall notion of an _enriched_ category; 
-    - check nLab for what Set-enriched categories are called as a subset as I always forget
-    - we want this because if I have time I want a future work section on lattice enrichment and I want to share notation
-  - Specialize to poset-enriched categories, fix refinement notation which is opposite from usual convention so make this clear but way nicer for compilers
-  - Recall basic category-theoretic notions; give poset-enrichments:
-    - products
-    - coproducts
+For the rest of this section, we will develop the theory of $cal(V)$-enriched categories in the 
+special case where $cal(V)$ is concretely cartesian. The general theory of enriched categories is
+analogous, but much more complex since we need to deal with coherence conditions, however, 
+when $cal(V)$ is concretely cartesian, the definitions are essentially the same as in ordinary 
+category theory. In fact, we can recover the standard category theoretic definitions by noting that
+a category is precisely a $ms("Set")$-enriched category.
+
+#definition(name: [$cal(V)$-enriched category])[
+  Given a concretely cartesian category $cal(V)$, 
+  a $cal(V)$-enriched category $cal(C)$, or _$cal(V)$-category_, consists of
+  - An set of objects $|cal(C)|$
+  - For each pair of objects $A, B : |cal(C)|$, a _hom-object_ $cal(C)(A, B) ∈ |cal(V)|$
+  - For each object $A : |cal(C)|$, an _identity morphism_ $id_A : cal(C)(A, B)$
+  - For each triple of objects $A, B, C : |cal(C)|$, a _composition morphism_
+    $
+    (;)_(A, B, C) : cal(V)(cal(C)(A, B) × cal(C)(B, C), cal(C)(A, C))
+    $
 ]
 
-#todo[
-  - By the end of this section, the reader knows poset-enriched categories
-  - Optionally, $V$-enriched for concrete $V$
-]
+We will often consider two particularly important cases:
+
+- A $ms("Set")$-category $cal(C)$ is precisely an ordinary category
+- A $ms("Pos")$-category $cal(C)$, i.e. a _poset-enriched category_ or _2-poset_, 
+  is simply a category in which
+  - Each hom-set $cal(C)(A, B)$ is equipped with a partial order
+  - Composition respects this partial order, i.e.,
+    for all $f_1, f_2 : cal(C)(A, B)$, $g_1, g_2 ∈ cal(C)(B, C)$,
+    $
+      f_1 ≤ f_2 ∧ g_1 ≤ g_2 => (f_1 ; g_1) ≤ (f_2 ; g_2)
+    $
+
+Many definitions for $cal(V)$-categories are exact analogues to the standard 
+$ms("Set")$-enriched definitions; in particular, the definitions for products and coproducts are
+exactly the same, and so we will not repeat them.
 
 == Freyd Categories
 
@@ -2430,8 +2513,6 @@ A coproduct, then, is just the dual notion to a product:
     - Effectful Freyd category
     - Effectful distributive category
 ]
-
-*/
 
 = Semantics of #iter-calc()
 

@@ -81,6 +81,9 @@
 #let tbool = $mb("2")$
 #let tlist(A) = $mb("List") med #A$
 
+// Sets
+#let pset(X) = $cal(P)(X)$
+
 // Categories
 #let ahm(C) = $scripts(->)_#C$
 #let opc(C) = $#C^ms("op")$
