@@ -82,10 +82,12 @@
 #let tlist(A) = $mb("List") med #A$
 
 // Categories
+#let ahm(C) = $scripts(->)_#C$
 #let opc(C) = $#C^ms("op")$
 #let opm(f) = $#f^ms("op")$
 
 // Punctuation
+#let lcat = $$
 #let seq = $; thick$
 
 // == Syntax ==

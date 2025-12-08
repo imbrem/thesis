@@ -2088,6 +2088,16 @@ to fix notations. Recall the definition of a category $cal(C)$:
 #definition(name: "Category")[
   A category $cal(C)$ is given by:
   - A set of _objects_ $|cal(C)|$
+    #footnote[
+      To deal with size issues, authors often define $|cal(C)|$ to be a _class_ rather than a set
+      (with $cal(C)$ being a _small_ category if $|cal(C)|$ is a set, 
+      and a _large_ category otherwise)
+      or turn to naïve set-theory and trust their definitions won't turn too recursive.
+      Since this exposition corresponds roughly to our Lean formalization, we instead postulate
+      an infinite hierarchy of Grothendieck universes $cal(U)_ℓ$ and implicitly make our definitions
+      level-polymorphic on $ℓ$. The _ℓ-small categories_ are then precisely those for which
+      $cal(C) ∈ cal(U)_ℓ$, with the _small categories_ being _0-small_.
+    ]
   - For each pair of objects $A, B in |cal(C)|$, a set of _morphisms_ $cal(C)(A, B)$.
     We call this set a _hom-set_.
   - For each object $A in |cal(C)|$, an _identity morphism_ $id_A : cal(C)(A, A)$
@@ -2097,6 +2107,9 @@ to fix notations. Recall the definition of a category $cal(C)$:
   Such that:
   - For all $A, B: |cal(C)|$, $id_A ; f = f ; id_B = f$
   - For all $f: cal(C)(A, B), g: cal(C)(B, C), h: cal(C)(C, D)$, $(f ; g) ; h = f ; (g ; h)$
+
+  We will sometimes write the set $cal(C)(A, B)$ as $A ahm(cal(C)) B$ or, 
+  where $cal(C)$ is clear from context, $A -> B$.
 ]
 
 We follow the convention in computer science and define composition "forwards" as $f ; g$.
@@ -2136,6 +2149,17 @@ $
   $)
 $
 
+#definition(name: "Category of sets")[
+  We define the category of sets
+  #footnote[
+    More precisely, we define the category of $ℓ$-small sets $ms("Set")_ℓ$ 
+    for each universe level $ℓ$ to have objects $cal(U)_ℓ$, 
+    with $ms("Set")$ corresponding to the category of small sets $ms("Set")_0$
+  ] $ms("Set")$
+  to have as objects sets $A$ and morphisms $f : ms("Set")(A, B)$ functions $f : A → B$. 
+  Composition $f ; g$ is simply composition of functions $g ∘ f$.
+]
+
 #definition(name: "Isomorphism")[
   We say a morphism $f : cal(C)(A, B)$ is an _isomorphism_ if there exists a morphism
   $g : cal(C)(B, A)$ such that $f ; g = id_A$ and $g ; f = id_B$. 
@@ -2157,12 +2181,42 @@ $
   - Composition given by $opm(f) ; opm(g) = opm((g ; f))$
 ]
 
+#definition(name: "Functor")[
+  Given categories $cal(C), cal(D)$, a _functor_ $F : cal(C) → cal(D)$ consists of:
+  - A mapping on objects $|F| : |cal(C)| → |cal(D)|$. We often simply write $|F|(A)$ as $F A$.
+  - A mapping from $cal(C)$-morphisms $f : cal(C)(A, B)$ 
+    to $cal(D)$-morphisms $F f : cal(D)(F A, F B)$
+  such that
+  - $F$ preserves identities: $F id_A = id_(F A)$
+  - $F$ preserves composition: $F (f ; g) = (F f) ; (F g)$
+]
+
+Given functors $F : cal(C)_1 -> cal(C)_2$ and $G : cal(C)_2 -> cal(C)_3$, we may define their 
+_composition_ $F ; G$ as follows:
+- $|F ; G| = |G| ∘ |F| : |cal(C)_1| → |cal(C)_3|$
+- For all $f : cal(C)_1(A, B)$, $(F ; G) med f = G med (F f) : cal(C)_3(G med (F A), G med (F B))$
+
+Furthermore, for an arbitrary category $cal(C)$, we may define the _identity functor_ $id_cal(C)$ 
+as mapping objects and morphisms to themselves. In particular, this equips the set of categories 
+itself with the structure of a category, the _category of categories_ $ms("Cat")$, as follows: 
+
+#definition(name: "Category of categories")[
+  The category of categories 
+  #footnote[
+    Again, we actually define the category $ms("Cat")_ℓ$ of $ℓ$-small categories, with
+    $ms("Cat")$ corresponding to the category of small categories $ms("Cat")_0$
+  ]
+  $ms("Cat")$ has
+  - Objects $|ms("Cat")|$ categories
+  - Morphisms $ms("Cat")(cal(C), cal(D))$ functors $F : cal(C) → cal(D)$
+]
+
 #definition(name: "Terminal Object, Initial Object")[
-  An object $tunit : |cal(C)|$ is _terminal_ if for every object $A : |cal(C)|$,
-  there exists a _unique_ morphism into it $!_A : cal(C)(A, tunit)$.
+  An object $tunit_cal(C) : |cal(C)|$ is _terminal_ if for every object $A : |cal(C)|$,
+  there exists a _unique_ morphism into it $!_A : cal(C)(A, tunit_cal(C))$.
   
-  Dually, an object $tzero : |cal(C)|$ is _initial_ if for every object $A : |cal(C)|$,
-  there exists a _unique_ morphism out of it $0_A : cal(C)(tzero, A)$.
+  Dually, an object $tzero_cal(C) : |cal(C)|$ is _initial_ if for every object $A : |cal(C)|$,
+  there exists a _unique_ morphism out of it $0_A : cal(C)(tzero_cal(C), A)$.
 
   We note that terminal and initial objects are unique up to isomorphism; 
   that is, if $tunit$ and $tunit'$ are terminal objects, then $tunit ≈ tunit'$, and likewise for
@@ -2170,6 +2224,15 @@ $
   //
   Hence we will often speak of "the" terminal object $tunit$ and "the" initial object $tzero$.
 ]
+
+In particular:
+- The (unique) initial object in $ms("Set")$ is the empty set $∅$
+- Any singleton set is a terminal object in $ms("Set")$.
+  We fix a singleton set $tunit_ms("Set") = {*}$.
+- Likewise, the (unique) initial object in $ms("Cat")$ is the empty category with objects $∅$
+- The terminal object in $ms("Cat")$ has 
+  one object $* ∈ mb(1)_ms("Set")$
+  and only the identity morphism $id_* : mb(1)_ms("Cat")(*, *)$
 
 #todo[fix this this is not a good discussion]
 
@@ -2194,7 +2257,10 @@ definition of $cal(S)$.
 #definition(name: "Product")[
   Given a collection of objects $A_i : |cal(C)|$ for some indexing set $I$, 
   we say that an object $P: |cal(C)|$ is their _product_ if there exist: 
-  - Morphisms $π_i : cal(C)(P, A_i)$ and
+  - Morphisms $π_i : cal(C)(P, A_i)$
+
+    Where there is risk of confusion, we will write $π^P_i$ or even $π^(P, A_i)_i$.
+
   - For each object $X : |cal(C)|$, 
     given a collection of morphisms $f_i : cal(C)(X, A_i)$ for each $i ∈ I$,
     a _unique_ morphism $⟨f_i⟩_(i ∈ I) : cal(C)(X, P)$ 
@@ -2208,6 +2274,8 @@ definition of $cal(S)$.
     $
        (∀ j ∈ I . g ; π_j = f_j) <==> g = ⟨f_i⟩_(i ∈ I)
     $
+
+    For finite $f_1,...,f_n$, we write $⟨f_i⟩_i = ⟨f_1,...,f_n⟩$.
 
   We note that the product $P$ of a collection of objects $A_i$ is unique up to isomorphism;
   that is, if $P$ and $P'$ are products of $A_i$, then $P ≈ P'$.
@@ -2229,6 +2297,26 @@ definition of $cal(S)$.
   - $Π_i A_i := Π [A_1,...,A_n]$
   - $A × B := Π [A, B]$
 ]
+
+Some important properties of products include:
+- $A × B ≈ B × A$, with canonical isomorphisms 
+  $⟨π_2^(A × B), π_1^(A × B)⟩ : A × B -> B × A$ and 
+  $⟨π_2^(B × A), π_1^(B × A)⟩ : B × A -> A × B$
+
+- $A × tunit ≈ A$, with canonical isomorphisms 
+  $π_1 : A × tunit → A$ and $⟨id_A, !_A⟩ : A → A × tunit$
+  
+  Likewise, $tunit × A ≈ A$.
+
+- $A × Π L = Π (A :: L)$.
+  In particular, 
+
+// - $Π L × A ≈ Π (L · [A])$.
+//   In particular, given a list $L = [A_1,...,A_n]$, we have canonical isomorphisms
+//   $
+//     ⟨⟨π_1^(Π L),...,π_n^(Π L)⟩, π_2^(Π L × A)⟩ & : Π L × A → Π (L · [A]) \
+//     ⟨π_1^(Π (L · [A])),...,π_(n + 1)^(Π (L · [A]))⟩ & : Π (L · [A])
+//   $
 
 A coproduct, then, is just the dual notion to a product:
 
@@ -2265,7 +2353,10 @@ A coproduct, then, is just the dual notion to a product:
   - $A + B := Σ [A, B]$
 ]
 
-
+#definition(name: "Concrete Category")[
+  A _concrete category_ $cal(C)$ is a category $cal(C)$ equipped with a functor 
+  $U : cal(C) → ms("Set")$ 
+]
 
 /*
 
