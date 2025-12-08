@@ -2190,11 +2190,13 @@ $
   - $F$ preserves identities: $F id_A = id_(F A)$
   - $F$ preserves composition: $F (f ; g) = (F f) ; (F g)$
 
-  We say a functor $F$ is _faithful_ if its action on objects is _injective_; i.e.,
-  $
-    ∀ f, g : cal(C)(A, B) . F f = F g <==> f = g
-  $
-  #todo[probably: clarify that only needs to be injective _on each hom-set_]
+  - We say a functor $F$ is _faithful_ if its action on objects is _injective_; i.e.,
+    $
+      ∀ f, g : cal(C)(A, B) . F f = F g <==> f = g
+    $
+    #todo[probably: clarify that only needs to be injective _on each hom-set_]
+
+  - A functor $F : cal(V) → cal(V)$ is _identity on objects_ if $|F| = id_|cal(V)|$.
 ]
 
 Given functors $F : cal(C)_1 -> cal(C)_2$ and $G : cal(C)_2 -> cal(C)_3$, we may define their 
@@ -2302,6 +2304,13 @@ definition of $cal(S)$.
   In general, we write 
   - $Π_i A_i := Π [A_1,...,A_n]$
   - $A × B := Π [A, B]$
+  - For morphisms $f_i : cal(C)(A_i, B_i)$ for arbitrary $i ∈ I$,
+    - $Π_i f_i = ⟨π_i/*^(Π_i A_i)*/ ; f_i⟩_i : Π_i A_i → Π_i B_i$, and, therefore, in particular
+    - $Π [f_1,...,f_n] = ⟨π_1; f_1,..., π_n ; f_n⟩ : Π [A_1,...,A_n] → Π [B_1,...,B_n]$
+    - $f_1 × f_2 = ⟨π_1 ; f_1 , π_2 ; f_2⟩ : A_1 × A_2 → B_1 × B_2$
+  - In particular, for $f : cal(C)(A, B)$ and objects $C$, we define
+    - $f × C = f × id_C : A × C → B × C$, and 
+    - $C × f = id_C × f : C × A → C × B$
 ]
 
 Some important properties of products include:
@@ -2370,6 +2379,13 @@ A coproduct, then, is just the dual notion to a product:
   In general, we write 
   - $Σ_i A_i := Σ [A_1,...,A_n]$
   - $A + B := Σ [A, B]$
+  - For morphisms $f_i : cal(C)(A_i, B_i)$ for arbitrary $i ∈ I$,
+    - $Σ_i f_i = ⟨f_i ; ι_i⟩_i : Σ_i A_i → Σ_i B_i$, and, therefore, in particular
+    - $Σ [f_1,...,f_n] = ⟨f_1 ; ι_1,..., f_n ; ι_n⟩ : Σ [A_1,...,A_n] → Σ [B_1,...,B_n]$
+    - $f_1 + f_2 = ⟨f_1 ; ι_1 , f_2 ; ι_2⟩ : A_1 + A_2 → B_1 + B_2$
+  - In particular, for $f : cal(C)(A, B)$ and objects $C$, we define
+    - $f + C = f + id_C : A + C → B + C$, and 
+    - $C + f = id_C + f : C + A → C + B$
 ]
 
 Similarly to products, coproducts satisfy some basic algebraic properties
@@ -2406,6 +2422,8 @@ We can think of a concrete category $cal(V)$ as "sets with extra structure":
   If there exists such an $f$, it is unique; 
   hence, we can identify the morphisms $cal(V)(A, B)$ 
   with the subset of functions $U A → U B$ which "are $cal(V)(A, B)$ morphisms."
+
+  In general, we will write such an $f$ if it exists as $U^(-1)_(cal(V)(A, B)) g$.
 
   We hence justify the further abuse of notation and write
 
@@ -2460,6 +2478,46 @@ a category is precisely a $ms("Set")$-enriched category.
     $
 ]
 
+We note that every $cal(V)$-category $cal(C)$ induces an ordinary category $U cal(C)$ 
+with:
+- The same set of objects $|U cal(C)| = |cal(C)|$ 
+- Hom-sets $(U cal(C))(A, B) = U(cal(C)(A, B))$. 
+
+  In particular, as $U : cal(V) → ms("Set")$ is faithful, every $g ∈ (U cal(C))(A, B)$ 
+  can be written in a unique way as an application $U f$ for $f : cal(C)(A, B)$.
+- Composition given by
+  $
+    ∀ f : (U cal(C))(A, B), g : (U cal(C))(B, C) . f ; g = (U (;)_(A, B, C)) (f, g)
+  $
+
+In fact, this definition can be generalized quite readily
+
+#definition(name: "Concretely Cartesian Functor")[
+  Let $F : cal(V) → cal(W)$ be a functor between concretely cartesian categories 
+  $(cal(V), U_cal(V))$ and $(cal(W), U_cal(W))$. We say $F$ is _concretely cartesian_ if
+  - $F$ preserves erasure: $F ; U_cal(W) = U_cal(V)$
+  - $F$ preserves products: $∀ [A_1,...,A_n] . F (Π [A_1,...,A_n]) = Π [F A_1,...,F A_n]$
+
+  In particular, for any concretely cartesian $cal(V)$, by definition,
+  $U : cal(V) → ms("Set")$ is a concretely cartesian functor 
+  to $ms("Set")$ taken as a concretely cartesian category.
+]
+
+This allows us to define the _change of basis_ of a $cal(V)$-category along a 
+concretely cartesian functor as follows:
+
+#definition(name: "Change of Basis")[
+  Given a concretely cartesian functor $F : cal(V) → cal(W)$ and a $cal(V)$-category $cal(C)$,
+  we define its _change of basis_ $F cal(C)$ to be the $cal(W)$-category with
+  - Objects $|F cal(C)| = |cal(C)|$
+  - Hom objects $F cal(C)(A, B) = F(cal(C)(A, B))$
+  - Identity morphisms $id_A^(F cal(C)) = id_A^(cal(C))$
+  - Composition morphisms
+    $
+      (;)_(A, B, C)^(F cal(C)) = (F × F) ; (;)_(A, B, C)^(cal(C))
+    $
+]
+
 We will often consider two particularly important cases:
 
 - A $ms("Set")$-category $cal(C)$ is precisely an ordinary category
@@ -2472,47 +2530,39 @@ We will often consider two particularly important cases:
       f_1 ≤ f_2 ∧ g_1 ≤ g_2 => (f_1 ; g_1) ≤ (f_2 ; g_2)
     $
 
-Many definitions for $cal(V)$-categories are exact analogues to the standard 
-$ms("Set")$-enriched definitions; in particular, the definitions for products and coproducts are
-exactly the same, and so we will not repeat them.
+Throughout the rest of this section, we fix a concretely cartesian category $cal(V)$.
 
-== Freyd Categories
-
-#todo[
-  - Corresponds to _sequential program composition_
-  - Recall monoidal categories
-  - Separately, recall Kleisli categories over a strong monad 
-    (see Moggi @moggi-91-monad)
-  - Alas, Kleisli category is only monoidal if (and only if) the monad is commutative
-  - Introduce _premonoidal_ categories as generalized monoidal categories 
-    (see Power @power-97-premonoidal);
-    theorem: every kleisli category over a strong monad is premonoidal
-  - Issue: want to duplicate variables
-  - Introduce _Freyd categories_ as premonoidal categories with Cartesian subcategory $cal(C)_⊥$
-  - Introduce _Distributive Freyd categories_ as premonoidal 
+#definition(name: [$cal(V)$-functor])[
+  Given $cal(V)$-categories $cal(C), cal(D)$, a $cal(V)$-functor consists of
+  - A mapping on objects $|F| : |cal(C)| → |cal(D)|$
+  - For each pair of objects $A, B : |cal(C)|$, a $cal(V)$-morphism
+    $
+      F_(A, B) : cal(V)(cal(C)(A, B), cal(D)(F A, F B))
+    $
+    inducing an action on morphisms $f : cal(C)(A, B)$ by $F f = F_(A, B) f$.
 ]
 
-== Elgot Categories
+Similarly to before,
+- A $ms("Set")$-functor $cal(C)$ is precisely an ordinary functor
+- A $ms("Pos")$-functor $F : cal(C) → cal(D)$
 
-#todo[
-  - Corresponds to _general control flow_
-  - Pre-iterative structure
-  - Iterative structure
-  - Elgot structure w.r.t. subcategory $cal(C)_⊥$
-  - Connection to traces; cite Hyland and Hasegawa @hasegawa-02-trace
-  - Distributivity, strong Elgot category
+In general, we can recover the standard category-theoretic definitions of a concept by taking $cal(V) = ms("Set")$. 
+Often, many definitions for $cal(V)$-categories are in fact identical; 
+in particular, the definitions for terminal objects, initial objects, products and coproducts are exactly the same, 
+so we will not repeat them.
+
+#definition(name: [$cal(V)$-natural transformation])[
+  Given $cal(V)$-functors $F : cal(V)$
+  #todo[this]
 ]
 
-== Effectful Categories
+== Premonoidal Categories
 
-#todo[
-  - Consider notion of an _effect system_ from // @effect-system
-  - Given a poset-enriched category, can get an _effectful category_ by (definition)
-  - Can define:
-    - Effectful premonoidal category
-    - Effectful Freyd category
-    - Effectful distributive category
-]
+// #definition(name: [$cal(V)$-Binoidal Category])[
+//   A $cal(V)$-binoidal category is a $cal(V)$-category equipped with
+//   - A function on objects $- ⊗ - : |cal(C)| × |cal(C)| → |cal(C)|$
+//   - For each object $A : |cal(C)|$, $cal(V)$-functors
+// ]
 
 = Semantics of #iter-calc()
 
