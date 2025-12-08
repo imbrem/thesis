@@ -415,6 +415,177 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 == From RTL to SSA
 
+#todo[RTL text]
+
+#figure(
+  [
+    #grid(
+      align: left,
+      columns: 3,
+      gutter: (2em, 0em),
+      bnf(
+        Prod($v$, {
+          Or[$x$][_variable_]
+          Or[$(V)$][_tuple_]
+        }),
+        Prod($V$, {
+          Or[$·$][]
+          Or[$x, V$][]
+        }),
+      ),
+      bnf(
+        Prod($o$, {
+          Or[$v$][_value_]
+          Or[$f med v$][_application_]
+        }),
+        Prod($f$, {
+          Or[$p$][_primitive_]
+          Or[$lb("l", annot: lb("L"))$][_label_]
+        }),
+      ),
+      bnf(Prod($β$, {
+        Or[$x = o seq β$][_assign_]
+        Or[$(V) = o seq β$][_destructure_]
+        Or[$τ$][_terminator_]
+      })),
+
+      bnf(
+        Prod($τ$, {
+          Or[$brb(lb("l"))$][_branch_]
+          Or[$sswitch(o, B)$][_case_]
+        }),
+        Prod($B$, {
+          Or[$·$][]
+          Or[$ssbr(lb("l₁"), brb(lb("l₂"))), B$][]
+        }),
+      ),
+      bnf(Prod($G$, {
+        Or[$β$][_entry_]
+        Or[$G seq lb("l") : β$][]
+      })),
+      bnf(Prod($lb("L")$, {
+        Or[$·$][]
+        Or[$lb("l"), lb("L")$][]
+      })),
+    ),
+  ],
+  caption: [
+    Grammar for RTL.
+
+    /*
+    #block-note[
+      Here, $G$ is not always a valid graph, because a label may point to more than one basic block.
+      Once we _typecheck_ our syntax, this case, and numerous other mistakes (e.g. adding an integer
+      to a string) are statically ruled out, leaving us only with well-formed RTL programs we can
+      assign a meaning to.
+    ]
+    */
+  ],
+  kind: image,
+) <rtl-grammar>
+
+#todo[text]
+
+#subpar.grid(
+  align: bottom,
+  figure(
+    [$
+      & klet n = 10 seq \
+      & klet kmut i = 1 seq \
+      & klet kmut a = 1 seq \
+      & kwhile i < n thick { \
+      & quad a = a * (i + 1) \
+      & quad i = i + 1 \
+      & } \
+      \
+      \
+      \
+      \
+      \
+    $],
+    caption: [
+      As an imperative program \ \
+    ],
+  ),
+  <imperative-factorial>,
+
+  figure(
+    [$
+                  & n = 10 seq \
+                  & i = 1 seq \
+                  & a = 1 seq \
+                  & kbr lb("loop") seq \
+      lb("loop"): & ite(i < n, brb(lb("body")), retb(a)) seq \
+      lb("body"): & t = i + 1 seq \
+                  & a = a * t seq \
+                  & i = i + 1 seq \
+                  & kbr lb("loop") \
+                  \
+    $],
+    caption: [
+      As RTL \ \
+    ],
+  ),
+  <rtl-factorial>,
+
+  columns: (1fr, 1fr),
+  caption: [
+    A simple, slightly suboptimal program to compute 10! via multiplication in a loop,
+    represented as typical imperative code and in RTL.
+  ],
+)
+
+#todo[text]
+
+#subpar.grid(
+  align: bottom,
+  figure(
+    [$
+      & klet n = 10 seq \
+      & klet kmut i = 1 seq \
+      & klet kmut a = 1 seq \
+      & kwhile i < n thick { \
+      & quad a = a * (i + 1) \
+      & quad i = i + 1 \
+      & } \
+      \
+      \
+      \
+      \
+      \
+    $],
+    caption: [
+      As an imperative program \ \
+    ],
+  ),
+  <imperative-factorial>,
+
+  figure(
+    [$
+                  & n = 10 seq \
+                  & i = 1 seq \
+                  & a = 1 seq \
+                  & kbr lb("loop") seq \
+      lb("loop"): & ite(i < n, brb(lb("body")), retb(a)) seq \
+      lb("body"): & t = i + 1 seq \
+                  & a = a * t seq \
+                  & i = i + 1 seq \
+                  & kbr lb("loop") \
+                  \
+    $],
+    caption: [
+      As RTL \ \
+    ],
+  ),
+  <rtl-factorial>,
+
+  columns: (1fr, 1fr),
+  caption: [
+    A simple, slightly suboptimal program to compute 10! via multiplication in a loop,
+    represented as typical imperative code and in RTL.
+  ],
+)
+
 == Lexical SSA
 
 == Expressions and Substitution
@@ -426,6 +597,51 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 == Typing Rules
 
 === Expressions
+
+#figure(
+  placement: auto,
+  [
+    #grid(
+      align: left,
+      columns: 3,
+      gutter: (4em, 0em),
+      bnf(
+        Prod(
+          $e$,
+          {
+            Or[$x$][_variable_]
+            Or[$f med e$][_application_]
+            Or[$(E)$][_tuple_]
+            Or[$elet(x, e_1, e_2)$][_let-binding_]
+            Or[$elet((V), e_1, e_2)$][_destructure_]
+            Or[$ecase(e, C)$][_cases_]
+            Or[$eiter(e_1, x, e_2)$][_iteration_]
+          },
+        ),
+      ),
+      bnf(
+        Prod(
+          $E$,
+          {
+            Or[$·$][_nil_]
+            Or[$e, E$][_cons_]
+          },
+        ),
+        Prod(
+          $C$,
+          {
+            Or[$·$][_nil_]
+            Or[$ebr(lb("l"), x, a) seq C$][_cons_]
+          },
+        ),
+      )
+    )
+  ],
+  caption: [
+    Grammar for #iter-calc
+  ],
+  kind: image,
+) <iter-calc-grammar>
 
 === Regions
 
