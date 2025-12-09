@@ -2,17 +2,22 @@
 #import "@preview/simplebnf:0.1.1": *
 #import "@preview/subpar:0.2.2"
 #import "@preview/lemmify:0.1.8": *
-#import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
+#import "@preview/fletcher:0.5.8" as fletcher: diagram, edge, node
 
 #let (
-  theorem, lemma, corollary,
-  remark, proposition, example,
-  proof, rules: thm-rules
+  theorem,
+  lemma,
+  corollary,
+  remark,
+  proposition,
+  example,
+  proof,
+  rules: thm-rules,
 ) = default-theorems("thm-group", lang: "en")
 
 #let (
   definition,
-  rules: thm-rules-b
+  rules: thm-rules-b,
 ) = default-theorems("thm-group-b")
 
 #show: thm-rules
@@ -186,7 +191,7 @@
   wordcount
 ]
 
-Directly optimizing a source language can be difficult, 
+Directly optimizing a source language can be difficult,
 because surface languages are often very large and have features
 (such as type inference and overloading)
 which make it difficult to express sound program equivalences.
@@ -201,7 +206,7 @@ Compiler writers deal with this by using _intermediate representations (IRs)_:
 - Like programming languages, they are designed to be read and written, rather than executed, but
 - Like executable code, they are designed to be processed by _machines_, rather than people
 
-A good IR is _simple_: it has a few features which compose well in a predictable manner. 
+A good IR is _simple_: it has a few features which compose well in a predictable manner.
 This makes it
 - Easy to _generate_ from high-level source code
 - Easy to _lower_ to low-level executable code
@@ -214,30 +219,30 @@ In particular, a good intermediate representation should be _regular_, in both c
 To achieve this, we want our IR to have rigorous _invariants_: for example, we might require
 - Operations have only pure expressions as arguments, or even
 - Operations have only variables or constants as arguments (yielding _A-normal form_, or _ANF_)
-- Loops always take canonical, structured forms 
+- Loops always take canonical, structured forms
   (this is always possible due to the Böhm-Jacopini theorem @bohm-66-structured)
 
 Invariants make both analysis and lowering much easier to reason about and implement, since
 there are both fewer cases to consider
 and, when considering each case, we have more assumptions to work with.
 //
-However, this is a double-edged sword: 
-the more invariants we have, the more difficult it is both to 
+However, this is a double-edged sword:
+the more invariants we have, the more difficult it is both to
 _generate_ our intermediate representation
 and, if we've discovered an optimization opportunity, to _rewrite_ it while preserving invariants.
-For example, six of the 13 most invoked passes in the LLVM compiler are spent 
+For example, six of the 13 most invoked passes in the LLVM compiler are spent
 discovering and restoring invariants such as SSA or canonical loop forms @reissmann-19-rvsdg.
 
 /*
 #scaffold[
   - It is generally accepted that IRs are useful
-  - It is generally accepted that SSA is the "standard" IR, 
+  - It is generally accepted that SSA is the "standard" IR,
     and many other IRs are variants and dialects of SSA
 
   Usually, though:
   - Study of IRs, including SSA, is _informal_ and based on engineering practice
     without any rigorous mathematical model for correctness
-  
+
   So we want to argue:
   - IRs need a _formal_ semantics to:
     - _Verify_ optimizations are correct
@@ -256,7 +261,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 ]
 
 #block-note[
-  - _Specific_ intermediate representations each strike a different balance between 
+  - _Specific_ intermediate representations each strike a different balance between
     simplicity and regularity (via invariants)
     - A smaller IR is often both simpler and more regular, but
     - More invariants $=>$ less simple, _so_ harder to generate and rewrite
@@ -283,36 +288,36 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
     So an _optimizing compiler_ with a single IR in the middle might look like
 
     $
-      ms("MyOC") : ms("Source") 
-        =>^ms("Generation") ms("IR") 
-        =>^ms("Optimization") ms("IR") 
+      ms("MyOC") : ms("Source")
+        =>^ms("Generation") ms("IR")
+        =>^ms("Optimization") ms("IR")
         =>^ms("Lowering") ms("Target")
     $
 
-    A real compiler often uses _multiple_ IRs each with specialized optimization and analysis 
+    A real compiler often uses _multiple_ IRs each with specialized optimization and analysis
     functions.
 
     So notice:
     - _Simplicity_ generally makes things easier to _write_. So if $ms("IR")$ is simple:
       - $ms("Generation")$ is easier since we write $ms("IR")$
-      - _Rewriting_ is easier since we already know what we need to do 
+      - _Rewriting_ is easier since we already know what we need to do
         (by analysis, reading the IR)
         and it's easy to generate valid IR
     - _Regularity_ generally makes this easier to _read_. So if $ms("IR")$ is regular:
       - $ms("Lowering")$ is easier since we read $ms("IR")$
-      - _Analysis_ is easier since we can make more assumptions about the IR 
+      - _Analysis_ is easier since we can make more assumptions about the IR
         and hence consider fewer edge cases.
 
-        Note even a very simple language can have many edge cases in _analysis_, 
+        Note even a very simple language can have many edge cases in _analysis_,
         even (in fact _especially_) if it has few edge cases in its _definition_.
-    
-    This is precisely why we need an $ms("IR")$, 
+
+    This is precisely why we need an $ms("IR")$,
     because both these goals are orthogonal to the usual goals of both
     programming language design and
     executable language design.
 
-    Executable languages are rarely either regular or simple: 
-    they have lots of flexibility and edge cases 
+    Executable languages are rarely either regular or simple:
+    they have lots of flexibility and edge cases
     to take advantage of the unique features of a given processor's architecutre and
     extract maximum performance.
 
@@ -322,26 +327,26 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
     to be able to write both `x.find()` and `find(x)` depending on what type of function `find` is,
     and this extra context makes things more readable.
     It's now also double the effort writing a compiler, since we've got two cases instead of one.
-    So we want to normalize everything 
+    So we want to normalize everything
     to the standard `find(x)` form as early as possible to avoid duplicating work.
 
-    Notice, this is totally separate from optimization: 
+    Notice, this is totally separate from optimization:
     the two programs have essentially the _same_ performance characteristics, size, and complexity.
-    This is about _regularity_ and _simplicity_: 
-    by enforcing everything be in a normal form, 
+    This is about _regularity_ and _simplicity_:
+    by enforcing everything be in a normal form,
     a program operating on IR has to deal with fewer cases.
     This is essentially a proof by induction, and we want as few base cases as possible.
 
     A good programming language focuses on making things readable,
     which often requires making things _short_.
 
-    An IR on the other hand should be _maximally explicit_ 
-    even if no one would ever want to type the entire program, 
+    An IR on the other hand should be _maximally explicit_
+    even if no one would ever want to type the entire program,
     for the exact same reason:
     it's much easier for a machine to reason about a fully explicit expression,
     since we don't need to take as much context into account.
 
-    As an example, 
+    As an example,
     a source language might have an expression with type-dependent meaning,
     like `a + b`.
     - If `a, b` are integers, `a + b` means `addInt a b`
@@ -634,7 +639,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
             Or[$ebr(lb("l"), x, a) seq C$][_cons_]
           },
         ),
-      )
+      ),
     )
   ],
   caption: [
@@ -2283,19 +2288,94 @@ in Section #todo-inline[ref].
         - If we want to add loops, we get an _iterative category_,
           but, this is not well-behaved with some advanced loop optimizations
         - To make things well-behaved, we add a _uniformity condition_ and get an _Elgot category_
-      
-      - Premonoidal are the same as _sequential composition with linear variables_ 
+
+      - Premonoidal are the same as _sequential composition with linear variables_
         (linear means can be used _exactly_ once)
 
         - A _semicartesian_ premonoidal category is  _sequential composition with affine variables_.
           We will study these later!
 
-        - 
+        -
 ]
+
+== Notation
+
+- $icol(a) = [a_i | i ∈ I]$ means an _indexed collection_ of a unique $a_i$ for each _index_ $i ∈ I$.
+
+  We say $icol(a)$ is _indexed by_ $I$.
+
+  We denote the _cardinality_ of an indexed collection as $|icol(a)| := |I|$.
+
+  $icol(a)$ is an _indexed collection of $A$_ or simply _collection of $A$_ if $∀i, a_i ∈ A$.
+
+- A _list_ or _$n$-tuple_ $[a_1,...,a_n]$
+  is an indexed collection $[a_i | 1 ≤ i ≤ n]$.
+
+  We call the cardinality of a list its _length_.
+
+- The _empty list_ or _$0$-tuple_ is the empty indexed collection $[]$;
+  this is the unique list of length $0$.
+
+- Given an element $x$ and an $n$-tuple $icol(a)$,
+  we define the _cons_ of $a$ onto $icol(a)$ as follows:
+
+  $
+    x :: icol(a)
+    = [x, a_1, ..., a_n]
+    = [λ i . site(i = 1, x, a_(i - 1))]
+  $
+
+- We define the _concatenation_ of lists $icol(a) · icol(b)$ by induction on $icol(a)$ as follows:
+  $
+    [] · icol(b) = icol(b) quad quad quad
+    (x :: icol(a)) · icol(b) = x :: (icol(a) · icol(b))
+  $
+
+  We can show by induction that
+  $
+    icol(a) · icol(b) = [a_1,...,a_n,b_1,...,b_m] = [λ i . site(i ≤ n, a_i, b_(i - n))]
+  $
+
+  Some other important properties of concatenation are:
+  - $[] · icol(a) = icol(a) · [] = icol(a)$
+  - $icol(a) · (icol(b) · icol(c)) = (icol(a) · icol(b)) · icol(c)$
+
+- Given indexed collections $icol(a) = [a_i | i ∈ I]$, $icol(b) = [b_i | j ∈ J]$,
+  we define their _union_ as follows:
+  $
+    icol(a) | icol(b) = [λ k . site(k ∈ I, a_k, b_k) | k ∈ I ∪ J]
+  $
+
+  We note that
+  - $[] | icol(a) = icol(a) | [] = icol(a)$
+  - $icol(a) | (icol(b) | icol(c)) = (icol(a) | icol(b)) | icol(c)$
+  - $icol(a) | icol(b) = icol(b) | icol(a) <==> I ∩ J = ∅$
+
+  Given an index $i$,
+  we write $[i ↦ a]$ to denote the singleton collection with index set ${i}$
+  and unique element $a$.
+
+- We define the _selection_ of $J ⊆ I$ from an indexed collection $icol(a) = [a_i | i ∈ I]$
+  as follows:
+  $
+    icol(a)[J] = [a_i | i ∈ I ∩ J]
+  $
+
+- We define the _removal_ of $J ⊆ I$ from an indexed collection $icol(a) = [a_i | i ∈ I]$
+  as follows:
+  $
+    icol(a) backslash J = [a_i | i ∈ I backslash J]
+  $
+
+- We define the _repetition_ of a list $icol(a)$ by induction as follows:
+  $
+    icol(a)^0 = [] quad quad quad icol(a)^(n + 1) = icol(a) · icol(a)^n
+  $
+
 
 == Enriched Categories
 
-// At a high level, our goal is to assign a denotational semantics $⟦hasty(Γ, a, A)⟧$ 
+// At a high level, our goal is to assign a denotational semantics $⟦hasty(Γ, a, A)⟧$
 // to every well-typed #iter-calc program $hasty(Γ, a, A)$.
 
 We will begin with a brief overview of basic category theory, in which we will take the opportunity
@@ -2306,7 +2386,7 @@ to fix notations. Recall the definition of a category $cal(C)$:
   - A set of _objects_ $|cal(C)|$
     #footnote[
       To deal with size issues, authors often define $|cal(C)|$ to be a _class_ rather than a set
-      (with $cal(C)$ being a _small_ category if $|cal(C)|$ is a set, 
+      (with $cal(C)$ being a _small_ category if $|cal(C)|$ is a set,
       and a _large_ category otherwise)
       or turn to naïve set-theory and trust their definitions won't turn too recursive.
       Since this exposition corresponds roughly to our Lean formalization, we instead postulate
@@ -2319,88 +2399,81 @@ to fix notations. Recall the definition of a category $cal(C)$:
   - For each object $A in |cal(C)|$, an _identity morphism_ $id_A : cal(C)(A, A)$
   - A binary operation, $- med ; -$, mapping each pair of morphisms $f : cal(C)(A, B)$ and $g : cal(C)(B, C)$
     to their _composition_ $f ; g : cal(C)(A, C)$
-  
+
   Such that:
   - For all $A, B: |cal(C)|$, $id_A ; f = f ; id_B = f$
   - For all $f: cal(C)(A, B), g: cal(C)(B, C), h: cal(C)(C, D)$, $(f ; g) ; h = f ; (g ; h)$
 
-  We will sometimes write the set $cal(C)(A, B)$ as $A ahm(cal(C)) B$ or, 
+  We will sometimes write the set $cal(C)(A, B)$ as $A ahm(cal(C)) B$ or,
   where $cal(C)$ is clear from context, $A -> B$.
 ]
 
 We follow the convention in computer science and define composition "forwards" as $f ; g$.
-If we interpret objects $A, B$ as _states_ 
+If we interpret objects $A, B$ as _states_
 and morphisms $f: cal(C)(A, B), g : cal(C)(B, C)$ as _transformations between states_,
 then their _sequential composition_
 $
-  #diagram(cell-size: 15mm, $
-    A edge(f, ->) & B edge(g, ->) & C
-  $)
-$ 
+  #diagram(cell-size: 15mm, $ A edge(f, ->) & B edge(g, ->) & C $)
+$
 is precisely $f ; g : cal(C)(A, C)$: the composite path from $A$ to $C$ through $B$.
 Viewing morphisms in a category as diagrams, the laws of a category become graphically obvious:
 if the identity transformation from $A$ to $A$ is doing nothing, i.e. the null path, then the
-axiom that 
+axiom that
 $
-id_A ; f = f ; id_B = f
-$ 
+  id_A ; f = f ; id_B = f
+$
 becomes the (trivial) equation on diagrams
 $
-  #diagram(cell-size: 15mm, $
-    A edge(f, ->) & B
-  $)
+  #diagram(cell-size: 15mm, $ A edge(f, ->) & B $)
   quad = quad
-  #diagram(cell-size: 15mm, $
-    A edge(f, ->) & B
-  $)
+  #diagram(cell-size: 15mm, $ A edge(f, ->) & B $)
   quad = quad
-  #diagram(cell-size: 15mm, $
-    A edge(f, ->) & B
-  $)
-$ 
+  #diagram(cell-size: 15mm, $ A edge(f, ->) & B $)
+$
 Likewise, the associativity axiom becomes the (trivial) equation
 $
-  #diagram(cell-size: 15mm, $
-    A edge(f, ->) & B edge(g, ->) & C edge(h, ->) & D
-  $)
+  #diagram(cell-size: 15mm, $ A edge(f, ->) & B edge(g, ->) & C edge(h, ->) & D $)
 $
 
 #definition(name: "Category of sets")[
   We define the category of sets
   #footnote[
-    More precisely, we define the category of $ℓ$-small sets $ms("Set")_ℓ$ 
-    for each universe level $ℓ$ to have objects $cal(U)_ℓ$, 
+    More precisely, we define the category of $ℓ$-small sets $ms("Set")_ℓ$
+    for each universe level $ℓ$ to have objects $cal(U)_ℓ$,
     with $ms("Set")$ corresponding to the category of small sets $ms("Set")_0$
   ] $ms("Set")$
-  to have as objects sets $A$ and morphisms $f : ms("Set")(A, B)$ functions $f : A → B$. 
+  to have as objects sets $A$ and morphisms $f : ms("Set")(A, B)$ functions $f : A → B$.
   Composition $f ; g$ is simply composition of functions $g ∘ f$.
 ]
 
 #definition(name: "Isomorphism")[
   We say a morphism $f : cal(C)(A, B)$ is an _isomorphism_ if there exists a morphism
-  $g : cal(C)(B, A)$ such that $f ; g = id_A$ and $g ; f = id_B$. 
+  $g : cal(C)(B, A)$ such that $f ; g = id_A$ and $g ; f = id_B$.
   As any such _inverse morphism_ $g$, if it exists, is unique, we write it as $f^(-1)$.
-  
+
   Two objects $A, B : |cal(C)|$ are _isomorphic_, written $A ≈ B$, if there exists
   an isomorphism $f : cal(C)(A, B)$.
 ]
 
+//TODO: pull down
+/*
 #definition(name: "Opposite Category")[
   Given a category $cal(C)$, we define it's opposite category $opc(cal(C))$ to have
   - Objects $|opc(cal(C))| = |cal(C)|$
   - Morphisms $opc(cal(C))(A, B) = { opm(f) | f ∈ cal(C)(B, A) }$
     #footnote[
-      This is in bijection with $cal(C)(B, A)$ 
+      This is in bijection with $cal(C)(B, A)$
       // (and is usually defined to be equal to it!)
       but we add the $opm(-)$-tag to avoid confusion.
     ].
   - Composition given by $opm(f) ; opm(g) = opm((g ; f))$
 ]
+*/
 
 #definition(name: "Functor")[
   Given categories $cal(C), cal(D)$, a _functor_ $F : cal(C) → cal(D)$ consists of:
   - A mapping on objects $|F| : |cal(C)| → |cal(D)|$. We often simply write $|F|(A)$ as $F A$.
-  - A mapping from $cal(C)$-morphisms $f : cal(C)(A, B)$ 
+  - A mapping from $cal(C)$-morphisms $f : cal(C)(A, B)$
     to $cal(D)$-morphisms $F f : cal(D)(F A, F B)$
   such that
   - $F$ preserves identities: $F id_A = id_(F A)$
@@ -2415,17 +2488,17 @@ $
   - A functor $F : cal(V) → cal(V)$ is _identity on objects_ if $|F| = id_|cal(V)|$.
 ]
 
-Given functors $F : cal(C)_1 -> cal(C)_2$ and $G : cal(C)_2 -> cal(C)_3$, we may define their 
+Given functors $F : cal(C)_1 -> cal(C)_2$ and $G : cal(C)_2 -> cal(C)_3$, we may define their
 _composition_ $F ; G$ as follows:
 - $|F ; G| = |G| ∘ |F| : |cal(C)_1| → |cal(C)_3|$
 - For all $f : cal(C)_1(A, B)$, $(F ; G) med f = G med (F f) : cal(C)_3(G med (F A), G med (F B))$
 
-Furthermore, for an arbitrary category $cal(C)$, we may define the _identity functor_ $id_cal(C)$ 
-as mapping objects and morphisms to themselves. In particular, this equips the set of categories 
-itself with the structure of a category, the _category of categories_ $ms("Cat")$, as follows: 
+Furthermore, for an arbitrary category $cal(C)$, we may define the _identity functor_ $id_cal(C)$
+as mapping objects and morphisms to themselves. In particular, this equips the set of categories
+itself with the structure of a category, the _category of categories_ $ms("Cat")$, as follows:
 
 #definition(name: "Category of categories")[
-  The category of categories 
+  The category of categories
   #footnote[
     Again, we actually define the category $ms("Cat")_ℓ$ of $ℓ$-small categories, with
     $ms("Cat")$ corresponding to the category of small categories $ms("Cat")_0$
@@ -2435,34 +2508,42 @@ itself with the structure of a category, the _category of categories_ $ms("Cat")
   - Morphisms $ms("Cat")(cal(C), cal(D))$ functors $F : cal(C) → cal(D)$
 ]
 
-#definition(name: "Terminal Object, Initial Object")[
-  An object $tunit_cal(C) : |cal(C)|$ is _terminal_ if for every object $A : |cal(C)|$,
-  there exists a _unique_ morphism into it $!_A : cal(C)(A, tunit_cal(C))$.
-  
+#definition(name: "Terminal Object")[
+  An object $X : |cal(C)|$ is _terminal_ if for every object $A : |cal(C)|$,
+  there exists a _unique_ morphism $!_A : cal(C)(A, X)$.
+
+  We note that terminal objects are unique up to _unique_ isomorphism:
+  if $X$ and $X'$ are terminal objects, then $X ≈ X'$.
+  Hence, in any $cal(C)$ with a terminal object, we may choose a distinguished terminal object
+  $tunit_cal(C) : |cal(C)|$ without loss of generality; where there is no risk of confusion, we
+  will often omit the subscript and write $tunit : |cal(C)|$.
+  /*
   Dually, an object $tzero_cal(C) : |cal(C)|$ is _initial_ if for every object $A : |cal(C)|$,
   there exists a _unique_ morphism out of it $0_A : cal(C)(tzero_cal(C), A)$.
 
-  We note that terminal and initial objects are unique up to isomorphism; 
+  We note that terminal and initial objects are unique up to isomorphism;
   that is, if $tunit$ and $tunit'$ are terminal objects, then $tunit ≈ tunit'$, and likewise for
   initial objects.
   //
   Hence we will often speak of "the" terminal object $tunit$ and "the" initial object $tzero$.
+  */
 ]
 
+/*
 In particular:
 - The (unique) initial object in $ms("Set")$ is the empty set $∅$
 - Any singleton set is a terminal object in $ms("Set")$.
   We fix a singleton set $tunit_ms("Set") = {*}$.
 - Likewise, the (unique) initial object in $ms("Cat")$ is the empty category with objects $∅$
-- The terminal object in $ms("Cat")$ has 
+- The terminal object in $ms("Cat")$ has
   one object $* ∈ mb(1)_ms("Set")$
   and only the identity morphism $id_* : mb(1)_ms("Cat")(*, *)$
 
 #todo[fix this this is not a good discussion]
 
-The existence of the opposite category means that for every structure $cal(S)$ 
+The existence of the opposite category means that for every structure $cal(S)$
 defined on arbitrary categories $cal(C)$,
-we can immediately ask whether $cal(S)$ exists on the _opposite category_ $opc(cal(C))$. 
+we can immediately ask whether $cal(S)$ exists on the _opposite category_ $opc(cal(C))$.
 If it does, this naturally induces a structure $opc(cal(S))$ on $cal(C)$ as well,
 the _dual_ of $cal(S)$.
 
@@ -2471,106 +2552,120 @@ As an example of this,
   so the terminal object is dual to the initial object
 - Likewise, a category $cal(C)$ has a terminal object if and only if $opc(cal(C))$ has an initial object;
   so the initial object is dual to the terminal object
-- In general, if $cal(S)$ is dual to $opc(cal(S))$, then $opc(cal(S))$ is dual to $cal(S)$. 
+- In general, if $cal(S)$ is dual to $opc(cal(S))$, then $opc(cal(S))$ is dual to $cal(S)$.
   In particular, this means that $opc(opc(cal(S))) = cal(S)$
 
-In general, we get the dual structure $opc(cal(S))$ to $cal(S)$ 
+In general, we get the dual structure $opc(cal(S))$ to $cal(S)$
 by flipping the direction of all morphisms in the
 definition of $cal(S)$.
+*/
 
 #definition(name: "Product")[
-  Given a collection of objects $A_i : |cal(C)|$ for some indexing set $I$, 
-  we say that an object $P: |cal(C)|$ is their _product_ if there exist: 
-  - Morphisms $π_i : cal(C)(P, A_i)$
+  Given a collection of objects $sfam(A) = [A_i | i ∈ I]$ indexed by a set $I$,
+  we say that an object $P: |cal(C)|$ is their _product_ if:
+  - There exist morphisms $π_i^P : cal(C)(P, A_i)$ such that
 
-    Where there is risk of confusion, we will write $π^P_i$ or even $π^(P, A_i)_i$.
-
-  - For each object $X : |cal(C)|$, 
-    given a collection of morphisms $f_i : cal(C)(X, A_i)$ for each $i ∈ I$,
-    a _unique_ morphism $⟨f_i⟩_(i ∈ I) : cal(C)(X, P)$ 
+  - for each object $X : |cal(C)|$,
+    given a collection of morphisms $icol(f) = [f_i : cal(C)(X, A_i) | i ∈ I]$,
+    a _unique_ morphism $⟨icol(f)⟩^P : cal(C)(X, P)$
     (the _product_ of the $f_i$)
     such that
     $
-      ∀ j : I . ⟨f_i⟩_(i ∈ I) ; π_j = f_j
+      ∀ j : I . ⟨icol(f)⟩^P ; π_j = f_j
     $
 
     That is, for arbitrary $g : cal(C)(X, P)$, we have that
     $
-       (∀ j ∈ I . g ; π_j = f_j) <==> g = ⟨f_i⟩_(i ∈ I)
+      (∀ j ∈ I . g ; π_j = f_j) <==> g = ⟨icol(f)⟩^P
     $
 
-    For finite $f_1,...,f_n$, we write $⟨f_i⟩_i = ⟨f_1,...,f_n⟩$.
+    Where it is unambiguous from context, we will often omit the superscript $P$ and
+    simply write $π_i : cal(C)(P, A_i)$, $⟨icol(f)⟩$.
+
+    Likewise, we will often write $⟨f_i⟩_(i ∈ I)$, $⟨f_i⟩_i$, or $⟨f_1,...,f_n⟩$ for 
+    $⟨icol(f)⟩^P$ where the meaning is clear from context.
 
   We note that the product $P$ of a collection of objects $A_i$ is unique up to isomorphism;
   that is, if $P$ and $P'$ are products of $A_i$, then $P ≈ P'$.
-  Furthermore, an object is the product of the empty collection if and only if it is terminal.
 
-  We say a category $cal(C)$ is _cartesian_ if it has _all finite products_; 
-  i.e. if there exists a function 
-  $Π : tlist(|cal(C)|) → |cal(C)|$ 
-  #footnote[
-    In particular, we are assuming _chosen_ finite (co)products. 
-    In foundations with the axiom of choice, this is equivalent to finite products, 
-    but it is a lot easier to formalize in a theorem prover.
-  ]
-  such that
-  - For $L = [A_1,...,A_n]$, $Π L$ is a product of $A_i$, and, in particular,
-  - $Π []$ is equal to the terminal object $tunit$
-  
-  In general, we write 
-  - $Π_i A_i := Π [A_1,...,A_n]$
-  - $A × B := Π [A, B]$
-  - For morphisms $f_i : cal(C)(A_i, B_i)$ for arbitrary $i ∈ I$,
-    - $Π_i f_i = ⟨π_i/*^(Π_i A_i)*/ ; f_i⟩_i : Π_i A_i → Π_i B_i$, and, therefore, in particular
-    - $Π [f_1,...,f_n] = ⟨π_1; f_1,..., π_n ; f_n⟩ : Π [A_1,...,A_n] → Π [B_1,...,B_n]$
-    - $f_1 × f_2 = ⟨π_1 ; f_1 , π_2 ; f_2⟩ : A_1 × A_2 → B_1 × B_2$
-  - In particular, for $f : cal(C)(A, B)$ and objects $C$, we define
-    - $f × C = f × id_C : A × C → B × C$, and 
-    - $C × f = id_C × f : C × A → C × B$
+  In particular, for each family of objects $sfam(A) = [ A_i | i ∈ I ]$,
+  we may choose a distinguished product  $Π sfam(A)$ whenever one exists.
+
+  Since an object is the product of the empty collection if and only if it is terminal,
+  if such a product exists, we may without loss of generality assume that $Π [] = tunit$.
+
+  //TODO: should we assume this
+  /*
+  Likewise, as the product of a single object $Π [A]$ is isomorphic to $A$, we similarly
+  assume without loss of generality that $Π [A] = A$.
+  */
+
+  In general, where the appropriate products exist, we write
+  - $Π_(i ∈ I) A_i := Π [A_i | i ∈ I]$. 
+    Where clear from context, we may omit the subscript and write $Π_i A_i$.
+
+  - $A_1 × A_2 := Π [A_1, A_2]$
+
+  - For $n ∈ ℕ$, $A^n := Π [A]^n$
+
+  - Given objects $sfam(A) = [A_i | i ∈ I]$ , $sfam(B) = [B_i | i ∈ I]$,
+    and morphisms $icol(f) = [f_i : cal(C)(A_i, B_i) | i ∈ I]$, 
+    we define
+    $Π mb(f) = Π_(i ∈ I)f_i := ⟨π_i^(Π sfam(A)) ; f_i⟩_(i ∈ I) : cal(C)(Π sfam(A), Π sfam(B))$
+
+  - Likewise, given $f: A_1 → B_1$, $g : A_2 → B_2$, we define
+    - $f × g := Π [f, g]$
+    - $f × A_2 := f × id_(A_2)$
+    - $A_1 × g := id_(A_1) × g$
+]
+
+#definition(name: "Cartesian Category")[
+  A category $cal(C)$ is _cartesian_ if it has all finite products; 
+  i.e. all products $Π sfam(A)$ where $sfam(A)$ is a list.
+
+  Note that it suffices for $cal(C)$ to have an initial object and all binary products $A × B$.
 ]
 
 Some important properties of products include:
-- $A × B ≈ B × A$, with canonical isomorphisms 
-  $⟨π_2^(A × B), π_1^(A × B)⟩ : A × B -> B × A$ and 
+- $A × B ≈ B × A$, with canonical isomorphisms
+  $⟨π_2^(A × B), π_1^(A × B)⟩ : A × B -> B × A$ and
   $⟨π_2^(B × A), π_1^(B × A)⟩ : B × A -> A × B$
 
-- $A × tunit ≈ A$, with canonical isomorphisms 
+- $A × tunit ≈ A$, with canonical isomorphisms
   $π_1 : A × tunit → A$ and $⟨id_A, !_A⟩ : A → A × tunit$
-  
+
   Likewise, $tunit × A ≈ A$.
 
-- $A × Π L = Π (A :: L)$, with canonical isomorphims (for $L$ of length $n$)
+- $X × Π sfam(A) = Π (X :: sfam(A))$, with canonical isomorphims (for $sfam(A)$ of length $n$)
   $
-  ⟨π_1^(A × Π L), (π_2^(A × Π L) ; π_1^(Π L)), ..., (π_2^(A × Π L) ; π_n^(Π L))⟩ 
-  & : A × Π L -> Π (A :: L)
-  \
-  ⟨π_1^(Π (A :: L)), ⟨π_(1 + 1)^(Π (A :: L)),...,π_(n + 1)^(Π (A :: L))⟩⟩
-  & : Π (A :: L) -> A × Π L
+    ⟨π_1^(X × Π sfam(A)), 
+      (π_2^(X × Π sfam(A)) ; π_1^(Π sfam(A))), ..., (π_2^(X × Π sfam(A)) ; π_n^(Π sfam(A)))⟩ 
+      & : X × Π sfam(A) -> Π (X :: sfam(A)) \
+           ⟨π_1^(Π (X :: sfam(A))), ⟨π_(1 + 1)^(Π (X :: sfam(A))),...,π_(n + 1)^(Π (X :: sfam(A)))⟩⟩ 
+           & : Π (X :: sfam(A)) -> X × Π sfam(A)
   $
 
 - $Π [A] ≈ A$, with canonical isomorphisms $π^(Π [A]) : Π [A] → A$ and $⟨id_A⟩ : A → Π [A]$
 
-- In particular, this yields an isomorphism $Π L × Π L' ≈ Π (L · L')$ by induction,
-  where $·$ is list concatenation.
+- In particular, this yields an isomorphism $Π sfam(A) × Π sfam(B) ≈ Π (sfam(A) · sfam(B))$
 
 - It follows that $A × (B × C) ≈ Π[A, B, C] ≈ (A × B) × C$
 
-// - $Π L × A ≈ Π (L · [A])$.
-//   In particular, given a list $L = [A_1,...,A_n]$, we have canonical isomorphisms
-//   $
-//     ⟨⟨π_1^(Π L),...,π_n^(Π L)⟩, π_2^(Π L × A)⟩ & : Π L × A → Π (L · [A]) \
-//     ⟨π_1^(Π (L · [A])),...,π_(n + 1)^(Π (L · [A]))⟩ & : Π (L · [A])
-//   $
+- Likewise, $A^m × A^n = A^(n + m)$
+
+//TODO: pull down?
+
+/*
 
 A coproduct, then, is just the dual notion to a product:
 
 #definition(name: "Coproduct")[
-  Given a collection of objects $A_i : |cal(C)|$ for some indexing set $I$, 
-  we say that an object $C: |cal(C)|$ is their _coproduct_ if there exist: 
+  Given a collection of objects $A_i : |cal(C)|$ for some indexing set $I$,
+  we say that an object $C: |cal(C)|$ is their _coproduct_ if there exist:
   - Morphisms $ι_i : cal(C)(A_i, C)$ and
-  - For each object $X : |cal(C)|$, 
+  - For each object $X : |cal(C)|$,
     given a collection of morphisms $f_i : cal(C)(A_i, X)$ for each $i ∈ I$,
-    a _unique_ morphism $[f_i]_(i ∈ I) : cal(C)(C, X)$ 
+    a _unique_ morphism $[f_i]_(i ∈ I) : cal(C)(C, X)$
     (the _coproduct_ of the $f_i$)
     such that
     $
@@ -2586,21 +2681,22 @@ A coproduct, then, is just the dual notion to a product:
   that is, if $C$ and $C'$ are coproducts of $A_i$, then $C ≈ C'$.
   Furthermore, an object is the product of the empty collection if and only if it is initial.
 
-  We say a category $cal(C)$ is _cocartesian_ if it has _all finite coproducts_; 
-  i.e. if there exists a function 
+  We say a category $cal(C)$ is _cocartesian_ if it has _all finite coproducts_;
+  i.e. if there exists a function
   $Σ : tlist(|cal(C)|) → |cal(C)|$ such that
   - For $L = [A_1,...,A_n]$, $Σ L$ is a coproduct of $A_i$, and, in particular,
   - $Σ []$ is equal to the initial object $tzero$
-  
-  In general, we write 
+
+  In general, we write
   - $Σ_i A_i := Σ [A_1,...,A_n]$
   - $A + B := Σ [A, B]$
+  - For $n ∈ ℕ$, $ntag(n, A) = Σ [A,...,A]$ ($n$ copies of $A$)
   - For morphisms $f_i : cal(C)(A_i, B_i)$ for arbitrary $i ∈ I$,
     - $Σ_i f_i = ⟨f_i ; ι_i⟩_i : Σ_i A_i → Σ_i B_i$, and, therefore, in particular
     - $Σ [f_1,...,f_n] = ⟨f_1 ; ι_1,..., f_n ; ι_n⟩ : Σ [A_1,...,A_n] → Σ [B_1,...,B_n]$
     - $f_1 + f_2 = ⟨f_1 ; ι_1 , f_2 ; ι_2⟩ : A_1 + A_2 → B_1 + B_2$
   - In particular, for $f : cal(C)(A, B)$ and objects $C$, we define
-    - $f + C = f + id_C : A + C → B + C$, and 
+    - $f + C = f + id_C : A + C → B + C$, and
     - $C + f = id_C + f : C + A → C + B$
 ]
 
@@ -2618,25 +2714,30 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 
 - $A + (B + C) ≈ Σ [A, B, C] ≈ (A + B) + C$
 
+- Likewise, $ntag(m, A) + ntag(n, A) ≈ ntag(m + n, A)$
+
+*/
+
 #definition(name: "Concrete Category")[
-  A _concrete category_ $cal(V)$ is a category equipped with a faithful functor 
-  $U : cal(V) → ms("Set")$ 
+  A _concrete category_ $cal(V)$ is a category equipped with a faithful functor
+  $U : cal(V) → ms("Set")$
 ]
 
+/*
 #todo[rewrite this]
 
 We can think of a concrete category $cal(V)$ as "sets with extra structure":
 
-- Each object $A ∈ |cal(V)|$ corresponds to a set $U A$; in particular, 
+- Each object $A ∈ |cal(V)|$ corresponds to a set $U A$; in particular,
   we will write $a ∈ A$ to mean $a ∈ U A$
 - Each morphism $f : cal(V)(A, B)$ corresponds to a _unique_ function $U f : U A → U B$.
 
-  In particular, since $U$ is faithful, 
+  In particular, since $U$ is faithful,
   we can ask whether an arbitrary function $g : U A → U B$
-  "is a $cal(V)$-morphism from $A$ to $B$"; 
-  i.e., whether there exists $f : cal(V)(A, B)$ such that $U f = g$. 
-  If there exists such an $f$, it is unique; 
-  hence, we can identify the morphisms $cal(V)(A, B)$ 
+  "is a $cal(V)$-morphism from $A$ to $B$";
+  i.e., whether there exists $f : cal(V)(A, B)$ such that $U f = g$.
+  If there exists such an $f$, it is unique;
+  hence, we can identify the morphisms $cal(V)(A, B)$
   with the subset of functions $U A → U B$ which "are $cal(V)(A, B)$ morphisms."
 
   In general, we will write such an $f$ if it exists as $U^(-1)_(cal(V)(A, B)) g$.
@@ -2647,79 +2748,83 @@ We can think of a concrete category $cal(V)$ as "sets with extra structure":
 
   - Given $a ∈ A$, we define $f(a) ∈ B$ to mean $(U f)(a) ∈ U B$
 
-As a concrete example, consider the category of partially-ordered sets and monotone functions $ms("Pos")$. 
-An object of $ms("Pos")$ is a partially-ordered set $(X, scripts(≤)_X)$, 
+As a concrete example, consider the category of partially-ordered sets and monotone functions $ms("Pos")$.
+An object of $ms("Pos")$ is a partially-ordered set $(X, scripts(≤)_X)$,
 and a morphism $f: (X, scripts(≤)_X) → (Y, scripts(≤)_Y)$ is a monotone function $f : X → Y$, i.e.
 a function $f$ such that
 $
   ∀ x_1, x_2 ∈ X . (x_1 scripts(≤)_X x_2) ==> (f(x_1) scripts(≤)_Y f(x_2))
 $
 
-We can directly equip $ms("Pos")$ with the structure of a concrete category by taking 
-$U(X, scripts(≤)_X) = X$ and $U f = f$. 
+We can directly equip $ms("Pos")$ with the structure of a concrete category by taking
+$U(X, scripts(≤)_X) = X$ and $U f = f$.
 Our abuse of notation is then precisely the usual mathematical convention of, for example,
 specifying "a monotone function $f : ℕ → pset(X)$" without explicitly specifying that
 $ℕ$ is ordered with the usual $≤$ relation on the naturals and
 $pset(X)$ is ordered with the subset relation $⊆$.
 
 
-Another particularly import example is the category of sets $ms("Set")$, which is trivially a 
+Another particularly import example is the category of sets $ms("Set")$, which is trivially a
 concrete category by taking $U$ to be the identity functor.
+*/
 
 #definition(name: "Concretely Cartesian Category")[
-  A concrete category $cal(V)$ is _concretely cartesian_ if it has all finite products and 
+  A concrete category $cal(V)$ is _concretely cartesian_ if it preserves finite products; 
+  i.e., we have
   $
     ∀ [A_1,...,A_n] . U(Π [A_1,...,A_n]) = Π [U A_1,...,U A_n]
   $
 ]
 
-All the concrete categories in this paper will be concrerely cartesian.
-
-For the rest of this section, we will develop the theory of $cal(V)$-enriched categories in the 
-special case where $cal(V)$ is concretely cartesian. The general theory of enriched categories is
-analogous, but much more complex since we need to deal with coherence conditions, however, 
-when $cal(V)$ is concretely cartesian, the definitions are essentially the same as in ordinary 
-category theory. In fact, we can recover the standard category theoretic definitions by noting that
-a category is precisely a $ms("Set")$-enriched category.
+For the rest of this thesis,
+$cal(V)$ will range over concretely cartesian categories unless otherwise specified.
 
 #definition(name: [$cal(V)$-enriched category])[
-  Given a concretely cartesian category $cal(V)$, 
+  Given a concretely cartesian category $cal(V)$,
   a $cal(V)$-enriched category $cal(C)$, or _$cal(V)$-category_, consists of
   - An set of objects $|cal(C)|$
   - For each pair of objects $A, B : |cal(C)|$, a _hom-object_ $cal(C)(A, B) ∈ |cal(V)|$
   - For each object $A : |cal(C)|$, an _identity morphism_ $id_A : cal(C)(A, B)$
   - For each triple of objects $A, B, C : |cal(C)|$, a _composition morphism_
     $
-    (;)_(A, B, C) : cal(V)(cal(C)(A, B) × cal(C)(B, C), cal(C)(A, C))
+      (;)_(A, B, C) : cal(V)(cal(C)(A, B) × cal(C)(B, C), cal(C)(A, C))
     $
 ]
 
-We note that every $cal(V)$-category $cal(C)$ induces an ordinary category $U cal(C)$ 
-with:
-- The same set of objects $|U cal(C)| = |cal(C)|$ 
-- Hom-sets $(U cal(C))(A, B) = U(cal(C)(A, B))$. 
+/*
+For the rest of this section, we will develop the theory of $cal(V)$-enriched categories in the
+special case where $cal(V)$ is concretely cartesian. The general theory of enriched categories is
+analogous, but much more complex since we need to deal with coherence conditions, however,
+when $cal(V)$ is concretely cartesian, the definitions are essentially the same as in ordinary
+category theory. In fact, we can recover the standard category theoretic definitions by noting that
+a category is precisely a $ms("Set")$-enriched category.
+*/
 
-  In particular, as $U : cal(V) → ms("Set")$ is faithful, every $g ∈ (U cal(C))(A, B)$ 
+We note that every $cal(V)$-category $cal(C)$ induces an ordinary category $U cal(C)$
+with:
+- The same set of objects $|U cal(C)| = |cal(C)|$
+- Hom-sets $(U cal(C))(A, B) = U(cal(C)(A, B))$.
+
+  In particular, as $U : cal(V) → ms("Set")$ is faithful, every $g ∈ (U cal(C))(A, B)$
   can be written in a unique way as an application $U f$ for $f : cal(C)(A, B)$.
 - Composition given by
   $
     ∀ f : (U cal(C))(A, B), g : (U cal(C))(B, C) . f ; g = (U (;)_(A, B, C)) (f, g)
   $
 
-In fact, this definition can be generalized quite readily
+In fact, this construction can be generalized quite readily:
 
 #definition(name: "Concretely Cartesian Functor")[
-  Let $F : cal(V) → cal(W)$ be a functor between concretely cartesian categories 
+  Let $F : cal(V) → cal(W)$ be a functor between concretely cartesian categories
   $(cal(V), U_cal(V))$ and $(cal(W), U_cal(W))$. We say $F$ is _concretely cartesian_ if
   - $F$ preserves erasure: $F ; U_cal(W) = U_cal(V)$
-  - $F$ preserves products: $∀ [A_1,...,A_n] . F (Π [A_1,...,A_n]) = Π [F A_1,...,F A_n]$
+  - $F$ preserves finite products: $∀ [A_1,...,A_n] . F (Π [A_1,...,A_n]) = Π [F A_1,...,F A_n]$
 
-  In particular, for any concretely cartesian $cal(V)$, by definition,
-  $U : cal(V) → ms("Set")$ is a concretely cartesian functor 
-  to $ms("Set")$ taken as a concretely cartesian category.
+  Note in particular that the erasure $U : cal(V) → ms("Set")$ 
+  is always a concretely cartesian functor.
 ]
 
-This allows us to define the _change of basis_ of a $cal(V)$-category along a 
+This allows us to define the _change of basis_ of a $cal(V)$-category along a
 concretely cartesian functor as follows:
 
 #definition(name: "Change of Basis")[
@@ -2737,7 +2842,7 @@ concretely cartesian functor as follows:
 We will often consider two particularly important cases:
 
 - A $ms("Set")$-category $cal(C)$ is precisely an ordinary category
-- A $ms("Pos")$-category $cal(C)$, i.e. a _poset-enriched category_ or _2-poset_, 
+- A $ms("Pos")$-category $cal(C)$, i.e. a _poset-enriched category_ or _2-poset_,
   is simply a category in which
   - Each hom-set $cal(C)(A, B)$ is equipped with a partial order
   - Composition respects this partial order, i.e.,
@@ -2762,15 +2867,118 @@ Similarly to before,
 - A $ms("Set")$-functor $cal(C)$ is precisely an ordinary functor
 - A $ms("Pos")$-functor $F : cal(C) → cal(D)$
 
-In general, we can recover the standard category-theoretic definitions of a concept by taking $cal(V) = ms("Set")$. 
-Often, many definitions for $cal(V)$-categories are in fact identical; 
-in particular, the definitions for terminal objects, initial objects, products and coproducts are exactly the same, 
+In general, we can recover the standard category-theoretic definitions of a concept by taking $cal(V) = ms("Set")$.
+Often, many definitions for $cal(V)$-categories are in fact identical;
+in particular, the definitions for terminal objects, initial objects, products and coproducts are exactly the same,
 so we will not repeat them.
 
 #definition(name: [$cal(V)$-natural transformation])[
-  Given $cal(V)$-functors $F : cal(V)$
-  #todo[this]
+  Given $cal(V)$-functors $F, G : cal(C) → cal(D)$
+  a $cal(V)$-natural transformation $η : F => G$ consists of:
+  - For each object $A ∈ |cal(C)|$, a morphism $η_A : cal(D)(F A, G A)$ such that
+  - For each morphism $f : cal(C)(A, B)$, we have that
+    $
+      η_A ; (G med f) = (F med f) ; η_B
+    $
+    i.e. the following diagram commutes:
+    $
+      #diagram(cell-size: 15mm, $ F med A edge(η_A, ->) edge("d", F med f, ->) & G med A edge("d", G med f, ->, label-side: #left) \
+         F med B edge(η_B, ->, label-side: #right) & G med B $)
+    $
 ]
+
+/*
+#definition(name: [$cal(V)$-Quiver])[
+  A $cal(V)$-quiver $cal(Q)$ consists of
+  - A set of objects $|cal(Q)|$
+  - For each pair of objects $A, B : |cal(Q)|$, a hom-object $cal(Q)(A, B) ∈ |cal(V)|$
+
+  In particular, every $cal(V)$-category can be made into a $cal(V)$-quiver by forgetting
+  the identities and composition.
+
+  We define the category of $cal(V)$-quivers $ms("Quiv")_cal(V)$ to have:
+  - Objects $cal(V)$-quivers
+  - Morphisms $F : ms("Quiv")_cal(V)(cal(Q)_1, cal(Q)_2)$ consisting of
+    - A mapping on objects $|F| : |cal(Q)_1| → |cal(Q)_2|$
+    - For each pair of objects $A, B : |cal(Q)_1|$, a $cal(V)$-morphism
+      $
+        F_(A, B) : cal(V)(cal(Q)_1(A, B), cal(Q)_2(F A, F B))
+      $
+  - Identity morphisms $id_(cal(Q)) = (id, id)$
+  - Composition given by
+    - $|F ; G| = |G| ∘ |F|$
+    - $(F ; G)_(A, B) = F_(A, B) ; G_(F A, F B)$
+
+  In particular, this is the same as composition of functors,
+  giving us a faithful forgetful functor from the category of $cal(V)$-categories
+  $ms("Cat")_cal(V)$ to the category of $cal(V)$-quivers $ms("Quiv")_cal(V)$.
+
+  Given a collection of $cal(V)$-quivers $cal(Q)_i$ for $i ∈ I$, we may define:
+  - The _product quiver_ $Π_i Q_i$
+]
+*/
+
+#definition(name: [$cal(V)$-Multifunctor])[
+  Given a collection of $cal(V)$-categories $scat(C) = [cal(C)_i | i ∈ I]$ 
+  and a $cal(V)$-category $cal(D)$,
+  a _multifunctor_ $F$ from $sfam(C)$ to $cal(D)$ consists of
+  - A mapping from collections of objects $sfam(A) = [A_i : cal(C)_i | i ∈ I]$ 
+    to objects $F sfam(A) : |cal(D)|$ 
+  - For each $j ∈ I$, 
+    a mapping from collections of objects $sfam(A)_j = [A_i : cal(C)_i | i ∈ I backslash {j}]$
+    a $cal(V)$-functor
+    $
+      F med sfam(A)_j : cal(C)_j → cal(D) 
+    $
+    such that
+    $
+      ∀ A_j : |cal(C)_j|, F_j med sfam(A)_j med A_j = F med [A_i | i ∈ I] : |cal(D)|
+    $
+  
+  In other words, $F$ is a function of $A_i$ 
+  which is a $cal(V)$-functor in each argument $A_j$ _separately_, 
+  when all other arguments $A_i$ for $i ≠ j$ are held fixed.
+]
+
+#definition(name: [$cal(V)$-Natural Multitransformation])[
+  Given $cal(V)$-multifunctors $F, G: scat(C) → D$, we define a $cal(V)$-natural multitransformation 
+  $η : F => G$ to consist of:
+  - For each collection of objects $sfam(A) = [A_i : cal(C)_i | i ∈ I]$, 
+    a morphism $η_(icol(A)) : cal(D)(F sfam(A), G sfam(A))$
+  - For each $j ∈ I$,
+    a mapping from collections of objects $sfam(A)_j = [A_i : cal(C)_i | i ∈ I backslash {j}]$
+    a natural tranformation
+    $
+      η_sfam(A)_j : F_j med sfam(A)_j => G_j med sfam(A)_j
+    $
+    such that
+    $
+      ∀ A_j : |cal(C)_j|, (η_(sfam(A)_j))_(A_j) = η_[A_i | i ∈ I] 
+        : cal(D)(F [A_i | i ∈ I]) → cal(D)(G [A_i | i ∈ I])
+    $
+  
+  In other words, if we consider $F$, $G$, and $η$ as functions of $A_i$, and, for a given $j ∈ I$,
+  fix all $A_i$ for $i ≠ j$, then
+  - $F$ and $G$ are functors
+  - $η$ is a natural transformation from $F$ to $G$
+
+  That is, $η$ is a natural transformation in each argument $A_j$ _separately_, 
+  i.e., is _natural in $A_j$_.
+]
+
+/*
+We define a
+
+Consider now families of objects
+$X_(A_1,...,A_n), Y_(A_1,...,A_n) : |cal(C)|$ parametrized by $n$ objects $A_i : |cal(C)|$
+and a family of morphisms
+$m_(A_1,...,A_n) : cal(C)(X_(A_1,...,A_n), Y_(A_1,...,A_n))$.
+We say that $m$ is _natural_ in $A_i$ if:
+- There exists a $cal(V)$-functor $F_i$ such that
+  $F_i med B = X_i$
+
+Given a function $|cal(C)|^n → |cal(C)|$
+*/
 
 == Premonoidal Categories
 

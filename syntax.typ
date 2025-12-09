@@ -82,12 +82,18 @@
 #let tlist(A) = $mb("List") med #A$
 
 // Sets
+#let site(c, t, f) = $ms("if") #c ms("then") #t ms("else") #f$
+#let icol(a) = $bold(upright(#a))$
+#let sfam(A) = $bold(upright(#A))$
 #let pset(X) = $cal(P)(X)$
 
 // Categories
 #let ahm(C) = $scripts(->)_#C$
 #let opc(C) = $#C^ms("op")$
 #let opm(f) = $#f^ms("op")$
+#let scat(C) = $sfam(cal(#C))$
+
+#let ntag(n, A) = $n · A$
 
 // Punctuation
 #let lcat = $$
