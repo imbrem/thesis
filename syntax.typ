@@ -92,6 +92,7 @@
 #let opc(C) = $#C^ms("op")$
 #let opm(f) = $#f^ms("op")$
 #let scat(C) = $sfam(cal(#C))$
+#let munit = $upright(I)$
 
 #let ntag(n, A) = $n · A$
 

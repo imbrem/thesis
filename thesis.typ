@@ -3012,11 +3012,92 @@ Given a function $|cal(C)|^n → |cal(C)|$
 
 == Premonoidal Categories
 
-// #definition(name: [$cal(V)$-Binoidal Category])[
-//   A $cal(V)$-binoidal category is a $cal(V)$-category equipped with
-//   - A function on objects $- ⊗ - : |cal(C)| × |cal(C)| → |cal(C)|$
-//   - For each object $A : |cal(C)|$, $cal(V)$-functors
-// ]
+#definition(name: [$cal(V)$-Binoidal Category])[
+  A $cal(V)$-binoidal category is a $cal(V)$-category equipped with
+  - A function on objects $- ⊗ - : |cal(C)| × |cal(C)| → |cal(C)|$
+  - For each object $A : |cal(C)|$, $cal(V)$-functors $A ⊗ -, - ⊗ A : cal(C) → cal(C)$ which
+    agree with $- ⊗ -$ on objects
+
+  In general, given $f: A_1 → B_1$ and $g : A_2 → B_2$, we define:
+  - $f ⋉ g = f ⊗ A_2 ; B_1 ⊗ g : cal(C)(A_1 ⊗ A_2, B_1 ⊗ B_2)$
+  - $f ⋊ g = A_1 ⊗ g ; f ⊗ B_2 : cal(C)(A_1 ⊗ A_2, B_1 ⊗ B_2)$
+
+  We say that a morphism $f$ is _central_ if
+  $
+    ∀ A_2, B_2 : |cal(C)|, ∀ g : cal(C)(A_2, B_2) . (f ⋉ g = f ⋊ g) ∧ (g ⋉ f = g ⋊ f)
+  $
+  In this case, we write
+  $
+    f ⊗ g := f ⋉ g = f ⋊ g
+  $
+  for the common value of $f ⋉ g$ and $f ⋊ g$.
+]
+
+#definition(name: [$cal(V)$-Premonoidal Category])[
+  A $cal(V)$-premonoidal category is a $cal(V)$-binoidal category $cal(C)$
+  equipped with
+  - A distinguished _identity object_ $munit : |cal(C)|$
+  - Central natural isomorphisms
+    - $α_(A, B, C) : cal(C)((A ⊗ B) ⊗ C, A ⊗ (B ⊗ C))$ (the _associator_)
+    - $λ_A : cal(C)(munit ⊗ A, A)$ (the _left unitor_)
+    - $ρ_A : cal(C)(A ⊗ munit, A)$ (the _right unitor_)
+
+  Such that the following coherence conditions hold:
+  - (Pentagon Identity)
+    For all objects $A, B, C, D : |cal(C)|$, the following diagram commutes:
+    $
+      #diagram($
+        & (A ⊗ B) ⊗ (C ⊗ D) edge("dr", α_(A, B, (C ⊗ D)), ->) &
+        \
+        ((A ⊗ B) ⊗ C) ⊗ D 
+          edge("ur", α_((A ⊗ B), C, D), ->)
+          edge("d", α_(A, B, C) ⊗ D, ->) 
+        & &
+        A ⊗ (B ⊗ (C ⊗ D)) \
+        (A ⊗ (B ⊗ C)) ⊗ D
+          edge("rr", α_(A, B ⊗ C, D), ->) & &
+        A ⊗ ((B ⊗ C) ⊗ D)
+          edge("u", A ⊗ α_(B, C, D), ->)
+      $)
+    $ 
+  - (Triangle Identity)
+    For all objects $A, B : |cal(C)|$, the following diagram commutes:
+    $
+      #diagram(cell-size: 15mm, $
+        (A ⊗ munit) ⊗ B edge(α_(A, munit, B), ->) edge("dr", ρ_A ⊗ id_B, ->, label-side: #right) & 
+        A ⊗ (munit ⊗ B) edge("d", id_A ⊗ λ_B, ->, label-side: #left) \
+         & A ⊗ B $)
+    $ 
+
+    By natural, we mean that $α$ is natural in $A, B, C$ and $λ$ and $ρ$ are natural in $A$; i.e.,
+    for all $f: cal(C)(A, A')$, $g: cal(C)(B, B')$, and $h: cal(C)(C, C')$, we have that
+    $
+      (f ⊗ B) ⊗ C ; α_(A', B, C) &= α_(A, B, C) ; f ⊗ (g ⊗ h) \
+      A ⊗ (g ⊗ C) ; α_(A, B', C) &= α_(A, B, C) ; A ⊗ (g ⊗ h) \
+      A ⊗ B ⊗ h ; α_(A, B, C') &= α_(A, B, C) ; A ⊗ B ⊗ h \
+      munit ⊗ f ; λ_(A') &= λ_A ; f \
+      f ⊗ munit ; ρ_(A') &= ρ_A ; f  
+    $
+
+    We say that a $cal(V)$-premonoidal category is _symmetric_ if it is equipped with an additional
+    central natural isomorphism
+    - $σ_(A, B) : cal(C)(A ⊗ B, B ⊗ A)$ (the _braiding_)
+
+    Such that the following coherence conditions hold:
+    - (Symmetry) $σ_(A, B)^(-1) = σ_(B, A)$
+    - (Hexagon Identities)
+      For all objects $A, B, C : |cal(C)|$, the following diagrams commute:
+      $
+      #diagram($
+          (A ⊗ B) ⊗ C edge(α_(A, B, C), ->) edge("d", σ_(A, B) ⊗ C, ->, label-side: #right) &     
+          A ⊗ (B ⊗ C) edge(σ_(A, B ⊗ C), ->, label-side: #left) &
+          (B ⊗ C) ⊗ A edge("d", α_(B, C, A), ->) \
+          (B ⊗ A) ⊗ C edge(α_(B, A, C), ->) &
+          B ⊗ (A ⊗ C) edge(B ⊗ σ_(A, C), ->) &
+          B ⊗ (C ⊗ A)  
+        $)
+      $
+]
 
 = Semantics of #iter-calc()
 
