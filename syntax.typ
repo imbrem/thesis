@@ -98,6 +98,7 @@
 // Punctuation
 #let lcat = $$
 #let seq = $; thick$
+#let ovrd = $triangle.stroked.small.l$
 
 // == Syntax ==
 

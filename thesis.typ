@@ -2341,19 +2341,22 @@ in Section #todo-inline[ref].
   - $icol(a) · (icol(b) · icol(c)) = (icol(a) · icol(b)) · icol(c)$
 
 - Given indexed collections $icol(a) = [a_i | i ∈ I]$, $icol(b) = [b_i | j ∈ J]$,
-  we define their _union_ as follows:
+  we define their _override_ as follows:
   $
-    icol(a) | icol(b) = [λ k . site(k ∈ I, a_k, b_k) | k ∈ I ∪ J]
+    icol(a) ovrd icol(b) = [λ k . site(k ∈ I, a_k, b_k) | k ∈ I ∪ J]
   $
 
   We note that
-  - $[] | icol(a) = icol(a) | [] = icol(a)$
-  - $icol(a) | (icol(b) | icol(c)) = (icol(a) | icol(b)) | icol(c)$
-  - $icol(a) | icol(b) = icol(b) | icol(a) <==> I ∩ J = ∅$
+  - $[] ovrd icol(a) = icol(a) ovrd [] = icol(a)$
+  - $icol(a) ovrd (icol(b) ovrd icol(c)) = (icol(a) ovrd icol(b)) ovrd icol(c)$
+  - $icol(a) ovrd icol(b) = icol(b) ovrd icol(a) <==> I ∩ J = ∅$
 
-  Given an index $i$,
+- Given an index $i$,
   we write $[i ↦ a]$ to denote the singleton collection with index set ${i}$
   and unique element $a$.
+
+  // More generally, for an arbitrary collection $icol(a)$, we define 
+  // $(i ↦ a) :: icol(a) = [i ↦ a] | icol(a)$
 
 - We define the _selection_ of $J ⊆ I$ from an indexed collection $icol(a) = [a_i | i ∈ I]$
   as follows:
@@ -2922,24 +2925,50 @@ so we will not repeat them.
   Given a collection of $cal(V)$-categories $scat(C) = [cal(C)_i | i ∈ I]$ 
   and a $cal(V)$-category $cal(D)$,
   a _multifunctor_ $F$ from $sfam(C)$ to $cal(D)$ consists of
-  - A mapping from collections of objects $sfam(A) = [A_i : cal(C)_i | i ∈ I]$ 
+  - A mapping from collections of objects $sfam(A) = [A_i : |cal(C)_i| | i ∈ I]$ 
     to objects $F sfam(A) : |cal(D)|$ 
   - For each $j ∈ I$, 
-    a mapping from collections of objects $sfam(A)_j = [A_i : cal(C)_i | i ∈ I backslash {j}]$
+    a mapping from collections of objects $sfam(A)_j = [A_i : |cal(C)_i| | i ∈ I backslash {j}]$
     a $cal(V)$-functor
     $
       F med sfam(A)_j : cal(C)_j → cal(D) 
     $
     such that
     $
-      ∀ A_j : |cal(C)_j|, F_j med sfam(A)_j med A_j = F med [A_i | i ∈ I] : |cal(D)|
+      ∀ A_j : |cal(C)_j|, F_j med sfam(A)_j med A_j = F med icol(A) : |cal(D)|
+    $
+    where
+    $
+      icol(A) = [j ↦ A_j] ovrd icol(A)_j = [A_i | i ∈ I]
     $
   
   In other words, $F$ is a function of $A_i$ 
   which is a $cal(V)$-functor in each argument $A_j$ _separately_, 
   when all other arguments $A_i$ for $i ≠ j$ are held fixed.
+
+  Given $cal(V)$-multifunctors $F, G: scat(C) → D$, we say that a family of morphisms 
+  $η_icol(A): cal(D)(F icol(A), G icol(A))$ is _natural_ in $j ∈ I$ if, 
+  for each collection of objects $sfam(A)_j = [A_i : |cal(C)_i| | i ∈ I backslash {j}]$,
+  the family of morphisms $η_sfam(A)_j$ given by
+  $(η_sfam(A)_j)_X := η_([j ↦ X] ovrd sfam(A)_j)$
+  is a natural transformation $η_(sfam(A)_j) : F sfam(A)_j => G sfam(A)_j$.
+
+  That is, for every morphism $f : cal(C)_j (A_j, A_j')$,
+  we have that the following diagram commutes
+  $
+    #diagram(cell-size: 15mm, $ 
+      F med icol(A) edge(η_icol(A), ->) edge("d", F med icol(A)_j med f, ->) & 
+      G med icol(A) edge("d", G med icol(A)_j med f, ->, label-side: #left) \
+      F med icol(A)' edge(η_icol(A)', ->, label-side: #right) & G med icol(A)' $)
+  $
+  where 
+  $
+    icol(A) = [j ↦ A_j] ovrd icol(A)_j = [A_i | i ∈ I] quad quad quad
+    icol(A)' = [j ↦ A_j'] ovrd icol(A)_j = [A_i | i ∈ I]
+  $
 ]
 
+/*
 #definition(name: [$cal(V)$-Natural Multitransformation])[
   Given $cal(V)$-multifunctors $F, G: scat(C) → D$, we define a $cal(V)$-natural multitransformation 
   $η : F => G$ to consist of:
@@ -2965,6 +2994,7 @@ so we will not repeat them.
   That is, $η$ is a natural transformation in each argument $A_j$ _separately_, 
   i.e., is _natural in $A_j$_.
 ]
+*/
 
 /*
 We define a
