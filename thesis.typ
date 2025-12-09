@@ -2875,6 +2875,7 @@ Often, many definitions for $cal(V)$-categories are in fact identical;
 in particular, the definitions for terminal objects, initial objects, products and coproducts are exactly the same,
 so we will not repeat them.
 
+/*
 #definition(name: [$cal(V)$-natural transformation])[
   Given $cal(V)$-functors $F, G : cal(C) → cal(D)$
   a $cal(V)$-natural transformation $η : F => G$ consists of:
@@ -2889,6 +2890,7 @@ so we will not repeat them.
          F med B edge(η_B, ->, label-side: #right) & G med B $)
     $
 ]
+*/
 
 /*
 #definition(name: [$cal(V)$-Quiver])[
@@ -2921,6 +2923,7 @@ so we will not repeat them.
 ]
 */
 
+/*
 #definition(name: [$cal(V)$-Multifunctor])[
   Given a collection of $cal(V)$-categories $scat(C) = [cal(C)_i | i ∈ I]$ 
   and a $cal(V)$-category $cal(D)$,
@@ -2967,6 +2970,7 @@ so we will not repeat them.
     icol(A)' = [j ↦ A_j'] ovrd icol(A)_j = [A_i | i ∈ I]
   $
 ]
+*/
 
 /*
 #definition(name: [$cal(V)$-Natural Multitransformation])[
@@ -3037,10 +3041,26 @@ Given a function $|cal(C)|^n → |cal(C)|$
   A $cal(V)$-premonoidal category is a $cal(V)$-binoidal category $cal(C)$
   equipped with
   - A distinguished _identity object_ $munit : |cal(C)|$
-  - Central natural isomorphisms
+  - Central natural isomorphisms:
     - $α_(A, B, C) : cal(C)((A ⊗ B) ⊗ C, A ⊗ (B ⊗ C))$ (the _associator_)
     - $λ_A : cal(C)(munit ⊗ A, A)$ (the _left unitor_)
     - $ρ_A : cal(C)(A ⊗ munit, A)$ (the _right unitor_)
+
+  By natural, we mean that $α_(A, B, C)$. $λ_A$, and $ρ_A$ are natural in each of their components; 
+  i.e., for all morphisms $f: cal(C)(A, A')$, $g: cal(C)(B, B')$, and $h: cal(C)(C, C')$, the following
+  _naturality squares_ hold:
+  $
+    (f ⊗ B) ⊗ C ; α_(A', B, C) &= α_(A, B, C) ; f ⊗ (g ⊗ h) 
+      && : cal(C)((A ⊗ B) ⊗ C, A' ⊗ (B ⊗ C)) \
+    A ⊗ (g ⊗ C) ; α_(A, B', C) &= α_(A, B, C) ; A ⊗ (g ⊗ h) 
+      && : cal(C)((A ⊗ B) ⊗ C, A ⊗ (B' ⊗ C)) \
+    A ⊗ B ⊗ h ; α_(A, B, C') &= α_(A, B, C) ; A ⊗ B ⊗ h
+      && : cal(C)((A ⊗ B) ⊗ C, A ⊗ (B ⊗ C')) \
+    munit ⊗ f ; λ_(A') &= λ_A ; f 
+      && : cal(C)(munit ⊗ A, A') \
+    f ⊗ munit ; ρ_(A') &= ρ_A ; f  
+      && : cal(C)(A ⊗ munit, A')
+  $
 
   Such that the following coherence conditions hold:
   - (Pentagon Identity)
@@ -3060,6 +3080,7 @@ Given a function $|cal(C)|^n → |cal(C)|$
           edge("u", A ⊗ α_(B, C, D), ->)
       $)
     $ 
+    
   - (Triangle Identity)
     For all objects $A, B : |cal(C)|$, the following diagram commutes:
     $
@@ -3069,24 +3090,18 @@ Given a function $|cal(C)|^n → |cal(C)|$
          & A ⊗ B $)
     $ 
 
-    By natural, we mean that $α$ is natural in $A, B, C$ and $λ$ and $ρ$ are natural in $A$; i.e.,
-    for all $f: cal(C)(A, A')$, $g: cal(C)(B, B')$, and $h: cal(C)(C, C')$, we have that
-    $
-      (f ⊗ B) ⊗ C ; α_(A', B, C) &= α_(A, B, C) ; f ⊗ (g ⊗ h) \
-      A ⊗ (g ⊗ C) ; α_(A, B', C) &= α_(A, B, C) ; A ⊗ (g ⊗ h) \
-      A ⊗ B ⊗ h ; α_(A, B, C') &= α_(A, B, C) ; A ⊗ B ⊗ h \
-      munit ⊗ f ; λ_(A') &= λ_A ; f \
-      f ⊗ munit ; ρ_(A') &= ρ_A ; f  
-    $
-
     We say that a $cal(V)$-premonoidal category is _symmetric_ if it is equipped with an additional
     central natural isomorphism
     - $σ_(A, B) : cal(C)(A ⊗ B, B ⊗ A)$ (the _braiding_)
 
+    Satisfying:
+    - (Naturality): $∀ f : cal(C)(A, A') . f ⊗ B ; σ_(A', B) = σ_(A, B) ; B ⊗ f 
+        : cal(C)(A ⊗ B, B ⊗ A')$
+    - (Symmetry): $σ_(A, B)^(-1) = σ_(B, A)$
+
     Such that the following coherence conditions hold:
-    - (Symmetry) $σ_(A, B)^(-1) = σ_(B, A)$
-    - (Hexagon Identities)
-      For all objects $A, B, C : |cal(C)|$, the following diagrams commute:
+    - (Hexagon Identity)
+      For all objects $A, B, C : |cal(C)|$, the following diagram commutes:
       $
       #diagram($
           (A ⊗ B) ⊗ C edge(α_(A, B, C), ->) edge("d", σ_(A, B) ⊗ C, ->, label-side: #right) &     
