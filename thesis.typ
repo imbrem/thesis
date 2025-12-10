@@ -427,7 +427,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
     #grid(
       align: left,
       columns: 3,
-      gutter: (2em, 0em),
+      gutter: (2em, 1em),
       bnf(
         Prod($v$, {
           Or[$x$][_variable_]
@@ -456,23 +456,25 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
       bnf(
         Prod($τ$, {
+          Or[$retb(o)$][_return_]
           Or[$brb(lb("l"))$][_branch_]
-          Or[$sswitch(o, B)$][_case_]
+          Or[$sswitch(o, B)$][_switch_]
         }),
         Prod($B$, {
           Or[$·$][]
-          Or[$ssbr(lb("l₁"), brb(lb("l₂"))), B$][]
+          Or[$ssbr(lb("l₁"), retb(o)), B$][_return_]
+          Or[$ssbr(lb("l₁"), brb(lb("l₂"))), B$][_branch_]
         }),
       ),
       bnf(Prod($G$, {
-        Or[$β$][_entry_]
+        Or[$β$][]
         Or[$G seq lb("l") : β$][]
       })),
       bnf(Prod($lb("L")$, {
         Or[$·$][]
         Or[$lb("l"), lb("L")$][]
       })),
-    ),
+    )
   ],
   caption: [
     Grammar for RTL.
@@ -591,17 +593,125 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
   ],
 )
 
+#figure(
+  [
+    #grid(
+      align: left,
+      columns: 3,
+      gutter: (2em, 1em),
+      bnf(
+        Prod($v$, {
+          Or[$x$][_variable_]
+          Or[$(V)$][_tuple_]
+        }),
+        Prod($V$, {
+          Or[$·$][]
+          Or[$x, V$][]
+        }),
+      ),
+      bnf(
+        Prod($o$, {
+          Or[$v$][_value_]
+          Or[$f med v$][_application_]
+        }),
+        Prod($f$, {
+          Or[$p$][_primitive_]
+          Or[$lb("l", annot: lb("L"))$][_label_]
+        }),
+      ),
+      bnf(Prod($β$, {
+        Or[$x = o seq β$][_assign_]
+        Or[$(V) = o seq β$][_destructure_]
+        Or[$τ$][_terminator_]
+      })),
+
+      bnf(
+        Prod($τ$, {
+          Or[$brb(lb("l"), o)$][_branch_]
+          Or[$scase(o, B)$][_case_]
+        }),
+        Prod($B$, {
+          Or[$·$][]
+          Or[$sbr(lb("l₁"), x, brb(lb("l₂"), o)), B$][]
+        }),
+      ),
+      bnf(Prod($G$, {
+        Or[$β$][]
+        Or[$G seq gbr(lb("l"), x, β)$][]
+      })),
+      bnf(Prod($lb("L")$, {
+        Or[$·$][]
+        Or[$lb("l")(A), lb("L")$][]
+      })),
+    )
+  ],
+  caption: [
+    Grammar for (basic-blocks-with-arguments) SSA
+  ],
+  kind: image,
+) <bba-grammar>
+
 == Lexical SSA
 
+#figure(
+  [
+    #grid(
+      align: left,
+      columns: 3,
+      gutter: (2em, 1em),
+      bnf(
+        Prod($v$, {
+          Or[$x$][_variable_]
+          Or[$(V)$][_tuple_]
+        }),
+        Prod($V$, {
+          Or[$·$][]
+          Or[$x, V$][]
+        }),
+      ),
+      bnf(
+        Prod($o$, {
+          Or[$v$][_value_]
+          Or[$f med v$][_application_]
+        }),
+        Prod($f$, {
+          Or[$p$][_primitive_]
+          Or[$lb("l", annot: lb("L"))$][_label_]
+        }),
+      ),
+      bnf(Prod($r$, {
+        Or[$x = o seq r$][_assign_]
+        Or[$(V) = o seq r$][_destructure_]
+        Or[$τ seq L$][_terminator_]
+      })),
+
+      bnf(
+        Prod($τ$, {
+          Or[$brb(lb("l"), o)$][_branch_]
+          Or[$scase(o, B)$][_case_]
+        }),
+        Prod($B$, {
+          Or[$·$][]
+          Or[$sbr(lb("l₁"), x, brb(lb("l₂"), o)), B$][]
+        }),
+      ),
+      bnf(Prod($L$, {
+        Or[$·$][]
+        Or[$gbr(lb("l"), x, {r}) seq L$][]
+      })),
+      bnf(Prod($lb("L")$, {
+        Or[$·$][]
+        Or[$lb("l")(A), lb("L")$][]
+      })),
+    )
+  ],
+  caption: [
+    Grammar for lexical SSA
+  ],
+  kind: image,
+) <lex-ssa-grammar>
+
 == Expressions and Substitution
-
-== Type-Theoretic SSA
-
-= Type Theory
-
-== Typing Rules
-
-=== Expressions
 
 #figure(
   placement: auto,
@@ -643,10 +753,91 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
     )
   ],
   caption: [
-    Grammar for #iter-calc
+    Grammar for #iter-calc()
   ],
   kind: image,
 ) <iter-calc-grammar>
+
+#figure(
+  [
+    #grid(
+      align: left,
+      columns: 3,
+      gutter: (2em, 2em),
+      bnf(Prod($r$, {
+        Or[$x = e seq r$][_assign_]
+        Or[$(V) = e seq r$][_destructure_]
+        Or[$τ seq L$][_terminator_]
+      })),
+
+      bnf(
+        Prod($τ$, {
+          Or[$brb(lb("l"), e)$][_branch_]
+          Or[$scase(e, B)$][_case_]
+        }),
+        Prod($B$, {
+          Or[$·$][]
+          Or[$sbr(lb("l₁"), x, brb(lb("l₂"), e)), B$][]
+        }),
+      ),
+      bnf(
+        Prod($L$, {
+          Or[$·$][]
+          Or[$gbr(lb("l"), x, {r}) seq L$][]
+        }),
+        Prod($lb("L")$, {
+          Or[$·$][]
+          Or[$lb("l")(A), lb("L")$][]
+        })
+      )
+    )
+  ],
+  caption: [
+    Grammar for lexical SSA with expressions
+  ],
+  kind: image,
+) <lex-ssa-e-grammar>
+
+
+== Type-Theoretic SSA
+
+#figure(
+  [
+    #grid(
+      align: left,
+      columns: 3,
+      gutter: (2em, 1em),
+      bnf(Prod($r$, {
+        Or[$x = e seq r$][_assign_]
+        Or[$(V) = e seq r$][_destructure_]
+        Or[$brb(lb("l"), e)$][_branch_]
+        Or[$scase(e, L)$][_case_]
+        Or[${ r } seq L$][_terminator_]
+      })),
+      bnf(
+        Prod($L$, {
+          Or[$·$][]
+          Or[$gbr(lb("l"), x, {r}) seq L$][]
+        }),
+        Prod($lb("L")$, {
+          Or[$·$][]
+          Or[$lb("l")(A), lb("L")$][]
+        })
+      )
+    )
+  ],
+  caption: [
+    Grammar for type-theoretic SSA
+  ],
+  kind: image,
+) <tt-ssa-grammar>
+
+= Type Theory
+
+== Typing Rules
+
+=== Expressions
+
 
 === Regions
 
@@ -654,19 +845,19 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 == Expressions
 
+=== Refinement
+
 === Effects
 
 === Linearity
-
-=== Refinement
 
 == Regions
 
+=== Refinement
+
 === Effects
 
 === Linearity
-
-=== Refinement
 
 = Normalization
 

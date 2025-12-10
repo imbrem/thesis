@@ -135,6 +135,8 @@
 /// A branch in a case statement
 #let sbr(ℓ, x, b) = $#ℓ (#x) : #b$
 
+#let gbr(ℓ, x, b) = $#ℓ (#x) : #b$
+
 /// A labelled basic block
 #let lbb(ℓ, x, t) = $#ℓ (#x) : #t$
 
