@@ -96,6 +96,21 @@
 #let tbool = $mb("2")$
 #let tlist(A) = $mb("List") med #A$
 
+// Collections
+#let cix(a) = $ms("ix")(#a)$
+#let cmap = $op("⟨$⟩")$
+#let capp = $op("⟨⋆⟩")$
+#let czip = $op("⟨,⟩")$
+#let crix = $op("⟨#⟩")$
+
+// Projections
+#let lpi = $π_lb("l")$
+#let rpi = $π_lb("r")$
+
+// Lists
+#let lnil = $[ med ]$
+#let llen(A) = $|#A|$
+
 // Sets
 #let site(c, t, f) = $ms("if") #c ms("then") #t ms("else") #f$
 #let icol(a) = $bold(upright(#a))$

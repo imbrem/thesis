@@ -640,6 +640,11 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
         Or[$G seq gbr(lb("l"), x, β)$][]
       })),
       bnf(
+        Prod($A$, {
+          Or[$X$][_base type_]
+          Or[$Π lb("L")$][_tuple_]
+          Or[$Σ lb("L")$][_sum_]
+        }),
         Prod($lb("L")$, {
           Or[$·$][]
           Or[$lb("l")(A), lb("L")$][]
@@ -652,6 +657,19 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
   ],
   kind: image,
 ) <bba-grammar>
+
+
+$
+  mb(0) := Σ · quad
+  mb(1) := Π · quad
+  A × B := Π ( lb("l")(A), lb("r")(B) ) quad
+  A + B := Σ ( lb("l")(A), lb("r")(B) ) quad
+  mb(2) := mb(1) + mb(1)
+$
+
+$
+  Σ [A_0,...,A_(n - 1)] = Σ_i A_i = Σ ( lb(i)_0(A_0), ... , lb(i)_(n - 1)(A_(n - 1)))
+$
 
 == Lexical SSA
 
@@ -701,10 +719,19 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
         Or[$·$][]
         Or[$gbr(lb("l"), x, {r}) seq L$][]
       })),
-      bnf(Prod($lb("L")$, {
-        Or[$·$][]
-        Or[$lb("l")(A), lb("L")$][]
-      })),
+      /*
+      bnf(
+        Prod($A$, {
+          Or[$X$][_base type_]
+          Or[$Π lb("L")$][_tuple_]
+          Or[$Σ lb("L")$][_sum_]
+        }),
+        Prod($lb("L")$, {
+          Or[$·$][]
+          Or[$lb("l")(A), lb("L")$][]
+        })
+      ),
+      */
     )
   ],
   caption: [
@@ -787,10 +814,6 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
           Or[$·$][]
           Or[$gbr(lb("l"), x, {r}) seq L$][]
         }),
-        Prod($lb("L")$, {
-          Or[$·$][]
-          Or[$lb("l")(A), lb("L")$][]
-        })
       )
     )
   ],
@@ -833,6 +856,136 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
   ],
   kind: image,
 ) <tt-ssa-grammar>
+
+= Conventions and Notation
+
+== Foundations
+
+We work in (informal) Grothendieck-Tarski set theory. In particular,
+- We assume _Tarski's axiom_: every set is an element of some Grothendieck universe $cal(U)$.
+- In particular, we postulate an infinite hierarchy of Grothendieck universes $cal(U)_ℓ$
+- We call an element of $cal(U)_ℓ$ _ℓ-small_
+- Definitions are implicitly $ℓ$-polymorphic unless stated otherwise.
+  For example, when we define a category, we really mean an $ℓ$-category with $ℓ$-small hom-sets.
+
+== Collections
+
+- $icol(a) = [a_i | i ∈ I]$ means an _indexed collection_ of a unique $a_i$ for each _index_ $i ∈ I$.
+
+  We say $icol(a)$ is _indexed by_ $cix(icol(a)) = I$. 
+  We say two collections $icol(a), icol(b)$ are _disjoint_ if $cix(icol(a)) ∩ cix(icol(b)) = ∅$ 
+
+  We denote the _cardinality_ of an indexed collection as $|icol(a)| := |I|$.
+
+  $icol(a)$ is an _indexed collection of $A$_ or simply _collection of $A$_ if $∀i, a_i ∈ A$.
+
+- Alternatively, we write: 
+  - $[i ↦ a]$ to denote the singleton collection with index set ${i}$ and unique element $a$.
+  - $[i_0 ↦ a_0, ..., i_(n - 1) ↦ a_(n - 1)]$ 
+    to denote the collection with index set ${i_0, ..., i_(n - 1)}$ 
+    and elements $a_0, ..., a_(n - 1)$ respectively.
+
+    For this to be well-defined, each $i_k$ must be distinct.
+  - $[i ↦ a_i]_(i ∈ I) := [a_i | i ∈ I]$
+
+- Given indexed collections $icol(a) = [a_i | i ∈ I]$, $icol(b) = [b_i | j ∈ J]$,
+  we define their _override_ as follows:
+  $
+    icol(a) ovrd icol(b) = [λ k . site(k ∈ I, a_k, b_k) | k ∈ I ∪ J]
+  $
+
+  We note that
+  - $lnil ovrd icol(a) = icol(a) ovrd lnil = icol(a)$
+  - $icol(a) ovrd (icol(b) ovrd icol(c)) = (icol(a) ovrd icol(b)) ovrd icol(c)$
+  - $icol(a) ovrd icol(b) = icol(b) ovrd icol(a) <==> ∀ i ∈ I ∩ J . a_i = b_i$
+    in which case we write $icol(a) ∪ icol(b)$.
+
+    If $icol(a)$ and $icol(b)$ are in fact disjoint, we write $icol(a) ⊔ icol(b)$.
+
+
+- We define the _selection_ of $J ⊆ I$ from an indexed collection $icol(a) = [a_i | i ∈ I]$
+  as follows:
+  $
+    icol(a)[J] = [a_i | i ∈ I ∩ J]
+  $
+
+- We define the _removal_ of $J ⊆ I$ from an indexed collection $icol(a) = [a_i | i ∈ I]$
+  as follows:
+  $
+    icol(a) backslash J = [a_i | i ∈ I backslash J]
+  $
+
+  We note that 
+  $icol(a)[J] ovrd (icol(a) backslash J) = (icol(a) backslash J) ovrd icol(a)[J] = icol(a)$.
+
+- Given a function $f$, we define the pointwise map of a collection $icol(a)$ to be given by
+  $
+    f cmap [a_i | i ∈ I] = [f med a_i | i ∈ I]
+  $
+
+- Likewise, we define the _application_ of two collections $icol(f), icol(a)$ as follows:
+  $
+    [f_i | i ∈ I] capp [a_j | j ∈ J] = [f_i med a_i | i ∈ I ∩ J]
+  $
+
+- And the _zip_ of two collections $icol(a), icol(b)$ as follows:
+  $
+    [a_i | i ∈ I] czip [b_j | j ∈ J] = [(a_i, b_i) | i ∈ I ∩ J]
+  $
+
+- Given a function $f$ which is an injection on the domain of $icol(a)$, we define the
+  _reindexing_ of $icol(a)$ as follows:
+  $
+    f crix [a_i | i ∈ I] = [f(i) ↦ a_(f_i)]_(i ∈ I) = [a_(f|_I^(-1)(j)) | j ∈ f^(-1)(I)]
+  $
+  We note that, if $f : I → J$ is a bijection,
+  $f^(-1) crix f crix icol(a) = icol(a)$.
+
+== Lists
+
+- A _list_ or _$n$-tuple_ $[a_0,...,a_(n - 1)]$
+  is an indexed collection $[a_i | 0 ≤ i < n]$.
+
+  We call the cardinality of a list its _length_.
+
+  Following the convention in computer science, our lists are _zero-indexed_.
+
+- The _empty list_ or _$0$-tuple_ is the empty indexed collection $lnil$;
+  this is the unique list of length $0$.
+
+- Given an element $x$ and an $n$-tuple $icol(a)$,
+  we define the _cons_ of $a$ onto $icol(a)$ as follows:
+
+  $
+    x :: icol(a)
+    = [x, a_0, ..., a_(n - 1)]
+    = [λ | 0 => x | i + 1 => a_i]
+  $
+
+  We note that
+  $
+    f cmap lnil = lnil quad quad  f cmap (x :: icol(a)) = (f med x) :: (f cmap icol(a))
+  $
+
+- We define the _concatenation_ of lists $icol(a) · icol(b)$ by induction on $icol(a)$ as follows:
+  $
+    lnil · icol(b) = icol(b) quad quad quad
+    (x :: icol(a)) · icol(b) = x :: (icol(a) · icol(b))
+  $
+
+  We can show by induction that
+  $
+    icol(a) · icol(b) = [a_0,...,a_(n - 1),b_0,...,b_(m - 1)] = [λ i . site(i < n, a_i, b_(i - n))]
+  $
+
+  Some other important properties of concatenation are:
+  - $lnil · icol(a) = icol(a) · lnil = icol(a)$
+  - $icol(a) · (icol(b) · icol(c)) = (icol(a) · icol(b)) · icol(c)$
+
+- We define the _repetition_ of a list $icol(a)$ by induction as follows:
+  $
+    icol(a)^0 = lnil quad quad quad icol(a)^(n + 1) = icol(a) · icol(a)^n
+  $
 
 = Type Theory
 
@@ -2491,84 +2644,6 @@ in Section #todo-inline[ref].
         -
 ]
 
-== Notation
-
-- $icol(a) = [a_i | i ∈ I]$ means an _indexed collection_ of a unique $a_i$ for each _index_ $i ∈ I$.
-
-  We say $icol(a)$ is _indexed by_ $I$.
-
-  We denote the _cardinality_ of an indexed collection as $|icol(a)| := |I|$.
-
-  $icol(a)$ is an _indexed collection of $A$_ or simply _collection of $A$_ if $∀i, a_i ∈ A$.
-
-- A _list_ or _$n$-tuple_ $[a_1,...,a_n]$
-  is an indexed collection $[a_i | 1 ≤ i ≤ n]$.
-
-  We call the cardinality of a list its _length_.
-
-- The _empty list_ or _$0$-tuple_ is the empty indexed collection $[]$;
-  this is the unique list of length $0$.
-
-- Given an element $x$ and an $n$-tuple $icol(a)$,
-  we define the _cons_ of $a$ onto $icol(a)$ as follows:
-
-  $
-    x :: icol(a)
-    = [x, a_1, ..., a_n]
-    = [λ i . site(i = 1, x, a_(i - 1))]
-  $
-
-- We define the _concatenation_ of lists $icol(a) · icol(b)$ by induction on $icol(a)$ as follows:
-  $
-    [] · icol(b) = icol(b) quad quad quad
-    (x :: icol(a)) · icol(b) = x :: (icol(a) · icol(b))
-  $
-
-  We can show by induction that
-  $
-    icol(a) · icol(b) = [a_1,...,a_n,b_1,...,b_m] = [λ i . site(i ≤ n, a_i, b_(i - n))]
-  $
-
-  Some other important properties of concatenation are:
-  - $[] · icol(a) = icol(a) · [] = icol(a)$
-  - $icol(a) · (icol(b) · icol(c)) = (icol(a) · icol(b)) · icol(c)$
-
-- Given indexed collections $icol(a) = [a_i | i ∈ I]$, $icol(b) = [b_i | j ∈ J]$,
-  we define their _override_ as follows:
-  $
-    icol(a) ovrd icol(b) = [λ k . site(k ∈ I, a_k, b_k) | k ∈ I ∪ J]
-  $
-
-  We note that
-  - $[] ovrd icol(a) = icol(a) ovrd [] = icol(a)$
-  - $icol(a) ovrd (icol(b) ovrd icol(c)) = (icol(a) ovrd icol(b)) ovrd icol(c)$
-  - $icol(a) ovrd icol(b) = icol(b) ovrd icol(a) <==> I ∩ J = ∅$
-
-- Given an index $i$,
-  we write $[i ↦ a]$ to denote the singleton collection with index set ${i}$
-  and unique element $a$.
-
-  // More generally, for an arbitrary collection $icol(a)$, we define 
-  // $(i ↦ a) :: icol(a) = [i ↦ a] | icol(a)$
-
-- We define the _selection_ of $J ⊆ I$ from an indexed collection $icol(a) = [a_i | i ∈ I]$
-  as follows:
-  $
-    icol(a)[J] = [a_i | i ∈ I ∩ J]
-  $
-
-- We define the _removal_ of $J ⊆ I$ from an indexed collection $icol(a) = [a_i | i ∈ I]$
-  as follows:
-  $
-    icol(a) backslash J = [a_i | i ∈ I backslash J]
-  $
-
-- We define the _repetition_ of a list $icol(a)$ by induction as follows:
-  $
-    icol(a)^0 = [] quad quad quad icol(a)^(n + 1) = icol(a) · icol(a)^n
-  $
-
-
 == Enriched Categories
 
 // At a high level, our goal is to assign a denotational semantics $⟦hasty(Γ, a, A)⟧$
@@ -2588,7 +2663,7 @@ to fix notations. Recall the definition of a category $cal(C)$:
       Since this exposition corresponds roughly to our Lean formalization, we instead postulate
       an infinite hierarchy of Grothendieck universes $cal(U)_ℓ$ and implicitly make our definitions
       level-polymorphic on $ℓ$. The _ℓ-small categories_ are then precisely those for which
-      $cal(C) ∈ cal(U)_ℓ$, with the _small categories_ being _0-small_.
+      $|cal(C)| ∈ cal(U)_ℓ$, with the _small categories_ being _0-small_.
     ]
   - For each pair of objects $A, B in |cal(C)|$, a set of _morphisms_ $cal(C)(A, B)$.
     We call this set a _hom-set_.
@@ -2797,34 +2872,37 @@ definition of $cal(S)$.
   */
 
   In general, where the appropriate products exist, we write
-  - $Π_(i ∈ I) A_i := Π [A_i | i ∈ I]$. 
-    Where clear from context, we may omit the subscript and write $Π_i A_i$.
+  - $Π_(i ∈ I) A_i := Π [A_i | i ∈ I]$.
 
-  - $A_1 × A_2 := Π [A_1, A_2]$
+    Where clear from context, we may omit the subscript and write $Π_i A_i$
+
+  - $A × B := Π [lb("l") ↦ A, lb("r") ↦ B]$
 
   - For $n ∈ ℕ$, $A^n := Π [A]^n$
 
   - Given objects $sfam(A) = [A_i | i ∈ I]$ , $sfam(B) = [B_i | i ∈ I]$,
     and morphisms $icol(f) = [f_i : cal(C)(A_i, B_i) | i ∈ I]$, 
     we define
-    $Π mb(f) = Π_(i ∈ I)f_i := ⟨π_i^(Π sfam(A)) ; f_i⟩_(i ∈ I) : cal(C)(Π sfam(A), Π sfam(B))$
+    $
+      Π mb(f) = Π_(i ∈ I)f_i := ⟨π_i^(Π sfam(A)) ; f_i⟩_(i ∈ I) : cal(C)(Π sfam(A), Π sfam(B))
+    $
 
   - Likewise, given $f: A_1 → B_1$, $g : A_2 → B_2$, we define
-    - $f × g := Π [f, g]$
+    - $f × g := Π [lb("l") ↦ f, lb("r") ↦ g]$
     - $f × A_2 := f × id_(A_2)$
     - $A_1 × g := id_(A_1) × g$
 ]
 
 #definition(name: "Cartesian Category")[
   A category $cal(C)$ is _cartesian_ if it has all finite products; 
-  i.e. all products $Π sfam(A)$ where $sfam(A)$ is a list.
+  i.e. all products $Π sfam(A)$ where $sfam(A)$ is finite.
 
   Note that it suffices for $cal(C)$ to have an initial object and all binary products $A × B$.
 ]
 
 Some important properties of products include:
 - $A × B ≈ B × A$, with canonical isomorphisms
-  $⟨π_2^(A × B), π_1^(A × B)⟩ : A × B -> B × A$ and
+  $⟨π_lb("l")^(A × B), π_lb("r")^(A × B)⟩ : A × B -> B × A$ and
   $⟨π_2^(B × A), π_1^(B × A)⟩ : B × A -> A × B$
 
 - $A × tunit ≈ A$, with canonical isomorphisms
