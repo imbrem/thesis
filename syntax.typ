@@ -7,11 +7,26 @@
 // == Branding ==
 
 // Flat
-#let while-flat = $ms("IMP")$
-#let rtl-flat = $ms("RTL")$
-#let ssa-flat = $ms("SSA")$
-#let ssa-a-flat = $ms("SSA")_ms("A")$
-#let rtl-a-flat = $ms("RTL")_ms("A")$
+#let while-flat(..xs) = if xs.pos().at(0, default: none) == none { 
+    $ms("IMP")$ 
+  } else { 
+    $ms("IMP")[#xs.pos().at(0)]$ 
+  }
+#let rtl-flat(..xs) = if xs.pos().at(0, default: none) == none { 
+    $ms("RTL")$ 
+  } else { 
+    $ms("RTL")[#xs.pos().at(0)]$ 
+  }
+#let ssa-a-flat(..xs) = if xs.pos().at(0, default: none) == none { 
+    $ms("SSA")$ 
+  } else { 
+    $ms("SSA")[#xs.pos().at(0)]$ 
+  }
+#let rtl-a-flat(..xs) = if xs.pos().at(0, default: none) == none { 
+    $ms("RTL")_ms("A")$ 
+  } else { 
+    $ms("RTL")_ms("A")[#xs.pos().at(0)]$ 
+  }
 
 // λ
 #let rtl-calc(..xs) = if xs.pos().at(0, default: none) == none { 

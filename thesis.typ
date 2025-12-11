@@ -477,7 +477,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
     )
   ],
   caption: [
-    Grammar for RTL.
+    Grammar for #rtl-flat().
 
     /*
     #block-note[
@@ -581,7 +581,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
                   \
     $],
     caption: [
-      As RTL \ \
+      As #rtl-flat() \ \
     ],
   ),
   <rtl-factorial>,
@@ -589,7 +589,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
   columns: (1fr, 1fr),
   caption: [
     A simple, slightly suboptimal program to compute 10! via multiplication in a loop,
-    represented as typical imperative code and in RTL.
+    represented as typical imperative code and in #rtl-flat().
   ],
 )
 
@@ -639,14 +639,16 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
         Or[$β$][]
         Or[$G seq gbr(lb("l"), x, β)$][]
       })),
-      bnf(Prod($lb("L")$, {
-        Or[$·$][]
-        Or[$lb("l")(A), lb("L")$][]
-      })),
+      bnf(
+        Prod($lb("L")$, {
+          Or[$·$][]
+          Or[$lb("l")(A), lb("L")$][]
+        })
+      ),
     )
   ],
   caption: [
-    Grammar for (basic-blocks-with-arguments) SSA
+    Grammar for (basic-blocks-with-arguments) #ssa-a-flat().
   ],
   kind: image,
 ) <bba-grammar>
@@ -706,7 +708,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
     )
   ],
   caption: [
-    Grammar for lexical SSA
+    Grammar for lexical SSA (#ssa-calc())
   ],
   kind: image,
 ) <lex-ssa-grammar>
@@ -793,7 +795,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
     )
   ],
   caption: [
-    Grammar for lexical SSA with expressions
+    Grammar for lexical SSA with expressions (#ssa-calc(iter-calc()))
   ],
   kind: image,
 ) <lex-ssa-e-grammar>
@@ -827,7 +829,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
     )
   ],
   caption: [
-    Grammar for type-theoretic SSA
+    Grammar for type-theoretic SSA with expressions (#gssa-calc(iter-calc()))
   ],
   kind: image,
 ) <tt-ssa-grammar>
