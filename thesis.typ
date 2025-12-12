@@ -2701,7 +2701,36 @@ in Section #todo-inline[ref].
         -
 ]
 
+#todo[
+  - Categories, functors and products
+  - Concrete categories and concretely cartesian categories
+  - $cal(V)$-enriched categories, functors
+  - $cal(V)$-enriched natural transformations; multifunctor lore
+  - Introduce _monads_
+  - Introduce _subcategories_, wide and full
+    - $cal(V)$-enriched: injection must be a $cal(V)$-morphism
+    - Introduce $ms("Rel")$: subcategories are $ms("Set")$, $ms("PFun")$, but also $ms("Rel")^+$
+    - Naturally want to keep track of lattices like this
+    - Previously in the paper we discuss _effect systems_
+    - Can stick these on a category in the obvious manner: it's a monotone map into the subcategories
+      - _Not_ necessarily join/meet-preserving! Only preserves $⊤$.
+    // - Now: products; part 2. $×$ of $C_ε$ is $C_ε$ and projections are $C_⊥$
+  - Coproducts and initial objects
+    - Effect system interaction: $+$ of $C_ε$ is $C_ε$ and injections are $C_⊥$
+  - Elgot categories
+    - Uniformity w.r.t. to a subcategory
+    - Uniformity w.r.t. to an effect system: needs to have $⊥$ uniform
+  - Premonoidal categories
+    - $⊗$ respects effects, and all $α, σ$ are $C_⊥$
+    - copy-discard
+    - an effect respecting copy-discard _is_ a Freyd category!
+      - In particular, $cal(C)_⊥$ must be Cartesian, so we have successfully recovered the _essence_
+        of a Kleisli category over a cartesian base
+]
+
 == Enriched Categories
+
+#todo[one more quick pass]
 
 // At a high level, our goal is to assign a denotational semantics $⟦hasty(Γ, a, A)⟧$
 // to every well-typed #iter-calc program $hasty(Γ, a, A)$.
@@ -2765,6 +2794,8 @@ $
 
   Composition $f ; g$ is simply (pointwise) composition of functions $g ∘ f$.
 ]
+
+#todo[category of posets]
 
 #definition(name: "Isomorphism, Epimorphism, Monomorphism")[
   Given a morphism $f : cal(C)(A, B)$,
@@ -3068,6 +3099,11 @@ In fact, this construction can be generalized quite readily:
   is always a concretely cartesian functor.
 ]
 
+#todo[
+  Neel says ok for real definition _but_ we suppress notation and pretend everything is strict; 
+  and also most examples are actually strict this is really just for $cal(V) × cal(W)$
+]
+
 This allows us to define the _change of basis_ of a $cal(V)$-category along a
 concretely cartesian functor as follows:
 
@@ -3131,7 +3167,6 @@ so we will not repeat them.
 
 == Naturality
 
-/*
 #definition(name: [$cal(V)$-natural transformation])[
   Given $cal(V)$-functors $F, G : cal(C) → cal(D)$
   a $cal(V)$-natural transformation $η : F => G$ consists of:
@@ -3146,7 +3181,6 @@ so we will not repeat them.
          F med B edge(η_B, ->, label-side: #right) & G med B $)
     $
 ]
-*/
 
 /*
 #definition(name: [$cal(V)$-Quiver])[
@@ -3433,6 +3467,43 @@ Similarly to products, coproducts satisfy some basic algebraic properties
           B ⊗ (C ⊗ A)  
         $)
       $
+]
+
+#todo[
+  - In the literature, we have:
+    - A Freyd category is a _choice_ of $cal(C)_⊥$
+      - $cal(C)_⊥$ is structure for Freyd
+      - Is property in the copy-discard / Markov worlds
+    - _copy-discard_ categories, which are premonoidal + comonoids
+      - These _induce_ a Freyd category
+      - A morphism is _relevant_ if ...
+      - A morphism is _affine_ if ...
+      - What if I want to keep track of which morphisms are relevant/affine/central?
+      - I need more structure
+    - Effectful category
+      - An effect system $cal(E)$ is just a bounded lattice with monotone functions 
+        is relevant, is affine, is central
+      - An effectful category over an effect system $cal(E)$ maps effects to subcategories with 
+        $⊤$ to top
+      - Morphisms between effect systems induce identity-on-objects functors 
+        between effectful categories
+      - A Freyd category is just an effectful category over ${⊤, ⊥}$
+      - A Cartesian category is just an effectful category over ${⊥}$
+]
+
+== Monads and Kliesli Categories
+
+#todo[have this as an example of a premonoidal category]
+
+#todo[
+  - Introduce the concept of _strength_ via a strong monad 
+    (later will have strong Elgot structure so this builds intuition)
+    - Every monad over $ms("Set")$ is strong, so this is often overlooked
+  - define a commutative monad; show monoidal $<=>$ commutative
+  - notice the subcategory of pure things; think about it
+    - return should be monic or it's not faithful; @moggi-89-monad calls this a 
+      _computational monad_
+    - but this is not necessary for our Freyd case
 ]
 
 = Semantics of #iter-calc()
