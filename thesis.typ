@@ -3109,7 +3109,20 @@ Throughout the rest of this section, we fix a concretely cartesian category $cal
 
 Similarly to before,
 - A $ms("Set")$-functor $cal(C)$ is precisely an ordinary functor
-- A $ms("Pos")$-functor $F : cal(C) → cal(D)$
+- A $ms("Pos")$-functor $F : cal(C) → cal(D)$... #todo[this]
+
+#todo[just as for regular functors, we can compose $cal(V)$-functors, and there's an identity...]
+
+#definition(name: [Category of $cal(V)$-categories])[
+  The category of $cal(V)$-categories $cal(V)ms("Cat")$ has
+  - Objects $|cal(V)ms("Cat")|$ cal(V)-categories
+  - Morphisms $cal(V)ms("Cat")(cal(C), cal(D))$ $cal(V)$-functors $F : cal(C) → cal(D)$
+]
+
+#todo[
+  and in particular, change-of-basis $F : cal(V) → cal(W)$ 
+  induces $F_* : cal(V)ms("Cat") → cal(W)ms("Cat")$
+]
 
 In general, we can recover the standard category-theoretic definitions of a concept by taking $cal(V) = ms("Set")$.
 Often, many definitions for $cal(V)$-categories are in fact identical;
