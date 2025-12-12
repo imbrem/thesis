@@ -420,6 +420,24 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 == From RTL to SSA
 
+#todo[name your destructures, no need for note about $(V)$]
+
+#todo[come up with snoc notation, maybe $++ []$ is fine]
+
+#todo[
+  when I say indexed collection, I mean
+  - a collection over $I$. only ordered if $I$ is canonically ordered
+  - in particular, lists are actually pairs $(n ↦ a)$ with standard order on $n ∈ ℕ$
+]
+
+#todo[
+
+  Separate productions $lb("X"), lb("L")$ for syntactic context/labels vs $Γ, ms("L")$ for typing contexts/labels.
+
+  All four are isomorphic!
+
+]
+
 #todo[RTL text]
 
 #figure(
@@ -742,8 +760,9 @@ $
 
 == Expressions and Substitution
 
+#todo[prove coherence w/ minimal typing; if not, add type annotations and remove in exposition]
+
 #figure(
-  placement: auto,
   [
     #grid(
       align: left,
@@ -941,7 +960,11 @@ We work in (informal) Grothendieck-Tarski set theory. In particular,
   We note that, if $f : I → J$ is a bijection,
   $f^(-1) crix f crix icol(a) = icol(a)$.
 
+#todo[use reindexing to define coproduct of lists]
+
 == Lists
+
+#todo[change notation for list append to nice ++]
 
 - A _list_ or _$n$-tuple_ $[a_0,...,a_(n - 1)]$
   is an indexed collection $[a_i | 0 ≤ i < n]$.
@@ -2654,16 +2677,11 @@ to fix notations. Recall the definition of a category $cal(C)$:
 
 #definition(name: "Category")[
   A category $cal(C)$ is given by:
-  - A set of _objects_ $|cal(C)|$
+  - A set of _objects_ $|cal(C)| ∈ cal(U)_ℓ$
     #footnote[
-      To deal with size issues, authors often define $|cal(C)|$ to be a _class_ rather than a set
-      (with $cal(C)$ being a _small_ category if $|cal(C)|$ is a set,
-      and a _large_ category otherwise)
-      or turn to naïve set-theory and trust their definitions won't turn too recursive.
-      Since this exposition corresponds roughly to our Lean formalization, we instead postulate
-      an infinite hierarchy of Grothendieck universes $cal(U)_ℓ$ and implicitly make our definitions
-      level-polymorphic on $ℓ$. The _ℓ-small categories_ are then precisely those for which
-      $|cal(C)| ∈ cal(U)_ℓ$, with the _small categories_ being _0-small_.
+      A category with objects in $cal(U)_ℓ$ is called _$ℓ$-small_. 
+      For the rest of this paper, we will work polymorphically in $ℓ$, 
+      and hence leave it unspecified.
     ]
   - For each pair of objects $A, B in |cal(C)|$, a set of _morphisms_ $cal(C)(A, B)$.
     We call this set a _hom-set_.
@@ -2707,39 +2725,42 @@ $
 $
 
 #definition(name: "Category of sets")[
-  We define the category of sets
-  #footnote[
-    More precisely, we define the category of $ℓ$-small sets $ms("Set")_ℓ$
-    for each universe level $ℓ$ to have objects $cal(U)_ℓ$,
-    with $ms("Set")$ corresponding to the category of small sets $ms("Set")_0$
-  ] $ms("Set")$
-  to have as objects sets $A$ and morphisms $f : ms("Set")(A, B)$ functions $f : A → B$.
-  Composition $f ; g$ is simply composition of functions $g ∘ f$.
+  We define the category of sets to have 
+  objects sets $A$ 
+  and morphisms $f : ms("Set")(A, B)$ functions $f : A → B$.
+
+  Composition $f ; g$ is simply (pointwise) composition of functions $g ∘ f$.
 ]
 
-#definition(name: "Isomorphism")[
-  We say a morphism $f : cal(C)(A, B)$ is an _isomorphism_ if there exists a morphism
-  $g : cal(C)(B, A)$ such that $f ; g = id_A$ and $g ; f = id_B$.
-  As any such _inverse morphism_ $g$, if it exists, is unique, we write it as $f^(-1)$.
+#definition(name: "Isomorphism, Epimorphism, Monomorphism")[
+  Given a morphism $f : cal(C)(A, B)$,
 
-  Two objects $A, B : |cal(C)|$ are _isomorphic_, written $A ≈ B$, if there exists
-  an isomorphism $f : cal(C)(A, B)$.
+  - $f$ is an _isomorphism_ if there exists an _inverse morphism_ $g : cal(C)(B, A)$ 
+    such that $f ; g = id_A$ and $g ; f = id_B$.
+    //
+    If such a morphism exists, it is unique, so we may write it as $f^(-1)$.
+
+    Two objects $A, B : |cal(C)|$ are _isomorphic_, written $A ≈ B$, if there exists
+    an isomorphism $f : cal(C)(A, B)$.
+
+  - $f$ is an _epimorphism_ if, for all parallel morphisms $g_1, g_2 : cal(C)(B, X)$,
+    $f ; g_1 = f ; g_2$ implies $g_1 = g_2$.
+    //
+    In this case, we will say $f$ is _epic_.
+
+  - $f$ is a _monomorphism_ if, for all parallel morphisms $h_1, h_2 : cal(C)(X, A)$,
+    $h_1 ; f = h_2 ; f$ implies $h_1 = h_2$.
+    //
+    In this case, we will say $f$ is _monic_.
 ]
 
-//TODO: pull down
-/*
-#definition(name: "Opposite Category")[
-  Given a category $cal(C)$, we define it's opposite category $opc(cal(C))$ to have
-  - Objects $|opc(cal(C))| = |cal(C)|$
-  - Morphisms $opc(cal(C))(A, B) = { opm(f) | f ∈ cal(C)(B, A) }$
-    #footnote[
-      This is in bijection with $cal(C)(B, A)$
-      // (and is usually defined to be equal to it!)
-      but we add the $opm(-)$-tag to avoid confusion.
-    ].
-  - Composition given by $opm(f) ; opm(g) = opm((g ; f))$
-]
-*/
+In $ms("Set")$, a function $f: A → B$ is 
+- an epimorphism iff it is _surjective_;
+- a monomorphism iff it is _injective_;
+- an isomorphism iff it is a _bijection_.
+
+While in $ms("Set")$, any morphism which is both surjective and injective is in fact a bijection,
+it is _not_ generally the case that a morphism which is both epic and monic is an isomorphism!
 
 #definition(name: "Functor")[
   Given categories $cal(C), cal(D)$, a _functor_ $F : cal(C) → cal(D)$ consists of:
@@ -2750,14 +2771,15 @@ $
   - $F$ preserves identities: $F id_A = id_(F A)$
   - $F$ preserves composition: $F (f ; g) = (F f) ; (F g)$
 
-  - We say a functor $F$ is _faithful_ if its action on objects is _injective_; i.e.,
-    $
-      ∀ f, g : cal(C)(A, B) . F f = F g <==> f = g
-    $
-    #todo[probably: clarify that only needs to be injective _on each hom-set_]
-
-  - A functor $F : cal(V) → cal(V)$ is _identity on objects_ if $|F| = id_|cal(V)|$.
 ]
+
+In general,
+- We say a functor $F$ is _faithful_ if its action on objects is _injective_; i.e.,
+  $
+    ∀ f, g : cal(C)(A, B) . F f = F g <==> f = g
+  $
+
+- A functor $F : cal(V) → cal(V)$ is _identity on objects_ if $|F| = id_(|cal(V)|)$.
 
 Given functors $F : cal(C)_1 -> cal(C)_2$ and $G : cal(C)_2 -> cal(C)_3$, we may define their
 _composition_ $F ; G$ as follows:
@@ -2800,36 +2822,6 @@ itself with the structure of a category, the _category of categories_ $ms("Cat")
   */
 ]
 
-/*
-In particular:
-- The (unique) initial object in $ms("Set")$ is the empty set $∅$
-- Any singleton set is a terminal object in $ms("Set")$.
-  We fix a singleton set $tunit_ms("Set") = {*}$.
-- Likewise, the (unique) initial object in $ms("Cat")$ is the empty category with objects $∅$
-- The terminal object in $ms("Cat")$ has
-  one object $* ∈ mb(1)_ms("Set")$
-  and only the identity morphism $id_* : mb(1)_ms("Cat")(*, *)$
-
-#todo[fix this this is not a good discussion]
-
-The existence of the opposite category means that for every structure $cal(S)$
-defined on arbitrary categories $cal(C)$,
-we can immediately ask whether $cal(S)$ exists on the _opposite category_ $opc(cal(C))$.
-If it does, this naturally induces a structure $opc(cal(S))$ on $cal(C)$ as well,
-the _dual_ of $cal(S)$.
-
-As an example of this,
-- A category $cal(C)$ has an initial object if and only if $opc(cal(C))$ has a terminal object;
-  so the terminal object is dual to the initial object
-- Likewise, a category $cal(C)$ has a terminal object if and only if $opc(cal(C))$ has an initial object;
-  so the initial object is dual to the terminal object
-- In general, if $cal(S)$ is dual to $opc(cal(S))$, then $opc(cal(S))$ is dual to $cal(S)$.
-  In particular, this means that $opc(opc(cal(S))) = cal(S)$
-
-In general, we get the dual structure $opc(cal(S))$ to $cal(S)$
-by flipping the direction of all morphisms in the
-definition of $cal(S)$.
-*/
 
 #definition(name: "Product")[
   Given a collection of objects $sfam(A) = [A_i | i ∈ I]$ indexed by a set $I$,
@@ -2838,7 +2830,7 @@ definition of $cal(S)$.
 
   - for each object $X : |cal(C)|$,
     given a collection of morphisms $icol(f) = [f_i : cal(C)(X, A_i) | i ∈ I]$,
-    a _unique_ morphism $⟨icol(f)⟩^P : cal(C)(X, P)$
+    there exists a _unique_ morphism $⟨icol(f)⟩^P : cal(C)(X, P)$
     (the _product_ of the $f_i$)
     such that
     $
@@ -2864,12 +2856,6 @@ definition of $cal(S)$.
 
   Since an object is the product of the empty collection if and only if it is terminal,
   if such a product exists, we may without loss of generality assume that $Π [] = tunit$.
-
-  //TODO: should we assume this
-  /*
-  Likewise, as the product of a single object $Π [A]$ is isomorphic to $A$, we similarly
-  assume without loss of generality that $Π [A] = A$.
-  */
 
   In general, where the appropriate products exist, we write
   - $Π_(i ∈ I) A_i := Π [A_i | i ∈ I]$.
@@ -2926,71 +2912,6 @@ Some important properties of products include:
 - It follows that $A × (B × C) ≈ Π[A, B, C] ≈ (A × B) × C$
 
 - Likewise, $A^m × A^n = A^(n + m)$
-
-//TODO: pull down?
-
-/*
-
-A coproduct, then, is just the dual notion to a product:
-
-#definition(name: "Coproduct")[
-  Given a collection of objects $A_i : |cal(C)|$ for some indexing set $I$,
-  we say that an object $C: |cal(C)|$ is their _coproduct_ if there exist:
-  - Morphisms $ι_i : cal(C)(A_i, C)$ and
-  - For each object $X : |cal(C)|$,
-    given a collection of morphisms $f_i : cal(C)(A_i, X)$ for each $i ∈ I$,
-    a _unique_ morphism $[f_i]_(i ∈ I) : cal(C)(C, X)$
-    (the _coproduct_ of the $f_i$)
-    such that
-    $
-      ∀ j : I . ι_j ; [f_i]_(i ∈ I) = f_j
-    $
-
-    That is, for arbitrary $g : cal(C)(C, X)$, we have that
-    $
-       (∀ j ∈ I . ι_j ; g = f_j) <==> g = [f_i]_(i ∈ I)
-    $
-
-  We note that the coproduct $C$ of a collection of objects $A_i$ is unique up to isomorphism;
-  that is, if $C$ and $C'$ are coproducts of $A_i$, then $C ≈ C'$.
-  Furthermore, an object is the product of the empty collection if and only if it is initial.
-
-  We say a category $cal(C)$ is _cocartesian_ if it has _all finite coproducts_;
-  i.e. if there exists a function
-  $Σ : tlist(|cal(C)|) → |cal(C)|$ such that
-  - For $L = [A_1,...,A_n]$, $Σ L$ is a coproduct of $A_i$, and, in particular,
-  - $Σ []$ is equal to the initial object $tzero$
-
-  In general, we write
-  - $Σ_i A_i := Σ [A_1,...,A_n]$
-  - $A + B := Σ [A, B]$
-  - For $n ∈ ℕ$, $ntag(n, A) = Σ [A,...,A]$ ($n$ copies of $A$)
-  - For morphisms $f_i : cal(C)(A_i, B_i)$ for arbitrary $i ∈ I$,
-    - $Σ_i f_i = ⟨f_i ; ι_i⟩_i : Σ_i A_i → Σ_i B_i$, and, therefore, in particular
-    - $Σ [f_1,...,f_n] = ⟨f_1 ; ι_1,..., f_n ; ι_n⟩ : Σ [A_1,...,A_n] → Σ [B_1,...,B_n]$
-    - $f_1 + f_2 = ⟨f_1 ; ι_1 , f_2 ; ι_2⟩ : A_1 + A_2 → B_1 + B_2$
-  - In particular, for $f : cal(C)(A, B)$ and objects $C$, we define
-    - $f + C = f + id_C : A + C → B + C$, and
-    - $C + f = id_C + f : C + A → C + B$
-]
-
-Similarly to products, coproducts satisfy some basic algebraic properties
-
-- $A + B ≈ B + A$
-
-- $A + tzero ≈ A$
-
-- $A + Σ L ≈ Σ (A :: L)$
-
-- $Σ [A] ≈ A$
-
-- $Σ L + Σ L' ≈ Σ (L · L')$
-
-- $A + (B + C) ≈ Σ [A, B, C] ≈ (A + B) + C$
-
-- Likewise, $ntag(m, A) + ntag(n, A) ≈ ntag(m + n, A)$
-
-*/
 
 #definition(name: "Concrete Category")[
   A _concrete category_ $cal(V)$ is a category equipped with a faithful functor
@@ -3146,6 +3067,8 @@ Often, many definitions for $cal(V)$-categories are in fact identical;
 in particular, the definitions for terminal objects, initial objects, products and coproducts are exactly the same,
 so we will not repeat them.
 
+== Naturality
+
 /*
 #definition(name: [$cal(V)$-natural transformation])[
   Given $cal(V)$-functors $F, G : cal(C) → cal(D)$
@@ -3285,6 +3208,71 @@ We say that $m$ is _natural_ in $A_i$ if:
 Given a function $|cal(C)|^n → |cal(C)|$
 */
 
+== Coproducts
+
+/*
+
+A coproduct, then, is just the dual notion to a product:
+
+#definition(name: "Coproduct")[
+  Given a collection of objects $A_i : |cal(C)|$ for some indexing set $I$,
+  we say that an object $C: |cal(C)|$ is their _coproduct_ if there exist:
+  - Morphisms $ι_i : cal(C)(A_i, C)$ and
+  - For each object $X : |cal(C)|$,
+    given a collection of morphisms $f_i : cal(C)(A_i, X)$ for each $i ∈ I$,
+    a _unique_ morphism $[f_i]_(i ∈ I) : cal(C)(C, X)$
+    (the _coproduct_ of the $f_i$)
+    such that
+    $
+      ∀ j : I . ι_j ; [f_i]_(i ∈ I) = f_j
+    $
+
+    That is, for arbitrary $g : cal(C)(C, X)$, we have that
+    $
+       (∀ j ∈ I . ι_j ; g = f_j) <==> g = [f_i]_(i ∈ I)
+    $
+
+  We note that the coproduct $C$ of a collection of objects $A_i$ is unique up to isomorphism;
+  that is, if $C$ and $C'$ are coproducts of $A_i$, then $C ≈ C'$.
+  Furthermore, an object is the product of the empty collection if and only if it is initial.
+
+  We say a category $cal(C)$ is _cocartesian_ if it has _all finite coproducts_;
+  i.e. if there exists a function
+  $Σ : tlist(|cal(C)|) → |cal(C)|$ such that
+  - For $L = [A_1,...,A_n]$, $Σ L$ is a coproduct of $A_i$, and, in particular,
+  - $Σ []$ is equal to the initial object $tzero$
+
+  In general, we write
+  - $Σ_i A_i := Σ [A_1,...,A_n]$
+  - $A + B := Σ [A, B]$
+  - For $n ∈ ℕ$, $ntag(n, A) = Σ [A,...,A]$ ($n$ copies of $A$)
+  - For morphisms $f_i : cal(C)(A_i, B_i)$ for arbitrary $i ∈ I$,
+    - $Σ_i f_i = ⟨f_i ; ι_i⟩_i : Σ_i A_i → Σ_i B_i$, and, therefore, in particular
+    - $Σ [f_1,...,f_n] = ⟨f_1 ; ι_1,..., f_n ; ι_n⟩ : Σ [A_1,...,A_n] → Σ [B_1,...,B_n]$
+    - $f_1 + f_2 = ⟨f_1 ; ι_1 , f_2 ; ι_2⟩ : A_1 + A_2 → B_1 + B_2$
+  - In particular, for $f : cal(C)(A, B)$ and objects $C$, we define
+    - $f + C = f + id_C : A + C → B + C$, and
+    - $C + f = id_C + f : C + A → C + B$
+]
+
+Similarly to products, coproducts satisfy some basic algebraic properties
+
+- $A + B ≈ B + A$
+
+- $A + tzero ≈ A$
+
+- $A + Σ L ≈ Σ (A :: L)$
+
+- $Σ [A] ≈ A$
+
+- $Σ L + Σ L' ≈ Σ (L · L')$
+
+- $A + (B + C) ≈ Σ [A, B, C] ≈ (A + B) + C$
+
+- Likewise, $ntag(m, A) + ntag(n, A) ≈ ntag(m + n, A)$
+
+*/
+
 == Premonoidal Categories
 
 #definition(name: [$cal(V)$-Binoidal Category])[
@@ -3403,3 +3391,61 @@ Given a function $|cal(C)|^n → |cal(C)|$
 #todo[literally an infinite pile]
 
 #bibliography("refs.bib", style: "acm-edited.csl")
+
+#pagebreak()
+
+#let appendix(body) = {
+  set heading(numbering: "A", supplement: [Appendix])
+  counter(heading).update(0)
+  body
+}
+
+#show: appendix
+
+= Category Theory
+
+//TODO: pull down
+/*
+#definition(name: "Opposite Category")[
+  Given a category $cal(C)$, we define it's opposite category $opc(cal(C))$ to have
+  - Objects $|opc(cal(C))| = |cal(C)|$
+  - Morphisms $opc(cal(C))(A, B) = { opm(f) | f ∈ cal(C)(B, A) }$
+    #footnote[
+      This is in bijection with $cal(C)(B, A)$
+      // (and is usually defined to be equal to it!)
+      but we add the $opm(-)$-tag to avoid confusion.
+    ].
+  - Composition given by $opm(f) ; opm(g) = opm((g ; f))$
+]
+*/
+
+/*
+In particular:
+- The (unique) initial object in $ms("Set")$ is the empty set $∅$
+- Any singleton set is a terminal object in $ms("Set")$.
+  We fix a singleton set $tunit_ms("Set") = {*}$.
+- Likewise, the (unique) initial object in $ms("Cat")$ is the empty category with objects $∅$
+- The terminal object in $ms("Cat")$ has
+  one object $* ∈ mb(1)_ms("Set")$
+  and only the identity morphism $id_* : mb(1)_ms("Cat")(*, *)$
+
+#todo[fix this this is not a good discussion]
+
+The existence of the opposite category means that for every structure $cal(S)$
+defined on arbitrary categories $cal(C)$,
+we can immediately ask whether $cal(S)$ exists on the _opposite category_ $opc(cal(C))$.
+If it does, this naturally induces a structure $opc(cal(S))$ on $cal(C)$ as well,
+the _dual_ of $cal(S)$.
+
+As an example of this,
+- A category $cal(C)$ has an initial object if and only if $opc(cal(C))$ has a terminal object;
+  so the terminal object is dual to the initial object
+- Likewise, a category $cal(C)$ has a terminal object if and only if $opc(cal(C))$ has an initial object;
+  so the initial object is dual to the terminal object
+- In general, if $cal(S)$ is dual to $opc(cal(S))$, then $opc(cal(S))$ is dual to $cal(S)$.
+  In particular, this means that $opc(opc(cal(S))) = cal(S)$
+
+In general, we get the dual structure $opc(cal(S))$ to $cal(S)$
+by flipping the direction of all morphisms in the
+definition of $cal(S)$.
+*/
