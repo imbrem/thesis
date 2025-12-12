@@ -425,8 +425,8 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 #todo[come up with snoc notation, maybe $++ []$ is fine]
 
 #todo[
-  when I say indexed collection, I mean
-  - a collection over $I$. only ordered if $I$ is canonically ordered
+  when I say indexed family, I mean
+  - a family over $I$. only ordered if $I$ is canonically ordered
   - in particular, lists are actually pairs $(n ↦ a)$ with standard order on $n ∈ ℕ$
 ]
 
@@ -887,27 +887,45 @@ We work in (informal) Grothendieck-Tarski set theory. In particular,
 - Definitions are implicitly $ℓ$-polymorphic unless stated otherwise.
   For example, when we define a category, we really mean an $ℓ$-category with $ℓ$-small hom-sets.
 
-== Collections
+== Families
 
-- $icol(a) = [a_i | i ∈ I]$ means an _indexed collection_ of a unique $a_i$ for each _index_ $i ∈ I$.
+An _($I$-indexed) family_ @nlab:family $icol(a) := [a_i | i ∈ I]$ consists of
 
-  We say $icol(a)$ is _indexed by_ $cix(icol(a)) = I$. 
-  We say two collections $icol(a), icol(b)$ are _disjoint_ if $cix(icol(a)) ∩ cix(icol(b)) = ∅$ 
+- An _index set_ $I$, whose elements are the _indices_ of the family
 
-  We denote the _cardinality_ of an indexed collection as $|icol(a)| := |I|$.
+- For each index $i ∈ I$, an _element_ $a_i$. 
+  We will sometimes write this as a function application $icol(a) med i$.
 
-  $icol(a)$ is an _indexed collection of $A$_ or simply _collection of $A$_ if $∀i, a_i ∈ A$.
+We will often write an indexed family as $[i ↦ a_i]_(i ∈ I)$ or $[a_i]_(i ∈ I)$, omitting the set
+$I$ when clear from context. When $I$ is finite, we may also write
+$[i_1 ↦ a_(i_1),...,i_n ↦ a_(i_n)]$ or $[a_(i_1),...,a_(i_n)]$.
 
-- Alternatively, we write: 
-  - $[i ↦ a]$ to denote the singleton collection with index set ${i}$ and unique element $a$.
-  - $[i_0 ↦ a_0, ..., i_(n - 1) ↦ a_(n - 1)]$ 
-    to denote the collection with index set ${i_0, ..., i_(n - 1)}$ 
-    and elements $a_0, ..., a_(n - 1)$ respectively.
+Given families $icol(a) = [a_i | i ∈ I]$, $icol(b) = [b_j | j ∈ J]$, 
+we define the _reindexings_ of $icol(a)$ _along_ $icol(b)$ as follows:
+$
+  hfam(icol(a), icol(b)) := { f : J → I | ∀ j ∈ J . a_(f(j)) = b_j }
+$
 
-    For this to be well-defined, each $i_k$ must be distinct.
-  - $[i ↦ a_i]_(i ∈ I) := [a_i | i ∈ I]$
+We note that
 
-- Given indexed collections $icol(a) = [a_i | i ∈ I]$, $icol(b) = [b_i | j ∈ J]$,
+- We always have $id_I : hfam(icol(a), icol(a))$
+
+- If $f : hfam(icol(a), icol(b))$ and $g : hfam(icol(b), icol(c))$, 
+  then $f ∘ g : hfam(icol(a), icol(c))$ (_not_ $g ∘ f$!)
+
+An injective reindexing is called a _thinning_, 
+while a bijective reindexing is called a _permutation_. 
+We denote the sets of such reindexings as
+$
+  hthin(icol(a), icol(b)) &:= { f ∈ hfam(icol(a), icol(b)) | f "is injective" } \
+  hperm(icol(a), icol(b)) &:= { f ∈ hthin(icol(a), icol(b)) | f "is bijective" } \
+$
+
+Both these subsets contain the identity reindexing and are closed under (reverse) composition.
+
+We define some of the basic operations on indexed families as follows:
+
+- Given indexed families $icol(a) = [a_i | i ∈ I]$, $icol(b) = [b_i | j ∈ J]$,
   we define their _override_ as follows:
   $
     icol(a) ovrd icol(b) = [λ k . site(k ∈ I, a_k, b_k) | k ∈ I ∪ J]
@@ -922,13 +940,13 @@ We work in (informal) Grothendieck-Tarski set theory. In particular,
     If $icol(a)$ and $icol(b)$ are in fact disjoint, we write $icol(a) ⊔ icol(b)$.
 
 
-- We define the _selection_ of $J ⊆ I$ from an indexed collection $icol(a) = [a_i | i ∈ I]$
+- We define the _selection_ of $J ⊆ I$ from an indexed family $icol(a) = [a_i | i ∈ I]$
   as follows:
   $
     icol(a)[J] = [a_i | i ∈ I ∩ J]
   $
 
-- We define the _removal_ of $J ⊆ I$ from an indexed collection $icol(a) = [a_i | i ∈ I]$
+- We define the _removal_ of $J ⊆ I$ from an indexed family $icol(a) = [a_i | i ∈ I]$
   as follows:
   $
     icol(a) backslash J = [a_i | i ∈ I backslash J]
@@ -937,43 +955,52 @@ We work in (informal) Grothendieck-Tarski set theory. In particular,
   We note that 
   $icol(a)[J] ovrd (icol(a) backslash J) = (icol(a) backslash J) ovrd icol(a)[J] = icol(a)$.
 
-- Given a function $f$, we define the pointwise map of a collection $icol(a)$ to be given by
+- Given a function $f$, we define the pointwise map of a family $icol(a)$ to be given by
   $
     f cmap [a_i | i ∈ I] = [f med a_i | i ∈ I]
   $
 
-- Likewise, we define the _application_ of two collections $icol(f), icol(a)$ as follows:
+  This satisfies the usual properties of a functor:
+  
+  - $id cmap icol(a) = icol(a)$
+  - $(g ∘ f) cmap icol(a) = g cmap (f cmap icol(a))$
+
+- Likewise, we define the _application_ of two families $icol(f), icol(a)$ as follows:
   $
     [f_i | i ∈ I] capp [a_j | j ∈ J] = [f_i med a_i | i ∈ I ∩ J]
   $
 
-- And the _zip_ of two collections $icol(a), icol(b)$ as follows:
+- And the _zip_ of two families $icol(a), icol(b)$ as follows:
   $
     [a_i | i ∈ I] czip [b_j | j ∈ J] = [(a_i, b_i) | i ∈ I ∩ J]
   $
 
-- Given a function $f$ which is an injection on the domain of $icol(a)$, we define the
-  _reindexing_ of $icol(a)$ as follows:
+- We may define the _coproduct_ of two indexed families
+  $icol(a) = [a_i | i ∈ I]$, 
+  $icol(b) = [b_j | j ∈ J]$ using the pointwise map as follows:
   $
-    f crix [a_i | i ∈ I] = [f(i) ↦ a_(f_i)]_(i ∈ I) = [a_(f|_I^(-1)(j)) | j ∈ f^(-1)(I)]
+    icol(a) + icol(b) = (linj crix icol(a)) ⊔ (rinj crix icol(b))
   $
-  We note that, if $f : I → J$ is a bijection,
-  $f^(-1) crix f crix icol(a) = icol(a)$.
 
-#todo[use reindexing to define coproduct of lists]
+- Given families $icol(a)$, $icol(b)$ 
+  indexed by $I, J$ respectively, 
+  we may define the set of _reindexings_ 
+  $
+    hfam(icol(a), icol(b)) := { f : J → I | ∀ i, a_(f(i)) = b_i) }
+  $
 
 == Lists
 
 #todo[change notation for list append to nice ++]
 
 - A _list_ or _$n$-tuple_ $[a_0,...,a_(n - 1)]$
-  is an indexed collection $[a_i | 0 ≤ i < n]$.
+  is an indexed family $[a_i | 0 ≤ i < n]$.
 
   We call the cardinality of a list its _length_.
 
   Following the convention in computer science, our lists are _zero-indexed_.
 
-- The _empty list_ or _$0$-tuple_ is the empty indexed collection $lnil$;
+- The _empty list_ or _$0$-tuple_ is the empty indexed family $lnil$;
   this is the unique list of length $0$.
 
 - Given an element $x$ and an $n$-tuple $icol(a)$,
@@ -992,22 +1019,29 @@ We work in (informal) Grothendieck-Tarski set theory. In particular,
 
 - We define the _concatenation_ of lists $icol(a) · icol(b)$ by induction on $icol(a)$ as follows:
   $
-    lnil · icol(b) = icol(b) quad quad quad
-    (x :: icol(a)) · icol(b) = x :: (icol(a) · icol(b))
+    lnil lcat icol(b) = icol(b) quad quad quad
+    (x :: icol(a)) lcat icol(b) = x :: (icol(a) lcat icol(b))
   $
 
   We can show by induction that
   $
-    icol(a) · icol(b) = [a_0,...,a_(n - 1),b_0,...,b_(m - 1)] = [λ i . site(i < n, a_i, b_(i - n))]
+    icol(a) lcat icol(b) 
+      = [a_0,...,a_(n - 1),b_0,...,b_(m - 1)] 
+      = [λ i . site(i < n, a_i, b_(i - n))]
+  $
+
+  In particular,
+  $
+    icol(a) lcat [b] = [a_0,...,a_(n - 1), b] = [λ i . site(i < n, a_i, b)]
   $
 
   Some other important properties of concatenation are:
-  - $lnil · icol(a) = icol(a) · lnil = icol(a)$
-  - $icol(a) · (icol(b) · icol(c)) = (icol(a) · icol(b)) · icol(c)$
+  - $lnil lcat icol(a) = icol(a) lcat lnil = icol(a)$
+  - $icol(a) lcat (icol(b) lcat icol(c)) = (icol(a) lcat icol(b)) lcat icol(c)$
 
-- We define the _repetition_ of a list $icol(a)$ by induction as follows:
+- We define the _repetition_ of a list $icol(a)$, written $n · icol(a)$, by induction as follows:
   $
-    icol(a)^0 = lnil quad quad quad icol(a)^(n + 1) = icol(a) · icol(a)^n
+    0 · icol(a) = lnil quad quad quad (n + 1) · icol(a) = icol(a) lcat n · icol(a)
   $
 
 = Type Theory
@@ -1525,7 +1559,7 @@ We will give a more formal treatment of RTL programs as graphs in @cfgs.
 
 An important insight provided by the BBA format,
 as discussed by @appel-98-ssa and @kelsey-95-cps,
-is that a program in SSA form can be interpreted as a collection of mutually tail-recursive functions,
+is that a program in SSA form can be interpreted as a family of mutually tail-recursive functions,
 where each basic block and branch correspond to a function and tail call, respectively.
 This yields a natural framework for defining the semantics of SSA and reasoning about optimizations.
 
@@ -1621,7 +1655,7 @@ then lexical and dominance-based scoping become one and the same.
 
 We use this observation to introduce _lexical SSA_ in Figure~#todo-inline[fig:lex-ssa].
 The key idea of this syntax is to,
-rather than treating the control-flow graph $G$ as a flat collection of basic blocks
+rather than treating the control-flow graph $G$ as a flat family of basic blocks
 (with a distinguished block),
 to instead consider (subtrees of) the dominance tree $r$,
 with the root of the tree implicitly being the entry block.
@@ -1965,7 +1999,7 @@ We now move on to _regions_, which can be typed as follows:
 - #todo[while you're rewriting this, no more where]
   /*
   _$ms("where")$-blocks_ of the form "$where(r, (wbranch(ℓ_i, x_i, t_i))_i)$",
-  which consist of a collection of mutually recursive regions $wbranch(ℓ_i, x_i, t_i)$
+  which consist of a family of mutually recursive regions $wbranch(ℓ_i, x_i, t_i)$
   and a _terminator region_ $r$ which may branch to one of $ℓ_i$ or an exit label.
   */
 
@@ -2822,14 +2856,13 @@ itself with the structure of a category, the _category of categories_ $ms("Cat")
   */
 ]
 
-
 #definition(name: "Product")[
-  Given a collection of objects $sfam(A) = [A_i | i ∈ I]$ indexed by a set $I$,
+  Given a family of objects $icol(A) = [A_i | i ∈ I]$ indexed by a set $I$,
   we say that an object $P: |cal(C)|$ is their _product_ if:
   - There exist morphisms $π_i^P : cal(C)(P, A_i)$ such that
 
   - for each object $X : |cal(C)|$,
-    given a collection of morphisms $icol(f) = [f_i : cal(C)(X, A_i) | i ∈ I]$,
+    given a family of morphisms $icol(f) = [f_i : cal(C)(X, A_i) | i ∈ I]$,
     there exists a _unique_ morphism $⟨icol(f)⟩^P : cal(C)(X, P)$
     (the _product_ of the $f_i$)
     such that
@@ -2848,45 +2881,49 @@ itself with the structure of a category, the _category of categories_ $ms("Cat")
     Likewise, we will often write $⟨f_i⟩_(i ∈ I)$, $⟨f_i⟩_i$, or $⟨f_1,...,f_n⟩$ for 
     $⟨icol(f)⟩^P$ where the meaning is clear from context.
 
-  We note that the product $P$ of a collection of objects $A_i$ is unique up to isomorphism;
+  We note that the product $P$ of a family of objects $A_i$ is unique up to isomorphism;
   that is, if $P$ and $P'$ are products of $A_i$, then $P ≈ P'$.
 
-  In particular, for each family of objects $sfam(A) = [ A_i | i ∈ I ]$,
-  we may choose a distinguished product  $Π sfam(A)$ whenever one exists.
+  In particular, for each family of objects $icol(A) = [ A_i | i ∈ I ]$,
+  we may choose a distinguished product  $Π icol(A)$ whenever one exists.
 
-  Since an object is the product of the empty collection if and only if it is terminal,
+  Since an object is the product of the empty family if and only if it is terminal,
   if such a product exists, we may without loss of generality assume that $Π [] = tunit$.
-
-  In general, where the appropriate products exist, we write
-  - $Π_(i ∈ I) A_i := Π [A_i | i ∈ I]$.
-
-    Where clear from context, we may omit the subscript and write $Π_i A_i$
-
-  - $A × B := Π [lb("l") ↦ A, lb("r") ↦ B]$
-
-  - For $n ∈ ℕ$, $A^n := Π [A]^n$
-
-  - Given objects $sfam(A) = [A_i | i ∈ I]$ , $sfam(B) = [B_i | i ∈ I]$,
-    and morphisms $icol(f) = [f_i : cal(C)(A_i, B_i) | i ∈ I]$, 
-    we define
-    $
-      Π mb(f) = Π_(i ∈ I)f_i := ⟨π_i^(Π sfam(A)) ; f_i⟩_(i ∈ I) : cal(C)(Π sfam(A), Π sfam(B))
-    $
-
-  - Likewise, given $f: A_1 → B_1$, $g : A_2 → B_2$, we define
-    - $f × g := Π [lb("l") ↦ f, lb("r") ↦ g]$
-    - $f × A_2 := f × id_(A_2)$
-    - $A_1 × g := id_(A_1) × g$
 ]
 
-#definition(name: "Cartesian Category")[
-  A category $cal(C)$ is _cartesian_ if it has all finite products; 
-  i.e. all products $Π sfam(A)$ where $sfam(A)$ is finite.
+In general, where the appropriate products exist, we write
 
-  Note that it suffices for $cal(C)$ to have an initial object and all binary products $A × B$.
-]
+- $Π_(i ∈ I) A_i := Π [A_i | i ∈ I]$.
 
-Some important properties of products include:
+  Where clear from context, we may omit the subscript and write $Π_i A_i$
+
+- $A × B := Π [lb("l") ↦ A, lb("r") ↦ B]$
+
+- For $n ∈ ℕ$, $A^n := Π (n · [A])$
+
+- Given objects $icol(A) = [A_i | i ∈ I]$ , $icol(B) = [B_i | i ∈ I]$,
+  and morphisms $icol(f) = [f_i : cal(C)(A_i, B_i) | i ∈ I]$, 
+  we define
+  $
+    Π mb(f) = Π_(i ∈ I)f_i := ⟨π_i^(Π icol(A)) ; f_i⟩_(i ∈ I) : cal(C)(Π icol(A), Π icol(B))
+  $
+
+- Likewise, given $f: A_1 → B_1$, $g : A_2 → B_2$, we define
+  - $f × g := Π [lb("l") ↦ f, lb("r") ↦ g]$
+  - $f × A_2 := f × id_(A_2)$
+  - $A_1 × g := id_(A_1) × g$
+
+/*
+In general, if $ι : I → J$ is an injection, 
+and $icol(A), icol(B)$ are families of objects indexed by $I$ and $J$ respectively,
+then there exists a canonical morphism
+$
+  piinj(icol(A), icol(B), ι)
+$
+*/
+
+Some important properties of products, where they exist, include:
+
 - $A × B ≈ B × A$, with canonical isomorphisms
   $⟨π_lb("l")^(A × B), π_lb("r")^(A × B)⟩ : A × B -> B × A$ and
   $⟨π_2^(B × A), π_1^(B × A)⟩ : B × A -> A × B$
@@ -2896,22 +2933,34 @@ Some important properties of products include:
 
   Likewise, $tunit × A ≈ A$.
 
-- $X × Π sfam(A) = Π (X :: sfam(A))$, with canonical isomorphims (for $sfam(A)$ of length $n$)
+- $Π (X :: icol(A)) ≈ X × Π icol(A)$, with canonical isomorphims (for $icol(A)$ of length $n$)
   $
-    ⟨π_1^(X × Π sfam(A)), 
-      (π_2^(X × Π sfam(A)) ; π_1^(Π sfam(A))), ..., (π_2^(X × Π sfam(A)) ; π_n^(Π sfam(A)))⟩ 
-      & : X × Π sfam(A) -> Π (X :: sfam(A)) \
-           ⟨π_1^(Π (X :: sfam(A))), ⟨π_(1 + 1)^(Π (X :: sfam(A))),...,π_(n + 1)^(Π (X :: sfam(A)))⟩⟩ 
-           & : Π (X :: sfam(A)) -> X × Π sfam(A)
+    ⟨π_1^(X × Π icol(A)), 
+      (π_2^(X × Π icol(A)) ; π_1^(Π icol(A))), ..., (π_2^(X × Π icol(A)) ; π_n^(Π icol(A)))⟩ 
+      & : X × Π icol(A) -> Π (X :: icol(A)) \
+           ⟨π_1^(Π (X :: icol(A))), ⟨π_(1 + 1)^(Π (X :: icol(A))),...,π_(n + 1)^(Π (X :: icol(A)))⟩⟩ 
+           & : Π (X :: icol(A)) -> X × Π icol(A)
   $
+
+- It follows by induction that $Π (icol(A) lcat icol(B)) ≈ icol(A) lcat icol(B)$
+
+- Likewise, $Π [A] ≈ A$
 
 - $Π [A] ≈ A$, with canonical isomorphisms $π^(Π [A]) : Π [A] → A$ and $⟨id_A⟩ : A → Π [A]$
 
-- In particular, this yields an isomorphism $Π sfam(A) × Π sfam(B) ≈ Π (sfam(A) · sfam(B))$
+- In particular, this yields an isomorphism $Π icol(A) × Π icol(B) ≈ Π (icol(A) lcat icol(B))$
 
 - It follows that $A × (B × C) ≈ Π[A, B, C] ≈ (A × B) × C$
 
 - Likewise, $A^m × A^n = A^(n + m)$
+
+#definition(name: "Cartesian Category")[
+  A category $cal(C)$ is _cartesian_ if it has all finite products; 
+  i.e. all products $Π icol(A)$ where $icol(A)$ is finite.
+
+  Note that it suffices for $cal(C)$ to have an initial object and all binary products $A × B$.
+]
+
 
 #definition(name: "Concrete Category")[
   A _concrete category_ $cal(V)$ is a category equipped with a faithful functor
@@ -3112,27 +3161,27 @@ so we will not repeat them.
   giving us a faithful forgetful functor from the category of $cal(V)$-categories
   $ms("Cat")_cal(V)$ to the category of $cal(V)$-quivers $ms("Quiv")_cal(V)$.
 
-  Given a collection of $cal(V)$-quivers $cal(Q)_i$ for $i ∈ I$, we may define:
+  Given a family of $cal(V)$-quivers $cal(Q)_i$ for $i ∈ I$, we may define:
   - The _product quiver_ $Π_i Q_i$
 ]
 */
 
 /*
 #definition(name: [$cal(V)$-Multifunctor])[
-  Given a collection of $cal(V)$-categories $scat(C) = [cal(C)_i | i ∈ I]$ 
+  Given a family of $cal(V)$-categories $scat(C) = [cal(C)_i | i ∈ I]$ 
   and a $cal(V)$-category $cal(D)$,
-  a _multifunctor_ $F$ from $sfam(C)$ to $cal(D)$ consists of
-  - A mapping from collections of objects $sfam(A) = [A_i : |cal(C)_i| | i ∈ I]$ 
-    to objects $F sfam(A) : |cal(D)|$ 
+  a _multifunctor_ $F$ from $icol(C)$ to $cal(D)$ consists of
+  - A mapping from families of objects $icol(A) = [A_i : |cal(C)_i| | i ∈ I]$ 
+    to objects $F icol(A) : |cal(D)|$ 
   - For each $j ∈ I$, 
-    a mapping from collections of objects $sfam(A)_j = [A_i : |cal(C)_i| | i ∈ I backslash {j}]$
+    a mapping from families of objects $icol(A)_j = [A_i : |cal(C)_i| | i ∈ I backslash {j}]$
     a $cal(V)$-functor
     $
-      F med sfam(A)_j : cal(C)_j → cal(D) 
+      F med icol(A)_j : cal(C)_j → cal(D) 
     $
     such that
     $
-      ∀ A_j : |cal(C)_j|, F_j med sfam(A)_j med A_j = F med icol(A) : |cal(D)|
+      ∀ A_j : |cal(C)_j|, F_j med icol(A)_j med A_j = F med icol(A) : |cal(D)|
     $
     where
     $
@@ -3145,10 +3194,10 @@ so we will not repeat them.
 
   Given $cal(V)$-multifunctors $F, G: scat(C) → D$, we say that a family of morphisms 
   $η_icol(A): cal(D)(F icol(A), G icol(A))$ is _natural_ in $j ∈ I$ if, 
-  for each collection of objects $sfam(A)_j = [A_i : |cal(C)_i| | i ∈ I backslash {j}]$,
-  the family of morphisms $η_sfam(A)_j$ given by
-  $(η_sfam(A)_j)_X := η_([j ↦ X] ovrd sfam(A)_j)$
-  is a natural transformation $η_(sfam(A)_j) : F sfam(A)_j => G sfam(A)_j$.
+  for each family of objects $icol(A)_j = [A_i : |cal(C)_i| | i ∈ I backslash {j}]$,
+  the family of morphisms $η_icol(A)_j$ given by
+  $(η_icol(A)_j)_X := η_([j ↦ X] ovrd icol(A)_j)$
+  is a natural transformation $η_(icol(A)_j) : F icol(A)_j => G icol(A)_j$.
 
   That is, for every morphism $f : cal(C)_j (A_j, A_j')$,
   we have that the following diagram commutes
@@ -3170,17 +3219,17 @@ so we will not repeat them.
 #definition(name: [$cal(V)$-Natural Multitransformation])[
   Given $cal(V)$-multifunctors $F, G: scat(C) → D$, we define a $cal(V)$-natural multitransformation 
   $η : F => G$ to consist of:
-  - For each collection of objects $sfam(A) = [A_i : cal(C)_i | i ∈ I]$, 
-    a morphism $η_(icol(A)) : cal(D)(F sfam(A), G sfam(A))$
+  - For each family of objects $icol(A) = [A_i : cal(C)_i | i ∈ I]$, 
+    a morphism $η_(icol(A)) : cal(D)(F icol(A), G icol(A))$
   - For each $j ∈ I$,
-    a mapping from collections of objects $sfam(A)_j = [A_i : cal(C)_i | i ∈ I backslash {j}]$
+    a mapping from families of objects $icol(A)_j = [A_i : cal(C)_i | i ∈ I backslash {j}]$
     a natural tranformation
     $
-      η_sfam(A)_j : F_j med sfam(A)_j => G_j med sfam(A)_j
+      η_icol(A)_j : F_j med icol(A)_j => G_j med icol(A)_j
     $
     such that
     $
-      ∀ A_j : |cal(C)_j|, (η_(sfam(A)_j))_(A_j) = η_[A_i | i ∈ I] 
+      ∀ A_j : |cal(C)_j|, (η_(icol(A)_j))_(A_j) = η_[A_i | i ∈ I] 
         : cal(D)(F [A_i | i ∈ I]) → cal(D)(G [A_i | i ∈ I])
     $
   
@@ -3215,11 +3264,11 @@ Given a function $|cal(C)|^n → |cal(C)|$
 A coproduct, then, is just the dual notion to a product:
 
 #definition(name: "Coproduct")[
-  Given a collection of objects $A_i : |cal(C)|$ for some indexing set $I$,
+  Given a family of objects $A_i : |cal(C)|$ for some indexing set $I$,
   we say that an object $C: |cal(C)|$ is their _coproduct_ if there exist:
   - Morphisms $ι_i : cal(C)(A_i, C)$ and
   - For each object $X : |cal(C)|$,
-    given a collection of morphisms $f_i : cal(C)(A_i, X)$ for each $i ∈ I$,
+    given a family of morphisms $f_i : cal(C)(A_i, X)$ for each $i ∈ I$,
     a _unique_ morphism $[f_i]_(i ∈ I) : cal(C)(C, X)$
     (the _coproduct_ of the $f_i$)
     such that
@@ -3232,9 +3281,9 @@ A coproduct, then, is just the dual notion to a product:
        (∀ j ∈ I . ι_j ; g = f_j) <==> g = [f_i]_(i ∈ I)
     $
 
-  We note that the coproduct $C$ of a collection of objects $A_i$ is unique up to isomorphism;
+  We note that the coproduct $C$ of a family of objects $A_i$ is unique up to isomorphism;
   that is, if $C$ and $C'$ are coproducts of $A_i$, then $C ≈ C'$.
-  Furthermore, an object is the product of the empty collection if and only if it is initial.
+  Furthermore, an object is the product of the empty family if and only if it is initial.
 
   We say a category $cal(C)$ is _cocartesian_ if it has _all finite coproducts_;
   i.e. if there exists a function

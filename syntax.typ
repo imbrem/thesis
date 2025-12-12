@@ -97,19 +97,34 @@
 #let tlist(A) = $mb("List") med #A$
 
 // Collections
-#let cix(a) = $ms("ix")(#a)$
+// #let cix(a) = $ms("ix")(#a)$
 #let cmap = $op("⟨$⟩")$
 #let capp = $op("⟨⋆⟩")$
 #let czip = $op("⟨,⟩")$
 #let crix = $op("⟨#⟩")$
+#let hfam(A, B) = $ms("Fam")(#A, #B)$
+#let hthin(A, B) = $ms("Thin")(#A, #B)$
+#let hperm(A, B) = $ms("Perm")(#A, #B)$
 
 // Projections
+#let linj = $ι_lb("l")$
+#let rinj = $ι_lb("r")$
 #let lpi = $π_lb("l")$
 #let rpi = $π_lb("r")$
 
 // Lists
 #let lnil = $[ med ]$
 #let llen(A) = $|#A|$
+// A single math "+" glyph as content
+#let mplus = $+$
+
+// Compact “++” built by overlaying two pluses
+#let lcat = math.op(
+  box(width: 1.0em, height: 0.7em)[
+    #place(center,  dx: -0.15em, mplus)
+    #place(center,  dx: 0.15em, mplus)
+  ]
+)
 
 // Sets
 #let site(c, t, f) = $ms("if") #c ms("then") #t ms("else") #f$
@@ -118,6 +133,7 @@
 #let pset(X) = $cal(P)(X)$
 
 // Categories
+#let piinj(A, B, i) = $ms("inj")(#A, #B, #i)$
 #let ahm(C) = $scripts(->)_#C$
 #let opc(C) = $#C^ms("op")$
 #let opm(f) = $#f^ms("op")$
@@ -127,7 +143,6 @@
 #let ntag(n, A) = $n · A$
 
 // Punctuation
-#let lcat = $$
 #let seq = $; thick$
 #let ovrd = $triangle.stroked.small.l$
 
