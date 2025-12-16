@@ -112,6 +112,10 @@
 #let lpi = $π_lb("l")$
 #let rpi = $π_lb("r")$
 
+#let fnum(n) = $lb("p")_#n$
+#let inum(n) = $lb("i")_#n$
+#let fexpr(f, e) = $#f : #e$
+
 // Lists
 #let lnil = $[ med ]$
 #let llen(A) = $|#A|$
@@ -125,6 +129,9 @@
     #place(center,  dx: 0.15em, mplus)
   ]
 )
+
+#let compat(C) = $;_#C$
+#let famcomp = compat(ms("Fam"))
 
 // Sets
 #let site(c, t, f) = $ms("if") #c ms("then") #t ms("else") #f$

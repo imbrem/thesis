@@ -449,11 +449,11 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
       bnf(
         Prod($v$, {
           Or[$x$][_variable_]
-          Or[$(V)$][_tuple_]
+          Or[$(V)$][_structure_]
         }),
         Prod($V$, {
           Or[$·$][]
-          Or[$x, V$][]
+          Or[$V, fexpr(lb("f"), x)$][]
         }),
       ),
       bnf(
@@ -480,8 +480,8 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
         }),
         Prod($B$, {
           Or[$·$][]
-          Or[$ssbr(lb("l₁"), retb(o)), B$][_return_]
-          Or[$ssbr(lb("l₁"), brb(lb("l₂"))), B$][_branch_]
+          Or[$B, ssbr(lb("l₁"), retb(o))$][_return_]
+          Or[$B, ssbr(lb("l₁"), brb(lb("l₂")))$][_branch_]
         }),
       ),
       bnf(Prod($G$, {
@@ -490,12 +490,16 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
       })),
       bnf(Prod($lb("L")$, {
         Or[$·$][]
-        Or[$lb("l"), lb("L")$][]
+        Or[$lb("L"), lb("l")$][]
       })),
     )
+    $
+      (x_0,...,x_(n - 1)) = (x_i)_(i ∈ 0..n-1) 
+      := (fexpr(fnum(0), x_0),..., fexpr(fnum(n - 1), x_(n - 1)))
+    $
   ],
   caption: [
-    Grammar for #rtl-flat().
+    Grammar for #rtl-flat()
 
     /*
     #block-note[
@@ -620,11 +624,11 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
       bnf(
         Prod($v$, {
           Or[$x$][_variable_]
-          Or[$(V)$][_tuple_]
+          Or[$(V)$][_struct_]
         }),
         Prod($V$, {
           Or[$·$][]
-          Or[$x, V$][]
+          Or[$V, fexpr(lb("f"), x)$][]
         }),
       ),
       bnf(
@@ -650,22 +654,28 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
         }),
         Prod($B$, {
           Or[$·$][]
-          Or[$sbr(lb("l₁"), x, brb(lb("l₂"), o)), B$][]
+          Or[$B, sbr(lb("l₁"), x, brb(lb("l₂"), o))$][]
         }),
       ),
-      bnf(Prod($G$, {
-        Or[$β$][]
-        Or[$G seq gbr(lb("l"), x, β)$][]
-      })),
       bnf(
-        Prod($A$, {
-          Or[$X$][_base type_]
-          Or[$Π lb("L")$][_tuple_]
-          Or[$Σ lb("L")$][_sum_]
+        Prod($G$, {
+          Or[$β$][]
+          Or[$G seq gbr(lb("l"), x, β)$][]
         }),
         Prod($lb("L")$, {
           Or[$·$][]
-          Or[$lb("l")(A), lb("L")$][]
+          Or[$lb("L"), lb("l")(A)$][]
+        })
+      ),
+      bnf(
+        Prod($A$, {
+          Or[$X$][_base type_]
+          Or[$Π lb("F")$][_tuple_]
+          Or[$Σ lb("L")$][_sum_]
+        }),
+        Prod($lb("F")$, {
+          Or[$·$][]
+          Or[$lb("F"), lb("f") : A$][]
         })
       ),
     )
@@ -677,17 +687,27 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 ) <bba-grammar>
 
 
-$
-  mb(0) := Σ · quad
-  mb(1) := Π · quad
-  A × B := Π ( lb("l")(A), lb("r")(B) ) quad
-  A + B := Σ ( lb("l")(A), lb("r")(B) ) quad
-  mb(2) := mb(1) + mb(1)
-$
-
-$
-  Σ [A_0,...,A_(n - 1)] = Σ_i A_i = Σ ( lb(i)_0(A_0), ... , lb(i)_(n - 1)(A_(n - 1)))
-$
+#figure(
+  [
+    $
+      A × B &:= Π ( lb("l") : A, lb("r") : B ) 
+      & #h(3em) &
+      mb(1) &:= Π ·
+      \
+      A + B &:= Σ ( lb("l")(A), lb("r")(B) ) 
+      &&
+      mb(0) &:= Σ ·
+    $
+    $
+      Π [A_0,...,A_(n - 1)] &= Π_i A_i &:= Π ( lb("p")_0 : A_0, ..., lb("p")_(n - 1) : A_(n - 1) ) \
+      Σ [A_0,...,A_(n - 1)] &= Σ_i A_i &:= Σ ( lb("i")_0(A_0), ..., lb("i")_(n - 1)(A_(n - 1)) )
+    $
+  ],
+  caption: [
+    Simple $n$-ary types
+  ],
+  kind: image,
+) <simple-types>
 
 == Lexical SSA
 
@@ -700,11 +720,11 @@ $
       bnf(
         Prod($v$, {
           Or[$x$][_variable_]
-          Or[$(V)$][_tuple_]
+          Or[$(V)$][_struct_]
         }),
         Prod($V$, {
           Or[$·$][]
-          Or[$x, V$][]
+          Or[$V, fexpr(lb("f"), x)$][]
         }),
       ),
       bnf(
@@ -730,12 +750,12 @@ $
         }),
         Prod($B$, {
           Or[$·$][]
-          Or[$sbr(lb("l₁"), x, brb(lb("l₂"), o)), B$][]
+          Or[$B, sbr(lb("l₁"), x, brb(lb("l₂"), o))$][]
         }),
       ),
       bnf(Prod($L$, {
         Or[$·$][]
-        Or[$gbr(lb("l"), x, {r}) seq L$][]
+        Or[$L seq gbr(lb("l"), x, {r})$][]
       })),
       /*
       bnf(
@@ -787,14 +807,14 @@ $
           $E$,
           {
             Or[$·$][_nil_]
-            Or[$e, E$][_cons_]
+            Or[$E, fexpr(lb("f"), e)$][_cons_]
           },
         ),
         Prod(
           $C$,
           {
             Or[$·$][_nil_]
-            Or[$ebr(lb("l"), x, a) seq C$][_cons_]
+            Or[$C seq ebr(lb("l"), x, a)$][_cons_]
           },
         ),
       ),
@@ -825,13 +845,13 @@ $
         }),
         Prod($B$, {
           Or[$·$][]
-          Or[$sbr(lb("l₁"), x, brb(lb("l₂"), e)), B$][]
+          Or[$B, sbr(lb("l₁"), x, brb(lb("l₂"), e))$][]
         }),
       ),
       bnf(
         Prod($L$, {
           Or[$·$][]
-          Or[$gbr(lb("l"), x, {r}) seq L$][]
+          Or[$L seq gbr(lb("l"), x, {r})$][]
         }),
       )
     )
@@ -913,6 +933,8 @@ We note that
 - If $f : hfam(icol(a), icol(b))$ and $g : hfam(icol(b), icol(c))$, 
   then $f ∘ g : hfam(icol(a), icol(c))$ (_not_ $g ∘ f$!)
 
+  For clarity, we will write this as $f famcomp g$ to emphasize that $f$ is a reindexing.
+
 An injective reindexing is called a _thinning_, 
 while a bijective reindexing is called a _permutation_. 
 We denote the sets of such reindexings as
@@ -955,6 +977,7 @@ We define some of the basic operations on indexed families as follows:
   We note that 
   $icol(a)[J] ovrd (icol(a) backslash J) = (icol(a) backslash J) ovrd icol(a)[J] = icol(a)$.
 
+/*
 - Given a function $f$, we define the pointwise map of a family $icol(a)$ to be given by
   $
     f cmap [a_i | i ∈ I] = [f med a_i | i ∈ I]
@@ -974,24 +997,24 @@ We define some of the basic operations on indexed families as follows:
   $
     [a_i | i ∈ I] czip [b_j | j ∈ J] = [(a_i, b_i) | i ∈ I ∩ J]
   $
+*/
 
 - We may define the _coproduct_ of two indexed families
   $icol(a) = [a_i | i ∈ I]$, 
   $icol(b) = [b_j | j ∈ J]$ using the pointwise map as follows:
   $
-    icol(a) + icol(b) = (linj crix icol(a)) ⊔ (rinj crix icol(b))
+    icol(a) + icol(b) 
+    = [linj i ↦ a_i | i ∈ I] ⊔ [rinj j ↦ b_j | j ∈ J]
   $
 
-- Given families $icol(a)$, $icol(b)$ 
-  indexed by $I, J$ respectively, 
-  we may define the set of _reindexings_ 
+- Likewise, we may define the _product_ of two indexed families
+  $icol(a) = [a_i | i ∈ I]$, 
+  $icol(b) = [b_j | j ∈ J]$ as follows:
   $
-    hfam(icol(a), icol(b)) := { f : J → I | ∀ i, a_(f(i)) = b_i) }
+    icol(a) × icol(b) = [(i, j) ↦ (a, b) | (i, j) ∈ I × J]
   $
 
 == Lists
-
-#todo[change notation for list append to nice ++]
 
 - A _list_ or _$n$-tuple_ $[a_0,...,a_(n - 1)]$
   is an indexed family $[a_i | 0 ≤ i < n]$.
@@ -1012,10 +1035,12 @@ We define some of the basic operations on indexed families as follows:
     = [λ | 0 => x | i + 1 => a_i]
   $
 
+  /*
   We note that
   $
     f cmap lnil = lnil quad quad  f cmap (x :: icol(a)) = (f med x) :: (f cmap icol(a))
   $
+  */
 
 - We define the _concatenation_ of lists $icol(a) · icol(b)$ by induction on $icol(a)$ as follows:
   $
