@@ -96,21 +96,40 @@
 #let tbool = $mb("2")$
 #let tlist(A) = $mb("List") med #A$
 
+// Injections and projections
+#let linj = $ι_lb("l")$
+#let rinj = $ι_lb("r")$
+
+#let lpi = $π_lb("l")$
+#let rpi = $π_lb("r")$
+
+// Orders
+#let sle(X) = $scripts(≤)_#X$
+
+// Finite sets
+#let kfin = $ms("Fin")$
+#let fin(n) = $kfin #n$
+#let kfcanon = $α_ms("Fin")^+$
+#let fcanon(n, m) = $kfcanon(n, m)$
+
 // Collections
-// #let cix(a) = $ms("ix")(#a)$
+#let cix(a) = $ms("ix")(#a)$
+#let sdiff = $backslash$
+#let csel(a, i) = $#a [#i]$
+#let crem(a, i) = $#a sdiff #i$
 #let cmap = $op("⟨$⟩")$
 #let capp = $op("⟨⋆⟩")$
 #let czip = $op("⟨,⟩")$
 #let crix = $op("⟨#⟩")$
-#let hfam(A, B) = $ms("Fam")(#A, #B)$
-#let hthin(A, B) = $ms("Thin")(#A, #B)$
-#let hperm(A, B) = $ms("Perm")(#A, #B)$
+#let cfam = $ms("Fam")$
+#let cthin = $ms("Thin")$
+#let cperm = $ms("Perm")$
+#let hfam(A, B) = $cfam(#A, #B)$
+#let hthin(A, B) = $cthin(#A, #B)$
+#let hperm(A, B) = $cperm(#A, #B)$
 
-// Projections
-#let linj = $ι_lb("l")$
-#let rinj = $ι_lb("r")$
-#let lpi = $π_lb("l")$
-#let rpi = $π_lb("r")$
+#let lthin(a, b) = $lpi (#a, #b)$
+#let rthin(a, b) = $rpi (#a, #b)$
 
 #let fnum(n) = $lb("p")_#n$
 #let inum(n) = $lb("i")_#n$
@@ -142,6 +161,9 @@
 #let pset(X) = $cal(P)(X)$
 
 // Categories
+#let cset = $ms("Set")$
+#let cposet = $ms("Poset")$
+
 #let piinj(A, B, i) = $ms("inj")(#A, #B, #i)$
 #let ahm(C) = $scripts(->)_#C$
 #let opc(C) = $#C^ms("op")$

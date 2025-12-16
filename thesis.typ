@@ -901,20 +901,51 @@ We work in (informal) Grothendieck-Tarski set theory. In particular,
 - Definitions are implicitly $ℓ$-polymorphic unless stated otherwise.
   For example, when we define a category, we really mean an $ℓ$-category with $ℓ$-small hom-sets.
 
+== Finite sets
+
+We define the canonical _finite set with $n$ elements_ $fin(n)$ 
+to consist of the first $n$ natural numbers:
+$
+  fin(n) := { i ∈ ℕ | i < n }
+$
+Note that, following the convention in computer science, we start counting from $0 ∈ ℕ$.
+
+/*
+We fix a canonical isomorphism
+$
+  fcanon(m, n) := (λ i . site(i < m, i, i - m))
+  : fin((m + n)) ≅ fin(m) + fin(n)
+$
+*/
+
 == Families
 
-An _($I$-indexed) family_ @nlab:family $icol(a) := [a_i | i ∈ I]$ consists of
+An _($I$-indexed) family_ @nlab:family $icol(a) := (a_i | i ∈ I)$ consists of
 
-- An _index set_ $I$, whose elements are the _indices_ of the family
+- An _index set_ $I$, whose elements are the _indices_ of the family.
+  We will sometimes write $cix(icol(a)) := I$.
 
 - For each index $i ∈ I$, an _element_ $a_i$. 
   We will sometimes write this as a function application $icol(a) med i$.
 
-We will often write an indexed family as $[i ↦ a_i]_(i ∈ I)$ or $[a_i]_(i ∈ I)$, omitting the set
-$I$ when clear from context. When $I$ is finite, we may also write
-$[i_1 ↦ a_(i_1),...,i_n ↦ a_(i_n)]$ or $[a_(i_1),...,a_(i_n)]$.
+We will often write an indexed family as $(i ↦ a_i)_(i ∈ I)$ or $(a_i)_(i ∈ I)$, 
+or even $(i_1 ↦ a_(i_1),...,i_n ↦ a_(i_n))$ for $I = {i_1,...,i_n}$ finite. 
+In general, we will omit $I$ when clear from context.
 
-Given families $icol(a) = [a_i | i ∈ I]$, $icol(b) = [b_j | j ∈ J]$, 
+We write the empty indexed family as $()$.
+
+We say $icol(a)$ is a _subfamily_ of $icol(b)$, written $icol(a) ⊆ icol(b)$, if
+$cix(icol(a)) ⊆ cix(icol(b))$
+and
+$∀ i ∈ cix(icol(a)), a_i = b_i$.
+
+/*
+Type-theoretically, an indexed collection $(i ↦ a_i)_(i ∈ I)$ is just a dependent function type
+$Π i : I . A_i$; set-theoretically, we can model it as a set of pairs ${(i, a_i) | i ∈ I}$
+forming the graph of a well-defined function.
+*/
+
+Given families $icol(a) = (a_i | i ∈ I)$, $icol(b) = (b_j | j ∈ J)$, 
 we define the _reindexings_ of $icol(a)$ _along_ $icol(b)$ as follows:
 $
   hfam(icol(a), icol(b)) := { f : J → I | ∀ j ∈ J . a_(f(j)) = b_j }
@@ -938,10 +969,24 @@ $
 $
 
 Both these subsets contain the identity reindexing and are closed under (reverse) composition.
+Furthermore, the set of permutations is closed under inverses (which always exist):
+$
+  ∀ f ∈ hperm(icol(a), icol(b)), f^(-1) ∈ hperm(icol(b), icol(a))
+$
+
+/*
+TODO: separate _ordered_ collection section... or just list...
+
+If $I$ and $J$ are equipped with a preorder, we say a reindexing $f : hfam(icol(a), icol(b))$ is 
+- _order-preserving_ or _monotone_ if $∀ j sle(J) j' . f(j) sle(I) f(j')$
+- _order-reflecting_ if $∀ j, j' . f(j) sle(I) f(j') ⇒ j sle(J) j'$
+- _order-embedding_ if it is both monotone and reflecting, 
+  i.e. if $∀ j, j' . j sle(J) j' <==> f(j) sle(I) f(j')$
+*/
 
 We define some of the basic operations on indexed families as follows:
 
-- Given indexed families $icol(a) = [a_i | i ∈ I]$, $icol(b) = [b_i | j ∈ J]$,
+- Given indexed families $icol(a) = (a_i | i ∈ I)$, $icol(b) = (b_i | j ∈ J)$,
   we define their _override_ as follows:
   $
     icol(a) ovrd icol(b) = [λ k . site(k ∈ I, a_k, b_k) | k ∈ I ∪ J]
@@ -956,20 +1001,20 @@ We define some of the basic operations on indexed families as follows:
     If $icol(a)$ and $icol(b)$ are in fact disjoint, we write $icol(a) ⊔ icol(b)$.
 
 
-- We define the _selection_ of $J ⊆ I$ from an indexed family $icol(a) = [a_i | i ∈ I]$
+- We define the _selection_ of $J ⊆ I$ from an indexed family $icol(a) = (a_i | i ∈ I)$
   as follows:
   $
-    icol(a)[J] = [a_i | i ∈ I ∩ J]
+    csel(icol(a), J) = (a_i | i ∈ I ∩ J)
   $
 
-- We define the _removal_ of $J ⊆ I$ from an indexed family $icol(a) = [a_i | i ∈ I]$
+- We define the _removal_ of $J ⊆ I$ from an indexed family $icol(a) = (a_i | i ∈ I)$
   as follows:
   $
-    icol(a) backslash J = [a_i | i ∈ I backslash J]
+    crem(icol(a), J) = (a_i | i ∈ I sdiff J)
   $
 
   We note that 
-  $icol(a)[J] ovrd (icol(a) backslash J) = (icol(a) backslash J) ovrd icol(a)[J] = icol(a)$.
+  $icol(a)[J] ⊔ (icol(a) sdiff J) = (icol(a) sdiff J) ⊔ icol(a)[J] = icol(a)$.
 
 /*
 - Given a function $f$, we define the pointwise map of a family $icol(a)$ to be given by
@@ -994,76 +1039,83 @@ We define some of the basic operations on indexed families as follows:
 */
 
 - We may define the _coproduct_ of two indexed families
-  $icol(a) = [a_i | i ∈ I]$, 
-  $icol(b) = [b_j | j ∈ J]$ using the pointwise map as follows:
+  $icol(a) = (a_i | i ∈ I)$, 
+  $icol(b) = (b_j | j ∈ J)$ using the pointwise map as follows:
   $
     icol(a) + icol(b) 
-    = [linj i ↦ a_i | i ∈ I] ⊔ [rinj j ↦ b_j | j ∈ J]
+    = (linj i ↦ a_i | i ∈ I) ⊔ (rinj j ↦ b_j | j ∈ J)
+  $
+
+  This has projection thinnings
+  $
+    lthin(icol(a), icol(b)) := (λ i . linj i) : hthin(icol(a) + icol(b), icol(a)) quad quad
+    rthin(icol(a), icol(b)) := (λ j . rinj j) : hthin(icol(a) + icol(b), icol(b))
   $
 
 - Likewise, we may define the _product_ of two indexed families
-  $icol(a) = [a_i | i ∈ I]$, 
-  $icol(b) = [b_j | j ∈ J]$ as follows:
+  $icol(a) = (a_i | i ∈ I)$, 
+  $icol(b) = (b_j | j ∈ J)$ as follows:
   $
-    icol(a) × icol(b) = [(i, j) ↦ (a, b) | (i, j) ∈ I × J]
-  $
-
-== Lists
-
-- A _list_ or _$n$-tuple_ $[a_0,...,a_(n - 1)]$
-  is an indexed family $[a_i | 0 ≤ i < n]$.
-
-  We call the cardinality of a list its _length_.
-
-  Following the convention in computer science, our lists are _zero-indexed_.
-
-- The _empty list_ or _$0$-tuple_ is the empty indexed family $lnil$;
-  this is the unique list of length $0$.
-
-- Given an element $x$ and an $n$-tuple $icol(a)$,
-  we define the _cons_ of $a$ onto $icol(a)$ as follows:
-
-  $
-    x :: icol(a)
-    = [x, a_0, ..., a_(n - 1)]
-    = [λ | 0 => x | i + 1 => a_i]
+    icol(a) × icol(b) = ((i, j) ↦ (a, b) | (i, j) ∈ I × J)
   $
 
-- Likewise, we may push, or _snoc_, $a$ onto the back of an $n$-tuple $icol(a)$ as follows:
+== Lists, Streams, and Sequences
 
+- A _sequence_ $icol(a) = [a_i | i ∈ I]$ is an indexed family $(a_i | i ∈ I)$ where 
+  - $I = ℕ$ , in which case we call $icol(a)$ a _stream_, or
+  - $I = fin(n)$ for some $n ∈ ℕ$, in which case we call $icol(a)$ a _list_ or _$n$-tuple_.
+
+  In general, we will reserve square brackets $[ - ]$ for lists 
+  (rather than general indexed families), writing
+  
+  - $lnil := ()$ for the empty list
+  - $[a_0,...,a_(n - 1)]$ for a list of length $n$
+  - $[a_0, a_1, a_2, ...]$ for a stream
+  - _Comprehensions_ $[f(a) | a ∈ icol(a)] := [f(a_i) | i ∈ I]$
+
+    In general, we will often interpret $ℕ$ and $fin(n)$ as a stream and a list.
+
+  Note that, following the convention in computer science, our sequences are _zero-indexed_.
+
+- Given an arbitrary sequence $icol(a)$, we can append an element $x$ to the front of $icol(a)$
+  to form a new sequence $x :: icol(a)$ (pronounced "$x$ _cons_ $icol(a)$") as follows:
   $
-    icol(a) lsnoc x = [a_0,...,a_(n - 1), x] = [λ i => site(i < n, a_i, x)]
+    x :: icol(a) 
+    := [λ | 0 => x | i + 1 => icol(a) med i]
+    = [x, a_0, a_1, ...]
   $
 
-  /*
-  We note that
+  If $icol(a)$ is in fact finite, we may append an element $x$ to the back,
+  forming a new sequence $icol(a) lsnoc x$ (pronounced "$icol(a)$ _snoc_ $x$") analogously:
   $
-    f cmap lnil = lnil quad quad  f cmap (x :: icol(a)) = (f med x) :: (f cmap icol(a))
+    icol(a) lsnoc x
+    := [λ i . site(i < |icol(a)|, icol(a) med i, x)]
+    = [a_0, a_1, ..., a_(n - 1), x] 
   $
-  */
 
-- We define the _concatenation_ of lists $icol(a) · icol(b)$ by induction on $icol(a)$ as follows:
+- We define the _concatenation_ of a list $icol(a)$ to a sequence $icol(b)$,
+  written $icol(a) lcat icol(b)$, by induction on $icol(a)$ as follows:
   $
     lnil lcat icol(b) = icol(b) quad quad quad
     (x :: icol(a)) lcat icol(b) = x :: (icol(a) lcat icol(b))
   $
 
-  We can show by induction that
+  For $icol(a)$ of length $n$, we can show by induction that
   $
     icol(a) lcat icol(b) 
-      = [a_0,...,a_(n - 1),b_0,...,b_(m - 1)] 
+      = [a_0,...,a_(n - 1),b_0, b_1, ...] 
       = [λ i . site(i < n, a_i, b_(i - n))]
   $
 
   In particular, we note that
   $
+    lnil lcat icol(a) = icol(a) lcat lnil = icol(a) quad quad quad
     [a] lcat icol(a) = a :: icol(a) quad quad quad
     icol(a) lcat [b] = icol(a) lsnoc b
   $
-
-  Some other important properties of concatenation are:
-  - $lnil lcat icol(a) = icol(a) lcat lnil = icol(a)$
-  - $icol(a) lcat (icol(b) lcat icol(c)) = (icol(a) lcat icol(b)) lcat icol(c)$
+  $
+    icol(a) lcat (icol(b) lcat icol(c)) = (icol(a) lcat icol(b)) lcat icol(c)
+  $
 
 - We define the _repetition_ of a list $icol(a)$, written $n · icol(a)$, by induction as follows:
   $
@@ -2836,7 +2888,7 @@ in Section #todo-inline[ref].
   - Introduce _monads_
   - Introduce _subcategories_, wide and full
     - $cal(V)$-enriched: injection must be a $cal(V)$-morphism
-    - Introduce $ms("Rel")$: subcategories are $ms("Set")$, $ms("PFun")$, but also $ms("Rel")^+$
+    - Introduce $ms("Rel")$: subcategories are $cset$, $ms("PFun")$, but also $ms("Rel")^+$
     - Naturally want to keep track of lattices like this
     - Previously in the paper we discuss _effect systems_
     - Can stick these on a category in the obvious manner: it's a monotone map into the subcategories
@@ -2895,6 +2947,11 @@ $
   #diagram(cell-size: 15mm, $ A edge(f, ->) & B edge(g, ->) & C $)
 $
 is precisely $f ; g : cal(C)(A, C)$: the composite path from $A$ to $C$ through $B$.
+
+#todo[nicer introduction to commutative diagrams]
+
+#todo[general principle: as fast as possible, change algebra to geometry!]
+
 Viewing morphisms in a category as diagrams, the laws of a category become graphically obvious:
 if the identity transformation from $A$ to $A$ is doing nothing, i.e. the null path, then the
 axiom that
@@ -2917,12 +2974,16 @@ $
 #definition(name: "Category of sets")[
   We define the category of sets to have 
   objects sets $A$ 
-  and morphisms $f : ms("Set")(A, B)$ functions $f : A → B$.
+  and morphisms $f : cset(A, B)$ functions $f : A → B$.
 
   Composition $f ; g$ is simply (pointwise) composition of functions $g ∘ f$.
 ]
 
 #todo[category of posets]
+
+#todo[category of reindexings]
+
+#todo[_subcategory_ of thinnings, permutations]
 
 #definition(name: "Isomorphism, Epimorphism, Monomorphism")[
   Given a morphism $f : cal(C)(A, B)$,
@@ -2946,13 +3007,17 @@ $
     In this case, we will say $f$ is _monic_.
 ]
 
-In $ms("Set")$, a function $f: A → B$ is 
+#todo[identification of isomorphic objects]
+
+In $cset$, a function $f: A → B$ is 
 - an epimorphism iff it is _surjective_;
 - a monomorphism iff it is _injective_;
 - an isomorphism iff it is a _bijection_.
 
-While in $ms("Set")$, any morphism which is both surjective and injective is in fact a bijection,
+While in $cset$, any morphism which is both surjective and injective is in fact a bijection,
 it is _not_ generally the case that a morphism which is both epic and monic is an isomorphism!
+
+#todo[epis, monos, and isos are always subcategories]
 
 #definition(name: "Functor")[
   Given categories $cal(C), cal(D)$, a _functor_ $F : cal(C) → cal(D)$ consists of:
@@ -2962,16 +3027,37 @@ it is _not_ generally the case that a morphism which is both epic and monic is a
   such that
   - $F$ preserves identities: $F id_A = id_(F A)$
   - $F$ preserves composition: $F (f ; g) = (F f) ; (F g)$
-
 ]
 
+#todo[_forgetful functor_ from $cposet$ to $cset$]
+
+#todo[_forgetful functor_ from $cfam$ to $cset$]
+
+#todo[_forgetful functor_ from $cperm$ to $cthin$ to $cfam$]
+
+#todo[define a full functor]
+
 In general,
-- We say a functor $F$ is _faithful_ if its action on objects is _injective_; i.e.,
+- We say a functor $F$ is _faithful_ if its action on morphisms is _injective_; i.e.,
   $
     ∀ f, g : cal(C)(A, B) . F f = F g <==> f = g
   $
 
+#todo[full and faithful iff bijection on hom-sets]
+
 - A functor $F : cal(V) → cal(V)$ is _identity on objects_ if $|F| = id_(|cal(V)|)$.
+
+#todo[the first one is _full_, but _not_ faithful]
+
+#todo[the other two are]
+
+#todo[injections are sort of forgetful faithful functors]
+
+#todo[functors can also _add_ structure: see, from $cset$ to $cposet$]
+
+#todo[note: _this_ one is faithful]
+
+#todo[in fact, these functors form an _adjunction_; but we'll talk about that later, maybe...]
 
 Given functors $F : cal(C)_1 -> cal(C)_2$ and $G : cal(C)_2 -> cal(C)_3$, we may define their
 _composition_ $F ; G$ as follows:
@@ -2999,6 +3085,7 @@ itself with the structure of a category, the _category of categories_ $ms("Cat")
 
   We note that terminal objects are unique up to _unique_ isomorphism:
   if $X$ and $X'$ are terminal objects, then $X ≈ X'$.
+
   Hence, in any $cal(C)$ with a terminal object, we may choose a distinguished terminal object
   $tunit_cal(C) : |cal(C)|$ without loss of generality; where there is no risk of confusion, we
   will often omit the subscript and write $tunit : |cal(C)|$.
@@ -3015,12 +3102,12 @@ itself with the structure of a category, the _category of categories_ $ms("Cat")
 ]
 
 #definition(name: "Product")[
-  Given a family of objects $icol(A) = [A_i | i ∈ I]$ indexed by a set $I$,
+  Given a family of objects $icol(A) = (A_i | i ∈ I)$ indexed by a set $I$,
   we say that an object $P: |cal(C)|$ is their _product_ if:
   - There exist morphisms $π_i^P : cal(C)(P, A_i)$ such that
 
   - for each object $X : |cal(C)|$,
-    given a family of morphisms $icol(f) = [f_i : cal(C)(X, A_i) | i ∈ I]$,
+    given a family of morphisms $icol(f) = (f_i : cal(C)(X, A_i) | i ∈ I)$,
     there exists a _unique_ morphism $⟨icol(f)⟩^P : cal(C)(X, P)$
     (the _product_ of the $f_i$)
     such that
@@ -3042,7 +3129,7 @@ itself with the structure of a category, the _category of categories_ $ms("Cat")
   We note that the product $P$ of a family of objects $A_i$ is unique up to isomorphism;
   that is, if $P$ and $P'$ are products of $A_i$, then $P ≈ P'$.
 
-  In particular, for each family of objects $icol(A) = [ A_i | i ∈ I ]$,
+  In particular, for each family of objects $icol(A) = ( A_i | i ∈ I )$,
   we may choose a distinguished product  $Π icol(A)$ whenever one exists.
 
   Since an object is the product of the empty family if and only if it is terminal,
@@ -3051,25 +3138,33 @@ itself with the structure of a category, the _category of categories_ $ms("Cat")
 
 In general, where the appropriate products exist, we write
 
-- $Π_(i ∈ I) A_i := Π [A_i | i ∈ I]$.
+- $Π_(i ∈ I) A_i := Π (A_i | i ∈ I)$.
 
   Where clear from context, we may omit the subscript and write $Π_i A_i$
 
-- $A × B := Π [lb("l") ↦ A, lb("r") ↦ B]$
+- $A × B := Π (lb("l") ↦ A, lb("r") ↦ B)$
 
 - For $n ∈ ℕ$, $A^n := Π (n · [A])$
 
-- Given objects $icol(A) = [A_i | i ∈ I]$ , $icol(B) = [B_i | i ∈ I]$,
-  and morphisms $icol(f) = [f_i : cal(C)(A_i, B_i) | i ∈ I]$, 
+- Given objects $icol(A) = (A_i | i ∈ I)$ , $icol(B) = (B_i | i ∈ I)$,
+  and morphisms $icol(f) = (f_i : cal(C)(A_i, B_i) | i ∈ I)$, 
   we define
   $
     Π mb(f) = Π_(i ∈ I)f_i := ⟨π_i^(Π icol(A)) ; f_i⟩_(i ∈ I) : cal(C)(Π icol(A), Π icol(B))
   $
 
 - Likewise, given $f: A_1 → B_1$, $g : A_2 → B_2$, we define
-  - $f × g := Π [lb("l") ↦ f, lb("r") ↦ g]$
+  - $f × g := Π (lb("l") ↦ f, lb("r") ↦ g)$
   - $f × A_2 := f × id_(A_2)$
   - $A_1 × g := id_(A_1) × g$
+
+#todo[every thinning induces a map on the product]
+
+#todo[every permutation, an isomorphism]
+
+#todo[introduce _canonical_ isomorphisms]
+
+#todo[]
 
 /*
 In general, if $ι : I → J$ is an injection, 
@@ -3122,7 +3217,7 @@ Some important properties of products, where they exist, include:
 
 #definition(name: "Concrete Category")[
   A _concrete category_ $cal(V)$ is a category equipped with a faithful functor
-  $U : cal(V) → ms("Set")$
+  $U : cal(V) → cset$
 ]
 
 /*
@@ -3166,7 +3261,7 @@ $ℕ$ is ordered with the usual $≤$ relation on the naturals and
 $pset(X)$ is ordered with the subset relation $⊆$.
 
 
-Another particularly import example is the category of sets $ms("Set")$, which is trivially a
+Another particularly import example is the category of sets $cset$, which is trivially a
 concrete category by taking $U$ to be the identity functor.
 */
 
@@ -3199,7 +3294,7 @@ special case where $cal(V)$ is concretely cartesian. The general theory of enric
 analogous, but much more complex since we need to deal with coherence conditions, however,
 when $cal(V)$ is concretely cartesian, the definitions are essentially the same as in ordinary
 category theory. In fact, we can recover the standard category theoretic definitions by noting that
-a category is precisely a $ms("Set")$-enriched category.
+a category is precisely a $cset$-enriched category.
 */
 
 We note that every $cal(V)$-category $cal(C)$ induces an ordinary category $U cal(C)$
@@ -3207,7 +3302,7 @@ with:
 - The same set of objects $|U cal(C)| = |cal(C)|$
 - Hom-sets $(U cal(C))(A, B) = U(cal(C)(A, B))$.
 
-  In particular, as $U : cal(V) → ms("Set")$ is faithful, every $g ∈ (U cal(C))(A, B)$
+  In particular, as $U : cal(V) → cset$ is faithful, every $g ∈ (U cal(C))(A, B)$
   can be written in a unique way as an application $U f$ for $f : cal(C)(A, B)$.
 - Composition given by
   $
@@ -3222,7 +3317,7 @@ In fact, this construction can be generalized quite readily:
   - $F$ preserves erasure: $F ; U_cal(W) = U_cal(V)$
   - $F$ preserves finite products: $∀ [A_1,...,A_n] . F (Π [A_1,...,A_n]) = Π [F A_1,...,F A_n]$
 
-  Note in particular that the erasure $U : cal(V) → ms("Set")$ 
+  Note in particular that the erasure $U : cal(V) → cset$ 
   is always a concretely cartesian functor.
 ]
 
@@ -3248,7 +3343,7 @@ concretely cartesian functor as follows:
 
 We will often consider two particularly important cases:
 
-- A $ms("Set")$-category $cal(C)$ is precisely an ordinary category
+- A $cset$-category $cal(C)$ is precisely an ordinary category
 - A $ms("Pos")$-category $cal(C)$, i.e. a _poset-enriched category_ or _2-poset_,
   is simply a category in which
   - Each hom-set $cal(C)(A, B)$ is equipped with a partial order
@@ -3271,7 +3366,7 @@ Throughout the rest of this section, we fix a concretely cartesian category $cal
 ]
 
 Similarly to before,
-- A $ms("Set")$-functor $cal(C)$ is precisely an ordinary functor
+- A $cset$-functor $cal(C)$ is precisely an ordinary functor
 - A $ms("Pos")$-functor $F : cal(C) → cal(D)$... #todo[this]
 
 #todo[just as for regular functors, we can compose $cal(V)$-functors, and there's an identity...]
@@ -3287,7 +3382,7 @@ Similarly to before,
   induces $F_* : cal(V)ms("Cat") → cal(W)ms("Cat")$
 ]
 
-In general, we can recover the standard category-theoretic definitions of a concept by taking $cal(V) = ms("Set")$.
+In general, we can recover the standard category-theoretic definitions of a concept by taking $cal(V) = cset$.
 Often, many definitions for $cal(V)$-categories are in fact identical;
 in particular, the definitions for terminal objects, initial objects, products and coproducts are exactly the same,
 so we will not repeat them.
@@ -3625,7 +3720,7 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 #todo[
   - Introduce the concept of _strength_ via a strong monad 
     (later will have strong Elgot structure so this builds intuition)
-    - Every monad over $ms("Set")$ is strong, so this is often overlooked
+    - Every monad over $cset$ is strong, so this is often overlooked
   - define a commutative monad; show monoidal $<=>$ commutative
   - notice the subcategory of pure things; think about it
     - return should be monic or it's not faithful; @moggi-89-monad calls this a 
@@ -3681,12 +3776,12 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 
 /*
 In particular:
-- The (unique) initial object in $ms("Set")$ is the empty set $∅$
-- Any singleton set is a terminal object in $ms("Set")$.
-  We fix a singleton set $tunit_ms("Set") = {*}$.
+- The (unique) initial object in $cset$ is the empty set $∅$
+- Any singleton set is a terminal object in $cset$.
+  We fix a singleton set $tunit_cset = {*}$.
 - Likewise, the (unique) initial object in $ms("Cat")$ is the empty category with objects $∅$
 - The terminal object in $ms("Cat")$ has
-  one object $* ∈ mb(1)_ms("Set")$
+  one object $* ∈ mb(1)_cset$
   and only the identity morphism $id_* : mb(1)_ms("Cat")(*, *)$
 
 #todo[fix this this is not a good discussion]
