@@ -420,9 +420,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 == From RTL to SSA
 
-#todo[name your destructures, no need for note about $(V)$]
-
-#todo[come up with snoc notation, maybe $++ []$ is fine]
+#todo[still need a note about $(V)$]
 
 #todo[
   when I say indexed family, I mean
@@ -431,11 +429,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 ]
 
 #todo[
-
-  Separate productions $lb("X"), lb("L")$ for syntactic context/labels vs $Γ, ms("L")$ for typing contexts/labels.
-
-  All four are isomorphic!
-
+  If we manage to prove lattice substitution, remove label-set annotations
 ]
 
 #todo[RTL text]
@@ -1035,6 +1029,12 @@ We define some of the basic operations on indexed families as follows:
     = [λ | 0 => x | i + 1 => a_i]
   $
 
+- Likewise, we may push, or _snoc_, $a$ onto the back of an $n$-tuple $icol(a)$ as follows:
+
+  $
+    icol(a) lsnoc x = [a_0,...,a_(n - 1), x] = [λ i => site(i < n, a_i, x)]
+  $
+
   /*
   We note that
   $
@@ -1055,9 +1055,10 @@ We define some of the basic operations on indexed families as follows:
       = [λ i . site(i < n, a_i, b_(i - n))]
   $
 
-  In particular,
+  In particular, we note that
   $
-    icol(a) lcat [b] = [a_0,...,a_(n - 1), b] = [λ i . site(i < n, a_i, b)]
+    [a] lcat icol(a) = a :: icol(a) quad quad quad
+    icol(a) lcat [b] = icol(a) lsnoc b
   $
 
   Some other important properties of concatenation are:
@@ -1075,26 +1076,127 @@ We define some of the basic operations on indexed families as follows:
 
 === Expressions
 
+#todo[introduce types]
+
+#todo[introduce _weakening_ of types]
+
+#todo[..]
+
+#todo[introduce concept of a function space]
+
+#todo[fix notation for function space judgement]
+
+#figure(
+  [
+    #todo[this]
+  ],
+  caption: [Typing rules for #iter-calc($F$)]
+)
 
 === Regions
 
+#todo[introduce concept of an expression space]
+
+#todo[fix notation for expression space judgement]
+
+#figure(
+  [
+    #todo[this]
+  ],
+  caption: [Typing rules for #ssa-calc($E$)]
+)
+
 === Metatheory
+
+#todo[Weakening; connection to thinning]
+
+#todo[Label weakening]
+
+#todo[Type weakening]
+
+#todo[Implies a lattice of types]
+
+#todo[Typed weakening]
+
+#todo[Implies a lattice of contexts]
+
+#todo[Typed label weakening]
+
+#todo[Implies a lattice of label-contexts]
+
+#todo[Substitution]
 
 == Expressions
 
-=== Refinement
+#figure(
+  [
+    #todo[this]
+  ],
+  caption: [Equivalence rules for #iter-calc($F$)]
+)
+
+#figure(
+  [
+    #todo[this]
+  ],
+  caption: [Congruence rules for #iter-calc() equivalence]
+)
 
 === Effects
 
+#figure(
+  [
+    #todo[this]
+  ],
+  caption: [Effect rules for #iter-calc()]
+)
+
+=== Refinement
+
+#figure(
+  [
+    #todo[this]
+  ],
+  caption: [Refinement rules for #iter-calc()]
+)
+
 === Linearity
+
+#figure(
+  [
+    #todo[this]
+  ],
+  caption: [Linearity rules for #iter-calc()]
+)
 
 == Regions
 
-=== Refinement
-
 === Effects
 
+#figure(
+  [
+    #todo[this]
+  ],
+  caption: [Effect rules for #iter-calc()]
+)
+
+=== Refinement
+
+#figure(
+  [
+    #todo[this]
+  ],
+  caption: [Refinement rules for #ssa-calc()]
+)
+
 === Linearity
+
+#figure(
+  [
+    #todo[this]
+  ],
+  caption: [Linearity rules for #ssa-calc()]
+)
 
 = Normalization
 

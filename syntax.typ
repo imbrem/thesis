@@ -130,6 +130,8 @@
   ]
 )
 
+#let lsnoc = $op(":+")$
+
 #let compat(C) = $;_#C$
 #let famcomp = compat(ms("Fam"))
 
