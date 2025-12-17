@@ -1,8 +1,8 @@
-#import "@preview/curryst:0.6.0": prooftree, rule, rule-set
 #import "@preview/simplebnf:0.1.1": *
 #import "@preview/subpar:0.2.2"
 #import "@preview/lemmify:0.1.8": *
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, edge, node
+
 
 #let (
   theorem,
@@ -25,7 +25,7 @@
 #show: thm-rules-b
 
 #import "@preview/wordometer:0.1.5": word-count
-#show: word-count.with(exclude: <no-wc>)
+#show: word-count.with(exclude: (<no-wc>, <appendix>))
 
 #let production = false;
 
@@ -33,6 +33,18 @@
 #import "todos.typ": *
 
 #import "syntax.typ": *
+
+#show ref: it => {
+  let el = it.element;
+  if el == none or el.func() != figure { 
+    it
+  } else {
+    link(el.location(), el.supplement)
+  }
+}
+
+// TODO: think of a better way to go fix ∅...
+// #show math.equation: set text(font: "STIX Two Math")
 
 #set text(lang: "en")
 
@@ -488,7 +500,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
       })),
     )
     $
-      (x_0,...,x_(n - 1)) = (x_i)_(i ∈ 0..n-1) 
+      (x_0,...,x_(n - 1)) = (x_i)_(i ∈ 0..n-1)
       := (fexpr(fnum(0), x_0),..., fexpr(fnum(n - 1), x_(n - 1)))
     $
   ],
@@ -658,19 +670,19 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
         }),
         Prod($lb("L")$, {
           Or[$·$][]
-          Or[$lb("L"), lb("l")(A)$][]
-        })
+          Or[$lb("L"), lty(lb("l"), A)$][]
+        }),
       ),
       bnf(
         Prod($A$, {
           Or[$X$][_base type_]
-          Or[$Π lb("F")$][_tuple_]
+          Or[$Π lb("T")$][_tuple_]
           Or[$Σ lb("L")$][_sum_]
         }),
-        Prod($lb("F")$, {
+        Prod($lb("T")$, {
           Or[$·$][]
-          Or[$lb("F"), lb("f") : A$][]
-        })
+          Or[$lb("T"), fty(lb("f"), A)$][]
+        }),
       ),
     )
   ],
@@ -684,17 +696,12 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 #figure(
   [
     $
-      A × B &:= Π ( lb("l") : A, lb("r") : B ) 
-      & #h(3em) &
-      mb(1) &:= Π ·
-      \
-      A + B &:= Σ ( lb("l")(A), lb("r")(B) ) 
-      &&
-      mb(0) &:= Σ ·
+      A × B & := Π ( lb("l") : A, lb("r") : B ) & #h(3em) & mb(1) & := Π · \
+      A + B & := Σ ( lb("l")(A), lb("r")(B) )   &         & mb(0) & := Σ ·
     $
     $
-      Π [A_0,...,A_(n - 1)] &= Π_i A_i &:= Π ( lb("p")_0 : A_0, ..., lb("p")_(n - 1) : A_(n - 1) ) \
-      Σ [A_0,...,A_(n - 1)] &= Σ_i A_i &:= Σ ( lb("i")_0(A_0), ..., lb("i")_(n - 1)(A_(n - 1)) )
+      Π [A_0,...,A_(n - 1)] & = Π_i A_i & := Π ( lb("p")_0 : A_0, ..., lb("p")_(n - 1) : A_(n - 1) ) \
+      Σ [A_0,...,A_(n - 1)] & = Σ_i A_i &   := Σ ( lb("i")_0(A_0), ..., lb("i")_(n - 1)(A_(n - 1)) )
     $
   ],
   caption: [
@@ -747,11 +754,11 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
           Or[$B, sbr(lb("l₁"), x, brb(lb("l₂"), o))$][]
         }),
       ),
+      /*
       bnf(Prod($L$, {
         Or[$·$][]
         Or[$L seq gbr(lb("l"), x, {r})$][]
       })),
-      /*
       bnf(
         Prod($A$, {
           Or[$X$][_base type_]
@@ -847,7 +854,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
           Or[$·$][]
           Or[$L seq gbr(lb("l"), x, {r})$][]
         }),
-      )
+      ),
     )
   ],
   caption: [
@@ -879,9 +886,9 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
         }),
         Prod($lb("L")$, {
           Or[$·$][]
-          Or[$lb("l")(A), lb("L")$][]
-        })
-      )
+          Or[$lb("L"), lb("l")(A)$][]
+        }),
+      ),
     )
   ],
   caption: [
@@ -903,7 +910,7 @@ We work in (informal) Grothendieck-Tarski set theory. In particular,
 
 == Finite sets
 
-We define the canonical _finite set with $n$ elements_ $fin(n)$ 
+We define the canonical _finite set with $n$ elements_ $fin(n)$
 to consist of the first $n$ natural numbers:
 $
   fin(n) := { i ∈ ℕ | i < n }
@@ -925,11 +932,11 @@ An _($I$-indexed) family_ @nlab:family $icol(a) := (a_i | i ∈ I)$ consists of
 - An _index set_ $I$, whose elements are the _indices_ of the family.
   We will sometimes write $cix(icol(a)) := I$.
 
-- For each index $i ∈ I$, an _element_ $a_i$. 
+- For each index $i ∈ I$, an _element_ $a_i$.
   We will sometimes write this as a function application $icol(a) med i$.
 
-We will often write an indexed family as $(i ↦ a_i)_(i ∈ I)$ or $(a_i)_(i ∈ I)$, 
-or even $(i_1 ↦ a_(i_1),...,i_n ↦ a_(i_n))$ for $I = {i_1,...,i_n}$ finite. 
+We will often write an indexed family as $(i ↦ a_i)_(i ∈ I)$ or $(a_i)_(i ∈ I)$,
+or even $(i_1 ↦ a_(i_1),...,i_n ↦ a_(i_n))$ for $I = {i_1,...,i_n}$ finite.
 In general, we will omit $I$ when clear from context.
 
 We write the empty indexed family as $()$.
@@ -945,7 +952,7 @@ $Π i : I . A_i$; set-theoretically, we can model it as a set of pairs ${(i, a_i
 forming the graph of a well-defined function.
 */
 
-Given families $icol(a) = (a_i | i ∈ I)$, $icol(b) = (b_j | j ∈ J)$, 
+Given families $icol(a) = (a_i | i ∈ I)$, $icol(b) = (b_j | j ∈ J)$,
 we define the _reindexings_ of $icol(a)$ _along_ $icol(b)$ as follows:
 $
   hfam(icol(a), icol(b)) := { f : J → I | ∀ j ∈ J . a_(f(j)) = b_j }
@@ -955,17 +962,17 @@ We note that
 
 - We always have $id_I : hfam(icol(a), icol(a))$
 
-- If $f : hfam(icol(a), icol(b))$ and $g : hfam(icol(b), icol(c))$, 
+- If $f : hfam(icol(a), icol(b))$ and $g : hfam(icol(b), icol(c))$,
   then $f ∘ g : hfam(icol(a), icol(c))$ (_not_ $g ∘ f$!)
 
   For clarity, we will write this as $f famcomp g$ to emphasize that $f$ is a reindexing.
 
-An injective reindexing is called a _thinning_, 
-while a bijective reindexing is called a _permutation_. 
+An injective reindexing is called a _thinning_,
+while a bijective reindexing is called a _permutation_.
 We denote the sets of such reindexings as
 $
-  hthin(icol(a), icol(b)) &:= { f ∈ hfam(icol(a), icol(b)) | f "is injective" } \
-  hperm(icol(a), icol(b)) &:= { f ∈ hthin(icol(a), icol(b)) | f "is bijective" } \
+  hthin(icol(a), icol(b)) & := { f ∈ hfam(icol(a), icol(b)) | f "is injective" } \
+  hperm(icol(a), icol(b)) & := { f ∈ hthin(icol(a), icol(b)) | f "is bijective" } \
 $
 
 Both these subsets contain the identity reindexing and are closed under (reverse) composition.
@@ -977,10 +984,10 @@ $
 /*
 TODO: separate _ordered_ collection section... or just list...
 
-If $I$ and $J$ are equipped with a preorder, we say a reindexing $f : hfam(icol(a), icol(b))$ is 
+If $I$ and $J$ are equipped with a preorder, we say a reindexing $f : hfam(icol(a), icol(b))$ is
 - _order-preserving_ or _monotone_ if $∀ j sle(J) j' . f(j) sle(I) f(j')$
 - _order-reflecting_ if $∀ j, j' . f(j) sle(I) f(j') ⇒ j sle(J) j'$
-- _order-embedding_ if it is both monotone and reflecting, 
+- _order-embedding_ if it is both monotone and reflecting,
   i.e. if $∀ j, j' . j sle(J) j' <==> f(j) sle(I) f(j')$
 */
 
@@ -1013,7 +1020,7 @@ We define some of the basic operations on indexed families as follows:
     crem(icol(a), J) = (a_i | i ∈ I sdiff J)
   $
 
-  We note that 
+  We note that
   $icol(a)[J] ⊔ (icol(a) sdiff J) = (icol(a) sdiff J) ⊔ icol(a)[J] = icol(a)$.
 
 /*
@@ -1023,7 +1030,7 @@ We define some of the basic operations on indexed families as follows:
   $
 
   This satisfies the usual properties of a functor:
-  
+
   - $id cmap icol(a) = icol(a)$
   - $(g ∘ f) cmap icol(a) = g cmap (f cmap icol(a))$
 
@@ -1039,10 +1046,10 @@ We define some of the basic operations on indexed families as follows:
 */
 
 - We may define the _coproduct_ of two indexed families
-  $icol(a) = (a_i | i ∈ I)$, 
+  $icol(a) = (a_i | i ∈ I)$,
   $icol(b) = (b_j | j ∈ J)$ using the pointwise map as follows:
   $
-    icol(a) + icol(b) 
+    icol(a) + icol(b)
     = (linj i ↦ a_i | i ∈ I) ⊔ (rinj j ↦ b_j | j ∈ J)
   $
 
@@ -1053,7 +1060,7 @@ We define some of the basic operations on indexed families as follows:
   $
 
 - Likewise, we may define the _product_ of two indexed families
-  $icol(a) = (a_i | i ∈ I)$, 
+  $icol(a) = (a_i | i ∈ I)$,
   $icol(b) = (b_j | j ∈ J)$ as follows:
   $
     icol(a) × icol(b) = ((i, j) ↦ (a, b) | (i, j) ∈ I × J)
@@ -1061,13 +1068,13 @@ We define some of the basic operations on indexed families as follows:
 
 == Lists, Streams, and Sequences
 
-- A _sequence_ $icol(a) = [a_i | i ∈ I]$ is an indexed family $(a_i | i ∈ I)$ where 
+- A _sequence_ $icol(a) = [a_i | i ∈ I]$ is an indexed family $(a_i | i ∈ I)$ where
   - $I = ℕ$ , in which case we call $icol(a)$ a _stream_, or
   - $I = fin(n)$ for some $n ∈ ℕ$, in which case we call $icol(a)$ a _list_ or _$n$-tuple_.
 
-  In general, we will reserve square brackets $[ - ]$ for lists 
+  In general, we will reserve square brackets $[ - ]$ for lists
   (rather than general indexed families), writing
-  
+
   - $lnil := ()$ for the empty list
   - $[a_0,...,a_(n - 1)]$ for a list of length $n$
   - $[a_0, a_1, a_2, ...]$ for a stream
@@ -1080,7 +1087,7 @@ We define some of the basic operations on indexed families as follows:
 - Given an arbitrary sequence $icol(a)$, we can append an element $x$ to the front of $icol(a)$
   to form a new sequence $x :: icol(a)$ (pronounced "$x$ _cons_ $icol(a)$") as follows:
   $
-    x :: icol(a) 
+    x :: icol(a)
     := [λ | 0 => x | i + 1 => icol(a) med i]
     = [x, a_0, a_1, ...]
   $
@@ -1090,7 +1097,7 @@ We define some of the basic operations on indexed families as follows:
   $
     icol(a) lsnoc x
     := [λ i . site(i < |icol(a)|, icol(a) med i, x)]
-    = [a_0, a_1, ..., a_(n - 1), x] 
+    = [a_0, a_1, ..., a_(n - 1), x]
   $
 
 - We define the _concatenation_ of a list $icol(a)$ to a sequence $icol(b)$,
@@ -1102,9 +1109,9 @@ We define some of the basic operations on indexed families as follows:
 
   For $icol(a)$ of length $n$, we can show by induction that
   $
-    icol(a) lcat icol(b) 
-      = [a_0,...,a_(n - 1),b_0, b_1, ...] 
-      = [λ i . site(i < n, a_i, b_(i - n))]
+    icol(a) lcat icol(b)
+    = [a_0,...,a_(n - 1),b_0, b_1, ...]
+    = [λ i . site(i < n, a_i, b_(i - n))]
   $
 
   In particular, we note that
@@ -1132,7 +1139,220 @@ We define some of the basic operations on indexed families as follows:
 
 #todo[introduce _weakening_ of types]
 
-#todo[..]
+#todo[
+  We treat $lb("L"), lb("T")$ as _label-indexed families_, quotiented by order.
+
+  Specifically, we assume everything is sorted and deduplicated by labels.
+]
+
+#let r-twk-base = rule(
+  name: "base",
+  $X, Y ∈ ms("X")$,
+  $X sle(X) Y$,
+  $atywk(X, Y, ms("X"))$,
+);
+
+#let r-twk-sigma = rule(
+  name: $Σ$,
+  $atywk(Σ lb("T"), Σ lb("T"'), ms("X"))$,
+  $atywk(A, A', ms("X"))$,
+  $atywk(Σ (lb("T"), lty(lb("f"), A)), Σ (lb("T")', lty(lb("f"), A')), ms("X"))$,
+);
+
+#let r-twk-pi = rule(
+  name: $Π$,
+  $atywk(Π lb("T"), Π lb("T"'), ms("X"))$,
+  $atywk(A, A', ms("X"))$,
+  $atywk(Π (lb("T"), fty(lb("f"), A)), Π (lb("T")', fty(lb("f"), A')), ms("X"))$,
+);
+
+#let r-twk-unit = rule(
+  name: $tunit$,
+  $atywk(A, Π [], ms("X"))$,
+);
+
+#let r-twk-zero = rule(
+  name: $tzero$,
+  $atywk(A, Σ [], ms("X"))$,
+);
+
+#figure(
+  [
+    #rule-set(
+      declare-rule(r-twk-base, label: <twk-base>),
+      declare-rule(r-twk-sigma, label: <twk-sigma>),
+      declare-rule(r-twk-pi, label: <twk-pi>),
+      declare-rule(r-twk-unit, label: <twk-unit>),
+      declare-rule(r-twk-zero, label: <twk-zero>),
+    )
+  ],
+  caption: [Weakening for simple types $sty(ms("X"))$],
+)
+
+#lemma[
+  If $sle(ms("X"))$ is a partial order, so is $tyle(ms("X"))$
+]
+
+#block-note[
+  If $sle(ms("X"))$ is a preorder, so is $tyle(ms("X"))$.
+
+  - Reflexivity: if $sty(X)$ is reflexive;
+    given $A ∈ sty(ms("X"))$, prove $tywk(A, A)$.
+
+    By induction on type $A$
+    - (base): $tywk(X, X)$ (by reflexivity of $sle(ms("X"))$)
+    - ($Π$ empty): $tywk(Π [], Π [])$
+    - ($Σ$ empty): $tywk(Σ [], Σ [])$
+    - ($Π$ cons):
+      $tywk(Π lb("T"), Π lb("T"))$ and $tywk(A, A)$ so
+      $tywk(Π (lb("T"), fty(lb("f"), A)), Π (lb("T"), fty(lb("f"), A)))$
+    - ($Σ$ cons):
+      $tywk(Σ lb("T"), Σ lb("T"))$ and $tywk(A, A)$ so
+      $tywk(Σ (lb("T"), fty(lb("f"), A)), Σ (lb("T"), fty(lb("f"), A)))$
+  - Transitivity: if $sle(ms("X"))$ is transitive;
+    given $tywk(A_1, A_2)$ and $tywk(A_2, A_3)$ prove $tywk(A_1, A_3)$.
+
+    Suffices to show $∀ A_3 . tywk(A_2, A_3) => tywk(A_1, A_3)$
+    by induction on the derivation $tywk(A_1, A_2)$.
+
+    - @twk-base:
+      Have $A_1 = X_1 ∈ ms("X")$, $A_2 = X_2 ∈ ms("X")$
+      with $X_1 sle(X) X_2$.
+
+      Fix $A_3$ s.t. $tywk(A_2, A_3)$.
+      By inversion on $tywk(X_2, A_3)$, either:
+      - $A_3 = X_3 ∈ ms("X")$ with $X_2 sle(X) X_3$;
+        in which case result follows by transitivity of $sle(X)$
+      - $A_3 = tunit$;
+        in which case result follows by @twk-unit.
+
+    - @twk-sigma:
+      Have $A_1 = Σ (lb("X")_1, fty(lb("f"), B_1))$, $A_2 = Σ (lb("X")_2, fty(lb("f"), B_2))$
+      with $tywk(Σ lb("X")_1, Σ lb("X")_2)$ and $tywk(B_1, B_2)$.
+
+      Fix $A_3$ s.t. $tywk(A_2, A_3)$.
+      By inversion on $tywk(Σ (lb("X")_2, fty(lb("f"), B_2)), A_3)$, either:
+      - @twk-sigma : $A_3 = Σ (lb("X")_3, fty(lb("f"), B_3))$ with
+        $tywk(Σ lb("X")_2, Σ lb("X")_3)$ and $tywk(B_2, B_3)$;
+
+        By induction, have $Σ lb("X")_1 ≤ Σ lb("X")_3$ and $tywk(B_1, B_3)$;
+        so result follows by @twk-sigma.
+
+    - @twk-pi:
+      Have $A_1 = Π (lb("X")_1, fty(lb("f"), B_1))$, $A_2 = Π (lb("X")_2, fty(lb("f"), B_2))$
+      with $tywk(Π lb("X")_1, Π lb("X")_2)$ and $tywk(B_1, B_2)$.
+
+      Fix $A_3$ s.t. $tywk(A_2, A_3)$.
+      By inversion on $tywk(Π (lb("X")_2, fty(lb("f"), B_2)), A_3)$, either:
+      - $A_3 = Π (lb("X")_3, fty(lb("f"), B_3))$ with
+        $tywk(Π lb("X")_2, Π lb("X")_3)$ and $tywk(B_2, B_3)$;
+
+        By induction, have $Π lb("X")_1 ≤ Π lb("X")_3$ and $tywk(B_1, B_3)$;
+        so result follows by @twk-pi.
+
+      - $A_3 = tunit$;
+        in which case result follows by @twk-unit.
+
+      - @twk-unit : $A_3 = tunit$;
+        in which case result follows by @twk-unit.
+
+    - @twk-unit:
+      Have $A_2 = tunit$.
+      Fix $A_3$ s.t. $tywk(A_2, A_3)$.
+      By inversion on $tywk(tunit, A_3)$, $A_3 = tunit$; result follows by @twk-unit.
+
+    - @twk-zero: Have $A_1 = tzero$; result follows by @twk-zero.
+]
+
+#block-note[
+  If $sle(ms("X"))$ is a partial order, so is $tyle(ms("X"))$
+
+  Suffices to show: if $sle(ms("X"))$ is antisymmetric, so is $tyle(ms("X"))$
+
+  Suffices to show: by induction on $atywk(A, B, ms("X"))$ that $atywk(B, A, ms("X")) => A = B$
+
+  - @twk-base: 
+    Have $A = X$, $B = Y ∈ ms("X")$ with $X sle(ms("X")) Y$.
+
+    By inversion, result follows from antisymmetry of $sle(ms("X"))$
+  - @twk-sigma:
+    Have $A = Σ (lb("T"), fty(lb("f"), A'))$, $B = Σ (lb("T"'), fty(lb("f"), B'))$ with
+    $atywk(Σ lb("T"), Σ lb("T"'), ms("X"))$ and $atywk(A', B', ms("X"))$.
+
+    By inversion, have $atywk(Σ lb("T"'), Σ lb("T"), ms("X"))$ and $atywk(B', A', ms("X"))$.
+
+    Hence, by induction, have $A' = B'$ and $Σ lb("T") = Σ lb("T"')$;
+  - @twk-pi: 
+    Have $A = Π (lb("T"), fty(lb("f"), A'))$, $B = Π (lb("T"'), fty(lb("f"), B'))$ with
+    $atywk(Π lb("T"), Π lb("T"'), ms("X"))$ and $atywk(A', B', ms("X"))$.
+
+    By inversion, have $atywk(Π lb("T"'), Π lb("T"), ms("X"))$ and $atywk(B', A', ms("X"))$.
+
+    Hence, by induction, have $A' = B'$ and $Π lb("T") = Π lb("T"')$;
+    implying the desired result.
+    implying the desired result.
+  - @twk-unit: have $B = tunit$; by inversion, $A = tunit$.
+  - @twk-zero: have $A = tzero$; by inversion, $B = tzero$.
+]
+
+#figure(
+  [
+    $
+      X ⊔_(sty(ms("X"))) Y = cases(X ⊔_X Y "if defined", tunit "otherwise")
+      quad quad quad
+      X ⊓_(sty(ms("X"))) Y = cases(X ⊓_X Y "if defined", tzero "otherwise")
+      \
+      A ⊔ tunit = tunit ⊔ A = tunit quad quad
+      A ⊔ tzero = tzero ⊔ A = A quad quad
+      A ⊓ tunit = tunit ⊓ A = A quad quad
+      A ⊓ tzero = tzero ⊓ A = tzero
+    $
+    $
+      Σ lb("L") ⊔ Σ lb("L'") & := 
+      Σ (lty(lb("l"), labhi(lb("L"), lb("l")) ⊔ labhi(lb("L"), lb("l")))
+            | lb("l") ∈ lab(lb("L")) ∪ lab(lb("L"'))) \
+      Π lb("X") ⊔ Π lb("X'") & := 
+      Π (fty(lb("l"), fldhi(lb("X"), lb("l")) ⊔ fldhi(lb("X"'), lb("l")))
+            | lb("l") ∈ fld(lb("X")) ∩ fld(lb("X"'))) \
+      Σ lb("L") ⊓ Σ lb("L'") & := 
+      Σ (lty(lb("l"), lablo(lb("L"), lb("l")) ⊓ lablo(lb("L"), lb("l")))
+            | lb("l") ∈ lab(lb("L")) ∩ lab(lb("L"'))) \
+      Π lb("X") ⊓ Π lb("X'") & := 
+      Π (fty(lb("l"), fldlo(lb("X"), lb("l")) ⊓ fldlo(lb("X"), lb("l")))
+            | lb("l") ∈ fld(lb("X")) ∪ fld(lb("X"')))
+    $
+    where
+    $
+      lablo(lb("L"), lb("l")) = cases(
+        A "if" lty(lb("l"), A) ∈ lb("L"),
+        tzero "otherwise"
+      ) quad quad
+      labhi(lb("L"), lb("l")) = cases(
+        A "if" lty(lb("l"), A) ∈ lb("L"),
+        tunit "otherwise"
+      )
+    $
+    $
+      fldlo(lb("X"), lb("f")) = cases(
+        A "if" fty(lb("f"), A) ∈ lb("X"),
+        tzero "otherwise"
+      ) quad quad
+      fldhi(lb("X"), lb("f")) = cases(
+        A "if" fty(lb("f"), A) ∈ lb("X"),
+        tunit "otherwise"
+      )
+    $
+    $
+      lab(·) = ∅ quad
+      lab(lb("L"), lty(lb("l"), A)) = lab(lb("L")) ∪ { lb("l") } quad
+      fld(·) = ∅ quad
+      fld(lb("X"), fty(lb("f"), A)) = fld(lb("X")) ∪ { lb("f") }
+    $
+
+    \
+  ],
+  caption: [Lattice structure on simple types $sty(ms("X"))$],
+)
 
 #todo[introduce concept of a function space]
 
@@ -1140,9 +1360,15 @@ We define some of the basic operations on indexed families as follows:
 
 #figure(
   [
-    #todo[this]
+    #rule-set(
+      declare-rule(rule(
+        name: "var",
+        $hasty(Γ, x, A)$,
+        $hasty(Γ, x, A)$,
+      )),
+    )
   ],
-  caption: [Typing rules for #iter-calc($F$)]
+  caption: [Typing rules for #iter-calc($F$)],
 )
 
 === Regions
@@ -1155,7 +1381,7 @@ We define some of the basic operations on indexed families as follows:
   [
     #todo[this]
   ],
-  caption: [Typing rules for #ssa-calc($E$)]
+  caption: [Typing rules for #ssa-calc($E$)],
 )
 
 === Metatheory
@@ -1184,14 +1410,14 @@ We define some of the basic operations on indexed families as follows:
   [
     #todo[this]
   ],
-  caption: [Equivalence rules for #iter-calc($F$)]
+  caption: [Equivalence rules for #iter-calc($F$)],
 )
 
 #figure(
   [
     #todo[this]
   ],
-  caption: [Congruence rules for #iter-calc() equivalence]
+  caption: [Congruence rules for #iter-calc() equivalence],
 )
 
 === Effects
@@ -1200,7 +1426,7 @@ We define some of the basic operations on indexed families as follows:
   [
     #todo[this]
   ],
-  caption: [Effect rules for #iter-calc()]
+  caption: [Effect rules for #iter-calc()],
 )
 
 === Refinement
@@ -1209,7 +1435,7 @@ We define some of the basic operations on indexed families as follows:
   [
     #todo[this]
   ],
-  caption: [Refinement rules for #iter-calc()]
+  caption: [Refinement rules for #iter-calc()],
 )
 
 === Linearity
@@ -1218,7 +1444,7 @@ We define some of the basic operations on indexed families as follows:
   [
     #todo[this]
   ],
-  caption: [Linearity rules for #iter-calc()]
+  caption: [Linearity rules for #iter-calc()],
 )
 
 == Regions
@@ -1229,7 +1455,7 @@ We define some of the basic operations on indexed families as follows:
   [
     #todo[this]
   ],
-  caption: [Effect rules for #iter-calc()]
+  caption: [Effect rules for #iter-calc()],
 )
 
 === Refinement
@@ -1238,7 +1464,7 @@ We define some of the basic operations on indexed families as follows:
   [
     #todo[this]
   ],
-  caption: [Refinement rules for #ssa-calc()]
+  caption: [Refinement rules for #ssa-calc()],
 )
 
 === Linearity
@@ -1247,7 +1473,7 @@ We define some of the basic operations on indexed families as follows:
   [
     #todo[this]
   ],
-  caption: [Linearity rules for #ssa-calc()]
+  caption: [Linearity rules for #ssa-calc()],
 )
 
 = Normalization
@@ -2084,7 +2310,7 @@ and, moreover, dramatically simplifies the form of the rules themselves.
 
 We now give a formal account of #ssa-calc, starting with the types.
 Our types are first order,
-and consists of binary sums $A + B$, products $A times.o B$, the unit type $mb(1)$,
+and consists of binary sums $A + B$, products $A times.o B$, the $tunit$ type $mb(1)$,
 and the empty type $mb(0)$,
 all parameterised over a set of base types $X in cal(T)$.
 We write our set of types as $ms("Ty")(X)$.
@@ -2148,7 +2374,7 @@ In particular, expressions may be built up from the following fairly standard pr
   typed by #todo-inline[rle:pair].
   Operationally, we interpret this as executing $a$, and then $b$,
   and returning the pair of their values.
-- An empty tuple $()$, which types in any context by #todo-inline[rle:unit]
+- An empty tuple $()$, which types in any context by #todo-inline[rle:$tunit$]
 - Injections, typed by #todo-inline[rle:inl] and #todo-inline[rle:inr]
 - Pattern matching on sum types, typed by #todo-inline[rle:case].
   Operationally, we interpret this as executing $e$,
@@ -2162,7 +2388,7 @@ In particular, expressions may be built up from the following fairly standard pr
 
 Traditional presentations of SSA use a boolean type instead of sum types.
 Naturally, booleans can be encoded with sum types as $mb(1) + mb(1)$.
-If-then-else is then a $ms("case")$ which ignores the unit payloads,
+If-then-else is then a $ms("case")$ which ignores the $tunit$ payloads,
 so that $ite(e_1, e_2, e_3) := caseexpr2(e_1, (), e_2, (), e_3)$.
 
 #todo[figure: rules for typing isotopessa expressions]
@@ -2387,7 +2613,7 @@ We also include the following _type-directed_ rules as part of our congruence re
 - #todo-inline[initial], which equates _all_ terms in a context containing the empty type
   $mb(0)$, since we will deem any such context to be _unreachable_ by control flow. In
   particular, any instruction or function call returning $mb(0)$ is assumed to diverge.
-- #todo-inline[terminal], which equates all _pure_ terms of unit type $mb(1)$. Note that
+- #todo-inline[terminal], which equates all _pure_ terms of $tunit$ type $mb(1)$. Note that
   _impure_ terms may be disequal, since while their result values are the same, their side
   effects may differ!
 
@@ -2893,7 +3119,7 @@ in Section #todo-inline[ref].
     - Previously in the paper we discuss _effect systems_
     - Can stick these on a category in the obvious manner: it's a monotone map into the subcategories
       - _Not_ necessarily join/meet-preserving! Only preserves $⊤$.
-    // - Now: products; part 2. $×$ of $C_ε$ is $C_ε$ and projections are $C_⊥$
+  // - Now: products; part 2. $×$ of $C_ε$ is $C_ε$ and projections are $C_⊥$
   - Coproducts and initial objects
     - Effect system interaction: $+$ of $C_ε$ is $C_ε$ and injections are $C_⊥$
   - Elgot categories
@@ -2921,8 +3147,8 @@ to fix notations. Recall the definition of a category $cal(C)$:
   A category $cal(C)$ is given by:
   - A set of _objects_ $|cal(C)| ∈ cal(U)_ℓ$
     #footnote[
-      A category with objects in $cal(U)_ℓ$ is called _$ℓ$-small_. 
-      For the rest of this paper, we will work polymorphically in $ℓ$, 
+      A category with objects in $cal(U)_ℓ$ is called _$ℓ$-small_.
+      For the rest of this paper, we will work polymorphically in $ℓ$,
       and hence leave it unspecified.
     ]
   - For each pair of objects $A, B in |cal(C)|$, a set of _morphisms_ $cal(C)(A, B)$.
@@ -2972,8 +3198,8 @@ $
 $
 
 #definition(name: "Category of sets")[
-  We define the category of sets to have 
-  objects sets $A$ 
+  We define the category of sets to have
+  objects sets $A$
   and morphisms $f : cset(A, B)$ functions $f : A → B$.
 
   Composition $f ; g$ is simply (pointwise) composition of functions $g ∘ f$.
@@ -2988,7 +3214,7 @@ $
 #definition(name: "Isomorphism, Epimorphism, Monomorphism")[
   Given a morphism $f : cal(C)(A, B)$,
 
-  - $f$ is an _isomorphism_ if there exists an _inverse morphism_ $g : cal(C)(B, A)$ 
+  - $f$ is an _isomorphism_ if there exists an _inverse morphism_ $g : cal(C)(B, A)$
     such that $f ; g = id_A$ and $g ; f = id_B$.
     //
     If such a morphism exists, it is unique, so we may write it as $f^(-1)$.
@@ -3009,7 +3235,7 @@ $
 
 #todo[identification of isomorphic objects]
 
-In $cset$, a function $f: A → B$ is 
+In $cset$, a function $f: A → B$ is
 - an epimorphism iff it is _surjective_;
 - a monomorphism iff it is _injective_;
 - an isomorphism iff it is a _bijection_.
@@ -3123,7 +3349,7 @@ itself with the structure of a category, the _category of categories_ $ms("Cat")
     Where it is unambiguous from context, we will often omit the superscript $P$ and
     simply write $π_i : cal(C)(P, A_i)$, $⟨icol(f)⟩$.
 
-    Likewise, we will often write $⟨f_i⟩_(i ∈ I)$, $⟨f_i⟩_i$, or $⟨f_1,...,f_n⟩$ for 
+    Likewise, we will often write $⟨f_i⟩_(i ∈ I)$, $⟨f_i⟩_i$, or $⟨f_1,...,f_n⟩$ for
     $⟨icol(f)⟩^P$ where the meaning is clear from context.
 
   We note that the product $P$ of a family of objects $A_i$ is unique up to isomorphism;
@@ -3147,7 +3373,7 @@ In general, where the appropriate products exist, we write
 - For $n ∈ ℕ$, $A^n := Π (n · [A])$
 
 - Given objects $icol(A) = (A_i | i ∈ I)$ , $icol(B) = (B_i | i ∈ I)$,
-  and morphisms $icol(f) = (f_i : cal(C)(A_i, B_i) | i ∈ I)$, 
+  and morphisms $icol(f) = (f_i : cal(C)(A_i, B_i) | i ∈ I)$,
   we define
   $
     Π mb(f) = Π_(i ∈ I)f_i := ⟨π_i^(Π icol(A)) ; f_i⟩_(i ∈ I) : cal(C)(Π icol(A), Π icol(B))
@@ -3167,7 +3393,7 @@ In general, where the appropriate products exist, we write
 #todo[]
 
 /*
-In general, if $ι : I → J$ is an injection, 
+In general, if $ι : I → J$ is an injection,
 and $icol(A), icol(B)$ are families of objects indexed by $I$ and $J$ respectively,
 then there exists a canonical morphism
 $
@@ -3188,11 +3414,11 @@ Some important properties of products, where they exist, include:
 
 - $Π (X :: icol(A)) ≈ X × Π icol(A)$, with canonical isomorphims (for $icol(A)$ of length $n$)
   $
-    ⟨π_1^(X × Π icol(A)), 
-      (π_2^(X × Π icol(A)) ; π_1^(Π icol(A))), ..., (π_2^(X × Π icol(A)) ; π_n^(Π icol(A)))⟩ 
-      & : X × Π icol(A) -> Π (X :: icol(A)) \
-           ⟨π_1^(Π (X :: icol(A))), ⟨π_(1 + 1)^(Π (X :: icol(A))),...,π_(n + 1)^(Π (X :: icol(A)))⟩⟩ 
-           & : Π (X :: icol(A)) -> X × Π icol(A)
+    ⟨π_1^(X × Π icol(A)),
+      (π_2^(X × Π icol(A)) ; π_1^(Π icol(A))), ..., (π_2^(X × Π icol(A)) ; π_n^(Π icol(A)))⟩
+    & : X × Π icol(A) -> Π (X :: icol(A)) \
+    ⟨π_1^(Π (X :: icol(A))), ⟨π_(1 + 1)^(Π (X :: icol(A))),...,π_(n + 1)^(Π (X :: icol(A)))⟩⟩
+    & : Π (X :: icol(A)) -> X × Π icol(A)
   $
 
 - It follows by induction that $Π (icol(A) lcat icol(B)) ≈ icol(A) lcat icol(B)$
@@ -3208,7 +3434,7 @@ Some important properties of products, where they exist, include:
 - Likewise, $A^m × A^n = A^(n + m)$
 
 #definition(name: "Cartesian Category")[
-  A category $cal(C)$ is _cartesian_ if it has all finite products; 
+  A category $cal(C)$ is _cartesian_ if it has all finite products;
   i.e. all products $Π icol(A)$ where $icol(A)$ is finite.
 
   Note that it suffices for $cal(C)$ to have an initial object and all binary products $A × B$.
@@ -3266,7 +3492,7 @@ concrete category by taking $U$ to be the identity functor.
 */
 
 #definition(name: "Concretely Cartesian Category")[
-  A concrete category $cal(V)$ is _concretely cartesian_ if it preserves finite products; 
+  A concrete category $cal(V)$ is _concretely cartesian_ if it preserves finite products;
   i.e., we have
   $
     ∀ [A_1,...,A_n] . U(Π [A_1,...,A_n]) = Π [U A_1,...,U A_n]
@@ -3317,12 +3543,12 @@ In fact, this construction can be generalized quite readily:
   - $F$ preserves erasure: $F ; U_cal(W) = U_cal(V)$
   - $F$ preserves finite products: $∀ [A_1,...,A_n] . F (Π [A_1,...,A_n]) = Π [F A_1,...,F A_n]$
 
-  Note in particular that the erasure $U : cal(V) → cset$ 
+  Note in particular that the erasure $U : cal(V) → cset$
   is always a concretely cartesian functor.
 ]
 
 #todo[
-  Neel says ok for real definition _but_ we suppress notation and pretend everything is strict; 
+  Neel says ok for real definition _but_ we suppress notation and pretend everything is strict;
   and also most examples are actually strict this is really just for $cal(V) × cal(W)$
 ]
 
@@ -3378,7 +3604,7 @@ Similarly to before,
 ]
 
 #todo[
-  and in particular, change-of-basis $F : cal(V) → cal(W)$ 
+  and in particular, change-of-basis $F : cal(V) → cal(W)$
   induces $F_* : cal(V)ms("Cat") → cal(W)ms("Cat")$
 ]
 
@@ -3437,16 +3663,16 @@ so we will not repeat them.
 
 /*
 #definition(name: [$cal(V)$-Multifunctor])[
-  Given a family of $cal(V)$-categories $scat(C) = [cal(C)_i | i ∈ I]$ 
+  Given a family of $cal(V)$-categories $scat(C) = [cal(C)_i | i ∈ I]$
   and a $cal(V)$-category $cal(D)$,
   a _multifunctor_ $F$ from $icol(C)$ to $cal(D)$ consists of
-  - A mapping from families of objects $icol(A) = [A_i : |cal(C)_i| | i ∈ I]$ 
-    to objects $F icol(A) : |cal(D)|$ 
-  - For each $j ∈ I$, 
+  - A mapping from families of objects $icol(A) = [A_i : |cal(C)_i| | i ∈ I]$
+    to objects $F icol(A) : |cal(D)|$
+  - For each $j ∈ I$,
     a mapping from families of objects $icol(A)_j = [A_i : |cal(C)_i| | i ∈ I backslash {j}]$
     a $cal(V)$-functor
     $
-      F med icol(A)_j : cal(C)_j → cal(D) 
+      F med icol(A)_j : cal(C)_j → cal(D)
     $
     such that
     $
@@ -3456,13 +3682,13 @@ so we will not repeat them.
     $
       icol(A) = [j ↦ A_j] ovrd icol(A)_j = [A_i | i ∈ I]
     $
-  
-  In other words, $F$ is a function of $A_i$ 
-  which is a $cal(V)$-functor in each argument $A_j$ _separately_, 
+
+  In other words, $F$ is a function of $A_i$
+  which is a $cal(V)$-functor in each argument $A_j$ _separately_,
   when all other arguments $A_i$ for $i ≠ j$ are held fixed.
 
-  Given $cal(V)$-multifunctors $F, G: scat(C) → D$, we say that a family of morphisms 
-  $η_icol(A): cal(D)(F icol(A), G icol(A))$ is _natural_ in $j ∈ I$ if, 
+  Given $cal(V)$-multifunctors $F, G: scat(C) → D$, we say that a family of morphisms
+  $η_icol(A): cal(D)(F icol(A), G icol(A))$ is _natural_ in $j ∈ I$ if,
   for each family of objects $icol(A)_j = [A_i : |cal(C)_i| | i ∈ I backslash {j}]$,
   the family of morphisms $η_icol(A)_j$ given by
   $(η_icol(A)_j)_X := η_([j ↦ X] ovrd icol(A)_j)$
@@ -3471,12 +3697,12 @@ so we will not repeat them.
   That is, for every morphism $f : cal(C)_j (A_j, A_j')$,
   we have that the following diagram commutes
   $
-    #diagram(cell-size: 15mm, $ 
-      F med icol(A) edge(η_icol(A), ->) edge("d", F med icol(A)_j med f, ->) & 
+    #diagram(cell-size: 15mm, $
+      F med icol(A) edge(η_icol(A), ->) edge("d", F med icol(A)_j med f, ->) &
       G med icol(A) edge("d", G med icol(A)_j med f, ->, label-side: #left) \
       F med icol(A)' edge(η_icol(A)', ->, label-side: #right) & G med icol(A)' $)
   $
-  where 
+  where
   $
     icol(A) = [j ↦ A_j] ovrd icol(A)_j = [A_i | i ∈ I] quad quad quad
     icol(A)' = [j ↦ A_j'] ovrd icol(A)_j = [A_i | i ∈ I]
@@ -3486,9 +3712,9 @@ so we will not repeat them.
 
 /*
 #definition(name: [$cal(V)$-Natural Multitransformation])[
-  Given $cal(V)$-multifunctors $F, G: scat(C) → D$, we define a $cal(V)$-natural multitransformation 
+  Given $cal(V)$-multifunctors $F, G: scat(C) → D$, we define a $cal(V)$-natural multitransformation
   $η : F => G$ to consist of:
-  - For each family of objects $icol(A) = [A_i : cal(C)_i | i ∈ I]$, 
+  - For each family of objects $icol(A) = [A_i : cal(C)_i | i ∈ I]$,
     a morphism $η_(icol(A)) : cal(D)(F icol(A), G icol(A))$
   - For each $j ∈ I$,
     a mapping from families of objects $icol(A)_j = [A_i : cal(C)_i | i ∈ I backslash {j}]$
@@ -3498,16 +3724,16 @@ so we will not repeat them.
     $
     such that
     $
-      ∀ A_j : |cal(C)_j|, (η_(icol(A)_j))_(A_j) = η_[A_i | i ∈ I] 
+      ∀ A_j : |cal(C)_j|, (η_(icol(A)_j))_(A_j) = η_[A_i | i ∈ I]
         : cal(D)(F [A_i | i ∈ I]) → cal(D)(G [A_i | i ∈ I])
     $
-  
+
   In other words, if we consider $F$, $G$, and $η$ as functions of $A_i$, and, for a given $j ∈ I$,
   fix all $A_i$ for $i ≠ j$, then
   - $F$ and $G$ are functors
   - $η$ is a natural transformation from $F$ to $G$
 
-  That is, $η$ is a natural transformation in each argument $A_j$ _separately_, 
+  That is, $η$ is a natural transformation in each argument $A_j$ _separately_,
   i.e., is _natural in $A_j$_.
 ]
 */
@@ -3623,71 +3849,57 @@ Similarly to products, coproducts satisfy some basic algebraic properties
     - $λ_A : cal(C)(munit ⊗ A, A)$ (the _left unitor_)
     - $ρ_A : cal(C)(A ⊗ munit, A)$ (the _right unitor_)
 
-  By natural, we mean that $α_(A, B, C)$. $λ_A$, and $ρ_A$ are natural in each of their components; 
+  By natural, we mean that $α_(A, B, C)$. $λ_A$, and $ρ_A$ are natural in each of their components;
   i.e., for all morphisms $f: cal(C)(A, A')$, $g: cal(C)(B, B')$, and $h: cal(C)(C, C')$, the following
   _naturality squares_ hold:
   $
-    (f ⊗ B) ⊗ C ; α_(A', B, C) &= α_(A, B, C) ; f ⊗ (g ⊗ h) 
-      && : cal(C)((A ⊗ B) ⊗ C, A' ⊗ (B ⊗ C)) \
-    A ⊗ (g ⊗ C) ; α_(A, B', C) &= α_(A, B, C) ; A ⊗ (g ⊗ h) 
-      && : cal(C)((A ⊗ B) ⊗ C, A ⊗ (B' ⊗ C)) \
-    A ⊗ B ⊗ h ; α_(A, B, C') &= α_(A, B, C) ; A ⊗ B ⊗ h
-      && : cal(C)((A ⊗ B) ⊗ C, A ⊗ (B ⊗ C')) \
-    munit ⊗ f ; λ_(A') &= λ_A ; f 
-      && : cal(C)(munit ⊗ A, A') \
-    f ⊗ munit ; ρ_(A') &= ρ_A ; f  
-      && : cal(C)(A ⊗ munit, A')
+    (f ⊗ B) ⊗ C ; α_(A', B, C) & = α_(A, B, C) ; f ⊗ (g ⊗ h) && : cal(C)((A ⊗ B) ⊗ C, A' ⊗ (B ⊗ C)) \
+    A ⊗ (g ⊗ C) ; α_(A, B', C) & = α_(A, B, C) ; A ⊗ (g ⊗ h) && : cal(C)((A ⊗ B) ⊗ C, A ⊗ (B' ⊗ C)) \
+      A ⊗ B ⊗ h ; α_(A, B, C') & = α_(A, B, C) ; A ⊗ B ⊗ h   && : cal(C)((A ⊗ B) ⊗ C, A ⊗ (B ⊗ C')) \
+            munit ⊗ f ; λ_(A') & = λ_A ; f                   && : cal(C)(munit ⊗ A, A') \
+            f ⊗ munit ; ρ_(A') & = ρ_A ; f                   && : cal(C)(A ⊗ munit, A')
   $
 
   Such that the following coherence conditions hold:
   - (Pentagon Identity)
     For all objects $A, B, C, D : |cal(C)|$, the following diagram commutes:
     $
-      #diagram($
-        & (A ⊗ B) ⊗ (C ⊗ D) edge("dr", α_(A, B, (C ⊗ D)), ->) &
-        \
-        ((A ⊗ B) ⊗ C) ⊗ D 
-          edge("ur", α_((A ⊗ B), C, D), ->)
-          edge("d", α_(A, B, C) ⊗ D, ->) 
-        & &
-        A ⊗ (B ⊗ (C ⊗ D)) \
-        (A ⊗ (B ⊗ C)) ⊗ D
-          edge("rr", α_(A, B ⊗ C, D), ->) & &
-        A ⊗ ((B ⊗ C) ⊗ D)
-          edge("u", A ⊗ α_(B, C, D), ->)
-      $)
-    $ 
-    
+      #diagram($                                 & (A ⊗ B) ⊗ (C ⊗ D) edge("dr", α_(A, B, (C ⊗ D)), ->) &                                \
+      ((A ⊗ B) ⊗ C) ⊗ D
+      edge("ur", α_((A ⊗ B), C, D), ->)
+      edge("d", α_(A, B, C) ⊗ D, ->)  &                                                     &              A ⊗ (B ⊗ (C ⊗ D)) \
+      (A ⊗ (B ⊗ C)) ⊗ D
+      edge("rr", α_(A, B ⊗ C, D), ->) &                                                     & A ⊗ ((B ⊗ C) ⊗ D)
+                                                                                              edge("u", A ⊗ α_(B, C, D), ->) $)
+    $
+
   - (Triangle Identity)
     For all objects $A, B : |cal(C)|$, the following diagram commutes:
     $
-      #diagram(cell-size: 15mm, $
-        (A ⊗ munit) ⊗ B edge(α_(A, munit, B), ->) edge("dr", ρ_A ⊗ id_B, ->, label-side: #right) & 
-        A ⊗ (munit ⊗ B) edge("d", id_A ⊗ λ_B, ->, label-side: #left) \
-         & A ⊗ B $)
-    $ 
+      #diagram(cell-size: 15mm, $ (A ⊗ munit) ⊗ B edge(α_(A, munit, B), ->) edge("dr", ρ_A ⊗ id_B, ->, label-side: #right) &
+      A ⊗ (munit ⊗ B) edge("d", id_A ⊗ λ_B, ->, label-side: #left) \
+      & A ⊗ B $)
+    $
 
     We say that a $cal(V)$-premonoidal category is _symmetric_ if it is equipped with an additional
     central natural isomorphism
     - $σ_(A, B) : cal(C)(A ⊗ B, B ⊗ A)$ (the _braiding_)
 
     Satisfying:
-    - (Naturality): $∀ f : cal(C)(A, A') . f ⊗ B ; σ_(A', B) = σ_(A, B) ; B ⊗ f 
-        : cal(C)(A ⊗ B, B ⊗ A')$
+    - (Naturality): $∀ f : cal(C)(A, A') . f ⊗ B ; σ_(A', B) = σ_(A, B) ; B ⊗ f
+      : cal(C)(A ⊗ B, B ⊗ A')$
     - (Symmetry): $σ_(A, B)^(-1) = σ_(B, A)$
 
     Such that the following coherence conditions hold:
     - (Hexagon Identity)
       For all objects $A, B, C : |cal(C)|$, the following diagram commutes:
       $
-      #diagram($
-          (A ⊗ B) ⊗ C edge(α_(A, B, C), ->) edge("d", σ_(A, B) ⊗ C, ->, label-side: #right) &     
-          A ⊗ (B ⊗ C) edge(σ_(A, B ⊗ C), ->, label-side: #left) &
-          (B ⊗ C) ⊗ A edge("d", α_(B, C, A), ->) \
-          (B ⊗ A) ⊗ C edge(α_(B, A, C), ->) &
-          B ⊗ (A ⊗ C) edge(B ⊗ σ_(A, C), ->) &
-          B ⊗ (C ⊗ A)  
-        $)
+        #diagram($ (A ⊗ B) ⊗ C edge(α_(A, B, C), ->) edge("d", σ_(A, B) ⊗ C, ->, label-side: #right) &
+        A ⊗ (B ⊗ C) edge(σ_(A, B ⊗ C), ->, label-side: #left) &
+        (B ⊗ C) ⊗ A edge("d", α_(B, C, A), ->) \
+        (B ⊗ A) ⊗ C edge(α_(B, A, C), ->) &
+        B ⊗ (A ⊗ C) edge(B ⊗ σ_(A, C), ->) &
+        B ⊗ (C ⊗ A) $)
       $
 ]
 
@@ -3703,11 +3915,11 @@ Similarly to products, coproducts satisfy some basic algebraic properties
       - What if I want to keep track of which morphisms are relevant/affine/central?
       - I need more structure
     - Effectful category
-      - An effect system $cal(E)$ is just a bounded lattice with monotone functions 
+      - An effect system $cal(E)$ is just a bounded lattice with monotone functions
         is relevant, is affine, is central
-      - An effectful category over an effect system $cal(E)$ maps effects to subcategories with 
+      - An effectful category over an effect system $cal(E)$ maps effects to subcategories with
         $⊤$ to top
-      - Morphisms between effect systems induce identity-on-objects functors 
+      - Morphisms between effect systems induce identity-on-objects functors
         between effectful categories
       - A Freyd category is just an effectful category over ${⊤, ⊥}$
       - A Cartesian category is just an effectful category over ${⊥}$
@@ -3718,12 +3930,12 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 #todo[have this as an example of a premonoidal category]
 
 #todo[
-  - Introduce the concept of _strength_ via a strong monad 
+  - Introduce the concept of _strength_ via a strong monad
     (later will have strong Elgot structure so this builds intuition)
     - Every monad over $cset$ is strong, so this is often overlooked
   - define a commutative monad; show monoidal $<=>$ commutative
   - notice the subcategory of pure things; think about it
-    - return should be monic or it's not faithful; @moggi-89-monad calls this a 
+    - return should be monic or it's not faithful; @moggi-89-monad calls this a
       _computational monad_
     - but this is not necessary for our Freyd case
 ]
@@ -3752,7 +3964,7 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 #let appendix(body) = {
   set heading(numbering: "A", supplement: [Appendix])
   counter(heading).update(0)
-  body
+  [ #body <appendix> ]
 }
 
 #show: appendix

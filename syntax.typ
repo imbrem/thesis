@@ -1,3 +1,5 @@
+#import "@preview/curryst:0.6.0": prooftree, rule, rule-set
+
 // == Fonts ==
 
 #let ms(txt) = $sans(txt)$
@@ -63,6 +65,13 @@
   $λ_ms("case")$
 } else {
   $λ_ms("case")[#xs.pos().at(0)]$
+}
+
+// Types
+#let sty(..xs) = if xs.pos().at(0, default: none) == none {
+  $ms("Ty")$
+} else {
+  $ms("Ty")[#xs.pos().at(0)]$
 }
 
 // == Tokens ==
@@ -133,6 +142,17 @@
 
 #let fnum(n) = $lb("p")_#n$
 #let inum(n) = $lb("i")_#n$
+
+#let lab = $ms("lab")$
+#let fld = $ms("fld")$
+
+#let labhi(L, l) = $ms("hi")(#L, #l)$
+#let lablo(L, l) = $ms("lo")(#L, #l)$
+#let fldhi(F, f) = $ms("hi")(#F, #f)$
+#let fldlo(F, f) = $ms("lo")(#F, #f)$
+
+#let fty(f, A) = $#f : #A$
+#let lty(l, A) = $#l (#A)$
 #let fexpr(f, e) = $#f : #e$
 
 // Lists
@@ -243,15 +263,29 @@
 
 #let bhyp(x, A, ..vs) = $#x : #A^(#vs.pos().at(0, default: none))$
 #let lhyp(ℓ, A) = $#ℓ (#A)$
+
+#let tyle(..xs) = sle(sty(..xs))
+
+#let atywk(A, B, ..xs) = $#A tyle(..xs) #B$
+
+#let tywk(A, B) = $#A ≤ #B$
+
 #let hasty(Γ, a, A) = $#Γ ⊢ #a : #A$
 #let haslb(Γ, r, L) = $#Γ ⊢ #r triangle.stroked.small.r #L$
-#let issubst(γ, Γ, Δ) = $#γ : #Γ => #Δ$
-#let lbsubst(Γ, σ, L, K) = $#Γ ⊢ #σ : #L arrow.r.long.squiggly #K$
-#let isop(f, A, B, ε) = $#f : #A ->^#ε #B$
-#let tmeq(Γ, ε, a, b, A) = $#Γ ⊢_#ε #a equiv #b : #A$
-#let lbeq(Γ, r, s, L) = $#Γ ⊢ #r equiv #s triangle.stroked.small.r #L$
-#let tmseq(γ, γp, Γ, Δ) = $#γ equiv #γp : #Γ => #Δ$
-#let lbseq(σ, σp, Γ, L, K) = $#Γ ⊢ #σ equiv #σp : #L arrow.r.long.squiggly #K$
-#let cfgsubst(branches) = $⟨#branches⟩$
+
 #let lupg(γ) = $upright(↑)#γ$
 #let rupg(γ) = $#γ upright(↑)$
+
+#let print-rule(..xs) = {
+  prooftree.with(vertical-spacing: 0.2em)(..xs)
+};
+
+#let declare-rule(p, ..xs) = [
+  #let named = xs.named();
+  #let l = named.remove("label", default: none);
+  #figure(
+    print-rule(p, ..xs.pos(), ..named),
+    kind: "rule",
+    supplement: [(#p.name)]
+  ) #l
+]
