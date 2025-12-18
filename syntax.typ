@@ -96,8 +96,8 @@
 // Standard names
 #let ninl = $lb("i")_lb("l")$
 #let ninr = $lb("i")_lb("r")$
-#let nbr = $lb("b")$
-#let ncn = $lb("c")$
+#let nbr = $lb("l")$
+#let ncn = $lb("r")$
 
 // Types
 #let tzero = $mb("0")$

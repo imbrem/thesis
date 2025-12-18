@@ -1355,15 +1355,21 @@ TODO: shunt proof to appendix
         $hasty(Γ, x, A)$,
       )),
       declare-rule(rule(
+        name: "coe",
+        $hasty(Γ, x, A)$,
+        $tywk(A, A')$,
+        $hasty(Γ, x, A')$,
+      )),
+      declare-rule(rule(
         name: "app",
         $isfn(Γ, f, A, B)$,
         $hasty(Γ, a, A)$,
         $hasty(Γ, f med a, B)$,
       )),
       declare-rule(rule(
-        name: "inj",
-        $hasty(Γ, a, A)$,
-        $hasty(Γ, lb("l") med a, Σ lty(lb("l"), A))$,
+        name: "proj",
+        $hasty(Γ, e, Π (fty(lb("f"), A)))$,
+        $hasty(Γ, lb("f") med e, A)$,
       )),
       declare-rule(rule(
         name: "tuple",
@@ -1381,6 +1387,11 @@ TODO: shunt proof to appendix
         $istup(Γ, #$E, e$, #$lb("T"), fty(lb("f"), A)$)$,
       )),
       declare-rule(rule(
+        name: "inj",
+        $hasty(Γ, a, A)$,
+        $hasty(Γ, lb("l") med a, Σ (lty(lb("l"), A)))$,
+      )),
+      declare-rule(rule(
         name: "cases",
         $hasty(Γ, e, Σ lb("L"))$,
         $isebrs(Γ, lb("L"), M, A)$,
@@ -1396,7 +1407,14 @@ TODO: shunt proof to appendix
         $hasty(#$Γ, x : A$, a, A)$,
         $isebrs(Γ, #$lb("L"), lty(lb("l"), A)$, #$M, ebr(lb("l"), x, a)$, A)$,
       )),
+      declare-rule(rule(
+        name: "iter",
+        $hasty(Γ, a, A)$,
+        $hasty(Γ, e, B + A)$,
+        $hasty(Γ, eiter(e, x, A), B)$,
+      )),
     )
+    \
   ],
   caption: [Typing rules for #iter-calc($F$)],
 )
