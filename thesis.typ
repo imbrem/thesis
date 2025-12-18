@@ -457,6 +457,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
           Or[$v$][_value_]
           Or[$f med v$][_app_]
           Or[$lb("l")$][_label_]
+          Or[$lb("f") med v$][_field_]
         }),
         Prod($v$, {
           Or[$x$][_variable_]
@@ -470,7 +471,6 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
       bnf(
         Prod($β$, {
           Or[$x = o seq β$][_assign_]
-          Or[$(V) = o seq β$][_destructure_]
           Or[$τ$][_terminator_]
         }),
         Prod($τ$, {
@@ -491,7 +491,12 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
     )
     $
       (x_0,...,x_(n - 1)) = (x_i)_(i ∈ 0..n-1)
-      := (fexpr(fnum(0), x_0),..., fexpr(fnum(n - 1), x_(n - 1)))
+      := (fexpr(π_0, x_0),..., fexpr(π_(n - 1), x_(n - 1)))
+      quad
+      "where"
+      quad
+      lpi = π_0,
+      rpi = π_1
     $
   ],
   caption: [
@@ -622,10 +627,11 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
           Or[$v$][_value_]
           Or[$f med v$][_app_]
           Or[$lb("l") med v$][_label_]
+          Or[$lb("f") med v$][_field_]
         }),
         Prod($v$, {
           Or[$x$][_variable_]
-          Or[$(V)$][_struct_]
+          Or[$(V)$][_structure_]
         }),
         Prod($V$, {
           Or[$·$][]
@@ -635,7 +641,6 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
       bnf(
         Prod($β$, {
           Or[$x = o seq β$][_assign_]
-          Or[$(V) = o seq β$][_destructure_]
           Or[$τ$][_terminator_]
         }),
 
@@ -671,9 +676,15 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
       columns: 3,
       gutter: (2em, 1em),
       bnf(
+        Prod($o$, {
+          Or[$v$][_value_]
+          Or[$f med v$][_application_]
+          Or[$lb("l") med v$][_label_]
+          Or[$lb("f") med v$][_field_]
+        }),
         Prod($v$, {
           Or[$x$][_variable_]
-          Or[$(V)$][_struct_]
+          Or[$(V)$][_structure_]
         }),
         Prod($V$, {
           Or[$·$][]
@@ -681,22 +692,11 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
         }),
       ),
       bnf(
-        Prod($o$, {
-          Or[$v$][_value_]
-          Or[$f med v$][_application_]
+        Prod($r$, {
+          Or[$x = o seq r$][_assign_]
+          Or[$(V) = o seq r$][_destructure_]
+          Or[$τ seq L$][_terminator_]
         }),
-        Prod($f$, {
-          Or[$p$][_app_]
-          Or[$lb("l", annot: lb("L"))$][_label_]
-        }),
-      ),
-      bnf(Prod($r$, {
-        Or[$x = o seq r$][_assign_]
-        Or[$(V) = o seq r$][_destructure_]
-        Or[$τ seq L$][_terminator_]
-      })),
-
-      bnf(
         Prod($τ$, {
           Or[$brb(lb("l"), o)$][_branch_]
           Or[$scase(o, K)$][_case_]
@@ -729,9 +729,9 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
             Or[$x$][_variable_]
             Or[$f med e$][_app_]
             Or[$lb("l") med e$][_label_]
-            Or[$(E)$][_tuple_]
+            Or[$lb("f") med e$][_field_]
+            Or[$(E)$][_structure_]
             Or[$elet(x, e_1, e_2)$][_let-binding_]
-            Or[$elet((V), e_1, e_2)$][_destructure_]
             Or[$ecase(e, M)$][_cases_]
             Or[$eiter(e_1, x, e_2)$][_iteration_]
           },
@@ -767,11 +767,16 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
       align: left,
       columns: 3,
       gutter: (2em, 2em),
-      bnf(Prod($r$, {
-        Or[$x = e seq r$][_assign_]
-        Or[$(V) = e seq r$][_destructure_]
-        Or[$τ seq L$][_terminator_]
-      })),
+      bnf(
+        Prod($r$, {
+          Or[$x = e seq r$][_assign_]
+          Or[$τ seq L$][_terminator_]
+        }),
+        Prod($L$, {
+          Or[$·$][]
+          Or[$L seq gbr(lb("l"), x, {r})$][]
+        }),
+      ),
 
       bnf(
         Prod($τ$, {
@@ -781,12 +786,6 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
         Prod($B$, {
           Or[$·$][]
           Or[$B, sbr(lb("l₁"), x, brb(lb("l₂"), e))$][]
-        }),
-      ),
-      bnf(
-        Prod($L$, {
-          Or[$·$][]
-          Or[$L seq gbr(lb("l"), x, {r})$][]
         }),
       ),
     )
@@ -808,7 +807,6 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
       gutter: (2em, 1em),
       bnf(Prod($r$, {
         Or[$x = e seq r$][_assign_]
-        Or[$(V) = e seq r$][_destructure_]
         Or[$brb(lb("l"), e)$][_branch_]
         Or[$scase(e, L)$][_case_]
         Or[${ r } seq L$][_terminator_]
@@ -817,11 +815,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
         Prod($L$, {
           Or[$·$][]
           Or[$gbr(lb("l"), x, {r}) seq L$][]
-        }),
-        Prod($lb("L")$, {
-          Or[$·$][]
-          Or[$lb("L"), lb("l")(A)$][]
-        }),
+        })
       ),
     )
   ],
@@ -1102,7 +1096,7 @@ We define some of the basic operations on indexed families as follows:
     $
     \
   ],
-  caption: [Grammar for simple types parametrized by base types $ms("X")$]
+  caption: [Grammar for simple types parametrized by base types $ms("X")$],
 )
 
 #todo[
@@ -1155,7 +1149,7 @@ We define some of the basic operations on indexed families as follows:
       declare-rule(r-twk-unit, label: <twk-unit>),
       declare-rule(r-twk-zero, label: <twk-zero>),
     )
-    \ 
+    \
   ],
   caption: [Weakening for simple types $sty(ms("X"))$],
 )
@@ -1338,7 +1332,7 @@ TODO: shunt proof to appendix
 #todo[Should we repeat the rules and such here?]
 
 #todo[
-  Contexts over $sty(ms("X"))$ of the form $Γ, ms("L")$ are isomorphic to $lb("T"), lb("L")$; 
+  Contexts over $sty(ms("X"))$ of the form $Γ, ms("L")$ are isomorphic to $lb("T"), lb("L")$;
   "concepts with attitude"
 ]
 
@@ -1384,13 +1378,13 @@ TODO: shunt proof to appendix
         name: "Π-cons",
         $istup(Γ, E, lb("T"))$,
         $hasty(Γ, e, A)$,
-        $istup(Γ, #$E, e$, #$lb("T"), fty(lb("f"), A)$)$
+        $istup(Γ, #$E, e$, #$lb("T"), fty(lb("f"), A)$)$,
       )),
       declare-rule(rule(
         name: "cases",
         $hasty(Γ, e, Σ lb("L"))$,
         $isebrs(Γ, lb("L"), M, A)$,
-        $hasty(Γ, ecase(e, M), A)$
+        $hasty(Γ, ecase(e, M), A)$,
       )),
       declare-rule(rule(
         name: "Σ-nil",
