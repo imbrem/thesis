@@ -274,6 +274,7 @@
 
 #let isfn(Γ, f, A, B) = $#Γ ⊢ #f : #A → #B$
 #let istup(Γ, E, T) = $#Γ ⊢ #E scripts(:)^* #T$
+#let isebrs(Γ, L, B, A) = $#Γ ; #L ⊢ #B scripts(:)^* #A$
 #let hasty(Γ, a, A) = $#Γ ⊢ #a : #A$
 #let haslb(Γ, r, L) = $#Γ ⊢ #r triangle.stroked.small.r #L$
 

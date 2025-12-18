@@ -476,12 +476,12 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
         Prod($τ$, {
           Or[$retb(o)$][_return_]
           Or[$brb(lb("l"))$][_branch_]
-          Or[$sswitch(o, B)$][_switch_]
+          Or[$sswitch(o, K)$][_switch_]
         }),
-        Prod($B$, {
+        Prod($K$, {
           Or[$·$][]
-          Or[$B, ssbr(lb("l₁"), retb(o))$][_return_]
-          Or[$B, ssbr(lb("l₁"), brb(lb("l₂")))$][_branch_]
+          Or[$K, ssbr(lb("l₁"), retb(o))$][_return_]
+          Or[$K, ssbr(lb("l₁"), brb(lb("l₂")))$][_branch_]
         }),
       ),
       bnf(Prod($G$, {
@@ -641,11 +641,11 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
         Prod($τ$, {
           Or[$brb(lb("l"), o)$][_branch_]
-          Or[$scase(o, B)$][_case_]
+          Or[$scase(o, K)$][_case_]
         }),
-        Prod($B$, {
+        Prod($K$, {
           Or[$·$][]
-          Or[$B, sbr(lb("l₁"), x, brb(lb("l₂"), o))$][]
+          Or[$K, sbr(lb("l₁"), x, brb(lb("l₂"), o))$][]
         }),
       ),
       bnf(
@@ -699,30 +699,13 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
       bnf(
         Prod($τ$, {
           Or[$brb(lb("l"), o)$][_branch_]
-          Or[$scase(o, B)$][_case_]
+          Or[$scase(o, K)$][_case_]
         }),
-        Prod($B$, {
+        Prod($K$, {
           Or[$·$][]
-          Or[$B, sbr(lb("l₁"), x, brb(lb("l₂"), o))$][]
+          Or[$K, sbr(lb("l₁"), x, brb(lb("l₂"), o))$][]
         }),
       ),
-      /*
-      bnf(Prod($L$, {
-        Or[$·$][]
-        Or[$L seq gbr(lb("l"), x, {r})$][]
-      })),
-      bnf(
-        Prod($A$, {
-          Or[$X$][_base type_]
-          Or[$Π lb("L")$][_tuple_]
-          Or[$Σ lb("L")$][_sum_]
-        }),
-        Prod($lb("L")$, {
-          Or[$·$][]
-          Or[$lb("l")(A), lb("L")$][]
-        })
-      ),
-      */
     )
   ],
   caption: [
@@ -749,7 +732,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
             Or[$(E)$][_tuple_]
             Or[$elet(x, e_1, e_2)$][_let-binding_]
             Or[$elet((V), e_1, e_2)$][_destructure_]
-            Or[$ecase(e, C)$][_cases_]
+            Or[$ecase(e, M)$][_cases_]
             Or[$eiter(e_1, x, e_2)$][_iteration_]
           },
         ),
@@ -763,10 +746,10 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
           },
         ),
         Prod(
-          $C$,
+          $K$,
           {
             Or[$·$][_nil_]
-            Or[$C seq ebr(lb("l"), x, a)$][_cons_]
+            Or[$M seq ebr(lb("l"), x, a)$][_cons_]
           },
         ),
       ),
@@ -1126,6 +1109,8 @@ We define some of the basic operations on indexed families as follows:
   We treat $lb("L"), lb("T")$ as _label-indexed families_, quotiented by order
 
   For example, we could sort by labels, and assume no duplicates.
+
+  Note on the locally-nameless trick
 ]
 
 #todo[introduce _weakening_ of types]
@@ -1365,6 +1350,8 @@ TODO: shunt proof to appendix
 
 #todo[fix notation for function space judgement]
 
+#todo[IMPORTANT: while $Π$-types are unordered, tuples $(E)$ are _ordered_ left-to-right!]
+
 #figure(
   [
     #rule-set(
@@ -1391,12 +1378,29 @@ TODO: shunt proof to appendix
       )),
       declare-rule(rule(
         name: "Π-nil",
-        $istup(Γ, ·, lb("T"))$,
+        $istup(Γ, ·, ·)$,
       )),
       declare-rule(rule(
         name: "Π-cons",
         $istup(Γ, E, lb("T"))$,
-        $istup(Γ, E, lb("X"))$
+        $hasty(Γ, e, A)$,
+        $istup(Γ, #$E, e$, #$lb("T"), fty(lb("f"), A)$)$
+      )),
+      declare-rule(rule(
+        name: "cases",
+        $hasty(Γ, e, Σ lb("L"))$,
+        $isebrs(Γ, lb("L"), M, A)$,
+        $hasty(Γ, ecase(e, M), A)$
+      )),
+      declare-rule(rule(
+        name: "Σ-nil",
+        $isebrs(Γ, ·, ·, ·)$,
+      )),
+      declare-rule(rule(
+        name: "Σ-cons",
+        $isebrs(Γ, lb("L"), M, A)$,
+        $hasty(#$Γ, x : A$, a, A)$,
+        $isebrs(Γ, #$lb("L"), lty(lb("l"), A)$, #$M, ebr(lb("l"), x, a)$, A)$,
       )),
     )
   ],
