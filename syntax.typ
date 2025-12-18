@@ -4,56 +4,74 @@
 
 #let ms(txt) = $sans(txt)$
 #let mb(txt) = $bold(txt)$
-#let lb(txt, annot : none) = $mono(txt)_annot$
+#let lb(txt, annot: none) = $mono(txt)_annot$
 
 // == Branding ==
 
 // Flat
-#let while-flat(..xs) = if xs.pos().at(0, default: none) == none { 
-    $ms("IMP")$ 
-  } else { 
-    $ms("IMP")[#xs.pos().at(0)]$ 
-  }
-#let rtl-flat(..xs) = if xs.pos().at(0, default: none) == none { 
-    $ms("RTL")$ 
-  } else { 
-    $ms("RTL")[#xs.pos().at(0)]$ 
-  }
-#let ssa-a-flat(..xs) = if xs.pos().at(0, default: none) == none { 
-    $ms("SSA")$ 
-  } else { 
-    $ms("SSA")[#xs.pos().at(0)]$ 
-  }
-#let rtl-a-flat(..xs) = if xs.pos().at(0, default: none) == none { 
-    $ms("RTL")_ms("A")$ 
-  } else { 
-    $ms("RTL")_ms("A")[#xs.pos().at(0)]$ 
-  }
+#let while-flat(..xs) = if xs.pos().at(0, default: none) == none {
+  $ms("IMP")$
+} else {
+  $ms("IMP")[#xs.pos().at(0)]$
+}
+#let rtl-flat(..xs) = if xs.pos().at(0, default: none) == none {
+  $ms("RTL")$
+} else {
+  $ms("RTL")[#xs.pos().at(0)]$
+}
+#let ssa-a-flat(..xs) = if xs.pos().at(0, default: none) == none {
+  $ms("SSA")$
+} else {
+  $ms("SSA")[#xs.pos().at(0)]$
+}
+#let rtl-a-flat(..xs) = if xs.pos().at(0, default: none) == none {
+  $ms("RTL")_ms("A")$
+} else {
+  $ms("RTL")_ms("A")[#xs.pos().at(0)]$
+}
 
 // λ
-#let rtl-calc(..xs) = if xs.pos().at(0, default: none) == none { 
-    $λ_ms("rtl")$ 
-  } else { 
-    $λ_ms("rtl")[#xs.pos().at(0)]$ 
-  }
+#let rtl-calc(..xs) = if xs.pos().at(0, default: none) == none {
+  $λ_ms("rtl")$
+} else if xs.pos().at(1, default: none) == none {
+  $λ_ms("rtl")[#xs.pos().at(0)]$
+} else {
+  $λ_ms("rtl")[#xs.pos().at(0), #xs.pos().at(1)]$
+}
 
-#let grtl-calc(..xs) = if xs.pos().at(0, default: none) == none { 
-    $λ_ms("rtl")^*$ 
-  } else { 
-    $λ_ms("rtl")^*[#xs.pos().at(0)]$ 
-  }
+#let grtl-calc(..xs) = if xs.pos().at(0, default: none) == none {
+  $λ_ms("rtl")^*$
+} else {
+  $λ_ms("rtl")^*[#xs.pos().at(0)]$
+}
 
-#let ssa-calc(..xs) = if xs.pos().at(0, default: none) == none { 
-    $λ_ms("ssa")$ 
-  } else { 
-    $λ_ms("ssa")[#xs.pos().at(0)]$ 
-  }
+#let br-calc(..xs) = if xs.pos().at(0, default: none) == none {
+  $λ_ms("br")$
+} else if xs.pos().at(1, default: none) == none {
+  $λ_ms("br")[#xs.pos().at(0)]$
+}
 
-#let gssa-calc(..xs) = if xs.pos().at(0, default: none) == none { 
-    $λ_ms("ssa")^*$ 
-  } else { 
-    $λ_ms("ssa")^*[#xs.pos().at(0)]$ 
-  }
+#let ssa-calc(..xs) = if xs.pos().at(0, default: none) == none {
+  $λ_ms("ssa")$
+} else if xs.pos().at(1, default: none) == none {
+  $λ_ms("ssa")[#xs.pos().at(0)]$
+} else {
+  $λ_ms("ssa")[#xs.pos().at(0), #xs.pos().at(1)]$
+}
+
+#let gssa-calc(..xs) = if xs.pos().at(0, default: none) == none {
+  $λ_ms("ssa")^*$
+} else if xs.pos().at(1, default: none) == none {
+  $λ_ms("ssa")^*[#xs.pos().at(0)]$
+} else {
+  $λ_ms("ssa")^*[#xs.pos().at(0), #xs.pos().at(1)]$
+}
+
+#let op-calc(..xs) = if xs.pos().at(0, default: none) == none {
+  $λ_ms("op")$
+} else {
+  $λ_ms("op")[#xs.pos().at(0)]$
+}
 
 #let iter-calc(..xs) = if xs.pos().at(0, default: none) == none {
   $λ_ms("iter")$
@@ -166,9 +184,9 @@
 // Compact “++” built by overlaying two pluses
 #let lcat = math.op(
   box(width: 1.0em, height: 0.7em)[
-    #place(center,  dx: -0.15em, mplus)
-    #place(center,  dx: 0.15em, mplus)
-  ]
+    #place(center, dx: -0.15em, mplus)
+    #place(center, dx: 0.15em, mplus)
+  ],
 )
 
 #let lsnoc = $op(":+")$
@@ -202,7 +220,7 @@
 // == Syntax ==
 
 // Syntax for expressions
-  
+
 /// A branch in a case expression
 #let ebr(ℓ, x, b) = $#ℓ (#x) : #b$
 
@@ -256,7 +274,7 @@
 #let ecase2(e, x, a, y, b) = ecase(e, $ebr(ninl, #x, #a) seq ebr(ninr, #y, #b)$)
 
 /// A binary case statement
-#let scase2(e, x, s, y, t) = scase(e, $sbr(ninl, #x, #s) seq  sbr(ninr, #y, #t)$)
+#let scase2(e, x, s, y, t) = scase(e, $sbr(ninl, #x, #s) seq sbr(ninr, #y, #t)$)
 
 /// A φ-expression
 #let eϕ(branches) = $ϕ thick { #branches }$
@@ -274,7 +292,7 @@
 
 #let isfn(Γ, f, A, B) = $#Γ ⊢ #f : #A → #B$
 #let istup(Γ, E, T) = $#Γ ⊢ #E scripts(:)^* #T$
-#let isebrs(Γ, L, B, A) = $#Γ ; #L ⊢ #B scripts(:)^* #A$
+#let isebrs(Γ, L, B, A) = $#Γ * #L ⊢ #B scripts(:)^* #A$
 #let hasty(Γ, a, A) = $#Γ ⊢ #a : #A$
 #let haslb(Γ, r, L) = $#Γ ⊢ #r triangle.stroked.small.r #L$
 
@@ -291,6 +309,6 @@
   #figure(
     print-rule(p, ..xs.pos(), ..named),
     kind: "rule",
-    supplement: [(#p.name)]
+    supplement: [(#p.name)],
   ) #l
 ]

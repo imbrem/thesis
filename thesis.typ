@@ -809,15 +809,16 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
         Or[$x = e seq r$][_assign_]
         Or[$brb(lb("l"), e)$][_branch_]
         Or[$scase(e, L)$][_case_]
-        Or[${ r } seq L$][_terminator_]
+        Or[${ r } seq L$][_braces_]
       })),
       bnf(
         Prod($L$, {
           Or[$·$][]
           Or[$gbr(lb("l"), x, {r}) seq L$][]
-        })
+        }),
       ),
     )
+    \
   ],
   caption: [
     Grammar for type-theoretic SSA with expressions (#gssa-calc(iter-calc()))
@@ -1416,20 +1417,70 @@ TODO: shunt proof to appendix
     )
     \
   ],
-  caption: [Typing rules for #iter-calc($F$)],
+  caption: [Typing rules for #iter-calc(ms("F"))],
 )
+
+#todo[explain #op-calc(ms("F")), #case-calc(ms("F")) as sublanguages of #iter-calc(ms("F"))]
 
 === Regions
 
-#todo[introduce concept of an expression space]
+#todo[introduce concept of an _expression space_]
 
 #todo[fix notation for expression space judgement]
 
 #figure(
   [
     #todo[this]
+    \
   ],
-  caption: [Typing rules for #ssa-calc($E$)],
+  caption: [Typing rules for #br-calc(ms("E"))],
+)
+
+#todo[introduce concept of a _region space_]
+
+#figure(
+  [
+    #todo[this]
+    \
+  ],
+  caption: [Typing rules for #ssa-calc(ms("E"), ms("T"))],
+)
+
+#todo[SSA is just a region-space too... hence gSSA]
+
+#todo[_slightly_ adjust grammar; this allows for custom terminators, which is always fun!]
+
+#figure(
+  [
+    #grid(
+      align: left,
+      columns: 3,
+      gutter: (2em, 1em),
+      bnf(Prod($r$, {
+        Or[$x = e seq r$][_assign_]
+        Or[$brb(lb("l"), e)$][_branch_]
+        Or[$scase(e, L)$][_case_]
+        Or[$τ$][_terminator_]
+        Or[${ r } seq L$][_braces_]
+      })),
+      bnf(
+        Prod($L$, {
+          Or[$·$][]
+          Or[$gbr(lb("l"), x, {r}) seq L$][]
+        }),
+      ),
+    )
+    \
+  ],
+  caption: [Grammar for #gssa-calc(ms("E"), ms("T"))],
+)
+
+#figure(
+  [
+    #todo[this]
+    \
+  ],
+  caption: [Typing rules for #gssa-calc(ms("E"), ms("T"))],
 )
 
 === Metatheory
@@ -1454,11 +1505,13 @@ TODO: shunt proof to appendix
 
 == Expressions
 
+#todo[introduce the concept of an _equational theory_ $ms("Eq")$]
+
 #figure(
   [
     #todo[this]
   ],
-  caption: [Equivalence rules for #iter-calc($F$)],
+  caption: [Equivalence rules for #iter-calc(ms("F"))],
 )
 
 #figure(
@@ -1470,40 +1523,134 @@ TODO: shunt proof to appendix
 
 === Effects
 
+#todo[
+  introduce the concept of an _effect system_ $cal("E")$;
+  for simplicity, want a _bounded partial order_ of effects
+]
+
+#todo[effects and nontermination; introduce the concept of an _iterative_ effect system]
+
+#todo[introduce notion of _direct_ effect]
+
 #figure(
   [
     #todo[this]
   ],
-  caption: [Effect rules for #iter-calc()],
+  caption: [Direct effect rules for #iter-calc()],
 )
 
-=== Refinement
+#todo[introduce _$β$-rule_]
 
-#figure(
-  [
-    #todo[this]
-  ],
-  caption: [Refinement rules for #iter-calc()],
-)
+#todo[introduce _uniformity_]
+
+#todo[actual effect rules are nicer]
+
+#todo[
+  we don't start with the actual rules to avoid mutual recursion between effect system
+  and equivalence theory
+]
 
 === Linearity
 
+#todo[introduce the concept of a _quantity_; view it as an extension of a type]
+
+#todo[
+  introduce the concept of a _linearity system_ $ms("U")$
+  - Tells us what can split
+  - Tells us what can be _dropped_ (is _affine_); 
+    for an affine type, split is _compatible_ with weakening
+  - Splitting is:
+    - _coassociative_
+    - _cocommutative_
+    - _drop-preserving_
+  - Tells us what can't
+  - _Induces_ $sle(ms("U"))$ via split-to-drop + reflexivity
+  - _Given_ a $ms("U")$, _we_ can a multiple natural order on #sty(ms("X")) with one parameter:
+  - Is $tzero$ affine?
+    - Default: _yes_, since $tywk(tzero, tunit)$ obviously
+    - But, _no is an option_. 
+
+      Going with this option enables _strengthening_ in the resulting equational theory.
+
+      Need a name for this.
+    
+    - Oh yeah... we've got to re-do all the equations...
+
+  - Note: _lo_; this is the _typestate pattern_...
+]
+
 #figure(
   [
-    #todo[this]
+    #todo[this] \
   ],
   caption: [Linearity rules for #iter-calc()],
 )
 
+=== Refinement
+
+#todo[introduce the concept of a _refinement theory_ $ms("R")$]
+
+#todo[introduce the concept of a _linear effect system_]
+
+#todo[
+  note: we don't track effects of duplication because that would be hard;
+  cool for RC but not for us
+]
+
+#todo[introduce _directed $β$-rule_]
+
+#todo[introduce _directed uniformity_]
+
+#figure(
+  [
+    #todo[this] \
+  ],
+  caption: [Refinement rules for #iter-calc()],
+)
+
 == Regions
 
+#todo[equational rules for regions]
+
 === Effects
+
+#todo[effects for regions is just like for expressions; _except_]
+
+#todo[
+  jumping to a label invokes that label's effects; 
+  so we need to keep track of each label's effects
+]
 
 #figure(
   [
     #todo[this]
   ],
   caption: [Effect rules for #iter-calc()],
+)
+
+=== Linearity
+
+#todo[likewise, linearity is the same...]
+
+#todo[except that we need to track usage information across labels...]
+
+#todo[
+  which means tracking usage/type information across labels too; 
+  so we need an _extended label context_
+]
+
+#todo[
+  this gets a judgement which is irritating, but routine;
+  it's just pointwise weakening.
+
+  Can allow synthesis across branches due to locally nameless lore.
+]
+
+#figure(
+  [
+    #todo[this]
+  ],
+  caption: [Linearity rules for #ssa-calc()],
 )
 
 === Refinement
@@ -1513,15 +1660,6 @@ TODO: shunt proof to appendix
     #todo[this]
   ],
   caption: [Refinement rules for #ssa-calc()],
-)
-
-=== Linearity
-
-#figure(
-  [
-    #todo[this]
-  ],
-  caption: [Linearity rules for #ssa-calc()],
 )
 
 = Normalization
