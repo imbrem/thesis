@@ -1662,15 +1662,29 @@ TODO: shunt proof to appendix
   caption: [Refinement rules for #ssa-calc()],
 )
 
-= Normalization
+== Compiling Between #iter-calc() and SSA
 
-== Compiling #gssa-calc(iter-calc()) to #iter-calc()
+#todo[this]
 
-== Compiling #iter-calc() to #ssa-calc()
+=== Compiling #iter-calc() to SSA
 
-== Normalizing #gssa-calc(iter-calc()) to #gssa-calc()
+#todo[this]
 
-== Normalizing #gssa-calc() to #ssa-calc()
+=== Compiling SSA to #iter-calc()
+
+#todo[this]
+
+== Dialects and Lowerings
+
+#todo[expression-language hom w.r.t. refinement theory]
+
+#todo[a _lowering_ is a refinement-preserving expression-language hom]
+
+#todo[an _optimization_ is a refining endomorphism]
+
+#todo[versus, an automorphism like the #iter-calc() equivalences...]
+
+#todo[#iter-calc(expr2fun(iter-calc(ms("F")))) ≈ #iter-calc(ms("F"))]
 
 /*
 

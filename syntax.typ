@@ -85,6 +85,8 @@
   $λ_ms("case")[#xs.pos().at(0)]$
 }
 
+#let expr2fun(E) = $ms("LN")(#E)$
+
 // Types
 #let sty(..xs) = if xs.pos().at(0, default: none) == none {
   $ms("Ty")$
