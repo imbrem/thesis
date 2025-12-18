@@ -35,8 +35,8 @@
 #import "syntax.typ": *
 
 #show ref: it => {
-  let el = it.element;
-  if el == none or el.func() != figure { 
+  let el = it.element
+  if el == none or el.func() != figure {
     it
   } else {
     link(el.location(), el.supplement)
@@ -453,6 +453,11 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
       columns: 3,
       gutter: (2em, 1em),
       bnf(
+        Prod($o$, {
+          Or[$v$][_value_]
+          Or[$f med v$][_app_]
+          Or[$lb("l")$][_label_]
+        }),
         Prod($v$, {
           Or[$x$][_variable_]
           Or[$(V)$][_structure_]
@@ -463,22 +468,11 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
         }),
       ),
       bnf(
-        Prod($o$, {
-          Or[$v$][_value_]
-          Or[$f med v$][_application_]
+        Prod($β$, {
+          Or[$x = o seq β$][_assign_]
+          Or[$(V) = o seq β$][_destructure_]
+          Or[$τ$][_terminator_]
         }),
-        Prod($f$, {
-          Or[$p$][_primitive_]
-          Or[$lb("l", annot: lb("L"))$][_label_]
-        }),
-      ),
-      bnf(Prod($β$, {
-        Or[$x = o seq β$][_assign_]
-        Or[$(V) = o seq β$][_destructure_]
-        Or[$τ$][_terminator_]
-      })),
-
-      bnf(
         Prod($τ$, {
           Or[$retb(o)$][_return_]
           Or[$brb(lb("l"))$][_branch_]
@@ -493,10 +487,6 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
       bnf(Prod($G$, {
         Or[$β$][]
         Or[$G seq lb("l") : β$][]
-      })),
-      bnf(Prod($lb("L")$, {
-        Or[$·$][]
-        Or[$lb("L"), lb("l")$][]
       })),
     )
     $
@@ -628,6 +618,11 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
       columns: 3,
       gutter: (2em, 1em),
       bnf(
+        Prod($o$, {
+          Or[$v$][_value_]
+          Or[$f med v$][_app_]
+          Or[$lb("l") med v$][_label_]
+        }),
         Prod($v$, {
           Or[$x$][_variable_]
           Or[$(V)$][_struct_]
@@ -638,22 +633,12 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
         }),
       ),
       bnf(
-        Prod($o$, {
-          Or[$v$][_value_]
-          Or[$f med v$][_application_]
+        Prod($β$, {
+          Or[$x = o seq β$][_assign_]
+          Or[$(V) = o seq β$][_destructure_]
+          Or[$τ$][_terminator_]
         }),
-        Prod($f$, {
-          Or[$p$][_primitive_]
-          Or[$lb("l", annot: lb("L"))$][_label_]
-        }),
-      ),
-      bnf(Prod($β$, {
-        Or[$x = o seq β$][_assign_]
-        Or[$(V) = o seq β$][_destructure_]
-        Or[$τ$][_terminator_]
-      })),
 
-      bnf(
         Prod($τ$, {
           Or[$brb(lb("l"), o)$][_branch_]
           Or[$scase(o, B)$][_case_]
@@ -668,21 +653,6 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
           Or[$β$][]
           Or[$G seq gbr(lb("l"), x, β)$][]
         }),
-        Prod($lb("L")$, {
-          Or[$·$][]
-          Or[$lb("L"), lty(lb("l"), A)$][]
-        }),
-      ),
-      bnf(
-        Prod($A$, {
-          Or[$X$][_base type_]
-          Or[$Π lb("T")$][_tuple_]
-          Or[$Σ lb("L")$][_sum_]
-        }),
-        Prod($lb("T")$, {
-          Or[$·$][]
-          Or[$lb("T"), fty(lb("f"), A)$][]
-        }),
       ),
     )
   ],
@@ -691,24 +661,6 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
   ],
   kind: image,
 ) <bba-grammar>
-
-
-#figure(
-  [
-    $
-      A × B & := Π ( lb("l") : A, lb("r") : B ) & #h(3em) & mb(1) & := Π · \
-      A + B & := Σ ( lb("l")(A), lb("r")(B) )   &         & mb(0) & := Σ ·
-    $
-    $
-      Π [A_0,...,A_(n - 1)] & = Π_i A_i & := Π ( lb("p")_0 : A_0, ..., lb("p")_(n - 1) : A_(n - 1) ) \
-      Σ [A_0,...,A_(n - 1)] & = Σ_i A_i &   := Σ ( lb("i")_0(A_0), ..., lb("i")_(n - 1)(A_(n - 1)) )
-    $
-  ],
-  caption: [
-    Simple $n$-ary types
-  ],
-  kind: image,
-) <simple-types>
 
 == Lexical SSA
 
@@ -734,7 +686,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
           Or[$f med v$][_application_]
         }),
         Prod($f$, {
-          Or[$p$][_primitive_]
+          Or[$p$][_app_]
           Or[$lb("l", annot: lb("L"))$][_label_]
         }),
       ),
@@ -781,8 +733,6 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 == Expressions and Substitution
 
-#todo[prove coherence w/ minimal typing; if not, add type annotations and remove in exposition]
-
 #figure(
   [
     #grid(
@@ -794,7 +744,8 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
           $e$,
           {
             Or[$x$][_variable_]
-            Or[$f med e$][_application_]
+            Or[$f med e$][_app_]
+            Or[$lb("l") med e$][_label_]
             Or[$(E)$][_tuple_]
             Or[$elet(x, e_1, e_2)$][_let-binding_]
             Or[$elet((V), e_1, e_2)$][_destructure_]
@@ -898,6 +849,10 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 ) <tt-ssa-grammar>
 
 = Conventions and Notation
+
+#todo[add introduction to section; push some definitions and extra background to appendix?]
+
+#todo[Collapse subsections, reformat]
 
 == Foundations
 
@@ -1133,17 +1088,47 @@ We define some of the basic operations on indexed families as follows:
 
 == Typing Rules
 
-=== Expressions
+=== Types and Contexts
 
 #todo[introduce types]
 
-#todo[introduce _weakening_ of types]
+#figure(
+  [
+    #bnf(
+      Prod($A$, {
+        Or[$tybase(X)$][_base type_ $X ∈ ms("X")$]
+        Or[$Σ lb("L")$][_Σ (coproduct)_]
+        Or[$Π lb("T")$][_Π (product)_]
+      }),
+      Prod($lb("L")$, {
+        Or[$·$][]
+        Or[$lb("L"), lty(lb("l"), A)$][]
+      }),
+      Prod($lb("T")$, {
+        Or[$·$][]
+        Or[$lb("T"), fty(lb("f"), A)$][]
+      }),
+    )
+    $
+      A × B & := Π ( lb("l") : A, lb("r") : B ) & #h(3em) & mb(1) & := Π · \
+      A + B & := Σ ( lb("l")(A), lb("r")(B) )   &         & mb(0) & := Σ ·
+    $
+    $
+      Π [A_0,...,A_(n - 1)] & = Π_i A_i & := Π ( lb("p")_0 : A_0, ..., lb("p")_(n - 1) : A_(n - 1) ) \
+      Σ [A_0,...,A_(n - 1)] & = Σ_i A_i &   := Σ ( lb("i")_0(A_0), ..., lb("i")_(n - 1)(A_(n - 1)) )
+    $
+    \
+  ],
+  caption: [Grammar for simple types parametrized by base types $ms("X")$]
+)
 
 #todo[
-  We treat $lb("L"), lb("T")$ as _label-indexed families_, quotiented by order.
+  We treat $lb("L"), lb("T")$ as _label-indexed families_, quotiented by order
 
-  Specifically, we assume everything is sorted and deduplicated by labels.
+  For example, we could sort by labels, and assume no duplicates.
 ]
+
+#todo[introduce _weakening_ of types]
 
 #let r-twk-base = rule(
   name: "base",
@@ -1185,6 +1170,7 @@ We define some of the basic operations on indexed families as follows:
       declare-rule(r-twk-unit, label: <twk-unit>),
       declare-rule(r-twk-zero, label: <twk-zero>),
     )
+    \ 
   ],
   caption: [Weakening for simple types $sty(ms("X"))$],
 )
@@ -1192,6 +1178,9 @@ We define some of the basic operations on indexed families as follows:
 #lemma[
   If $sle(ms("X"))$ is a partial order, so is $tyle(ms("X"))$
 ]
+
+/*
+TODO: shunt proof to appendix
 
 #block-note[
   If $sle(ms("X"))$ is a preorder, so is $tyle(ms("X"))$.
@@ -1227,27 +1216,27 @@ We define some of the basic operations on indexed families as follows:
         in which case result follows by @twk-unit.
 
     - @twk-sigma:
-      Have $A_1 = Σ (lb("X")_1, fty(lb("f"), B_1))$, $A_2 = Σ (lb("X")_2, fty(lb("f"), B_2))$
-      with $tywk(Σ lb("X")_1, Σ lb("X")_2)$ and $tywk(B_1, B_2)$.
+      Have $A_1 = Σ (lb("T")_1, fty(lb("f"), B_1))$, $A_2 = Σ (lb("T")_2, fty(lb("f"), B_2))$
+      with $tywk(Σ lb("T")_1, Σ lb("T")_2)$ and $tywk(B_1, B_2)$.
 
       Fix $A_3$ s.t. $tywk(A_2, A_3)$.
-      By inversion on $tywk(Σ (lb("X")_2, fty(lb("f"), B_2)), A_3)$, either:
-      - @twk-sigma : $A_3 = Σ (lb("X")_3, fty(lb("f"), B_3))$ with
-        $tywk(Σ lb("X")_2, Σ lb("X")_3)$ and $tywk(B_2, B_3)$;
+      By inversion on $tywk(Σ (lb("T")_2, fty(lb("f"), B_2)), A_3)$, either:
+      - @twk-sigma : $A_3 = Σ (lb("T")_3, fty(lb("f"), B_3))$ with
+        $tywk(Σ lb("T")_2, Σ lb("T")_3)$ and $tywk(B_2, B_3)$;
 
-        By induction, have $Σ lb("X")_1 ≤ Σ lb("X")_3$ and $tywk(B_1, B_3)$;
+        By induction, have $Σ lb("T")_1 ≤ Σ lb("T")_3$ and $tywk(B_1, B_3)$;
         so result follows by @twk-sigma.
 
     - @twk-pi:
-      Have $A_1 = Π (lb("X")_1, fty(lb("f"), B_1))$, $A_2 = Π (lb("X")_2, fty(lb("f"), B_2))$
-      with $tywk(Π lb("X")_1, Π lb("X")_2)$ and $tywk(B_1, B_2)$.
+      Have $A_1 = Π (lb("T")_1, fty(lb("f"), B_1))$, $A_2 = Π (lb("T")_2, fty(lb("f"), B_2))$
+      with $tywk(Π lb("T")_1, Π lb("T")_2)$ and $tywk(B_1, B_2)$.
 
       Fix $A_3$ s.t. $tywk(A_2, A_3)$.
-      By inversion on $tywk(Π (lb("X")_2, fty(lb("f"), B_2)), A_3)$, either:
-      - $A_3 = Π (lb("X")_3, fty(lb("f"), B_3))$ with
-        $tywk(Π lb("X")_2, Π lb("X")_3)$ and $tywk(B_2, B_3)$;
+      By inversion on $tywk(Π (lb("T")_2, fty(lb("f"), B_2)), A_3)$, either:
+      - $A_3 = Π (lb("T")_3, fty(lb("f"), B_3))$ with
+        $tywk(Π lb("T")_2, Π lb("T")_3)$ and $tywk(B_2, B_3)$;
 
-        By induction, have $Π lb("X")_1 ≤ Π lb("X")_3$ and $tywk(B_1, B_3)$;
+        By induction, have $Π lb("T")_1 ≤ Π lb("T")_3$ and $tywk(B_1, B_3)$;
         so result follows by @twk-pi.
 
       - $A_3 = tunit$;
@@ -1271,7 +1260,7 @@ We define some of the basic operations on indexed families as follows:
 
   Suffices to show: by induction on $atywk(A, B, ms("X"))$ that $atywk(B, A, ms("X")) => A = B$
 
-  - @twk-base: 
+  - @twk-base:
     Have $A = X$, $B = Y ∈ ms("X")$ with $X sle(ms("X")) Y$.
 
     By inversion, result follows from antisymmetry of $sle(ms("X"))$
@@ -1282,7 +1271,7 @@ We define some of the basic operations on indexed families as follows:
     By inversion, have $atywk(Σ lb("T"'), Σ lb("T"), ms("X"))$ and $atywk(B', A', ms("X"))$.
 
     Hence, by induction, have $A' = B'$ and $Σ lb("T") = Σ lb("T"')$;
-  - @twk-pi: 
+  - @twk-pi:
     Have $A = Π (lb("T"), fty(lb("f"), A'))$, $B = Π (lb("T"'), fty(lb("f"), B'))$ with
     $atywk(Π lb("T"), Π lb("T"'), ms("X"))$ and $atywk(A', B', ms("X"))$.
 
@@ -1294,6 +1283,11 @@ We define some of the basic operations on indexed families as follows:
   - @twk-unit: have $B = tunit$; by inversion, $A = tunit$.
   - @twk-zero: have $A = tzero$; by inversion, $B = tzero$.
 ]
+*/
+
+#todo[Has joins when $ms("X")$ has _bounded_ joins]
+
+#todo[Has meets when $ms("X")$ has _bounded_ meets]
 
 #figure(
   [
@@ -1308,18 +1302,18 @@ We define some of the basic operations on indexed families as follows:
       A ⊓ tzero = tzero ⊓ A = tzero
     $
     $
-      Σ lb("L") ⊔ Σ lb("L'") & := 
-      Σ (lty(lb("l"), labhi(lb("L"), lb("l")) ⊔ labhi(lb("L"), lb("l")))
-            | lb("l") ∈ lab(lb("L")) ∪ lab(lb("L"'))) \
-      Π lb("X") ⊔ Π lb("X'") & := 
-      Π (fty(lb("l"), fldhi(lb("X"), lb("l")) ⊔ fldhi(lb("X"'), lb("l")))
-            | lb("l") ∈ fld(lb("X")) ∩ fld(lb("X"'))) \
-      Σ lb("L") ⊓ Σ lb("L'") & := 
-      Σ (lty(lb("l"), lablo(lb("L"), lb("l")) ⊓ lablo(lb("L"), lb("l")))
-            | lb("l") ∈ lab(lb("L")) ∩ lab(lb("L"'))) \
-      Π lb("X") ⊓ Π lb("X'") & := 
-      Π (fty(lb("l"), fldlo(lb("X"), lb("l")) ⊓ fldlo(lb("X"), lb("l")))
-            | lb("l") ∈ fld(lb("X")) ∪ fld(lb("X"')))
+      Σ lb("L") ⊔ Σ lb("L'") & :=
+                               Σ (lty(lb("l"), labhi(lb("L"), lb("l")) ⊔ labhi(lb("L"), lb("l")))
+                                 | lb("l") ∈ lab(lb("L")) ∪ lab(lb("L"'))) \
+      Π lb("T") ⊔ Π lb("T'") & :=
+                               Π (fty(lb("l"), fldhi(lb("T"), lb("l")) ⊔ fldhi(lb("X"'), lb("l")))
+                                 | lb("l") ∈ fld(lb("T")) ∩ fld(lb("X"'))) \
+      Σ lb("L") ⊓ Σ lb("L'") & :=
+                               Σ (lty(lb("l"), lablo(lb("L"), lb("l")) ⊓ lablo(lb("L"), lb("l")))
+                                 | lb("l") ∈ lab(lb("L")) ∩ lab(lb("L"'))) \
+      Π lb("T") ⊓ Π lb("T'") & :=
+                               Π (fty(lb("l"), fldlo(lb("T"), lb("l")) ⊓ fldlo(lb("T"), lb("l")))
+                                 | lb("l") ∈ fld(lb("T")) ∪ fld(lb("X"')))
     $
     where
     $
@@ -1333,12 +1327,12 @@ We define some of the basic operations on indexed families as follows:
       )
     $
     $
-      fldlo(lb("X"), lb("f")) = cases(
-        A "if" fty(lb("f"), A) ∈ lb("X"),
+      fldlo(lb("T"), lb("f")) = cases(
+        A "if" fty(lb("f"), A) ∈ lb("T"),
         tzero "otherwise"
       ) quad quad
-      fldhi(lb("X"), lb("f")) = cases(
-        A "if" fty(lb("f"), A) ∈ lb("X"),
+      fldhi(lb("T"), lb("f")) = cases(
+        A "if" fty(lb("f"), A) ∈ lb("T"),
         tunit "otherwise"
       )
     $
@@ -1346,13 +1340,26 @@ We define some of the basic operations on indexed families as follows:
       lab(·) = ∅ quad
       lab(lb("L"), lty(lb("l"), A)) = lab(lb("L")) ∪ { lb("l") } quad
       fld(·) = ∅ quad
-      fld(lb("X"), fty(lb("f"), A)) = fld(lb("X")) ∪ { lb("f") }
+      fld(lb("T"), fty(lb("f"), A)) = fld(lb("T")) ∪ { lb("f") }
     $
 
     \
   ],
   caption: [Lattice structure on simple types $sty(ms("X"))$],
 )
+
+#todo[Grammar for (label) contexts]
+
+#todo[Should we repeat the rules and such here?]
+
+#todo[
+  Contexts over $sty(ms("X"))$ of the form $Γ, ms("L")$ are isomorphic to $lb("T"), lb("L")$; 
+  "concepts with attitude"
+]
+
+#todo[not quite the same as distinguishing $lb("T"), lb("L")$, since _these_ have different variance]
+
+=== Expressions
 
 #todo[introduce concept of a function space]
 
@@ -1363,8 +1370,33 @@ We define some of the basic operations on indexed families as follows:
     #rule-set(
       declare-rule(rule(
         name: "var",
+        $Γ med x = A$,
         $hasty(Γ, x, A)$,
-        $hasty(Γ, x, A)$,
+      )),
+      declare-rule(rule(
+        name: "app",
+        $isfn(Γ, f, A, B)$,
+        $hasty(Γ, a, A)$,
+        $hasty(Γ, f med a, B)$,
+      )),
+      declare-rule(rule(
+        name: "inj",
+        $hasty(Γ, a, A)$,
+        $hasty(Γ, lb("l") med a, Σ lty(lb("l"), A))$,
+      )),
+      declare-rule(rule(
+        name: "tuple",
+        $istup(Γ, E, lb("T"))$,
+        $hasty(Γ, (E), Π lb("T"))$,
+      )),
+      declare-rule(rule(
+        name: "Π-nil",
+        $istup(Γ, ·, lb("T"))$,
+      )),
+      declare-rule(rule(
+        name: "Π-cons",
+        $istup(Γ, E, lb("T"))$,
+        $istup(Γ, E, lb("X"))$
       )),
     )
   ],
@@ -1550,7 +1582,7 @@ Our grammar is intentionally minimal, with many important features implemented v
           Or[$f med v$][_application_]
         }),
         Prod($f$, {
-          Or[$p$][_primitive_]
+          Or[$p$][_app_]
           Or[$lb("l", annot: lb("L"))$][_label_]
         }),
       ),

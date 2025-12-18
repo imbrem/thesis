@@ -143,6 +143,8 @@
 #let fnum(n) = $lb("p")_#n$
 #let inum(n) = $lb("i")_#n$
 
+#let tybase(A) = $ms("coe") med #A$
+
 #let lab = $ms("lab")$
 #let fld = $ms("fld")$
 
@@ -270,6 +272,8 @@
 
 #let tywk(A, B) = $#A ≤ #B$
 
+#let isfn(Γ, f, A, B) = $#Γ ⊢ #f : #A → #B$
+#let istup(Γ, E, T) = $#Γ ⊢ #E scripts(:)^* #T$
 #let hasty(Γ, a, A) = $#Γ ⊢ #a : #A$
 #let haslb(Γ, r, L) = $#Γ ⊢ #r triangle.stroked.small.r #L$
 
