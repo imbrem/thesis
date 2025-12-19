@@ -1072,24 +1072,31 @@ We define some of the basic operations on indexed families as follows:
 
 #figure(
   [
-    #bnf(
-      Prod($A$, {
-        Or[$tybase(X)$][_base type_ $X ∈ ms("X")$]
-        Or[$Σ lb("L")$][_Σ (coproduct)_]
-        Or[$Π lb("T")$][_Π (product)_]
-      }),
-      Prod($lb("L")$, {
-        Or[$·$][]
-        Or[$lb("L"), lty(lb("l"), A)$][]
-      }),
-      Prod($lb("T")$, {
-        Or[$·$][]
-        Or[$lb("T"), fty(lb("f"), A)$][]
-      }),
+    #grid(
+      align: left,
+      columns: 2,
+      gutter: (2em, 2em),
+      bnf(
+        Prod($A$, {
+          Or[$tybase(X)$][_base type_ $X ∈ ms("X")$]
+          Or[$Σ lb("L")$][_Σ (coproduct)_]
+          Or[$Π lb("T")$][_Π (product)_]
+        }),
+      ),
+      bnf(
+        Prod($lb("L")$, {
+          Or[$·$][]
+          Or[$lb("L"), lty(lb("l"), A)$][]
+        }),
+        Prod($lb("T")$, {
+          Or[$·$][]
+          Or[$lb("T"), fty(lb("f"), A)$][]
+        }),
+      ),
     )
     $
-      A × B & := Π ( lb("l") : A, lb("r") : B ) & #h(3em) & mb(1) & := Π · \
-      A + B & := Σ ( lb("l")(A), lb("r")(B) )   &         & mb(0) & := Σ ·
+      A × B & := Π ( lb("l") : A, lb("r") : B ) & #h(3em) & mb(1) & := Π (·) \
+      A + B & := Σ ( lb("l")(A), lb("r")(B) )   &         & mb(0) & := Σ (·)
     $
     $
       Π [A_0,...,A_(n - 1)] & = Π_i A_i & := Π ( lb("p")_0 : A_0, ..., lb("p")_(n - 1) : A_(n - 1) ) \
@@ -1098,6 +1105,7 @@ We define some of the basic operations on indexed families as follows:
     \
   ],
   caption: [Grammar for simple types parametrized by base types $ms("X")$],
+  kind: image,
 )
 
 #todo[
@@ -1557,7 +1565,7 @@ TODO: shunt proof to appendix
 #todo[
   introduce the concept of a _linearity system_ $ms("U")$
   - Tells us what can split
-  - Tells us what can be _dropped_ (is _affine_); 
+  - Tells us what can be _dropped_ (is _affine_);
     for an affine type, split is _compatible_ with weakening
   - Splitting is:
     - _coassociative_
@@ -1568,12 +1576,12 @@ TODO: shunt proof to appendix
   - _Given_ a $ms("U")$, _we_ can a multiple natural order on #sty(ms("X")) with one parameter:
   - Is $tzero$ affine?
     - Default: _yes_, since $tywk(tzero, tunit)$ obviously
-    - But, _no is an option_. 
+    - But, _no is an option_.
 
       Going with this option enables _strengthening_ in the resulting equational theory.
 
       Need a name for this.
-    
+
     - Oh yeah... we've got to re-do all the equations...
 
   - Note: _lo_; this is the _typestate pattern_...
@@ -1617,7 +1625,7 @@ TODO: shunt proof to appendix
 #todo[effects for regions is just like for expressions; _except_]
 
 #todo[
-  jumping to a label invokes that label's effects; 
+  jumping to a label invokes that label's effects;
   so we need to keep track of each label's effects
 ]
 
@@ -1635,7 +1643,7 @@ TODO: shunt proof to appendix
 #todo[except that we need to track usage information across labels...]
 
 #todo[
-  which means tracking usage/type information across labels too; 
+  which means tracking usage/type information across labels too;
   so we need an _extended label context_
 ]
 
