@@ -3561,12 +3561,7 @@ in Section #todo-inline[ref].
         of a Kleisli category over a cartesian base
 ]
 
-== Enriched Categories
-
-#todo[one more quick pass]
-
-// At a high level, our goal is to assign a denotational semantics $⟦hasty(Γ, a, A)⟧$
-// to every well-typed #iter-calc program $hasty(Γ, a, A)$.
+== Categories
 
 We will begin with a brief overview of basic category theory, in which we will take the opportunity
 to fix notations. Recall the definition of a category $cal(C)$:
@@ -3594,6 +3589,8 @@ to fix notations. Recall the definition of a category $cal(C)$:
 ]
 
 We follow the convention in computer science and define composition "forwards" as $f ; g$.
+
+/*
 If we interpret objects $A, B$ as _states_
 and morphisms $f: cal(C)(A, B), g : cal(C)(B, C)$ as _transformations between states_,
 then their _sequential composition_
@@ -3624,6 +3621,7 @@ Likewise, the associativity axiom becomes the (trivial) equation
 $
   #diagram(cell-size: 15mm, $ A edge(f, ->) & B edge(g, ->) & C edge(h, ->) & D $)
 $
+*/
 
 #definition(name: "Category of sets")[
   We define the category of sets to have
@@ -3633,11 +3631,32 @@ $
   Composition $f ; g$ is simply (pointwise) composition of functions $g ∘ f$.
 ]
 
-#todo[category of posets]
+#definition(name: "Category of preorders")[
+  We define the category of preorders to have objects _preordered sets_ $A$
+  (equipped with preorders $scripts(≤)_A$)
+  and morphisms $f: cpreord(A, B)$ _monotone_ functions $f: A → B$; i.e. functions such that
+  $
+    ∀ a, b : A . a scripts(≤)_A b ==> f(a) scripts(≤)_B f(b)
+  $
+]
+
+#definition(name: "Category of posets")[
+  We define the category of posets to have objects _partially-ordered sets_ $A$ 
+  (equipped with partial orders $scripts(≤)_A$)
+  and morphisms $f: cposet(A, B)$ _monotone_ functions $f: A → B$; i.e. functions such that
+  $
+    ∀ a, b : A . a scripts(≤)_A b ==> f(a) scripts(≤)_B f(b)
+  $
+]
+
+#todo[
+  the category of posets is a _full subcategory_ of the category of preorders; 
+  versus a _wide_ subcategory
+]
 
 #todo[category of reindexings]
 
-#todo[_subcategory_ of thinnings, permutations]
+#todo[_subcategory_ of thinnings, permutations; this is a _wide_ subcategory]
 
 #definition(name: "Isomorphism, Epimorphism, Monomorphism")[
   Given a morphism $f : cal(C)(A, B)$,
@@ -3672,6 +3691,22 @@ While in $cset$, any morphism which is both surjective and injective is in fact 
 it is _not_ generally the case that a morphism which is both epic and monic is an isomorphism!
 
 #todo[epis, monos, and isos are always subcategories]
+
+== Functors
+
+#todo[
+  We want to relate categories to each other, and to themselves...
+
+  How to explain why we would want operations like the tensor product in general to be functorial,
+  since we haven't yet _defined_ tensor products?
+]
+
+#todo[
+  We want to talk about "sets with extra structure":
+  - Preorders
+  - Partially ordered sets
+  - Monoids
+]
 
 #definition(name: "Functor")[
   Given categories $cal(C), cal(D)$, a _functor_ $F : cal(C) → cal(D)$ consists of:
@@ -3732,6 +3767,67 @@ itself with the structure of a category, the _category of categories_ $ms("Cat")
   - Objects $|ms("Cat")|$ categories
   - Morphisms $ms("Cat")(cal(C), cal(D))$ functors $F : cal(C) → cal(D)$
 ]
+
+#definition(name: "Concrete Category")[
+  A _concrete category_ $cal(V)$ is a category equipped with a faithful functor
+  $U : cal(V) → cset$, called the _underlying-set functor_.
+
+  Given an object $A: |cal(V)|$, we call $|A| := U med A$ the _underlying set_ or _carrier_ of $A$.
+
+  Likewise, given a morphism $f : cal(V)(A, B)$, we call $|f| := U med f : |A| → |B|$ the
+  _underlying function_ of $f$.
+]
+
+Where there is no risk of confusion, 
+we will freely identify $|A|$ with $A$ and $|f|$ with $f$,
+allowing abuses of notation like
+$(a ∈ A) := (a ∈ |A|)$
+and
+$f(a) := |f|(a) ∈ B$
+for $f : cal(V)(A, B)$.
+
+In particular, as $U$ is faithful, given $f, g : cal(V)(A, B)$, we have that $f = g <==> |f| = |g|$.
+Equivalently, morphisms in a concrete category are determined by their action
+on elements of the source carrier: $f = g$ if and only if
+$∀ a ∈ A . f(a) = g(a)$.
+
+#definition(name: "Concrete Functor")[
+  Given concrete categories $U_cal(V) : cal(V) → cset, U_cal(W) : cal(W) -> cset$, 
+  a _(strict) concrete functor_ is a functor $F : cal(V) → cal(W)$ such that the following
+  diagram commutes#footnote[
+    One could weaken this definition by requiring the square to commute only up to
+    a natural isomorphism rather than strictly.  For simplicity, all concrete functors
+    considered in this thesis will be assumed to be strict.
+  ]:
+  $
+    #diagram(cell-size: 15mm, 
+      $ cal(V) edge(F, ->) edge("dr", U_cal(V), ->, label-side: #right) 
+        & cal(W) edge("d", U_cal(W), ->, label-side: #left)
+      \ & cset 
+      $
+    )
+  $
+
+  Equivalently, 
+  for all objects $A, B : |cal(V)|$ and morphisms $f : cal(V)(A, B)$,
+  $|F A| = |A|$ and $|F f| = |f|$.
+]
+
+Note that, as the composition of two concrete functors is again a concrete functor, 
+we can form a category $cconc$ of concrete functors 
+with objects concrete categories $cal(V), cal(W)$ 
+and morphisms $cconc(cal(V), cal(W))$ concrete functors $F: cal(V) → cal(W)$ between them.
+
+#todo[
+  _or_; 
+  should we use this as an excuse to introduce natural transformations and natural isomorphisms?
+
+  We need to do this _eventually_ anyways.
+
+  But is there a natural example this simplifies?
+]
+
+== Products
 
 #definition(name: "Terminal Object")[
   An object $X : |cal(C)|$ is _terminal_ if for every object $A : |cal(C)|$,
@@ -3812,13 +3908,38 @@ In general, where the appropriate products exist, we write
   - $f × A_2 := f × id_(A_2)$
   - $A_1 × g := id_(A_1) × g$
 
+#definition(name: "Cartesian Category")[
+  A category $cal(C)$ is _cartesian_ if it has all finite products;
+  i.e. all products $Π icol(A)$ where $icol(A)$ is finite.
+
+  Note that it suffices for $cal(C)$ to have 
+  an initial object $tunit$ 
+  and all binary products $A × B$.
+]
+
+#todo[$cset$ has the usual products...]
+
+#todo[$cpreord$ and $cposet$ have the same products!]
+
+#todo[as do monoids, lattices, etc...]
+
+#todo[there's a pattern here:]
+
+#definition(name: "Concretely Cartesian Category")[
+  A concrete category $cal(V)$ is _(strict) concretely cartesian_ if it preserves finite products;
+  i.e., we have
+  $
+    ∀ [A_1,...,A_n] . U(Π [A_1,...,A_n]) = Π [U A_1,...,U A_n]
+  $
+]
+
+#todo[somehow, segue to properties of products, or pull up before this discussion]
+
 #todo[every thinning induces a map on the product]
 
 #todo[every permutation, an isomorphism]
 
 #todo[introduce _canonical_ isomorphisms]
-
-#todo[]
 
 /*
 In general, if $ι : I → J$ is an injection,
@@ -3861,18 +3982,7 @@ Some important properties of products, where they exist, include:
 
 - Likewise, $A^m × A^n = A^(n + m)$
 
-#definition(name: "Cartesian Category")[
-  A category $cal(C)$ is _cartesian_ if it has all finite products;
-  i.e. all products $Π icol(A)$ where $icol(A)$ is finite.
-
-  Note that it suffices for $cal(C)$ to have an initial object and all binary products $A × B$.
-]
-
-
-#definition(name: "Concrete Category")[
-  A _concrete category_ $cal(V)$ is a category equipped with a faithful functor
-  $U : cal(V) → cset$
-]
+== Enriched Categories
 
 /*
 #todo[rewrite this]
@@ -3918,14 +4028,6 @@ $pset(X)$ is ordered with the subset relation $⊆$.
 Another particularly import example is the category of sets $cset$, which is trivially a
 concrete category by taking $U$ to be the identity functor.
 */
-
-#definition(name: "Concretely Cartesian Category")[
-  A concrete category $cal(V)$ is _concretely cartesian_ if it preserves finite products;
-  i.e., we have
-  $
-    ∀ [A_1,...,A_n] . U(Π [A_1,...,A_n]) = Π [U A_1,...,U A_n]
-  $
-]
 
 For the rest of this thesis,
 $cal(V)$ will range over concretely cartesian categories unless otherwise specified.
@@ -4329,6 +4431,15 @@ Similarly to products, coproducts satisfy some basic algebraic properties
         B ⊗ (A ⊗ C) edge(B ⊗ σ_(A, C), ->) &
         B ⊗ (C ⊗ A) $)
       $
+]
+
+#definition(name: [Freyd Category])[
+  #todo[this]
+]
+
+#definition(name: [$n$-ary Tensor Product])[
+  Given a $cal(V)$-premonoidal category $cal(C)$...
+  #todo[finish definition]
 ]
 
 #todo[

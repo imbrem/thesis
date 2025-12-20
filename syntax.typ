@@ -205,6 +205,8 @@
 // Categories
 #let cset = $ms("Set")$
 #let cposet = $ms("Poset")$
+#let cpreord = $ms("PreOrd")$
+#let cconc = $ms("Conc")$
 
 #let piinj(A, B, i) = $ms("inj")(#A, #B, #i)$
 #let ahm(C) = $scripts(->)_#C$
