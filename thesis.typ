@@ -1516,76 +1516,76 @@ We define some of the basic operations on indexed families as follows:
       declare-rule(rule(
         name: "var",
         $Γ med x = A$,
-        $tyeq(Γ, x, x, A)$,
+        $tyeq(Γ, ms("Eq"), x, x, A)$,
       )),
       declare-rule(rule(
         name: "coe",
-        $tyeq(Γ, a, a', A)$,
+        $tyeq(Γ, ms("Eq"), a, a', A)$,
         $tywk(A, A')$,
-        $tyeq(Γ, a, a', A')$,
+        $tyeq(Γ, ms("Eq"), a, a', A')$,
       )),
       declare-rule(rule(
         name: "app",
         $isfn(Γ, f, A, B)$,
-        $tyeq(Γ, a, a', A)$,
-        $tyeq(Γ, f med a, f med a', B)$,
+        $tyeq(Γ, ms("Eq"),  a, a', A)$,
+        $tyeq(Γ, ms("Eq"), f med a, f med a', B)$,
       )),
       declare-rule(rule(
         name: "inj",
-        $tyeq(Γ, a, a', A)$,
-        $tyeq(Γ, lb("l") med a, lb("l") med a', Σ (lty(lb("l"), A)))$,
+        $tyeq(Γ, ms("Eq"), a, a', A)$,
+        $tyeq(Γ, ms("Eq"), lb("l") med a, lb("l") med a', Σ (lty(lb("l"), A)))$,
       )),
       declare-rule(rule(
         name: "proj",
-        $tyeq(Γ, e, e', Π (fty(lb("f"), A)))$,
-        $tyeq(Γ, lb("f") med e, lb("f") med e', A)$,
+        $tyeq(Γ, ms("Eq"), e, e', Π (fty(lb("f"), A)))$,
+        $tyeq(Γ, ms("Eq"), lb("f") med e, lb("f") med e', A)$,
       )),
       declare-rule(rule(
         name: "tuple",
-        $tupeq(Γ, E, E', lb("T"))$,
-        $tyeq(Γ, (E), (E'), Π lb("T"))$,
+        $tupeq(Γ, ms("Eq"), E, E', lb("T"))$,
+        $tyeq(Γ, ms("Eq"), (E), (E'), Π lb("T"))$,
       )),
       declare-rule(rule(
         name: "Π-nil",
-        $tupeq(Γ, ·, ·, ·)$,
+        $tupeq(Γ, ms("Eq"), ·, ·, ·)$,
       )),
       declare-rule(rule(
         name: "Π-cons",
-        $tupeq(Γ, E, E', lb("T"))$,
-        $tyeq(Γ, e, e', A)$,
-        $tupeq(Γ, #$E, e$, #$E', e'$, #$lb("T"), fty(lb("f"), A)$)$,
+        $tupeq(Γ, ms("Eq"), E, E', lb("T"))$,
+        $tyeq(Γ, ms("Eq"), e, e', A)$,
+        $tupeq(Γ, ms("Eq"), #$E, e$, #$E', e'$, #$lb("T"), fty(lb("f"), A)$)$,
       )),
       declare-rule(rule(
         name: "let",
-        $tyeq(Γ, a, a', A)$,
-        $tyeq(#$Γ, x : A$, b, b', B)$,
-        $tyeq(Γ, elet(x, a, b), elet(x, a', b'), B)$
+        $tyeq(Γ, ms("Eq"), a, a', A)$,
+        $tyeq(#$Γ, x : A$, ms("Eq"), b, b', B)$,
+        $tyeq(Γ, ms("Eq"), elet(x, a, b), elet(x, a', b'), B)$
       )),
       declare-rule(rule(
         name: "cases",
-        $tyeq(Γ, e, e', Σ lb("L"))$,
-        $ebrseq(Γ, lb("L"), M, M', A)$,
-        $tyeq(Γ, ecase(e, M), ecase(e', M'), A)$,
+        $tyeq(Γ, ms("Eq"), e, e', Σ lb("L"))$,
+        $ebrseq(Γ, lb("L"), ms("Eq"), M, M', A)$,
+        $tyeq(Γ, ms("Eq"), ecase(e, M), ecase(e', M'), A)$,
       )),
       declare-rule(rule(
         name: "Σ-nil",
-        $ebrseq(Γ, ·, ·, ·, ·)$,
+        $ebrseq(Γ, ·, ms("Eq"), ·, ·, ·)$,
       )),
       declare-rule(rule(
         name: "Σ-cons",
-        $ebrseq(Γ, lb("L"), M, M', A)$,
-        $tyeq(#$Γ, x : A$, a, a', A)$,
+        $ebrseq(Γ, lb("L"), ms("Eq"), M, M', A)$,
+        $tyeq(#$Γ, x : A$, ms("Eq"), a, a', A)$,
         $ebrseq(
-          Γ, #$lb("L"), lty(lb("l"), A)$, 
+          Γ, #$lb("L"), lty(lb("l"), A)$, ms("Eq"), 
           (#$M, ebr(lb("l"), x, a)$), (#$M', ebr(lb("l"), x, a')$),
           A
         )$,
       )),
       declare-rule(rule(
         name: "iter",
-        $tyeq(Γ, a, a', A)$,
-        $tyeq(Γ, e, e', B + A)$,
-        $tyeq(Γ, eiter(a, x, e), eiter(e', x, a'), B)$,
+        $tyeq(Γ, ms("Eq"), a, a', A)$,
+        $tyeq(Γ, ms("Eq"), e, e', B + A)$,
+        $tyeq(Γ, ms("Eq"), eiter(a, x, e), eiter(e', x, a'), B)$,
       )),
     )
     \
@@ -1606,7 +1606,80 @@ We define some of the basic operations on indexed families as follows:
 
 #figure(
   [
-    #todo[this]
+    #rule-set(
+      declare-rule(rule(
+        name: "var",
+        $Γ med x = A$,
+        $dehasty(Γ, ε, x, A)$,
+      )),
+      declare-rule(rule(
+        name: "coe",
+        $dehasty(Γ, ε, a, A)$,
+        $tywk(A, A')$,
+        $dehasty(Γ, ε, a, A')$,
+      )),
+      declare-rule(rule(
+        name: "app",
+        $eisfn(Γ, ε, f, A, B)$,
+        $dehasty(Γ, ε, a, A)$,
+        $dehasty(Γ, ε, f med a, B)$,
+      )),
+      declare-rule(rule(
+        name: "inj",
+        $dehasty(Γ, ε, a, A)$,
+        $dehasty(Γ, ε, lb("l") med a, Σ (lty(lb("l"), A)))$,
+      )),
+      declare-rule(rule(
+        name: "proj",
+        $ehasty(Γ, ε, e, Π (fty(lb("f"), A)))$,
+        $dehasty(Γ, ε, lb("f") med e, A)$,
+      )),
+      declare-rule(rule(
+        name: "tuple",
+        $deistup(Γ, ε, E, lb("T"))$,
+        $dehasty(Γ, ε, (E), Π lb("T"))$,
+      )),
+      declare-rule(rule(
+        name: "Π-nil",
+        $deistup(Γ, ε, ·, ·)$,
+      )),
+      declare-rule(rule(
+        name: "Π-cons",
+        $deistup(Γ, ε, E, lb("T"))$,
+        $dehasty(Γ, ε, e, A)$,
+        $deistup(Γ, ε, #$E, e$, #$lb("T"), fty(lb("f"), A)$)$,
+      )),
+      declare-rule(rule(
+        name: "let",
+        $dehasty(Γ, ε, a, A)$,
+        $dehasty(#$Γ, x : A$, ε, b, B)$,
+        $dehasty(Γ, ε, elet(x, a, b), B)$
+      )),
+      declare-rule(rule(
+        name: "cases",
+        $dehasty(Γ, ε, e, Σ lb("L"))$,
+        $deisebrs(Γ, lb("L"), ε, M, A)$,
+        $hasty(Γ, ecase(e, M), A)$,
+      )),
+      declare-rule(rule(
+        name: "Σ-nil",
+        $deisebrs(Γ, ·, ε, ·, ·)$,
+      )),
+      declare-rule(rule(
+        name: "Σ-cons",
+        $deisebrs(Γ, lb("L"), ε, M, A)$,
+        $dehasty(#$Γ, x : A$, ε, a, A)$,
+        $deisebrs(Γ, #$lb("L"), lty(lb("l"), A)$, ε, #$M, ebr(lb("l"), x, a)$, A)$,
+      )),
+      declare-rule(rule(
+        name: "iter",
+        $eisinf(ε)$,
+        $dehasty(Γ, ε, a, A)$,
+        $dehasty(Γ, ε, e, B + A)$,
+        $dehasty(Γ, ε, eiter(a, x, e), B)$,
+      )),
+    )
+    \
   ],
   caption: [Direct effect rules for #iter-calc()],
 )

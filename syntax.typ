@@ -301,9 +301,19 @@
 #let issbrs(Γ, K, B, L) = $#Γ * #K ⊢ #B triangle.stroked.small.r^* #L$
 #let islbrs(Γ, K, B, L) = $#Γ * #K ⊢ #B triangle.stroked.small.r^* #L$
 
-#let tyeq(Γ, a, b, A) = $#Γ ⊢ #a ≈ #b : #A$
-#let tupeq(Γ, E, F, T) = $#Γ ⊢ #E ≈ #F scripts(:)^* #T$
-#let ebrseq(Γ, L, B, B2, A) = $#Γ * #L ⊢ #B ≈ #B2 scripts(:)^* #A$
+#let eisfn(Γ, e, f, A, B) = $#Γ scripts(⊢)^#e #f : #A → #B$
+#let dehasty(Γ, e, a, A) = $#Γ scripts(⊢)^(≡#e) #a : #A$
+#let deistup(Γ, e, E, T) = $#Γ scripts(⊢)^(≡#e) #E scripts(:)^* #T$
+#let deisebrs(Γ, L, e, B, A) = $#Γ * #L scripts(⊢)^(≡#e) #B scripts(:)^* #A$
+#let eisinf(e) = $∞(#e) = #e$
+
+#let ehasty(Γ, e, a, A) = $#Γ scripts(⊢)^#e #a : #A$
+#let eistup(Γ, e, E, T) = $#Γ scripts(⊢)^#e #E scripts(:)^* #T$
+#let eisebrs(Γ, L, e, B, A) = $#Γ * #L scripts(⊢)^#e #B scripts(:)^* #A$
+
+#let tyeq(Γ, Eq, a, b, A) = $#Γ scripts(⊢)_#Eq #a ≈ #b : #A$
+#let tupeq(Γ, Eq, E, F, T) = $#Γ scripts(⊢)_#Eq #E ≈ #F scripts(:)^* #T$
+#let ebrseq(Γ, L, Eq, B, B2, A) = $#Γ * #L scripts(⊢)_#Eq #B ≈ #B2 scripts(:)^* #A$
 
 #let lupg(γ) = $upright(↑)#γ$
 #let rupg(γ) = $#γ upright(↑)$
