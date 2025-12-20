@@ -301,6 +301,10 @@
 #let issbrs(Γ, K, B, L) = $#Γ * #K ⊢ #B triangle.stroked.small.r^* #L$
 #let islbrs(Γ, K, B, L) = $#Γ * #K ⊢ #B triangle.stroked.small.r^* #L$
 
+#let tyeq(Γ, a, b, A) = $#Γ ⊢ #a ≈ #b : #A$
+#let tupeq(Γ, E, F, T) = $#Γ ⊢ #E ≈ #F scripts(:)^* #T$
+#let ebrseq(Γ, L, B, B2, A) = $#Γ * #L ⊢ #B ≈ #B2 scripts(:)^* #A$
+
 #let lupg(γ) = $upright(↑)#γ$
 #let rupg(γ) = $#γ upright(↑)$
 

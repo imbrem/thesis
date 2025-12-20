@@ -1167,112 +1167,6 @@ We define some of the basic operations on indexed families as follows:
   If $sle(ms("X"))$ is a partial order, so is $tyle(ms("X"))$
 ]
 
-/*
-TODO: shunt proof to appendix
-
-#block-note[
-  If $sle(ms("X"))$ is a preorder, so is $tyle(ms("X"))$.
-
-  - Reflexivity: if $sty(X)$ is reflexive;
-    given $A ∈ sty(ms("X"))$, prove $tywk(A, A)$.
-
-    By induction on type $A$
-    - (base): $tywk(X, X)$ (by reflexivity of $sle(ms("X"))$)
-    - ($Π$ empty): $tywk(Π [], Π [])$
-    - ($Σ$ empty): $tywk(Σ [], Σ [])$
-    - ($Π$ cons):
-      $tywk(Π lb("T"), Π lb("T"))$ and $tywk(A, A)$ so
-      $tywk(Π (lb("T"), fty(lb("f"), A)), Π (lb("T"), fty(lb("f"), A)))$
-    - ($Σ$ cons):
-      $tywk(Σ lb("T"), Σ lb("T"))$ and $tywk(A, A)$ so
-      $tywk(Σ (lb("T"), fty(lb("f"), A)), Σ (lb("T"), fty(lb("f"), A)))$
-  - Transitivity: if $sle(ms("X"))$ is transitive;
-    given $tywk(A_1, A_2)$ and $tywk(A_2, A_3)$ prove $tywk(A_1, A_3)$.
-
-    Suffices to show $∀ A_3 . tywk(A_2, A_3) => tywk(A_1, A_3)$
-    by induction on the derivation $tywk(A_1, A_2)$.
-
-    - @twk-base:
-      Have $A_1 = X_1 ∈ ms("X")$, $A_2 = X_2 ∈ ms("X")$
-      with $X_1 sle(X) X_2$.
-
-      Fix $A_3$ s.t. $tywk(A_2, A_3)$.
-      By inversion on $tywk(X_2, A_3)$, either:
-      - $A_3 = X_3 ∈ ms("X")$ with $X_2 sle(X) X_3$;
-        in which case result follows by transitivity of $sle(X)$
-      - $A_3 = tunit$;
-        in which case result follows by @twk-unit.
-
-    - @twk-sigma:
-      Have $A_1 = Σ (lb("T")_1, fty(lb("f"), B_1))$, $A_2 = Σ (lb("T")_2, fty(lb("f"), B_2))$
-      with $tywk(Σ lb("T")_1, Σ lb("T")_2)$ and $tywk(B_1, B_2)$.
-
-      Fix $A_3$ s.t. $tywk(A_2, A_3)$.
-      By inversion on $tywk(Σ (lb("T")_2, fty(lb("f"), B_2)), A_3)$, either:
-      - @twk-sigma : $A_3 = Σ (lb("T")_3, fty(lb("f"), B_3))$ with
-        $tywk(Σ lb("T")_2, Σ lb("T")_3)$ and $tywk(B_2, B_3)$;
-
-        By induction, have $Σ lb("T")_1 ≤ Σ lb("T")_3$ and $tywk(B_1, B_3)$;
-        so result follows by @twk-sigma.
-
-    - @twk-pi:
-      Have $A_1 = Π (lb("T")_1, fty(lb("f"), B_1))$, $A_2 = Π (lb("T")_2, fty(lb("f"), B_2))$
-      with $tywk(Π lb("T")_1, Π lb("T")_2)$ and $tywk(B_1, B_2)$.
-
-      Fix $A_3$ s.t. $tywk(A_2, A_3)$.
-      By inversion on $tywk(Π (lb("T")_2, fty(lb("f"), B_2)), A_3)$, either:
-      - $A_3 = Π (lb("T")_3, fty(lb("f"), B_3))$ with
-        $tywk(Π lb("T")_2, Π lb("T")_3)$ and $tywk(B_2, B_3)$;
-
-        By induction, have $Π lb("T")_1 ≤ Π lb("T")_3$ and $tywk(B_1, B_3)$;
-        so result follows by @twk-pi.
-
-      - $A_3 = tunit$;
-        in which case result follows by @twk-unit.
-
-      - @twk-unit : $A_3 = tunit$;
-        in which case result follows by @twk-unit.
-
-    - @twk-unit:
-      Have $A_2 = tunit$.
-      Fix $A_3$ s.t. $tywk(A_2, A_3)$.
-      By inversion on $tywk(tunit, A_3)$, $A_3 = tunit$; result follows by @twk-unit.
-
-    - @twk-zero: Have $A_1 = tzero$; result follows by @twk-zero.
-]
-
-#block-note[
-  If $sle(ms("X"))$ is a partial order, so is $tyle(ms("X"))$
-
-  Suffices to show: if $sle(ms("X"))$ is antisymmetric, so is $tyle(ms("X"))$
-
-  Suffices to show: by induction on $atywk(A, B, ms("X"))$ that $atywk(B, A, ms("X")) => A = B$
-
-  - @twk-base:
-    Have $A = X$, $B = Y ∈ ms("X")$ with $X sle(ms("X")) Y$.
-
-    By inversion, result follows from antisymmetry of $sle(ms("X"))$
-  - @twk-sigma:
-    Have $A = Σ (lb("T"), fty(lb("f"), A'))$, $B = Σ (lb("T"'), fty(lb("f"), B'))$ with
-    $atywk(Σ lb("T"), Σ lb("T"'), ms("X"))$ and $atywk(A', B', ms("X"))$.
-
-    By inversion, have $atywk(Σ lb("T"'), Σ lb("T"), ms("X"))$ and $atywk(B', A', ms("X"))$.
-
-    Hence, by induction, have $A' = B'$ and $Σ lb("T") = Σ lb("T"')$;
-  - @twk-pi:
-    Have $A = Π (lb("T"), fty(lb("f"), A'))$, $B = Π (lb("T"'), fty(lb("f"), B'))$ with
-    $atywk(Π lb("T"), Π lb("T"'), ms("X"))$ and $atywk(A', B', ms("X"))$.
-
-    By inversion, have $atywk(Π lb("T"'), Π lb("T"), ms("X"))$ and $atywk(B', A', ms("X"))$.
-
-    Hence, by induction, have $A' = B'$ and $Π lb("T") = Π lb("T"')$;
-    implying the desired result.
-    implying the desired result.
-  - @twk-unit: have $B = tunit$; by inversion, $A = tunit$.
-  - @twk-zero: have $A = tzero$; by inversion, $B = tzero$.
-]
-*/
-
 #todo[Has joins when $ms("X")$ has _bounded_ joins]
 
 #todo[Has meets when $ms("X")$ has _bounded_ meets]
@@ -1365,9 +1259,9 @@ TODO: shunt proof to appendix
       )),
       declare-rule(rule(
         name: "coe",
-        $hasty(Γ, x, A)$,
+        $hasty(Γ, a, A)$,
         $tywk(A, A')$,
-        $hasty(Γ, x, A')$,
+        $hasty(Γ, a, A')$,
       )),
       declare-rule(rule(
         name: "app",
@@ -1426,7 +1320,7 @@ TODO: shunt proof to appendix
         name: "iter",
         $hasty(Γ, a, A)$,
         $hasty(Γ, e, B + A)$,
-        $hasty(Γ, eiter(e, x, A), B)$,
+        $hasty(Γ, eiter(a, x, e), B)$,
       )),
     )
     \
@@ -1618,7 +1512,83 @@ TODO: shunt proof to appendix
 
 #figure(
   [
-    #todo[this]
+    #rule-set(
+      declare-rule(rule(
+        name: "var",
+        $Γ med x = A$,
+        $tyeq(Γ, x, x, A)$,
+      )),
+      declare-rule(rule(
+        name: "coe",
+        $tyeq(Γ, a, a', A)$,
+        $tywk(A, A')$,
+        $tyeq(Γ, a, a', A')$,
+      )),
+      declare-rule(rule(
+        name: "app",
+        $isfn(Γ, f, A, B)$,
+        $tyeq(Γ, a, a', A)$,
+        $tyeq(Γ, f med a, f med a', B)$,
+      )),
+      declare-rule(rule(
+        name: "inj",
+        $tyeq(Γ, a, a', A)$,
+        $tyeq(Γ, lb("l") med a, lb("l") med a', Σ (lty(lb("l"), A)))$,
+      )),
+      declare-rule(rule(
+        name: "proj",
+        $tyeq(Γ, e, e', Π (fty(lb("f"), A)))$,
+        $tyeq(Γ, lb("f") med e, lb("f") med e', A)$,
+      )),
+      declare-rule(rule(
+        name: "tuple",
+        $tupeq(Γ, E, E', lb("T"))$,
+        $tyeq(Γ, (E), (E'), Π lb("T"))$,
+      )),
+      declare-rule(rule(
+        name: "Π-nil",
+        $tupeq(Γ, ·, ·, ·)$,
+      )),
+      declare-rule(rule(
+        name: "Π-cons",
+        $tupeq(Γ, E, E', lb("T"))$,
+        $tyeq(Γ, e, e', A)$,
+        $tupeq(Γ, #$E, e$, #$E', e'$, #$lb("T"), fty(lb("f"), A)$)$,
+      )),
+      declare-rule(rule(
+        name: "let",
+        $tyeq(Γ, a, a', A)$,
+        $tyeq(#$Γ, x : A$, b, b', B)$,
+        $tyeq(Γ, elet(x, a, b), elet(x, a', b'), B)$
+      )),
+      declare-rule(rule(
+        name: "cases",
+        $tyeq(Γ, e, e', Σ lb("L"))$,
+        $ebrseq(Γ, lb("L"), M, M', A)$,
+        $tyeq(Γ, ecase(e, M), ecase(e', M'), A)$,
+      )),
+      declare-rule(rule(
+        name: "Σ-nil",
+        $ebrseq(Γ, ·, ·, ·, ·)$,
+      )),
+      declare-rule(rule(
+        name: "Σ-cons",
+        $ebrseq(Γ, lb("L"), M, M', A)$,
+        $tyeq(#$Γ, x : A$, a, a', A)$,
+        $ebrseq(
+          Γ, #$lb("L"), lty(lb("l"), A)$, 
+          (#$M, ebr(lb("l"), x, a)$), (#$M', ebr(lb("l"), x, a')$),
+          A
+        )$,
+      )),
+      declare-rule(rule(
+        name: "iter",
+        $tyeq(Γ, a, a', A)$,
+        $tyeq(Γ, e, e', B + A)$,
+        $tyeq(Γ, eiter(a, x, e), eiter(e', x, a'), B)$,
+      )),
+    )
+    \
   ],
   caption: [Congruence rules for #iter-calc() equivalence],
 )
@@ -4270,6 +4240,114 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 }
 
 #show: appendix
+
+= Type Theory
+
+/*
+TODO: shunt proof to appendix
+
+#block-note[
+  If $sle(ms("X"))$ is a preorder, so is $tyle(ms("X"))$.
+
+  - Reflexivity: if $sty(X)$ is reflexive;
+    given $A ∈ sty(ms("X"))$, prove $tywk(A, A)$.
+
+    By induction on type $A$
+    - (base): $tywk(X, X)$ (by reflexivity of $sle(ms("X"))$)
+    - ($Π$ empty): $tywk(Π [], Π [])$
+    - ($Σ$ empty): $tywk(Σ [], Σ [])$
+    - ($Π$ cons):
+      $tywk(Π lb("T"), Π lb("T"))$ and $tywk(A, A)$ so
+      $tywk(Π (lb("T"), fty(lb("f"), A)), Π (lb("T"), fty(lb("f"), A)))$
+    - ($Σ$ cons):
+      $tywk(Σ lb("T"), Σ lb("T"))$ and $tywk(A, A)$ so
+      $tywk(Σ (lb("T"), fty(lb("f"), A)), Σ (lb("T"), fty(lb("f"), A)))$
+  - Transitivity: if $sle(ms("X"))$ is transitive;
+    given $tywk(A_1, A_2)$ and $tywk(A_2, A_3)$ prove $tywk(A_1, A_3)$.
+
+    Suffices to show $∀ A_3 . tywk(A_2, A_3) => tywk(A_1, A_3)$
+    by induction on the derivation $tywk(A_1, A_2)$.
+
+    - @twk-base:
+      Have $A_1 = X_1 ∈ ms("X")$, $A_2 = X_2 ∈ ms("X")$
+      with $X_1 sle(X) X_2$.
+
+      Fix $A_3$ s.t. $tywk(A_2, A_3)$.
+      By inversion on $tywk(X_2, A_3)$, either:
+      - $A_3 = X_3 ∈ ms("X")$ with $X_2 sle(X) X_3$;
+        in which case result follows by transitivity of $sle(X)$
+      - $A_3 = tunit$;
+        in which case result follows by @twk-unit.
+
+    - @twk-sigma:
+      Have $A_1 = Σ (lb("T")_1, fty(lb("f"), B_1))$, $A_2 = Σ (lb("T")_2, fty(lb("f"), B_2))$
+      with $tywk(Σ lb("T")_1, Σ lb("T")_2)$ and $tywk(B_1, B_2)$.
+
+      Fix $A_3$ s.t. $tywk(A_2, A_3)$.
+      By inversion on $tywk(Σ (lb("T")_2, fty(lb("f"), B_2)), A_3)$, either:
+      - @twk-sigma : $A_3 = Σ (lb("T")_3, fty(lb("f"), B_3))$ with
+        $tywk(Σ lb("T")_2, Σ lb("T")_3)$ and $tywk(B_2, B_3)$;
+
+        By induction, have $Σ lb("T")_1 ≤ Σ lb("T")_3$ and $tywk(B_1, B_3)$;
+        so result follows by @twk-sigma.
+
+    - @twk-pi:
+      Have $A_1 = Π (lb("T")_1, fty(lb("f"), B_1))$, $A_2 = Π (lb("T")_2, fty(lb("f"), B_2))$
+      with $tywk(Π lb("T")_1, Π lb("T")_2)$ and $tywk(B_1, B_2)$.
+
+      Fix $A_3$ s.t. $tywk(A_2, A_3)$.
+      By inversion on $tywk(Π (lb("T")_2, fty(lb("f"), B_2)), A_3)$, either:
+      - $A_3 = Π (lb("T")_3, fty(lb("f"), B_3))$ with
+        $tywk(Π lb("T")_2, Π lb("T")_3)$ and $tywk(B_2, B_3)$;
+
+        By induction, have $Π lb("T")_1 ≤ Π lb("T")_3$ and $tywk(B_1, B_3)$;
+        so result follows by @twk-pi.
+
+      - $A_3 = tunit$;
+        in which case result follows by @twk-unit.
+
+      - @twk-unit : $A_3 = tunit$;
+        in which case result follows by @twk-unit.
+
+    - @twk-unit:
+      Have $A_2 = tunit$.
+      Fix $A_3$ s.t. $tywk(A_2, A_3)$.
+      By inversion on $tywk(tunit, A_3)$, $A_3 = tunit$; result follows by @twk-unit.
+
+    - @twk-zero: Have $A_1 = tzero$; result follows by @twk-zero.
+]
+
+#block-note[
+  If $sle(ms("X"))$ is a partial order, so is $tyle(ms("X"))$
+
+  Suffices to show: if $sle(ms("X"))$ is antisymmetric, so is $tyle(ms("X"))$
+
+  Suffices to show: by induction on $atywk(A, B, ms("X"))$ that $atywk(B, A, ms("X")) => A = B$
+
+  - @twk-base:
+    Have $A = X$, $B = Y ∈ ms("X")$ with $X sle(ms("X")) Y$.
+
+    By inversion, result follows from antisymmetry of $sle(ms("X"))$
+  - @twk-sigma:
+    Have $A = Σ (lb("T"), fty(lb("f"), A'))$, $B = Σ (lb("T"'), fty(lb("f"), B'))$ with
+    $atywk(Σ lb("T"), Σ lb("T"'), ms("X"))$ and $atywk(A', B', ms("X"))$.
+
+    By inversion, have $atywk(Σ lb("T"'), Σ lb("T"), ms("X"))$ and $atywk(B', A', ms("X"))$.
+
+    Hence, by induction, have $A' = B'$ and $Σ lb("T") = Σ lb("T"')$;
+  - @twk-pi:
+    Have $A = Π (lb("T"), fty(lb("f"), A'))$, $B = Π (lb("T"'), fty(lb("f"), B'))$ with
+    $atywk(Π lb("T"), Π lb("T"'), ms("X"))$ and $atywk(A', B', ms("X"))$.
+
+    By inversion, have $atywk(Π lb("T"'), Π lb("T"), ms("X"))$ and $atywk(B', A', ms("X"))$.
+
+    Hence, by induction, have $A' = B'$ and $Π lb("T") = Π lb("T"')$;
+    implying the desired result.
+    implying the desired result.
+  - @twk-unit: have $B = tunit$; by inversion, $A = tunit$.
+  - @twk-zero: have $A = tzero$; by inversion, $B = tzero$.
+]
+*/
 
 = Category Theory
 
