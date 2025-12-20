@@ -1376,6 +1376,11 @@ TODO: shunt proof to appendix
         $hasty(Γ, f med a, B)$,
       )),
       declare-rule(rule(
+        name: "inj",
+        $hasty(Γ, a, A)$,
+        $hasty(Γ, lb("l") med a, Σ (lty(lb("l"), A)))$,
+      )),
+      declare-rule(rule(
         name: "proj",
         $hasty(Γ, e, Π (fty(lb("f"), A)))$,
         $hasty(Γ, lb("f") med e, A)$,
@@ -1396,9 +1401,10 @@ TODO: shunt proof to appendix
         $istup(Γ, #$E, e$, #$lb("T"), fty(lb("f"), A)$)$,
       )),
       declare-rule(rule(
-        name: "inj",
+        name: "let",
         $hasty(Γ, a, A)$,
-        $hasty(Γ, lb("l") med a, Σ (lty(lb("l"), A)))$,
+        $hasty(#$Γ, x : A$, b, B)$,
+        $hasty(Γ, elet(x, a, b), B)$
       )),
       declare-rule(rule(
         name: "cases",
@@ -1438,7 +1444,36 @@ TODO: shunt proof to appendix
 
 #figure(
   [
-    #todo[this]
+    #rule-set(
+      declare-rule(rule(
+        name: "expr",
+        $lbwk(lty(lb("l"), A), ms("L"))$,
+        $hasty(Γ, e, A)$,
+        $haslb(Γ, brb(lb("l"), e), ms("L"))$,
+      )),
+      declare-rule(rule(
+        name: "case",
+        $hasty(Γ, e, Σ lb("L"))$,
+        $issbrs(Γ, lb("L"), K, ms("K"))$,
+        $haslb(Γ, scase(e, K), ms("K"))$
+      )),
+      declare-rule(rule(
+        name: "case",
+        $hasty(Γ, e, Σ lb("L"))$,
+        $issbrs(Γ, lb("L"), K, ms("K"))$,
+        $haslb(Γ, scase(e, K), ms("K"))$
+      )),
+      declare-rule(rule(
+        name: "case-nil",
+        $issbrs(Γ, ·, ·, ·)$,
+      )),
+      declare-rule(rule(
+        name: "case-cons",
+        $issbrs(Γ, lb("L"), K, ms("K"))$,
+        $haslb(#$Γ, x : A$, brb(lb("k"), e), ms("K"))$,
+        $issbrs(Γ, #$lb("L"), lty(lb("l"), A)$, #$K, sbr(lb("l"), x, brb(lb("k"), e))$, ms("K"))$,
+      )),
+    )
     \
   ],
   caption: [Typing rules for #br-calc(ms("E"))],
@@ -1448,7 +1483,29 @@ TODO: shunt proof to appendix
 
 #figure(
   [
-    #todo[this]
+    #rule-set(
+      declare-rule(rule(
+        name: "assign",
+        $hasty(Γ, e, A)$,
+        $haslb(#$Γ, x : A$, r, ms("L"))$,
+        $haslb(#$Γ$, slet(x, e, r), ms("L"))$
+      )),
+      declare-rule(rule(
+        name: "tm",
+        $islbrs(Γ, ms("K"), L, #$ms("L"), ms("K")$)$,
+        $haslb(Γ, #$τ ; L$, ms("L"))$
+      )),
+      declare-rule(rule(
+        name: "lb-nil",
+        $islbrs(Γ, ·, ·, ·)$,
+      )),
+      declare-rule(rule(
+        name: "lb-cons",
+        $issbrs(Γ, ms("K"), L, ms("L"))$,
+        $haslb(#$Γ, x : A$, r, ms("L"))$,
+        $islbrs(Γ, #$ms("K"), lty(lb("k"), A)$, #$K, sbr(lb("k"), x, r)$, ms("L"))$,
+      )),
+    )
     \
   ],
   caption: [Typing rules for #ssa-calc(ms("E"), ms("T"))],

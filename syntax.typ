@@ -245,7 +245,7 @@
 }
 
 /// A let statement
-#let slet(x, a, t) = $klet #x = #a seq #t$
+#let slet(x, a, t) = $#x = #a seq #t$
 
 /// A case statement
 #let scase(e, B) = $kcase #e thick { #B }$
@@ -291,12 +291,15 @@
 #let atywk(A, B, ..xs) = $#A tyle(..xs) #B$
 
 #let tywk(A, B) = $#A ≤ #B$
+#let lbwk(L, M) = $#L ≤ #M$
 
 #let isfn(Γ, f, A, B) = $#Γ ⊢ #f : #A → #B$
 #let istup(Γ, E, T) = $#Γ ⊢ #E scripts(:)^* #T$
 #let isebrs(Γ, L, B, A) = $#Γ * #L ⊢ #B scripts(:)^* #A$
 #let hasty(Γ, a, A) = $#Γ ⊢ #a : #A$
 #let haslb(Γ, r, L) = $#Γ ⊢ #r triangle.stroked.small.r #L$
+#let issbrs(Γ, K, B, L) = $#Γ * #K ⊢ #B triangle.stroked.small.r^* #L$
+#let islbrs(Γ, K, B, L) = $#Γ * #K ⊢ #B triangle.stroked.small.r^* #L$
 
 #let lupg(γ) = $upright(↑)#γ$
 #let rupg(γ) = $#γ upright(↑)$
