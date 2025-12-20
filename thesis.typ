@@ -1446,7 +1446,7 @@ TODO: shunt proof to appendix
   [
     #rule-set(
       declare-rule(rule(
-        name: "expr",
+        name: "br",
         $lbwk(lty(lb("l"), A), ms("L"))$,
         $hasty(Γ, e, A)$,
         $haslb(Γ, brb(lb("l"), e), ms("L"))$,
@@ -1492,6 +1492,7 @@ TODO: shunt proof to appendix
       )),
       declare-rule(rule(
         name: "tm",
+        $haslb(Γ, τ, #$ms("L"), ms("K")$)$,
         $islbrs(Γ, ms("K"), L, #$ms("L"), ms("K")$)$,
         $haslb(Γ, #$τ ; L$, ms("L"))$
       )),
@@ -1538,11 +1539,47 @@ TODO: shunt proof to appendix
     \
   ],
   caption: [Grammar for #gssa-calc(ms("E"), ms("T"))],
+  kind: image,
 )
 
 #figure(
   [
-    #todo[this]
+    #rule-set(
+      declare-rule(rule(
+        name: "assign",
+        $hasty(Γ, e, A)$,
+        $haslb(#$Γ, x : A$, r, ms("L"))$,
+        $haslb(#$Γ$, slet(x, e, r), ms("L"))$
+      )),
+      declare-rule(rule(
+        name: "br",
+        $lbwk(lty(lb("l"), A), ms("L"))$,
+        $hasty(Γ, e, A)$,
+        $haslb(Γ, brb(lb("l"), e), ms("L"))$,
+      )),
+      declare-rule(rule(
+        name: "case",
+        $hasty(Γ, e, Σ lb("L"))$,
+        $issbrs(Γ, lb("L"), L, ms("K"))$,
+        $haslb(Γ, scase(e, L), ms("K"))$
+      )),
+      declare-rule(rule(
+        name: "scope",
+        $haslb(Γ, r, #$ms("L"), ms("K")$)$,
+        $islbrs(Γ, ms("K"), L, #$ms("L"), ms("K")$)$,
+        $haslb(Γ, #${r} ; L$, ms("L"))$
+      )),
+      declare-rule(rule(
+        name: "lb-nil",
+        $islbrs(Γ, ·, ·, ·)$,
+      )),
+      declare-rule(rule(
+        name: "lb-cons",
+        $issbrs(Γ, ms("K"), L, ms("L"))$,
+        $haslb(#$Γ, x : A$, r, ms("L"))$,
+        $islbrs(Γ, #$ms("K"), lty(lb("k"), A)$, #$K, sbr(lb("k"), x, r)$, ms("L"))$,
+      )),
+    )
     \
   ],
   caption: [Typing rules for #gssa-calc(ms("E"), ms("T"))],
