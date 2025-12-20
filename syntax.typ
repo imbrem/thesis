@@ -315,6 +315,10 @@
 #let tupeq(Γ, Eq, E, F, T) = $#Γ scripts(⊢)_#Eq #E ≈ #F scripts(:)^* #T$
 #let ebrseq(Γ, L, Eq, B, B2, A) = $#Γ * #L scripts(⊢)_#Eq #B ≈ #B2 scripts(:)^* #A$
 
+#let tyref(Γ, R, a, b, A) = $#Γ scripts(⊢)_#R #a ->> #b : #A$
+#let tupref(Γ, R, E, F, T) = $#Γ scripts(⊢)_#R #E ->> #F scripts(:)^* #T$
+#let ebrsref(Γ, L, R, B, B2, A) = $#Γ * #L scripts(⊢)_#R #B ->> #B2 scripts(:)^* #A$
+
 #let lupg(γ) = $upright(↑)#γ$
 #let rupg(γ) = $#γ upright(↑)$
 

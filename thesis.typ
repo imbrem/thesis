@@ -1542,18 +1542,18 @@ We define some of the basic operations on indexed families as follows:
       )),
       declare-rule(rule(
         name: "tuple",
-        $tupeq(Γ, ms("Eq"), E, E', lb("T"))$,
+        $tupref(Γ, ms("Eq"), E, E', lb("T"))$,
         $tyeq(Γ, ms("Eq"), (E), (E'), Π lb("T"))$,
       )),
       declare-rule(rule(
         name: "Π-nil",
-        $tupeq(Γ, ms("Eq"), ·, ·, ·)$,
+        $tupref(Γ, ms("Eq"), ·, ·, ·)$,
       )),
       declare-rule(rule(
         name: "Π-cons",
-        $tupeq(Γ, ms("Eq"), E, E', lb("T"))$,
+        $tupref(Γ, ms("Eq"), E, E', lb("T"))$,
         $tyeq(Γ, ms("Eq"), e, e', A)$,
-        $tupeq(Γ, ms("Eq"), #$E, e$, #$E', e'$, #$lb("T"), fty(lb("f"), A)$)$,
+        $tupref(Γ, ms("Eq"), #$E, e$, #$E', e'$, #$lb("T"), fty(lb("f"), A)$)$,
       )),
       declare-rule(rule(
         name: "let",
@@ -1751,6 +1751,89 @@ We define some of the basic operations on indexed families as follows:
     #todo[this] \
   ],
   caption: [Refinement rules for #iter-calc()],
+)
+
+#figure(
+  [
+    #rule-set(
+      declare-rule(rule(
+        name: "var",
+        $Γ med x = A$,
+        $tyref(Γ, ms("R"), x, x, A)$,
+      )),
+      declare-rule(rule(
+        name: "coe",
+        $tyref(Γ, ms("R"), a, a', A)$,
+        $tywk(A, A')$,
+        $tyref(Γ, ms("R"), a, a', A')$,
+      )),
+      declare-rule(rule(
+        name: "app",
+        $isfn(Γ, f, A, B)$,
+        $tyref(Γ, ms("R"),  a, a', A)$,
+        $tyref(Γ, ms("R"), f med a, f med a', B)$,
+      )),
+      declare-rule(rule(
+        name: "inj",
+        $tyref(Γ, ms("R"), a, a', A)$,
+        $tyref(Γ, ms("R"), lb("l") med a, lb("l") med a', Σ (lty(lb("l"), A)))$,
+      )),
+      declare-rule(rule(
+        name: "proj",
+        $tyref(Γ, ms("R"), e, e', Π (fty(lb("f"), A)))$,
+        $tyref(Γ, ms("R"), lb("f") med e, lb("f") med e', A)$,
+      )),
+      declare-rule(rule(
+        name: "tuple",
+        $tupref(Γ, ms("R"), E, E', lb("T"))$,
+        $tyref(Γ, ms("R"), (E), (E'), Π lb("T"))$,
+      )),
+      declare-rule(rule(
+        name: "Π-nil",
+        $tupref(Γ, ms("R"), ·, ·, ·)$,
+      )),
+      declare-rule(rule(
+        name: "Π-cons",
+        $tupref(Γ, ms("R"), E, E', lb("T"))$,
+        $tyref(Γ, ms("R"), e, e', A)$,
+        $tupref(Γ, ms("R"), #$E, e$, #$E', e'$, #$lb("T"), fty(lb("f"), A)$)$,
+      )),
+      declare-rule(rule(
+        name: "let",
+        $tyref(Γ, ms("R"), a, a', A)$,
+        $tyref(#$Γ, x : A$, ms("R"), b, b', B)$,
+        $tyref(Γ, ms("R"), elet(x, a, b), elet(x, a', b'), B)$
+      )),
+      declare-rule(rule(
+        name: "cases",
+        $tyref(Γ, ms("R"), e, e', Σ lb("L"))$,
+        $ebrsref(Γ, lb("L"), ms("R"), M, M', A)$,
+        $tyref(Γ, ms("R"), ecase(e, M), ecase(e', M'), A)$,
+      )),
+      declare-rule(rule(
+        name: "Σ-nil",
+        $ebrsref(Γ, ·, ms("R"), ·, ·, ·)$,
+      )),
+      declare-rule(rule(
+        name: "Σ-cons",
+        $ebrsref(Γ, lb("L"), ms("R"), M, M', A)$,
+        $tyref(#$Γ, x : A$, ms("R"), a, a', A)$,
+        $ebrsref(
+          Γ, #$lb("L"), lty(lb("l"), A)$, ms("R"), 
+          (#$M, ebr(lb("l"), x, a)$), (#$M', ebr(lb("l"), x, a')$),
+          A
+        )$,
+      )),
+      declare-rule(rule(
+        name: "iter",
+        $tyref(Γ, ms("R"), a, a', A)$,
+        $tyref(Γ, ms("R"), e, e', B + A)$,
+        $tyref(Γ, ms("R"), eiter(a, x, e), eiter(e', x, a'), B)$,
+      )),
+    )
+    \
+  ],
+  caption: [Congruence rules for #iter-calc() refinement],
 )
 
 == Regions
