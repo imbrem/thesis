@@ -3581,7 +3581,7 @@ to fix notations. Recall the definition of a category $cal(C)$:
     to their _composition_ $f ; g : cal(C)(A, C)$
 
   Such that:
-  - For all $A, B: |cal(C)|$, $id_A ; f = f ; id_B = f$
+  - For all $A, B∈ |cal(C)|$, $id_A ; f = f ; id_B = f$
   - For all $f: cal(C)(A, B), g: cal(C)(B, C), h: cal(C)(C, D)$, $(f ; g) ; h = f ; (g ; h)$
 
   We will sometimes write the set $cal(C)(A, B)$ as $A ahm(cal(C)) B$ or,
@@ -3666,7 +3666,7 @@ $
     //
     If such a morphism exists, it is unique, so we may write it as $f^(-1)$.
 
-    Two objects $A, B : |cal(C)|$ are _isomorphic_, written $A ≈ B$, if there exists
+    Two objects $A, B ∈ |cal(C)|$ are _isomorphic_, written $A ≈ B$, if there exists
     an isomorphism $f : cal(C)(A, B)$.
 
   - $f$ is an _epimorphism_ if, for all parallel morphisms $g_1, g_2 : cal(C)(B, X)$,
@@ -3710,7 +3710,7 @@ it is _not_ generally the case that a morphism which is both epic and monic is a
 
 #definition(name: "Functor")[
   Given categories $cal(C), cal(D)$, a _functor_ $F : cal(C) → cal(D)$ consists of:
-  - A mapping on objects $|F| : |cal(C)| → |cal(D)|$. We often simply write $|F|(A)$ as $F A$.
+  - A mapping on objects $|F| ∈ |cal(C)| → |cal(D)|$. We often simply write $|F|(A)$ as $F A$.
   - A mapping from $cal(C)$-morphisms $f : cal(C)(A, B)$
     to $cal(D)$-morphisms $F f : cal(D)(F A, F B)$
   such that
@@ -3772,7 +3772,7 @@ itself with the structure of a category, the _category of categories_ $ms("Cat")
   A _concrete category_ $cal(V)$ is a category equipped with a faithful functor
   $U : cal(V) → cset$, called the _underlying-set functor_.
 
-  Given an object $A: |cal(V)|$, we call $|A| := U med A$ the _underlying set_ or _carrier_ of $A$.
+  Given an object $A ∈ |cal(V)|$, we call $|A| := U med A$ the _underlying set_ or _carrier_ of $A$.
 
   Likewise, given a morphism $f : cal(V)(A, B)$, we call $|f| := U med f : |A| → |B|$ the
   _underlying function_ of $f$.
@@ -3821,22 +3821,22 @@ and morphisms $cconc(cal(V), cal(W))$ concrete functors $F: cal(V) → cal(W)$ b
 == Products
 
 #definition(name: "Terminal Object")[
-  An object $X : |cal(C)|$ is _terminal_ if for every object $A : |cal(C)|$,
+  An object $X ∈ |cal(C)|$ is _terminal_ if for every object $A ∈ |cal(C)|$,
   there exists a _unique_ morphism $!_A : cal(C)(A, X)$.
 
   We note that terminal objects are unique up to _unique_ isomorphism:
   if $X$ and $X'$ are terminal objects, then $X ≈ X'$.
   //
   Hence, in any $cal(C)$ with a terminal object, we may choose a distinguished terminal object
-  $tunit_cal(C) : |cal(C)|$ without loss of generality; where there is no risk of confusion, we
-  will often simply write $tunit : |cal(C)|$.
+  $tunit_cal(C) ∈ |cal(C)|$ without loss of generality; where there is no risk of confusion, we
+  will often simply write $tunit ∈ |cal(C)|$.
 ]
 
 #definition(name: "Product")[
   Given a family of objects $icol(A) = (A_i | i ∈ I)$ indexed by a set $I$,
-  we say that an object $P: |cal(C)|$ is their _product_ if
+  we say that an object $P∈ |cal(C)|$ is their _product_ if
   there exist morphisms $π_i^P : cal(C)(P, A_i)$ such that,
-  for every object $X : |cal(C)|$,
+  for every object $X ∈ |cal(C)|$,
   given a family of morphisms $icol(f) = (f_i : cal(C)(X, A_i) | i ∈ I)$,
   there exists a _unique_ morphism $⟨icol(f)⟩^P : cal(C)(X, P)$
   (the _product_ of the $f_i$)
@@ -3883,6 +3883,40 @@ In general, where the appropriate products exist, we write
   - $f × g := Π (lb("l") ↦ f, lb("r") ↦ g)$
   - $f × A_2 := f × id_(A_2)$
   - $A_1 × g := id_(A_1) × g$
+
+#definition(name: "Natural Family")[
+  Fix categories $cal(C), cal(D)$ and a set of _indices_ $I$.
+
+  Given a family of $cal(D)$-objects $F_icol(A) ∈ |cal(D)|$
+  indexed by $icol(A) := (A_i | i ∈ I)$ where each $A_i ∈ cal(C)$ is a $cal(C)$-object,
+  we say $F$ is _functorial in $x ∈ I$_ if, 
+  for each choice of objects $hat(icol(A)) := (A_i | i ∈ I sdiff {x})$,
+  and morphism $f : cal(C)(X, Y)$
+  there exists a canonical morphism
+  $F_(hat(icol(A)), x) med f : F_(hat(icol(A))[x := X]) → F_(hat(icol(A))[x := B])$
+  such that $F_(hat(icol(A)), x): cal(C) → cal(D)$ is a functor; that is,
+  - $F_(hat(icol(A)), x) id_(A_x) = id_(F_icol(A))$
+  - $F_(hat(icol(A)), x) (f ; g) = F_(hat(icol(A)), x) f ; F_(hat(icol(A)), x) g$
+    for $f : cal(C)(X, Y), g : cal(C)(Y, Z)$.
+
+  Given a family of morphisms $η_icol(A) : cal(D)(F_icol(A), G_icol(A))$, 
+  for $F, G$ functorial in $x ∈ I$,
+  we say $η$ is _natural_ in $x$ if,
+  for each choice of objects $hat(icol(A)) := (A_i | i ∈ I sdiff {x})$,
+  for each morphism $f : cal(C)(X, Y)$ in $cal(C)$,
+  the expected naturality square commutes
+  $
+    #diagram(cell-size: 15mm, $ 
+      F_(hat(icol(A))[x := X]) edge(η_(hat(icol(A))[x := X]), ->) edge("d", F med f, ->) 
+      & G_(hat(icol(A))[x := X]) edge("d", G med f, ->, label-side: #left) \
+      F_(hat(icol(A))[x := Y]) edge(η_(hat(icol(A))[x := Y]), ->, label-side: #right) 
+      & G_(hat(icol(A))[x := Y]) $)
+  $
+
+  Equivalently, the family
+  $η_(hat(icol(A)), x, X) := η_(hat(icol(A))[x := X])$
+  is a natural transformation $η_(hat(icol(A)), x) : F_(hat(icol(A)), x) => G_(hat(icol(A)), x)$.
+]
 
 #todo[every thinning induces a map on the product]
 
@@ -3981,9 +4015,9 @@ $cal(V)$ will range over concretely cartesian categories unless otherwise specif
   Given a concretely cartesian category $cal(V)$,
   a $cal(V)$-enriched category $cal(C)$, or _$cal(V)$-category_, consists of
   - An set of objects $|cal(C)|$
-  - For each pair of objects $A, B : |cal(C)|$, a _hom-object_ $cal(C)(A, B) ∈ |cal(V)|$
-  - For each object $A : |cal(C)|$, an _identity morphism_ $id_A : cal(C)(A, B)$
-  - For each triple of objects $A, B, C : |cal(C)|$, a _composition morphism_
+  - For each pair of objects $A, B ∈ |cal(C)|$, a _hom-object_ $cal(C)(A, B) ∈ |cal(V)|$
+  - For each object $A ∈ |cal(C)|$, an _identity morphism_ $id_A : cal(C)(A, B)$
+  - For each triple of objects $A, B, C ∈ |cal(C)|$, a _composition morphism_
     $
       (;)_(A, B, C) : cal(V)(cal(C)(A, B) × cal(C)(B, C), cal(C)(A, C))
     $
@@ -4058,8 +4092,8 @@ Throughout the rest of this section, we fix a concretely cartesian category $cal
 
 #definition(name: [$cal(V)$-functor])[
   Given $cal(V)$-categories $cal(C), cal(D)$, a $cal(V)$-functor consists of
-  - A mapping on objects $|F| : |cal(C)| → |cal(D)|$
-  - For each pair of objects $A, B : |cal(C)|$, a $cal(V)$-morphism
+  - A mapping on objects $|F| ∈ |cal(C)| → |cal(D)|$
+  - For each pair of objects $A, B ∈ |cal(C)|$, a $cal(V)$-morphism
     $
       F_(A, B) : cal(V)(cal(C)(A, B), cal(D)(F A, F B))
     $
@@ -4217,7 +4251,7 @@ so we will not repeat them.
 We define a
 
 Consider now families of objects
-$X_(A_1,...,A_n), Y_(A_1,...,A_n) : |cal(C)|$ parametrized by $n$ objects $A_i : |cal(C)|$
+$X_(A_1,...,A_n), Y_(A_1,...,A_n) ∈ |cal(C)|$ parametrized by $n$ objects $A_i ∈ |cal(C)|$
 and a family of morphisms
 $m_(A_1,...,A_n) : cal(C)(X_(A_1,...,A_n), Y_(A_1,...,A_n))$.
 We say that $m$ is _natural_ in $A_i$ if:
@@ -4234,10 +4268,10 @@ Given a function $|cal(C)|^n → |cal(C)|$
 A coproduct, then, is just the dual notion to a product:
 
 #definition(name: "Coproduct")[
-  Given a family of objects $A_i : |cal(C)|$ for some indexing set $I$,
-  we say that an object $C: |cal(C)|$ is their _coproduct_ if there exist:
+  Given a family of objects $A_i ∈ |cal(C)|$ for some indexing set $I$,
+  we say that an object $C∈ |cal(C)|$ is their _coproduct_ if there exist:
   - Morphisms $ι_i : cal(C)(A_i, C)$ and
-  - For each object $X : |cal(C)|$,
+  - For each object $X ∈ |cal(C)|$,
     given a family of morphisms $f_i : cal(C)(A_i, X)$ for each $i ∈ I$,
     a _unique_ morphism $[f_i]_(i ∈ I) : cal(C)(C, X)$
     (the _coproduct_ of the $f_i$)
@@ -4296,8 +4330,8 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 
 #definition(name: [$cal(V)$-Binoidal Category])[
   A $cal(V)$-binoidal category is a $cal(V)$-category equipped with
-  - A function on objects $- ⊗ - : |cal(C)| × |cal(C)| → |cal(C)|$
-  - For each object $A : |cal(C)|$, $cal(V)$-functors $A ⊗ -, - ⊗ A : cal(C) → cal(C)$ which
+  - A function on objects $- ⊗ - ∈ |cal(C)| × |cal(C)| → |cal(C)|$
+  - For each object $A ∈ |cal(C)|$, $cal(V)$-functors $A ⊗ -, - ⊗ A : cal(C) → cal(C)$ which
     agree with $- ⊗ -$ on objects
 
   In general, given $f: A_1 → B_1$ and $g : A_2 → B_2$, we define:
@@ -4306,7 +4340,7 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 
   We say that a morphism $f$ is _central_ if
   $
-    ∀ A_2, B_2 : |cal(C)|, ∀ g : cal(C)(A_2, B_2) . (f ⋉ g = f ⋊ g) ∧ (g ⋉ f = g ⋊ f)
+    ∀ A_2, B_2 ∈ |cal(C)|, ∀ g : cal(C)(A_2, B_2) . (f ⋉ g = f ⋊ g) ∧ (g ⋉ f = g ⋊ f)
   $
   In this case, we write
   $
@@ -4318,7 +4352,7 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 #definition(name: [$cal(V)$-Premonoidal Category])[
   A $cal(V)$-premonoidal category is a $cal(V)$-binoidal category $cal(C)$
   equipped with
-  - A distinguished _identity object_ $munit : |cal(C)|$
+  - A distinguished _identity object_ $munit ∈ |cal(C)|$
   - Central natural isomorphisms:
     - $α_(A, B, C) : cal(C)((A ⊗ B) ⊗ C, A ⊗ (B ⊗ C))$ (the _associator_)
     - $λ_A : cal(C)(munit ⊗ A, A)$ (the _left unitor_)
@@ -4337,7 +4371,7 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 
   Such that the following coherence conditions hold:
   - (Pentagon Identity)
-    For all objects $A, B, C, D : |cal(C)|$, the following diagram commutes:
+    For all objects $A, B, C, D ∈ |cal(C)|$, the following diagram commutes:
     $
       #diagram($                                 & (A ⊗ B) ⊗ (C ⊗ D) edge("dr", α_(A, B, (C ⊗ D)), ->) &                                \
       ((A ⊗ B) ⊗ C) ⊗ D
@@ -4349,7 +4383,7 @@ Similarly to products, coproducts satisfy some basic algebraic properties
     $
 
   - (Triangle Identity)
-    For all objects $A, B : |cal(C)|$, the following diagram commutes:
+    For all objects $A, B ∈ |cal(C)|$, the following diagram commutes:
     $
       #diagram(cell-size: 15mm, $ (A ⊗ munit) ⊗ B edge(α_(A, munit, B), ->) edge("dr", ρ_A ⊗ id_B, ->, label-side: #right) &
       A ⊗ (munit ⊗ B) edge("d", id_A ⊗ λ_B, ->, label-side: #left) \
@@ -4367,7 +4401,7 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 
     Such that the following coherence conditions hold:
     - (Hexagon Identity)
-      For all objects $A, B, C : |cal(C)|$, the following diagram commutes:
+      For all objects $A, B, C ∈ |cal(C)|$, the following diagram commutes:
       $
         #diagram($ (A ⊗ B) ⊗ C edge(α_(A, B, C), ->) edge("d", σ_(A, B) ⊗ C, ->, label-side: #right) &
         A ⊗ (B ⊗ C) edge(σ_(A, B ⊗ C), ->, label-side: #left) &
