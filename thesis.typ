@@ -3818,15 +3818,6 @@ we can form a category $cconc$ of concrete functors
 with objects concrete categories $cal(V), cal(W)$ 
 and morphisms $cconc(cal(V), cal(W))$ concrete functors $F: cal(V) → cal(W)$ between them.
 
-#todo[
-  _or_; 
-  should we use this as an excuse to introduce natural transformations and natural isomorphisms?
-
-  We need to do this _eventually_ anyways.
-
-  But is there a natural example this simplifies?
-]
-
 == Products
 
 #definition(name: "Terminal Object")[
@@ -3835,62 +3826,47 @@ and morphisms $cconc(cal(V), cal(W))$ concrete functors $F: cal(V) → cal(W)$ b
 
   We note that terminal objects are unique up to _unique_ isomorphism:
   if $X$ and $X'$ are terminal objects, then $X ≈ X'$.
-
+  //
   Hence, in any $cal(C)$ with a terminal object, we may choose a distinguished terminal object
   $tunit_cal(C) : |cal(C)|$ without loss of generality; where there is no risk of confusion, we
-  will often omit the subscript and write $tunit : |cal(C)|$.
-  /*
-  Dually, an object $tzero_cal(C) : |cal(C)|$ is _initial_ if for every object $A : |cal(C)|$,
-  there exists a _unique_ morphism out of it $0_A : cal(C)(tzero_cal(C), A)$.
-
-  We note that terminal and initial objects are unique up to isomorphism;
-  that is, if $tunit$ and $tunit'$ are terminal objects, then $tunit ≈ tunit'$, and likewise for
-  initial objects.
-  //
-  Hence we will often speak of "the" terminal object $tunit$ and "the" initial object $tzero$.
-  */
+  will often simply write $tunit : |cal(C)|$.
 ]
 
 #definition(name: "Product")[
   Given a family of objects $icol(A) = (A_i | i ∈ I)$ indexed by a set $I$,
-  we say that an object $P: |cal(C)|$ is their _product_ if:
-  - There exist morphisms $π_i^P : cal(C)(P, A_i)$ such that
+  we say that an object $P: |cal(C)|$ is their _product_ if
+  there exist morphisms $π_i^P : cal(C)(P, A_i)$ such that,
+  for every object $X : |cal(C)|$,
+  given a family of morphisms $icol(f) = (f_i : cal(C)(X, A_i) | i ∈ I)$,
+  there exists a _unique_ morphism $⟨icol(f)⟩^P : cal(C)(X, P)$
+  (the _product_ of the $f_i$)
+  such that
+  $
+    ∀ j : I . ⟨icol(f)⟩^P ; π_j = f_j
+  $
 
-  - for each object $X : |cal(C)|$,
-    given a family of morphisms $icol(f) = (f_i : cal(C)(X, A_i) | i ∈ I)$,
-    there exists a _unique_ morphism $⟨icol(f)⟩^P : cal(C)(X, P)$
-    (the _product_ of the $f_i$)
-    such that
-    $
-      ∀ j : I . ⟨icol(f)⟩^P ; π_j = f_j
-    $
+  Equivalently, for arbitrary $g : cal(C)(X, P)$, we have that
+  $
+    (∀ j : I . g ; π_j = f_j) <==> g = ⟨icol(f)⟩^P
+  $
 
-    That is, for arbitrary $g : cal(C)(X, P)$, we have that
-    $
-      (∀ j ∈ I . g ; π_j = f_j) <==> g = ⟨icol(f)⟩^P
-    $
-
-    Where it is unambiguous from context, we will often omit the superscript $P$ and
-    simply write $π_i : cal(C)(P, A_i)$, $⟨icol(f)⟩$.
-
-    Likewise, we will often write $⟨f_i⟩_(i ∈ I)$, $⟨f_i⟩_i$, or $⟨f_1,...,f_n⟩$ for
-    $⟨icol(f)⟩^P$ where the meaning is clear from context.
+  Where it is unambiguous from context, we omit the superscript $P$ and
+  write $π_i : cal(C)(P, A_i)$ for the projections 
+  and $⟨icol(f)⟩$, $⟨f_i⟩_(i ∈ I)$, $⟨f_i⟩_i$, or $⟨f_1,...,f_n⟩$ for the product.
 
   We note that the product $P$ of a family of objects $A_i$ is unique up to isomorphism;
   that is, if $P$ and $P'$ are products of $A_i$, then $P ≈ P'$.
 
   In particular, for each family of objects $icol(A) = ( A_i | i ∈ I )$,
   we may choose a distinguished product  $Π icol(A)$ whenever one exists.
+  //
+  As for morphisms, we write $Π_(i ∈ I) A_i := Π (A_i | i ∈ I)$.
 
   Since an object is the product of the empty family if and only if it is terminal,
   if such a product exists, we may without loss of generality assume that $Π [] = tunit$.
 ]
 
 In general, where the appropriate products exist, we write
-
-- $Π_(i ∈ I) A_i := Π (A_i | i ∈ I)$.
-
-  Where clear from context, we may omit the subscript and write $Π_i A_i$
 
 - $A × B := Π (lb("l") ↦ A, lb("r") ↦ B)$
 
@@ -3908,12 +3884,28 @@ In general, where the appropriate products exist, we write
   - $f × A_2 := f × id_(A_2)$
   - $A_1 × g := id_(A_1) × g$
 
+#todo[every thinning induces a map on the product]
+
+#todo[every permutation, an isomorphism]
+
+#todo[Do we discuss naturality here? Note the thinning/permutation cases are also natural...]
+
+There exist canonical isomorphisms:
+- $A × B ≈ B × A$
+- $A × tunit ≈ A ≈ tunit × A$
+- $A × (B × C) ≈ Π [A, B, C] ≈ (A × B) × C$
+- $Π (X :: icol(A)) ≈ X × Π icol(A)$ for a sequence $icol(A)$
+- $Π (icol(A) lsnoc X) ≈ Π icol(A) × X$ for a list $icol(A)$
+- $Π [A] ≈ A$
+- $Π (icol(A) lcat icol(B)) ≈ Π icol(A) × Π icol(B)$
+- $A^(m + n) ≈ A^m × A^n$
+
 #definition(name: "Cartesian Category")[
   A category $cal(C)$ is _cartesian_ if it has all finite products;
   i.e. all products $Π icol(A)$ where $icol(A)$ is finite.
 
   Note that it suffices for $cal(C)$ to have 
-  an initial object $tunit$ 
+  a terminal object $tunit$ 
   and all binary products $A × B$.
 ]
 
@@ -3926,61 +3918,14 @@ In general, where the appropriate products exist, we write
 #todo[there's a pattern here:]
 
 #definition(name: "Concretely Cartesian Category")[
-  A concrete category $cal(V)$ is _(strict) concretely cartesian_ if it preserves finite products;
+  A concrete category $cal(V)$ is _(strict) concretely cartesian_ 
+  if its underlying-set functor  $U : cal(V) -> cset$
+  preserves finite products;
   i.e., we have
   $
-    ∀ [A_1,...,A_n] . U(Π [A_1,...,A_n]) = Π [U A_1,...,U A_n]
+    ∀ icol(A) "finite". |Π A_i| = Π_i|A_i|
   $
 ]
-
-#todo[somehow, segue to properties of products, or pull up before this discussion]
-
-#todo[every thinning induces a map on the product]
-
-#todo[every permutation, an isomorphism]
-
-#todo[introduce _canonical_ isomorphisms]
-
-/*
-In general, if $ι : I → J$ is an injection,
-and $icol(A), icol(B)$ are families of objects indexed by $I$ and $J$ respectively,
-then there exists a canonical morphism
-$
-  piinj(icol(A), icol(B), ι)
-$
-*/
-
-Some important properties of products, where they exist, include:
-
-- $A × B ≈ B × A$, with canonical isomorphisms
-  $⟨π_lb("l")^(A × B), π_lb("r")^(A × B)⟩ : A × B -> B × A$ and
-  $⟨π_2^(B × A), π_1^(B × A)⟩ : B × A -> A × B$
-
-- $A × tunit ≈ A$, with canonical isomorphisms
-  $π_1 : A × tunit → A$ and $⟨id_A, !_A⟩ : A → A × tunit$
-
-  Likewise, $tunit × A ≈ A$.
-
-- $Π (X :: icol(A)) ≈ X × Π icol(A)$, with canonical isomorphims (for $icol(A)$ of length $n$)
-  $
-    ⟨π_1^(X × Π icol(A)),
-      (π_2^(X × Π icol(A)) ; π_1^(Π icol(A))), ..., (π_2^(X × Π icol(A)) ; π_n^(Π icol(A)))⟩
-    & : X × Π icol(A) -> Π (X :: icol(A)) \
-    ⟨π_1^(Π (X :: icol(A))), ⟨π_(1 + 1)^(Π (X :: icol(A))),...,π_(n + 1)^(Π (X :: icol(A)))⟩⟩
-    & : Π (X :: icol(A)) -> X × Π icol(A)
-  $
-
-- It follows by induction that $Π (icol(A) lcat icol(B)) ≈ icol(A) lcat icol(B)$
-
-- Likewise, $Π [A] ≈ A$
-
-- $Π [A] ≈ A$, with canonical isomorphisms $π^(Π [A]) : Π [A] → A$ and $⟨id_A⟩ : A → Π [A]$
-
-- In particular, this yields an isomorphism $Π icol(A) × Π icol(B) ≈ Π (icol(A) lcat icol(B))$
-
-- It follows that $A × (B × C) ≈ Π[A, B, C] ≈ (A × B) × C$
-
-- Likewise, $A^m × A^n = A^(n + m)$
 
 == Enriched Categories
 
