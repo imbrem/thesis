@@ -3,6 +3,7 @@
 #import "@preview/lemmify:0.1.8": *
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, edge, node
 
+#set heading(numbering: "1.", supplement: [Chapter])
 
 #let (
   theorem,
@@ -118,6 +119,15 @@
 
 #todo[
   TFW I need a thesis statement
+]
+
+#todo[
+  Thesis Map:
+
+  - What is SSA? > @chap-ssa
+  - Background, conventions, and notation > @background
+  - Type theory, equivalence, and refinement > @ssa-type
+  - Semantics of SSA > @ssa-semantics
 ]
 
 #todo[
@@ -428,7 +438,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
   - We use this to talk about imperative programming in general (RTL lore)
 ]
 
-= Static Single Assignment (SSA)
+= Static Single Assignment (SSA) <chap-ssa>
 
 == From RTL to SSA
 
@@ -826,7 +836,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
   kind: image,
 ) <tt-ssa-grammar>
 
-= Background
+= Background <background>
 
 #todo[
   Add a map here:
@@ -1513,6 +1523,69 @@ There exist canonical isomorphisms:
   $
 ]
 
+/*
+
+A coproduct, then, is just the dual notion to a product:
+
+#definition(name: "Coproduct")[
+  Given a family of objects $A_i ∈ |cal(C)|$ for some indexing set $I$,
+  we say that an object $C∈ |cal(C)|$ is their _coproduct_ if there exist:
+  - Morphisms $ι_i : cal(C)(A_i, C)$ and
+  - For each object $X ∈ |cal(C)|$,
+    given a family of morphisms $f_i : cal(C)(A_i, X)$ for each $i ∈ I$,
+    a _unique_ morphism $[f_i]_(i ∈ I) : cal(C)(C, X)$
+    (the _coproduct_ of the $f_i$)
+    such that
+    $
+      ∀ j : I . ι_j ; [f_i]_(i ∈ I) = f_j
+    $
+
+    That is, for arbitrary $g : cal(C)(C, X)$, we have that
+    $
+       (∀ j ∈ I . ι_j ; g = f_j) <==> g = [f_i]_(i ∈ I)
+    $
+
+  We note that the coproduct $C$ of a family of objects $A_i$ is unique up to isomorphism;
+  that is, if $C$ and $C'$ are coproducts of $A_i$, then $C ≈ C'$.
+  Furthermore, an object is the product of the empty family if and only if it is initial.
+
+  We say a category $cal(C)$ is _cocartesian_ if it has _all finite coproducts_;
+  i.e. if there exists a function
+  $Σ : tlist(|cal(C)|) → |cal(C)|$ such that
+  - For $L = [A_1,...,A_n]$, $Σ L$ is a coproduct of $A_i$, and, in particular,
+  - $Σ []$ is equal to the initial object $tzero$
+
+  In general, we write
+  - $Σ_i A_i := Σ [A_1,...,A_n]$
+  - $A + B := Σ [A, B]$
+  - For $n ∈ ℕ$, $ntag(n, A) = Σ [A,...,A]$ ($n$ copies of $A$)
+  - For morphisms $f_i : cal(C)(A_i, B_i)$ for arbitrary $i ∈ I$,
+    - $Σ_i f_i = ⟨f_i ; ι_i⟩_i : Σ_i A_i → Σ_i B_i$, and, therefore, in particular
+    - $Σ [f_1,...,f_n] = ⟨f_1 ; ι_1,..., f_n ; ι_n⟩ : Σ [A_1,...,A_n] → Σ [B_1,...,B_n]$
+    - $f_1 + f_2 = ⟨f_1 ; ι_1 , f_2 ; ι_2⟩ : A_1 + A_2 → B_1 + B_2$
+  - In particular, for $f : cal(C)(A, B)$ and objects $C$, we define
+    - $f + C = f + id_C : A + C → B + C$, and
+    - $C + f = id_C + f : C + A → C + B$
+]
+
+Similarly to products, coproducts satisfy some basic algebraic properties
+
+- $A + B ≈ B + A$
+
+- $A + tzero ≈ A$
+
+- $A + Σ L ≈ Σ (A :: L)$
+
+- $Σ [A] ≈ A$
+
+- $Σ L + Σ L' ≈ Σ (L · L')$
+
+- $A + (B + C) ≈ Σ [A, B, C] ≈ (A + B) + C$
+
+- Likewise, $ntag(m, A) + ntag(n, A) ≈ ntag(m + n, A)$
+
+*/
+
 == Naturality
 
 #definition(name: [$cal(V)$-natural transformation])[
@@ -1530,7 +1603,24 @@ There exist canonical isomorphisms:
     $
 ]
 
-= Type Theory
+/*
+== Monads and Kliesli Categories
+
+#todo[have this as an example of a premonoidal category]
+
+#todo[
+  - Introduce the concept of _strength_ via a strong monad
+    (later will have strong Elgot structure so this builds intuition)
+    - Every monad over $cset$ is strong, so this is often overlooked
+  - define a commutative monad; show monoidal $<=>$ commutative
+  - notice the subcategory of pure things; think about it
+    - return should be monic or it's not faithful; @moggi-89-monad calls this a
+      _computational monad_
+    - but this is not necessary for our Freyd case
+]
+*/
+
+= Type Theory <ssa-type>
 
 == Typing Rules
 
@@ -2358,35 +2448,7 @@ There exist canonical isomorphisms:
   caption: [Refinement rules for #ssa-calc()],
 )
 
-/*
-
-== Compiling Between #iter-calc() and SSA
-
-#todo[this]
-
-=== Compiling #iter-calc() to SSA
-
-#todo[this]
-
-=== Compiling SSA to #iter-calc()
-
-#todo[this]
-
-== Dialects and Lowerings
-
-#todo[expression-language hom w.r.t. refinement theory]
-
-#todo[a _lowering_ is a refinement-preserving expression-language hom]
-
-#todo[an _optimization_ is a refining endomorphism]
-
-#todo[versus, an automorphism like the #iter-calc() equivalences...]
-
-#todo[#iter-calc(expr2fun(iter-calc(ms("F")))) ≈ #iter-calc(ms("F"))]
-
-*/
-
-= Models of SSA
+= Semantics of SSA <ssa-semantics>
 
 #todo[
   Chapter structure:
@@ -2469,51 +2531,6 @@ There exist canonical isomorphisms:
 
 == Enriched Categories
 
-/*
-#todo[rewrite this]
-
-We can think of a concrete category $cal(V)$ as "sets with extra structure":
-
-- Each object $A ∈ |cal(V)|$ corresponds to a set $U A$; in particular,
-  we will write $a ∈ A$ to mean $a ∈ U A$
-- Each morphism $f : cal(V)(A, B)$ corresponds to a _unique_ function $U f : U A → U B$.
-
-  In particular, since $U$ is faithful,
-  we can ask whether an arbitrary function $g : U A → U B$
-  "is a $cal(V)$-morphism from $A$ to $B$";
-  i.e., whether there exists $f : cal(V)(A, B)$ such that $U f = g$.
-  If there exists such an $f$, it is unique;
-  hence, we can identify the morphisms $cal(V)(A, B)$
-  with the subset of functions $U A → U B$ which "are $cal(V)(A, B)$ morphisms."
-
-  In general, we will write such an $f$ if it exists as $U^(-1)_(cal(V)(A, B)) g$.
-
-  We hence justify the further abuse of notation and write
-
-  - $f : A → B$ to mean $U f : U A → U B$ where this would not cause confusion, and, in particular
-
-  - Given $a ∈ A$, we define $f(a) ∈ B$ to mean $(U f)(a) ∈ U B$
-
-As a concrete example, consider the category of partially-ordered sets and monotone functions $ms("Pos")$.
-An object of $ms("Pos")$ is a partially-ordered set $(X, scripts(≤)_X)$,
-and a morphism $f: (X, scripts(≤)_X) → (Y, scripts(≤)_Y)$ is a monotone function $f : X → Y$, i.e.
-a function $f$ such that
-$
-  ∀ x_1, x_2 ∈ X . (x_1 scripts(≤)_X x_2) ==> (f(x_1) scripts(≤)_Y f(x_2))
-$
-
-We can directly equip $ms("Pos")$ with the structure of a concrete category by taking
-$U(X, scripts(≤)_X) = X$ and $U f = f$.
-Our abuse of notation is then precisely the usual mathematical convention of, for example,
-specifying "a monotone function $f : ℕ → pset(X)$" without explicitly specifying that
-$ℕ$ is ordered with the usual $≤$ relation on the naturals and
-$pset(X)$ is ordered with the subset relation $⊆$.
-
-
-Another particularly import example is the category of sets $cset$, which is trivially a
-concrete category by taking $U$ to be the identity functor.
-*/
-
 For the rest of this thesis,
 $cal(V)$ will range over concretely cartesian categories unless otherwise specified.
 
@@ -2528,15 +2545,6 @@ $cal(V)$ will range over concretely cartesian categories unless otherwise specif
       (;)_(A, B, C) : cal(V)(cal(C)(A, B) × cal(C)(B, C), cal(C)(A, C))
     $
 ]
-
-/*
-For the rest of this section, we will develop the theory of $cal(V)$-enriched categories in the
-special case where $cal(V)$ is concretely cartesian. The general theory of enriched categories is
-analogous, but much more complex since we need to deal with coherence conditions, however,
-when $cal(V)$ is concretely cartesian, the definitions are essentially the same as in ordinary
-category theory. In fact, we can recover the standard category theoretic definitions by noting that
-a category is precisely a $cset$-enriched category.
-*/
 
 We note that every $cal(V)$-category $cal(C)$ induces an ordinary category $U cal(C)$
 with:
@@ -2627,193 +2635,6 @@ In general, we can recover the standard category-theoretic definitions of a conc
 Often, many definitions for $cal(V)$-categories are in fact identical;
 in particular, the definitions for terminal objects, initial objects, products and coproducts are exactly the same,
 so we will not repeat them.
-
-/*
-#definition(name: [$cal(V)$-Quiver])[
-  A $cal(V)$-quiver $cal(Q)$ consists of
-  - A set of objects $|cal(Q)|$
-  - For each pair of objects $A, B : |cal(Q)|$, a hom-object $cal(Q)(A, B) ∈ |cal(V)|$
-
-  In particular, every $cal(V)$-category can be made into a $cal(V)$-quiver by forgetting
-  the identities and composition.
-
-  We define the category of $cal(V)$-quivers $ms("Quiv")_cal(V)$ to have:
-  - Objects $cal(V)$-quivers
-  - Morphisms $F : ms("Quiv")_cal(V)(cal(Q)_1, cal(Q)_2)$ consisting of
-    - A mapping on objects $|F| : |cal(Q)_1| → |cal(Q)_2|$
-    - For each pair of objects $A, B : |cal(Q)_1|$, a $cal(V)$-morphism
-      $
-        F_(A, B) : cal(V)(cal(Q)_1(A, B), cal(Q)_2(F A, F B))
-      $
-  - Identity morphisms $id_(cal(Q)) = (id, id)$
-  - Composition given by
-    - $|F ; G| = |G| ∘ |F|$
-    - $(F ; G)_(A, B) = F_(A, B) ; G_(F A, F B)$
-
-  In particular, this is the same as composition of functors,
-  giving us a faithful forgetful functor from the category of $cal(V)$-categories
-  $ms("Cat")_cal(V)$ to the category of $cal(V)$-quivers $ms("Quiv")_cal(V)$.
-
-  Given a family of $cal(V)$-quivers $cal(Q)_i$ for $i ∈ I$, we may define:
-  - The _product quiver_ $Π_i Q_i$
-]
-*/
-
-/*
-#definition(name: [$cal(V)$-Multifunctor])[
-  Given a family of $cal(V)$-categories $scat(C) = [cal(C)_i | i ∈ I]$
-  and a $cal(V)$-category $cal(D)$,
-  a _multifunctor_ $F$ from $icol(C)$ to $cal(D)$ consists of
-  - A mapping from families of objects $icol(A) = [A_i : |cal(C)_i| | i ∈ I]$
-    to objects $F icol(A) : |cal(D)|$
-  - For each $j ∈ I$,
-    a mapping from families of objects $icol(A)_j = [A_i : |cal(C)_i| | i ∈ I backslash {j}]$
-    a $cal(V)$-functor
-    $
-      F med icol(A)_j : cal(C)_j → cal(D)
-    $
-    such that
-    $
-      ∀ A_j : |cal(C)_j|, F_j med icol(A)_j med A_j = F med icol(A) : |cal(D)|
-    $
-    where
-    $
-      icol(A) = [j ↦ A_j] ovrd icol(A)_j = [A_i | i ∈ I]
-    $
-
-  In other words, $F$ is a function of $A_i$
-  which is a $cal(V)$-functor in each argument $A_j$ _separately_,
-  when all other arguments $A_i$ for $i ≠ j$ are held fixed.
-
-  Given $cal(V)$-multifunctors $F, G: scat(C) → D$, we say that a family of morphisms
-  $η_icol(A): cal(D)(F icol(A), G icol(A))$ is _natural_ in $j ∈ I$ if,
-  for each family of objects $icol(A)_j = [A_i : |cal(C)_i| | i ∈ I backslash {j}]$,
-  the family of morphisms $η_icol(A)_j$ given by
-  $(η_icol(A)_j)_X := η_([j ↦ X] ovrd icol(A)_j)$
-  is a natural transformation $η_(icol(A)_j) : F icol(A)_j => G icol(A)_j$.
-
-  That is, for every morphism $f : cal(C)_j (A_j, A_j')$,
-  we have that the following diagram commutes
-  $
-    #diagram(cell-size: 15mm, $
-      F med icol(A) edge(η_icol(A), ->) edge("d", F med icol(A)_j med f, ->) &
-      G med icol(A) edge("d", G med icol(A)_j med f, ->, label-side: #left) \
-      F med icol(A)' edge(η_icol(A)', ->, label-side: #right) & G med icol(A)' $)
-  $
-  where
-  $
-    icol(A) = [j ↦ A_j] ovrd icol(A)_j = [A_i | i ∈ I] quad quad quad
-    icol(A)' = [j ↦ A_j'] ovrd icol(A)_j = [A_i | i ∈ I]
-  $
-]
-*/
-
-/*
-#definition(name: [$cal(V)$-Natural Multitransformation])[
-  Given $cal(V)$-multifunctors $F, G: scat(C) → D$, we define a $cal(V)$-natural multitransformation
-  $η : F => G$ to consist of:
-  - For each family of objects $icol(A) = [A_i : cal(C)_i | i ∈ I]$,
-    a morphism $η_(icol(A)) : cal(D)(F icol(A), G icol(A))$
-  - For each $j ∈ I$,
-    a mapping from families of objects $icol(A)_j = [A_i : cal(C)_i | i ∈ I backslash {j}]$
-    a natural tranformation
-    $
-      η_icol(A)_j : F_j med icol(A)_j => G_j med icol(A)_j
-    $
-    such that
-    $
-      ∀ A_j : |cal(C)_j|, (η_(icol(A)_j))_(A_j) = η_[A_i | i ∈ I]
-        : cal(D)(F [A_i | i ∈ I]) → cal(D)(G [A_i | i ∈ I])
-    $
-
-  In other words, if we consider $F$, $G$, and $η$ as functions of $A_i$, and, for a given $j ∈ I$,
-  fix all $A_i$ for $i ≠ j$, then
-  - $F$ and $G$ are functors
-  - $η$ is a natural transformation from $F$ to $G$
-
-  That is, $η$ is a natural transformation in each argument $A_j$ _separately_,
-  i.e., is _natural in $A_j$_.
-]
-*/
-
-/*
-We define a
-
-Consider now families of objects
-$X_(A_1,...,A_n), Y_(A_1,...,A_n) ∈ |cal(C)|$ parametrized by $n$ objects $A_i ∈ |cal(C)|$
-and a family of morphisms
-$m_(A_1,...,A_n) : cal(C)(X_(A_1,...,A_n), Y_(A_1,...,A_n))$.
-We say that $m$ is _natural_ in $A_i$ if:
-- There exists a $cal(V)$-functor $F_i$ such that
-  $F_i med B = X_i$
-
-Given a function $|cal(C)|^n → |cal(C)|$
-*/
-
-== Coproducts
-
-/*
-
-A coproduct, then, is just the dual notion to a product:
-
-#definition(name: "Coproduct")[
-  Given a family of objects $A_i ∈ |cal(C)|$ for some indexing set $I$,
-  we say that an object $C∈ |cal(C)|$ is their _coproduct_ if there exist:
-  - Morphisms $ι_i : cal(C)(A_i, C)$ and
-  - For each object $X ∈ |cal(C)|$,
-    given a family of morphisms $f_i : cal(C)(A_i, X)$ for each $i ∈ I$,
-    a _unique_ morphism $[f_i]_(i ∈ I) : cal(C)(C, X)$
-    (the _coproduct_ of the $f_i$)
-    such that
-    $
-      ∀ j : I . ι_j ; [f_i]_(i ∈ I) = f_j
-    $
-
-    That is, for arbitrary $g : cal(C)(C, X)$, we have that
-    $
-       (∀ j ∈ I . ι_j ; g = f_j) <==> g = [f_i]_(i ∈ I)
-    $
-
-  We note that the coproduct $C$ of a family of objects $A_i$ is unique up to isomorphism;
-  that is, if $C$ and $C'$ are coproducts of $A_i$, then $C ≈ C'$.
-  Furthermore, an object is the product of the empty family if and only if it is initial.
-
-  We say a category $cal(C)$ is _cocartesian_ if it has _all finite coproducts_;
-  i.e. if there exists a function
-  $Σ : tlist(|cal(C)|) → |cal(C)|$ such that
-  - For $L = [A_1,...,A_n]$, $Σ L$ is a coproduct of $A_i$, and, in particular,
-  - $Σ []$ is equal to the initial object $tzero$
-
-  In general, we write
-  - $Σ_i A_i := Σ [A_1,...,A_n]$
-  - $A + B := Σ [A, B]$
-  - For $n ∈ ℕ$, $ntag(n, A) = Σ [A,...,A]$ ($n$ copies of $A$)
-  - For morphisms $f_i : cal(C)(A_i, B_i)$ for arbitrary $i ∈ I$,
-    - $Σ_i f_i = ⟨f_i ; ι_i⟩_i : Σ_i A_i → Σ_i B_i$, and, therefore, in particular
-    - $Σ [f_1,...,f_n] = ⟨f_1 ; ι_1,..., f_n ; ι_n⟩ : Σ [A_1,...,A_n] → Σ [B_1,...,B_n]$
-    - $f_1 + f_2 = ⟨f_1 ; ι_1 , f_2 ; ι_2⟩ : A_1 + A_2 → B_1 + B_2$
-  - In particular, for $f : cal(C)(A, B)$ and objects $C$, we define
-    - $f + C = f + id_C : A + C → B + C$, and
-    - $C + f = id_C + f : C + A → C + B$
-]
-
-Similarly to products, coproducts satisfy some basic algebraic properties
-
-- $A + B ≈ B + A$
-
-- $A + tzero ≈ A$
-
-- $A + Σ L ≈ Σ (A :: L)$
-
-- $Σ [A] ≈ A$
-
-- $Σ L + Σ L' ≈ Σ (L · L')$
-
-- $A + (B + C) ≈ Σ [A, B, C] ≈ (A + B) + C$
-
-- Likewise, $ntag(m, A) + ntag(n, A) ≈ ntag(m + n, A)$
-
-*/
 
 == Premonoidal Categories
 
@@ -2931,38 +2752,6 @@ Similarly to products, coproducts satisfy some basic algebraic properties
       - A Freyd category is just an effectful category over ${⊤, ⊥}$
       - A Cartesian category is just an effectful category over ${⊥}$
 ]
-
-== Monads and Kliesli Categories
-
-#todo[have this as an example of a premonoidal category]
-
-#todo[
-  - Introduce the concept of _strength_ via a strong monad
-    (later will have strong Elgot structure so this builds intuition)
-    - Every monad over $cset$ is strong, so this is often overlooked
-  - define a commutative monad; show monoidal $<=>$ commutative
-  - notice the subcategory of pure things; think about it
-    - return should be monic or it's not faithful; @moggi-89-monad calls this a
-      _computational monad_
-    - but this is not necessary for our Freyd case
-]
-
-= Semantics of #iter-calc()
-
-#todo[
-  - Semantics of types
-  - Semantics of contexts
-  - Semantics of contexts with usage
-  - Semantics of
-]
-
-= Control-Flow Graphs
-
-<cfgs>
-
-= Future Work
-
-#todo[literally an infinite pile]
 
 #bibliography("refs.bib", style: "acm-edited.csl")
 
@@ -3130,4 +2919,127 @@ As an example of this,
 In general, we get the dual structure $opc(cal(S))$ to $cal(S)$
 by flipping the direction of all morphisms in the
 definition of $cal(S)$.
+*/
+
+
+/*
+#definition(name: [$cal(V)$-Quiver])[
+  A $cal(V)$-quiver $cal(Q)$ consists of
+  - A set of objects $|cal(Q)|$
+  - For each pair of objects $A, B : |cal(Q)|$, a hom-object $cal(Q)(A, B) ∈ |cal(V)|$
+
+  In particular, every $cal(V)$-category can be made into a $cal(V)$-quiver by forgetting
+  the identities and composition.
+
+  We define the category of $cal(V)$-quivers $ms("Quiv")_cal(V)$ to have:
+  - Objects $cal(V)$-quivers
+  - Morphisms $F : ms("Quiv")_cal(V)(cal(Q)_1, cal(Q)_2)$ consisting of
+    - A mapping on objects $|F| : |cal(Q)_1| → |cal(Q)_2|$
+    - For each pair of objects $A, B : |cal(Q)_1|$, a $cal(V)$-morphism
+      $
+        F_(A, B) : cal(V)(cal(Q)_1(A, B), cal(Q)_2(F A, F B))
+      $
+  - Identity morphisms $id_(cal(Q)) = (id, id)$
+  - Composition given by
+    - $|F ; G| = |G| ∘ |F|$
+    - $(F ; G)_(A, B) = F_(A, B) ; G_(F A, F B)$
+
+  In particular, this is the same as composition of functors,
+  giving us a faithful forgetful functor from the category of $cal(V)$-categories
+  $ms("Cat")_cal(V)$ to the category of $cal(V)$-quivers $ms("Quiv")_cal(V)$.
+
+  Given a family of $cal(V)$-quivers $cal(Q)_i$ for $i ∈ I$, we may define:
+  - The _product quiver_ $Π_i Q_i$
+]
+*/
+
+/*
+#definition(name: [$cal(V)$-Multifunctor])[
+  Given a family of $cal(V)$-categories $scat(C) = [cal(C)_i | i ∈ I]$
+  and a $cal(V)$-category $cal(D)$,
+  a _multifunctor_ $F$ from $icol(C)$ to $cal(D)$ consists of
+  - A mapping from families of objects $icol(A) = [A_i : |cal(C)_i| | i ∈ I]$
+    to objects $F icol(A) : |cal(D)|$
+  - For each $j ∈ I$,
+    a mapping from families of objects $icol(A)_j = [A_i : |cal(C)_i| | i ∈ I backslash {j}]$
+    a $cal(V)$-functor
+    $
+      F med icol(A)_j : cal(C)_j → cal(D)
+    $
+    such that
+    $
+      ∀ A_j : |cal(C)_j|, F_j med icol(A)_j med A_j = F med icol(A) : |cal(D)|
+    $
+    where
+    $
+      icol(A) = [j ↦ A_j] ovrd icol(A)_j = [A_i | i ∈ I]
+    $
+
+  In other words, $F$ is a function of $A_i$
+  which is a $cal(V)$-functor in each argument $A_j$ _separately_,
+  when all other arguments $A_i$ for $i ≠ j$ are held fixed.
+
+  Given $cal(V)$-multifunctors $F, G: scat(C) → D$, we say that a family of morphisms
+  $η_icol(A): cal(D)(F icol(A), G icol(A))$ is _natural_ in $j ∈ I$ if,
+  for each family of objects $icol(A)_j = [A_i : |cal(C)_i| | i ∈ I backslash {j}]$,
+  the family of morphisms $η_icol(A)_j$ given by
+  $(η_icol(A)_j)_X := η_([j ↦ X] ovrd icol(A)_j)$
+  is a natural transformation $η_(icol(A)_j) : F icol(A)_j => G icol(A)_j$.
+
+  That is, for every morphism $f : cal(C)_j (A_j, A_j')$,
+  we have that the following diagram commutes
+  $
+    #diagram(cell-size: 15mm, $
+      F med icol(A) edge(η_icol(A), ->) edge("d", F med icol(A)_j med f, ->) &
+      G med icol(A) edge("d", G med icol(A)_j med f, ->, label-side: #left) \
+      F med icol(A)' edge(η_icol(A)', ->, label-side: #right) & G med icol(A)' $)
+  $
+  where
+  $
+    icol(A) = [j ↦ A_j] ovrd icol(A)_j = [A_i | i ∈ I] quad quad quad
+    icol(A)' = [j ↦ A_j'] ovrd icol(A)_j = [A_i | i ∈ I]
+  $
+]
+*/
+
+/*
+#definition(name: [$cal(V)$-Natural Multitransformation])[
+  Given $cal(V)$-multifunctors $F, G: scat(C) → D$, we define a $cal(V)$-natural multitransformation
+  $η : F => G$ to consist of:
+  - For each family of objects $icol(A) = [A_i : cal(C)_i | i ∈ I]$,
+    a morphism $η_(icol(A)) : cal(D)(F icol(A), G icol(A))$
+  - For each $j ∈ I$,
+    a mapping from families of objects $icol(A)_j = [A_i : cal(C)_i | i ∈ I backslash {j}]$
+    a natural tranformation
+    $
+      η_icol(A)_j : F_j med icol(A)_j => G_j med icol(A)_j
+    $
+    such that
+    $
+      ∀ A_j : |cal(C)_j|, (η_(icol(A)_j))_(A_j) = η_[A_i | i ∈ I]
+        : cal(D)(F [A_i | i ∈ I]) → cal(D)(G [A_i | i ∈ I])
+    $
+
+  In other words, if we consider $F$, $G$, and $η$ as functions of $A_i$, and, for a given $j ∈ I$,
+  fix all $A_i$ for $i ≠ j$, then
+  - $F$ and $G$ are functors
+  - $η$ is a natural transformation from $F$ to $G$
+
+  That is, $η$ is a natural transformation in each argument $A_j$ _separately_,
+  i.e., is _natural in $A_j$_.
+]
+*/
+
+/*
+We define a
+
+Consider now families of objects
+$X_(A_1,...,A_n), Y_(A_1,...,A_n) ∈ |cal(C)|$ parametrized by $n$ objects $A_i ∈ |cal(C)|$
+and a family of morphisms
+$m_(A_1,...,A_n) : cal(C)(X_(A_1,...,A_n), Y_(A_1,...,A_n))$.
+We say that $m$ is _natural_ in $A_i$ if:
+- There exists a $cal(V)$-functor $F_i$ such that
+  $F_i med B = X_i$
+
+Given a function $|cal(C)|^n → |cal(C)|$
 */
