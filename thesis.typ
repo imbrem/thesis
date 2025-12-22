@@ -2753,6 +2753,84 @@ so we will not repeat them.
       - A Cartesian category is just an effectful category over ${⊥}$
 ]
 
+== Semantics of Expressions
+
+#todo[
+  Definition: a $cal(V)$-enriched SSA model over a function space $ms("F")$
+]
+
+$
+  ⟦Σ lb("L")⟧ = Σ ⟦lb("L")⟧
+  quad quad
+  ⟦lb("L")⟧ = (lb("l") ↦ ⟦A⟧ | lty(lb("l"), A) ∈ lb("L"))
+  \
+  ⟦Π lb("X")⟧ = Π ⟦lb("X")⟧  
+  quad quad
+  ⟦lb("X")⟧ = (lb("f") ↦ ⟦A⟧ | fty(lb("f"), A) ∈ lb("X"))
+$
+
+#todo[Semantics of #iter-calc()]
+
+#todo[Soundness of Substitution]
+
+#todo[Soundness of Equivalence]
+
+#todo[Completeness of Equivalence]
+
+== Equational Models
+
+#todo[Category of $cal(V)$-enriched SSA models]
+
+#todo[Syntactic $cal(V)$-enriched SSA model]
+
+#todo[Modeling an equational theory $ms("Eq")$ w.r.t. an effect system $cal(E)$]
+
+#todo[Full subcategory]
+
+#todo[Soundness of Equivalence]
+
+#todo[Completeness of Equivalence]
+
+#todo[Initiality]
+
+== Refinement Models
+
+#todo[Modeling a refinement theory $ms("R")$ w.r.t. a _linear_ effect system $cal(E)$]
+
+#todo[Soundness of Refinement]
+
+#todo[Completeness of Refinement]
+
+== Semantics of Regions
+
+#todo[
+  Definition: an SSA model over an expression space $ms("E")$
+  --  Note that the previous section means one of these is _generated_ for every model over a 
+      function space $ms("F")$
+]
+
+#todo[Semantics of #ssa-calc()]
+
+#todo[Soundness of Substitution]
+
+#todo[Soundness of Equivalence]
+
+#todo[Completeness of Equivalence]
+
+#todo[Soundness of Refinement]
+
+#todo[Completeness of Refinement]
+
+= Monadic Models of SSA <concrete-models>
+
+== Monad Transformers, Partiality, Nondeterminism, Logging, and State
+
+#todo[Partiality over #cset]
+
+== $cal(V)$-Enriched Monads and Monad Transformers
+
+#todo[_All_ of the above are $cal(V)$-enriched!]
+
 #bibliography("refs.bib", style: "acm-edited.csl")
 
 #pagebreak()
