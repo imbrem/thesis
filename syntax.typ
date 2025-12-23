@@ -1,5 +1,7 @@
 #import "@preview/lemmify:0.1.8": *
 #import "@preview/curryst:0.6.0": prooftree, rule, rule-set
+#import "@preview/fletcher:0.5.8" as fletcher: diagram, edge, node
+#import "@preview/typsy:0.2.1": safe-state
 
 #let (
   theorem,
@@ -10,12 +12,12 @@
   example,
   proof,
   rules: thm-rules,
-) = default-theorems("thm-group", lang: "en")
+) = default-theorems("thm-group", thm-numbering: thm-numbering-linear, lang: "en")
 
 #let (
   definition,
   rules: thm-rules-b,
-) = default-theorems("thm-group-b")
+) = default-theorems("thm-group-b", thm-numbering: thm-numbering-linear, lang: "en")
 
 // == Fonts ==
 
@@ -412,3 +414,22 @@
 
   #body
 ]
+
+#let the-bibliography = bibliography("refs.bib", style: "acm-edited.csl")
+
+#let standalone-state = (
+  is-standalone: true,
+  is-appendix: false,
+)
+
+#let body-state = (
+  is-standalone: false,
+  is-appendix: false,
+)
+
+#let appendix-state = (
+  is-standalone: false,
+  is-appendix: true,
+)
+
+#let thesis-state = safe-state(()=>{}, standalone-state)
