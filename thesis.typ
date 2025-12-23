@@ -1,8 +1,6 @@
 #import "@preview/simplebnf:0.1.1": *
 #import "@preview/subpar:0.2.2"
 
-#set heading(numbering: "1.", supplement: [Chapter])
-
 #import "@preview/wordometer:0.1.5": word-count
 #show: word-count.with(exclude: (<no-wc>, <appendix>))
 
@@ -30,6 +28,8 @@
 #set text(lang: "en")
 
 #set heading(numbering: "1.")
+
+#show heading.where(level : 0) : set heading(supplement: [Chapter])
 
 #set document(
   title: [Categorical imperative programming: type theory, refinement, and semantics for SSA],
