@@ -29,7 +29,7 @@
 
 #set heading(numbering: "1.")
 
-#show heading.where(level : 0) : set heading(supplement: [Chapter])
+#show heading.where(level: 0): set heading(supplement: [Chapter])
 
 #set document(
   title: [Categorical imperative programming: type theory, refinement, and semantics for SSA],
@@ -1137,40 +1137,12 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 #figure(
   [
     #eqn-set(
-      declare-rule(rule(
-        name: "assign",
-        $hasty(Γ, e, A)$,
-        $haslb(#$Γ, x : A$, r, ms("L"))$,
-        $haslb(#$Γ$, slet(x, e, r), ms("L"))$,
-      )),
-      declare-rule(rule(
-        name: "br",
-        $lbwk(lty(lb("l"), A), ms("L"))$,
-        $hasty(Γ, e, A)$,
-        $haslb(Γ, brb(lb("l"), e), ms("L"))$,
-      )),
-      declare-rule(rule(
-        name: "case",
-        $hasty(Γ, e, Σ lb("L"))$,
-        $issbrs(Γ, lb("L"), L, ms("K"))$,
-        $haslb(Γ, scase(e, L), ms("K"))$,
-      )),
-      declare-rule(rule(
-        name: "scope",
-        $haslb(Γ, r, #$ms("L"), ms("K")$)$,
-        $islbrs(Γ, ms("K"), L, #$ms("L"), ms("K")$)$,
-        $haslb(Γ, #${r} ; L$, ms("L"))$,
-      )),
-      declare-rule(rule(
-        name: "lb-nil",
-        $islbrs(Γ, ·, ·, ·)$,
-      )),
-      declare-rule(rule(
-        name: "lb-cons",
-        $issbrs(Γ, ms("K"), L, ms("L"))$,
-        $haslb(#$Γ, x : A$, r, ms("L"))$,
-        $islbrs(Γ, #$ms("K"), lty(lb("k"), A)$, #$K, sbr(lb("k"), x, r)$, ms("L"))$,
-      )),
+      declare-rule(r-g-assign),
+      declare-rule(r-g-br),
+      declare-rule(r-g-case),
+      declare-rule(r-g-scope),
+      declare-rule(r-g-lb-nil),
+      declare-rule(r-g-lb-cons),
     )
     \
   ],
@@ -1199,7 +1171,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 == Expressions
 
-#todo[introduce the concept of an _equational theory_ $ms("Eq")$]
+#todo[introduce the concept of an _equational theory_ $req$]
 
 #todo[_elas_ ; we need effects for $β$ and $η$ rules! I always forget $η$ is green...]
 
@@ -1213,80 +1185,19 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 #figure(
   [
     #eqn-set(
-      declare-rule(rule(
-        name: "var",
-        $Γ med x = A$,
-        $tyeq(Γ, ms("Eq"), x, x, A)$,
-      )),
-      declare-rule(rule(
-        name: "coe",
-        $tyeq(Γ, ms("Eq"), a, a', A)$,
-        $tywk(A, A')$,
-        $tyeq(Γ, ms("Eq"), a, a', A')$,
-      )),
-      declare-rule(rule(
-        name: "app",
-        $isfn(Γ, f, A, B)$,
-        $tyeq(Γ, ms("Eq"), a, a', A)$,
-        $tyeq(Γ, ms("Eq"), f med a, f med a', B)$,
-      )),
-      declare-rule(rule(
-        name: "inj",
-        $tyeq(Γ, ms("Eq"), a, a', A)$,
-        $tyeq(Γ, ms("Eq"), lb("l") med a, lb("l") med a', Σ (lty(lb("l"), A)))$,
-      )),
-      declare-rule(rule(
-        name: "proj",
-        $tyeq(Γ, ms("Eq"), e, e', Π (fty(lb("f"), A)))$,
-        $tyeq(Γ, ms("Eq"), lb("f") med e, lb("f") med e', A)$,
-      )),
-      declare-rule(rule(
-        name: "tuple",
-        $tupref(Γ, ms("Eq"), E, E', lb("T"))$,
-        $tyeq(Γ, ms("Eq"), (E), (E'), Π lb("T"))$,
-      )),
-      declare-rule(rule(
-        name: "Π-nil",
-        $tupref(Γ, ms("Eq"), ·, ·, ·)$,
-      )),
-      declare-rule(rule(
-        name: "Π-cons",
-        $tupref(Γ, ms("Eq"), E, E', lb("T"))$,
-        $tyeq(Γ, ms("Eq"), e, e', A)$,
-        $tupref(Γ, ms("Eq"), #$E, e$, #$E', e'$, #$lb("T"), fty(lb("f"), A)$)$,
-      )),
-      declare-rule(rule(
-        name: "let",
-        $tyeq(Γ, ms("Eq"), a, a', A)$,
-        $tyeq(#$Γ, x : A$, ms("Eq"), b, b', B)$,
-        $tyeq(Γ, ms("Eq"), elet(x, a, b), elet(x, a', b'), B)$,
-      )),
-      declare-rule(rule(
-        name: "cases",
-        $tyeq(Γ, ms("Eq"), e, e', Σ lb("L"))$,
-        $ebrseq(Γ, lb("L"), ms("Eq"), M, M', A)$,
-        $tyeq(Γ, ms("Eq"), ecase(e, M), ecase(e', M'), A)$,
-      )),
-      declare-rule(rule(
-        name: "Σ-nil",
-        $ebrseq(Γ, ·, ms("Eq"), ·, ·, ·)$,
-      )),
-      declare-rule(rule(
-        name: "Σ-cons",
-        $ebrseq(Γ, lb("L"), ms("Eq"), M, M', A)$,
-        $tyeq(#$Γ, x : A$, ms("Eq"), a, a', A)$,
-        $ebrseq(
-          Γ, #$lb("L"), lty(lb("l"), A)$, ms("Eq"),
-          (#$M, ebr(lb("l"), x, a)$), (#$M', ebr(lb("l"), x, a')$),
-          A
-        )$,
-      )),
-      declare-rule(rule(
-        name: "iter",
-        $tyeq(Γ, ms("Eq"), a, a', A)$,
-        $tyeq(Γ, ms("Eq"), e, e', B + A)$,
-        $tyeq(Γ, ms("Eq"), eiter(a, x, e), eiter(e', x, a'), B)$,
-      )),
+      declare-rule(r-e-var),
+      declare-rule(r-e-coe),
+      declare-rule(r-e-app),
+      declare-rule(r-e-inj),
+      declare-rule(r-e-proj),
+      declare-rule(r-e-tuple),
+      declare-rule(r-e-pi-nil),
+      declare-rule(r-e-pi-cons),
+      declare-rule(r-e-let),
+      declare-rule(r-e-cases),
+      declare-rule(r-e-sigma-nil),
+      declare-rule(r-e-sigma-cons),
+      declare-rule(r-e-iter),
     )
     \
   ],
@@ -1814,32 +1725,39 @@ so we will not repeat them.
   i.e., for all morphisms $f: cal(C)(A, A')$, $g: cal(C)(B, B')$, and $h: cal(C)(C, C')$, the following
   _naturality squares_ hold:
   $
-    (f ⊗ B) ⊗ C ; α_(A', B, C) & = α_(A, B, C) ; f ⊗ (g ⊗ h) && : cal(C)((A ⊗ B) ⊗ C, A' ⊗ (B ⊗ C)) \
-    A ⊗ (g ⊗ C) ; α_(A, B', C) & = α_(A, B, C) ; A ⊗ (g ⊗ h) && : cal(C)((A ⊗ B) ⊗ C, A ⊗ (B' ⊗ C)) \
-      A ⊗ B ⊗ h ; α_(A, B, C') & = α_(A, B, C) ; A ⊗ B ⊗ h   && : cal(C)((A ⊗ B) ⊗ C, A ⊗ (B ⊗ C')) \
-            munit ⊗ f ; λ_(A') & = λ_A ; f                   && : cal(C)(munit ⊗ A, A') \
-            f ⊗ munit ; ρ_(A') & = ρ_A ; f                   && : cal(C)(A ⊗ munit, A')
+    (f ⊗ B) ⊗ C ; α_(A', B, C) & = α_(A, B, C) ; f ⊗ (g ⊗ h) //
+                                           && : cal(C)((A ⊗ B) ⊗ C, A' ⊗ (B ⊗ C)) \
+    A ⊗ (g ⊗ C) ; α_(A, B', C) & = α_(A, B, C) ; A ⊗ (g ⊗ h) //
+                                           && : cal(C)((A ⊗ B) ⊗ C, A ⊗ (B' ⊗ C)) \
+      A ⊗ B ⊗ h ; α_(A, B, C') & = α_(A, B, C) ; A ⊗ B ⊗ h //
+                                           && : cal(C)((A ⊗ B) ⊗ C, A ⊗ (B ⊗ C')) \
+            munit ⊗ f ; λ_(A') & = λ_A ; f && : cal(C)(munit ⊗ A, A') \
+            f ⊗ munit ; ρ_(A') & = ρ_A ; f && : cal(C)(A ⊗ munit, A')
   $
 
   Such that the following coherence conditions hold:
   - (Pentagon Identity)
     For all objects $A, B, C, D ∈ |cal(C)|$, the following diagram commutes:
     $
-      #diagram($                                 & (A ⊗ B) ⊗ (C ⊗ D) edge("dr", α_(A, B, (C ⊗ D)), ->) &                                \
-      ((A ⊗ B) ⊗ C) ⊗ D
-      edge("ur", α_((A ⊗ B), C, D), ->)
-      edge("d", α_(A, B, C) ⊗ D, ->)  &                                                     &              A ⊗ (B ⊗ (C ⊗ D)) \
-      (A ⊗ (B ⊗ C)) ⊗ D
-      edge("rr", α_(A, B ⊗ C, D), ->) &                                                     & A ⊗ ((B ⊗ C) ⊗ D)
-                                                                                              edge("u", A ⊗ α_(B, C, D), ->) $)
+      #diagram($
+        //
+        & (A ⊗ B) ⊗ (C ⊗ D) edge("dr", α_(A, B, (C ⊗ D)), ->)
+        &\ ((A ⊗ B) ⊗ C) ⊗ D edge("ur", α_((A ⊗ B), C, D), ->) edge("d", α_(A, B, C) ⊗ D, ->)
+        && A ⊗ (B ⊗ (C ⊗ D)) \
+        (A ⊗ (B ⊗ C)) ⊗ D edge("rr", α_(A, B ⊗ C, D), ->) & & A ⊗ ((B ⊗ C) ⊗ D)
+        edge("u", A ⊗ α_(B, C, D), ->)
+      $)
     $
 
   - (Triangle Identity)
     For all objects $A, B ∈ |cal(C)|$, the following diagram commutes:
     $
-      #diagram(cell-size: 15mm, $ (A ⊗ munit) ⊗ B edge(α_(A, munit, B), ->) edge("dr", ρ_A ⊗ id_B, ->, label-side: #right) &
-      A ⊗ (munit ⊗ B) edge("d", id_A ⊗ λ_B, ->, label-side: #left) \
-      & A ⊗ B $)
+      #diagram(cell-size: 15mm, $
+        //
+        (A ⊗ munit) ⊗ B edge(α_(A, munit, B), ->) edge("dr", ρ_A ⊗ id_B, ->, label-side: #right)
+        & A ⊗ (munit ⊗ B) edge("d", id_A ⊗ λ_B, ->, label-side: #left) \
+        & A ⊗ B
+      $)
     $
 
     We say that a $cal(V)$-premonoidal category is _symmetric_ if it is equipped with an additional
@@ -1857,9 +1775,9 @@ so we will not repeat them.
       $
         #diagram($ (A ⊗ B) ⊗ C edge(α_(A, B, C), ->) edge("d", σ_(A, B) ⊗ C, ->, label-side: #right) &
         A ⊗ (B ⊗ C) edge(σ_(A, B ⊗ C), ->, label-side: #left) &
-        (B ⊗ C) ⊗ A edge("d", α_(B, C, A), ->) \
-        (B ⊗ A) ⊗ C edge(α_(B, A, C), ->) &
-        B ⊗ (A ⊗ C) edge(B ⊗ σ_(A, C), ->) &
+        (B ⊗ C) ⊗ A edge("d", α_(B, C, A), ->, label-side: #left) \
+        (B ⊗ A) ⊗ C edge(α_(B, A, C), ->, label-side: #right) &
+        B ⊗ (A ⊗ C) edge(B ⊗ σ_(A, C), ->, label-side: #right) &
         B ⊗ (C ⊗ A) $)
       $
 ]
@@ -1905,7 +1823,7 @@ so we will not repeat them.
 
 #todo[Syntactic $cal(V)$-enriched SSA model]
 
-#todo[Modeling an equational theory $ms("Eq")$ w.r.t. an effect system $cal(E)$]
+#todo[Modeling an equational theory $req$ w.r.t. an effect system $cal(E)$]
 
 #todo[Full subcategory]
 

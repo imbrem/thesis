@@ -6,24 +6,15 @@
 
 #show: show-syntax
 
-#todo[
-  Definition: a $cal(V)$-enriched SSA model over a function space $ms("F")$
+#definition[
+  #todo[
+    Definition: a $cal(V)$-enriched SSA model over a function space $ms("F")$
+  ]
 ]
 
 #todo[
-  Describe acyclic expression lore???
+  Acyclic expression lore???
 ]
-
-$
-  ∀ f : cal(C)(A, B) . clet(f) := Δ_A ; A ⊗ f : cal(C)(A, A ⊗ B)
-$
-
-$
-  ∀ f : cal(C)(A, Σ icol("B")) . ccase(f) := clet(l) ; idistl(A, icol("B"))
-  : cal(C)(A, Σ (A ⊗ icol("B")))
-$
-
-#todo[Let-theorem; Kleisli category since this is a reader monad type thing...]
 
 $
   ⟦Σ lb("L")⟧ = Σ ⟦lb("L")⟧
@@ -51,17 +42,34 @@ $
   dntdef(r-twk-pi, $α^⊗ ; ⟦tywk(Π lb("L"), Π lb("L")')⟧ ⊗ ⟦tywk(A, A')⟧ ; α^⊗$),
 )
 
+#todo[Type weakening composes]
+
 #dntty($ctxwk(Γ, Δ)$, $cal(C)_⊥(Π ⟦Γ⟧, Π ⟦Δ⟧)$)
 
 $
   ⟦ctxwk(Γ, Δ)⟧ := ⟦tywk(Π Γ, Π Δ)⟧
 $
 
+#todo[Var weakening composes]
+
 #dntty($lbctxwk(ms("L"), ms("M"))$, $cal(C)_⊥(Σ ⟦ms("L")⟧, Σ ⟦ms("M")⟧)$)
 
 $
   ⟦lbctxwk(ms("L"), ms("M"))⟧ := ⟦tywk(Σ ms("L"), Σ ms("M"))⟧
 $
+
+#todo[Label weakening composes]
+
+$
+  ∀ f : cal(C)(A, B) . clet(f) := Δ_A ; A ⊗ f : cal(C)(A, A ⊗ B)
+$
+
+$
+  ∀ f : cal(C)(A, Σ icol("B")) . ccase(f) := clet(l) ; idistl(A, icol("B"))
+  : cal(C)(A, Σ (A ⊗ icol("B")))
+$
+
+#todo[let theorems]
 
 #dntty($hasty(Γ, a, A)$, $cal(C)(Π ⟦Γ⟧, ⟦A⟧)$)
 
@@ -119,27 +127,46 @@ $
   ),
 )
 
+#theorem(name: "Weakening")[
+  #todo[this]
+]
+
+#corollary(name: "Coherence")[
+  #todo[this]
+]
+
+#definition[
+  #todo[
+    Definition: a $cal(V)$-enriched SSA model over a function space $ms("F")$
+    w/ effect system $cal(E)$
+  ]
+]
+
+#theorem(name: "Soundness (Effect)")[
+  #todo[this]
+]
+
+#theorem(name: "Soundness (Substitution)")[
+  #todo[this]
+]
+
+#theorem(name: "Soundness (Equivalence)")[
+  #todo[this]
+]
+
+#theorem(name: "Completeness (Equivalence)")[
+  #todo[this]
+]
+
 #todo[
   Definition: a $cal(V)$-enriched SSA model over a function space $ms("F")$
-  w/ effect system $cal(E)$
+  w/ _linear_ effect system $cal(E)$
 ]
 
-#todo[
-  GPT up some names for these...
-]
-
-#theorem(name: "Effect Soundness")[
+#theorem(name: "Soundness (Refinement)")[
   #todo[this]
 ]
 
-#theorem(name: "Soundness of Substitution")[
-  #todo[this]
-]
-
-#theorem(name: "Soundness")[
-  #todo[this]
-]
-
-#theorem(name: "Completeness")[
+#theorem(name: "Completeness (Refinement)")[
   #todo[this]
 ]
