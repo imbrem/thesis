@@ -1499,6 +1499,8 @@ There exist canonical isomorphisms:
   $
 ]
 
+== Duality, Coproducts, and Initial Objects
+
 /*
 
 A coproduct, then, is just the dual notion to a product:
