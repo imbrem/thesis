@@ -56,13 +56,13 @@
 );
 #let r-sigma-nil = rule(
   name: "Σ-nil",
-  $isebrs(Γ, ·, ·, ·)$,
+  $isebrs(Γ, ·, ·, A)$,
 );
 #let r-sigma-cons = rule(
   name: "Σ-cons",
   $isebrs(Γ, lb("L"), M, A)$,
-  $hasty(#$Γ, x : A$, a, A)$,
-  $isebrs(Γ, #$lb("L"), lty(lb("l"), A)$, #$M, ebr(lb("l"), x, a)$, A)$,
+  $hasty(#$Γ, x : B$, a, A)$,
+  $isebrs(Γ, #$lb("L"), lty(lb("l"), B)$, #$M, ebr(lb("l"), x, a)$, A)$,
 );
 #let r-iter = rule(
   name: "iter",
@@ -70,3 +70,14 @@
   $hasty(Γ, e, B + A)$,
   $hasty(Γ, eiter(a, x, e), B)$,
 );
+
+#let r-csigma-nil = rule(
+  name: "Σ-nil",
+  $kebrs(·, ·, A)$
+)
+#let r-csigma-cons = rule(
+  name: "Σ-cons",
+  $kebrs(cal(K), M, A)$,
+  $hasty(#$Γ, x : B$, a, A)$,
+  $kebrs(#$cal(K), clty(lb("l"), Γ, B)$, #$M, ebr(lb("l"), x, a)$, A)$
+)

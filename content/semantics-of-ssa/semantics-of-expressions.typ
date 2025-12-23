@@ -83,15 +83,19 @@ $
 
 #dntty($istup(Γ, E, lb("T"))$, $cal(C)(Π ⟦Γ⟧, Π ⟦lb("T")⟧)$)
 
-#todo[nil-Π]
-
-#todo[cons-Π]
+#eqn-set(
+  dntdef(r-pi-nil, $!_(Π⟦Γ⟧)$),
+  dntdef(r-pi-cons, $Δ_(Π⟦Γ⟧) ; ⟦istup(Γ, E, lb("T"))⟧ ⋉ ⟦hasty(Γ, e, A)⟧ ; α^⊗$)
+)
 
 #dntty($kebrs(cal(K), M, A)$, $cal(C)(Σ ⟦cal(K)⟧, A)$)
 
-#todo[nil-Σ]
-
-#todo[cons-Σ]
+#eqn-set(
+  dntdef(r-csigma-nil, $0_A$),
+  dntdef(
+    r-csigma-cons, 
+    $α^+ ; ⟦kebrs(cal(K), M, A)⟧ + ⟦hasty(#$Γ, x : B$, a, A)⟧ ; ∇_⟦A⟧$)
+)
 
 #todo[
   Definition: a $cal(V)$-enriched SSA model over a function space $ms("F")$

@@ -194,6 +194,8 @@
 #let lty(l, A) = $#l (#A)$
 #let fexpr(f, e) = $#f : #e$
 
+#let clty(l, Γ, A) = $#l [#Γ] (#A)$
+
 // Lists
 #let lnil = $[ med ]$
 #let llen(A) = $|#A|$
@@ -372,31 +374,38 @@
 #let boxed(A) = box(A, stroke: black, inset: 0.75em)
 
 #let dntree(r) = {
-  r.name = none;
+  r.name = none
   $⟦#prooftree(r)⟧$
 }
 
 #let denote-rule(r, d) = (
-  rule : r,
-  den : d
+  rule: r,
+  den: d,
 )
 
-#let dntty(j, t) = align(center, $boxed(⟦#j⟧ : #t)$)
+#let dntty(j, t) = align(center, block(stroke: black, inset: 0.75em, $⟦#j⟧ : #t$))
 
 #let dntdef(r, d) = $#dntree(r) &:= #d$
 
-#let eqn-set(column-gutter: 3em, row-gutter: 2em, ..eqns) = align(center, {
-  set par(leading: row-gutter)
-  block(eqns.pos().map(box).join(h(column-gutter, weak: true)))
-})
+#let eqn-set(column-gutter: 3em, row-gutter: 2em, ..eqns) = align(center, block(
+  // stroke: black,
+  inset: (y: 0.5em),
+  {
+    set par(leading: row-gutter)
+    block(eqns.pos().map(box).join(h(column-gutter, weak: true)))
+  },
+))
 
-#let eqn-astack(..eqns) = align(center, {
-  eqns.pos().fold($ \ \ $, (acc, eqn) => $acc eqn \ \ $)
-})
+#let eqn-astack(..eqns) = align(center, block(
+  // stroke: black,
+  {
+    eqns.pos().fold($$, (acc, eqn) => $acc \ \ eqn$)
+  },
+))
 
 #let show-syntax(body) = [
   #show: thm-rules
   #show: thm-rules-b
-  
+
   #body
 ]
