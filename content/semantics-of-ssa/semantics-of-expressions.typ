@@ -88,18 +88,19 @@ $
       ; ⟦isebrs(Γ, lb("L"), M, A)⟧
     $,
   ),
-)
-
-#eqn-set(
   dntdef(
     r-let,
     $
       clet(⟦hasty(Γ, a, A)⟧) ; α^⊗ ; ⟦hasty(#$Γ, x : A$, b, B)⟧
     $,
   ),
+  dntdef(
+    r-iter,
+    $
+      clet(⟦hasty(Γ, a, A)⟧) ; (ccase(⟦hasty(Γ, e, B + A)⟧))^† ; rpi
+    $
+  )
 )
-
-#todo[iter]
 
 #dntty($istup(Γ, E, lb("T"))$, $cal(C)(Π ⟦Γ⟧, Π ⟦lb("T")⟧)$)
 

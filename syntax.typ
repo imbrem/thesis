@@ -132,12 +132,6 @@
 #let kret = $ms("ret")$
 #let kswitch = $ms("switch")$
 
-// Standard names
-#let ninl = $lb("i")_lb("l")$
-#let ninr = $lb("i")_lb("r")$
-#let nbr = $lb("l")$
-#let ncn = $lb("r")$
-
 // Types
 #let tzero = $mb("0")$
 #let tunit = $mb("1")$
@@ -150,6 +144,9 @@
 
 #let linj = $ι_kwl$
 #let rinj = $ι_kwr$
+
+#let nbr = kwl
+#let ncn = kwr
 
 #let lpi = $π_kwl$
 #let rpi = $π_kwr$
