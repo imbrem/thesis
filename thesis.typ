@@ -943,7 +943,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 #figure(
   [
-    #eqn-set(
+    #rule-set(
       declare-rule(r-twk-base, label: <twk-base>),
       declare-rule(r-twk-sigma, label: <twk-sigma>),
       declare-rule(r-twk-pi, label: <twk-pi>),
@@ -1031,7 +1031,24 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
   "concepts with attitude"
 ]
 
-#todo[not quite the same as distinguishing $lb("T"), lb("L")$, since _these_ have different variance]
+#todo[
+  not quite the same as distinguishing $lb("T"), lb("L")$, since _these_ have different variance
+]
+
+#figure(
+  [
+    #rule-set(
+      declare-rule(r-ctxwk-nil, label: <ctxwk-nil>),
+      declare-rule(r-ctxwk-cons, label: <ctxwk-cons>),
+      declare-rule(r-lbwk-nil, label: <lbwk-nil>),
+      declare-rule(r-lbwk-cons, label: <lbwk-cons>),
+      declare-rule(r-clwk-nil, label: <clwk-nil>),
+      declare-rule(r-clwk-cons, label: <clwk-cons>)
+    )
+    \
+  ],
+  caption: [Weakening for contexts],
+)
 
 === Expressions
 
@@ -1045,7 +1062,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 #figure(
   [
-    #eqn-set(
+    #rule-set(
       declare-rule(r-var),
       declare-rule(r-coe),
       declare-rule(r-app),
@@ -1077,7 +1094,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 #figure(
   [
-    #eqn-set(
+    #rule-set(
       declare-rule(r-br),
       declare-rule(r-case),
       declare-rule(r-case),
@@ -1093,7 +1110,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 #figure(
   [
-    #eqn-set(
+    #rule-set(
       declare-rule(r-assign),
       declare-rule(r-tm),
       declare-rule(r-lb-nil),
@@ -1136,7 +1153,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 #figure(
   [
-    #eqn-set(
+    #rule-set(
       declare-rule(r-g-assign),
       declare-rule(r-g-br),
       declare-rule(r-g-case),
@@ -1184,7 +1201,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 #figure(
   [
-    #eqn-set(
+    #rule-set(
       declare-rule(r-eq-var),
       declare-rule(r-eq-coe),
       declare-rule(r-eq-app),
@@ -1217,7 +1234,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 #figure(
   [
-    #eqn-set(
+    #rule-set(
       declare-rule(r-eff-var),
       declare-rule(r-eff-coe),
       declare-rule(r-eff-app),
@@ -1308,7 +1325,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 #figure(
   [
-    #eqn-set(
+    #rule-set(
       declare-rule(r-ref-var),
       declare-rule(r-ref-coe),
       declare-rule(r-ref-app),

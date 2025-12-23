@@ -6,27 +6,57 @@
   $X sle(ms("X")) Y$,
   $tywk(tybase(X), tybase(Y))$,
 );
-
 #let r-twk-sigma = rule(
   name: $Σ$,
   $tywk(Σ lb("T"), Σ lb("T"'))$,
   $tywk(A, A')$,
   $tywk(Σ (lb("T"), lty(lb("f"), A)), Σ (lb("T")', lty(lb("f"), A')))$,
 );
-
 #let r-twk-pi = rule(
   name: $Π$,
   $tywk(Π lb("T"), Π lb("T"'))$,
   $tywk(A, A')$,
   $tywk(Π (lb("T"), fty(lb("f"), A)), Π (lb("T")', fty(lb("f"), A')))$,
 );
-
 #let r-twk-unit = rule(
   name: $tunit$,
   $tywk(A, tunit)$,
 );
-
 #let r-twk-zero = rule(
   name: $tzero$,
   $tywk(tzero, A)$,
+);
+
+#let r-ctxwk-nil = rule(
+  name: "Π-nil",
+  $ctxwk(Γ, ·)$
+)
+#let r-ctxwk-cons = rule(
+  name: "Π-cons",
+  $clbwk(Γ, Δ)$,
+  $tywk(A, B)$,
+  $ctxwk(#$Γ, x : A$, #$Δ, x : A$)$
+);
+
+#let r-lbwk-nil = rule(
+  name: "Σ-nil",
+  $lbwk(·, ms("K"))$
+)
+#let r-lbwk-cons = rule(
+  name: "Σ-cons",
+  $lbwk(ms("L"), ms("K"))$,
+  $tywk(A, B)$,
+  $ctxwk(#$ms("L"), lb("l")(A)$, #$ms("K"), lb("l")(B)$)$
+);
+
+#let r-clwk-nil = rule(
+  name: "ΣΠ-nil",
+  $clbwk(·, cal("K"))$
+)
+#let r-clwk-cons = rule(
+  name: "ΣΠ-cons",
+  $clbwk(cal("L"), cal("K"))$,
+  $ctxwk(Γ, Δ)$,
+  $tywk(A, B)$,
+  $clbwk(#$cal("L"), clty(lb("l"), Γ, A)$, #$cal("K"), clty(lb("l"), Δ, B)$)$
 );

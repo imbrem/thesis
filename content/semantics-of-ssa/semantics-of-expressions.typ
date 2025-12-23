@@ -31,7 +31,10 @@ $
 $
 
 #todo[
-  Lore about derivations ; coherence
+  Text about coherence notation: for $D: deriv(hasty(Γ, a, A))$, 
+  write $⟦D⟧$ as $⟦hasty(Γ, a, A)⟧$.
+
+  Justified now by unique argument. Justified later by coherence.
 ]
 
 #dntty($tywk(A, B)$, $cal(C)_⊥(⟦A⟧, ⟦B⟧)$)
@@ -64,25 +67,27 @@ $
   In particular, if $Γ = Δ$, then $⟦D⟧ = id_(Π ⟦Γ⟧)$.
 ]
 
-#dntty($lbctxwk(ms("L"), ms("K"))$, $cal(C)_⊥(Σ ⟦ms("L")⟧, Σ ⟦ms("K")⟧)$)
+#dntty($lbwk(ms("L"), ms("K"))$, $cal(C)_⊥(Σ ⟦ms("L")⟧, Σ ⟦ms("K")⟧)$)
 
 $
-  ⟦lbctxwk(ms("L"), ms("K"))⟧ := ⟦tywk(Σ ms("L"), Σ ms("K"))⟧
+  ⟦lbwk(ms("L"), ms("K"))⟧ := ⟦tywk(Σ ms("L"), Σ ms("K"))⟧
 $
-
 
 #lemma(name: "Coherence (Label weakening)")[
-  For all derivations $D, D' : deriv(lbctxwk(ms("L"), ms("K")))$, we have that $⟦D⟧ = ⟦D'⟧$.
+  For all derivations $D, D' : deriv(lbwk(ms("L"), ms("K")))$, we have that $⟦D⟧ = ⟦D'⟧$.
   //
   In particular, if $ms("L") = ms("K")$, then $⟦D⟧ = id_(Σ ⟦ms("L")⟧)$.
 ]
 
-#dntty($elbctxwk(cal("L"), cal("K"))$, $cal(C)_⊥(Σ ⟦cal("L")⟧, Σ ⟦cal("K")⟧)$)
+#dntty($clbwk(cal("L"), cal("K"))$, $cal(C)_⊥(Σ ⟦cal("L")⟧, Σ ⟦cal("K")⟧)$)
 
-#todo[rules for control-context weakening]
+#eqn-set(
+  dntdef(r-clwk-nil, $0_(Σ ms("K"))$),
+  dntdef(r-clwk-cons, $α^+ ; ⟦clbwk(cal("L"), cal("K"))⟧ + (⟦ctxwk(Γ, Δ)⟧ ⊗ ⟦tywk(A, B)⟧) ; α^+$),
+)
 
 #lemma(name: "Coherence (Control weakening)")[
-  For all derivations $D, D' : deriv(lbctxwk(cal("L"), cal("K")))$, we have that $⟦D⟧ = ⟦D'⟧$.
+  For all derivations $D, D' : deriv(lbwk(cal("L"), cal("K")))$, we have that $⟦D⟧ = ⟦D'⟧$.
   //
   In particular, if $cal("L") = cal("K")$, then $⟦D⟧ = id_(Σ ⟦cal("K")⟧)$.
 ]

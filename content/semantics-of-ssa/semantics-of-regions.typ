@@ -37,8 +37,8 @@
 
 #lemma(name: "Weakening")[
   For all derivations $D : deriv(haslb(Γ, r, ms("K"))) $, $D' : deriv(haslb(Δ, r, ms("L")))$,
-  if $ctxwk(Γ, Δ)$ and $lbctxwk(ms("L"), ms("K"))$, we have that
-  $⟦D⟧ = ⟦ctxwk(Γ, Δ)⟧ ; ⟦D'⟧ ; ⟦lbctxwk(ms("L"), ms("K"))⟧$.
+  if $ctxwk(Γ, Δ)$ and $lbwk(ms("L"), ms("K"))$, we have that
+  $⟦D⟧ = ⟦ctxwk(Γ, Δ)⟧ ; ⟦D'⟧ ; ⟦lbwk(ms("L"), ms("K"))⟧$.
 
   In particular, if $Γ = Δ$ and $ms("L") = ms("K")$, then $⟦D⟧ = ⟦D'⟧$.
 ]

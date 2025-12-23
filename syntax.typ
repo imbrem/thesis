@@ -323,8 +323,8 @@
 #let lbwk(L, M) = $#L ≤ #M$
 
 #let ctxwk(Γ, Δ) = $#Γ ≤ #Δ$
-#let lbctxwk(L, M) = $#L ≤ #M$
-#let elbctxwk(K, M) = $#K ≤ #M$
+#let lbwk(L, M) = $#L ≤ #M$
+#let clbwk(K, M) = $#K ≤ #M$
 
 #let isfn(Γ, f, A, B) = $#Γ ⊢ #f : #A → #B$
 #let istup(Γ, E, T) = $#Γ ⊢ #E scripts(:)^* #T$
