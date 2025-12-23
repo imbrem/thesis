@@ -378,10 +378,12 @@
 
 #let boxed(A) = box(A, stroke: black, inset: 0.75em)
 
-#let dntree(r) = {
+#let rule-unnamed(r) = {
   r.name = none
-  $⟦#prooftree(r)⟧$
+  prooftree(r)
 }
+
+#let dntree(r) = $⟦#rule-unnamed(r)⟧$
 
 #let denote-rule(r, d) = (
   rule: r,

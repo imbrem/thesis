@@ -1185,19 +1185,19 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 #figure(
   [
     #eqn-set(
-      declare-rule(r-e-var),
-      declare-rule(r-e-coe),
-      declare-rule(r-e-app),
-      declare-rule(r-e-inj),
-      declare-rule(r-e-proj),
-      declare-rule(r-e-tuple),
-      declare-rule(r-e-pi-nil),
-      declare-rule(r-e-pi-cons),
-      declare-rule(r-e-let),
-      declare-rule(r-e-cases),
-      declare-rule(r-e-sigma-nil),
-      declare-rule(r-e-sigma-cons),
-      declare-rule(r-e-iter),
+      declare-rule(r-eq-var),
+      declare-rule(r-eq-coe),
+      declare-rule(r-eq-app),
+      declare-rule(r-eq-inj),
+      declare-rule(r-eq-proj),
+      declare-rule(r-eq-tuple),
+      declare-rule(r-eq-pi-nil),
+      declare-rule(r-eq-pi-cons),
+      declare-rule(r-eq-let),
+      declare-rule(r-eq-cases),
+      declare-rule(r-eq-sigma-nil),
+      declare-rule(r-eq-sigma-cons),
+      declare-rule(r-eq-iter),
     )
     \
   ],
@@ -1218,77 +1218,19 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 #figure(
   [
     #eqn-set(
-      declare-rule(rule(
-        name: "var",
-        $Γ med x = A$,
-        $dehasty(Γ, ε, x, A)$,
-      )),
-      declare-rule(rule(
-        name: "coe",
-        $dehasty(Γ, ε, a, A)$,
-        $tywk(A, A')$,
-        $dehasty(Γ, ε, a, A')$,
-      )),
-      declare-rule(rule(
-        name: "app",
-        $eisfn(Γ, ε, f, A, B)$,
-        $dehasty(Γ, ε, a, A)$,
-        $dehasty(Γ, ε, f med a, B)$,
-      )),
-      declare-rule(rule(
-        name: "inj",
-        $dehasty(Γ, ε, a, A)$,
-        $dehasty(Γ, ε, lb("l") med a, Σ (lty(lb("l"), A)))$,
-      )),
-      declare-rule(rule(
-        name: "proj",
-        $ehasty(Γ, ε, e, Π (fty(lb("f"), A)))$,
-        $dehasty(Γ, ε, lb("f") med e, A)$,
-      )),
-      declare-rule(rule(
-        name: "tuple",
-        $deistup(Γ, ε, E, lb("T"))$,
-        $dehasty(Γ, ε, (E), Π lb("T"))$,
-      )),
-      declare-rule(rule(
-        name: "Π-nil",
-        $deistup(Γ, ε, ·, ·)$,
-      )),
-      declare-rule(rule(
-        name: "Π-cons",
-        $deistup(Γ, ε, E, lb("T"))$,
-        $dehasty(Γ, ε, e, A)$,
-        $deistup(Γ, ε, #$E, e$, #$lb("T"), fty(lb("f"), A)$)$,
-      )),
-      declare-rule(rule(
-        name: "let",
-        $dehasty(Γ, ε, a, A)$,
-        $dehasty(#$Γ, x : A$, ε, b, B)$,
-        $dehasty(Γ, ε, elet(x, a, b), B)$,
-      )),
-      declare-rule(rule(
-        name: "cases",
-        $dehasty(Γ, ε, e, Σ lb("L"))$,
-        $deisebrs(Γ, lb("L"), ε, M, A)$,
-        $hasty(Γ, ecase(e, M), A)$,
-      )),
-      declare-rule(rule(
-        name: "Σ-nil",
-        $deisebrs(Γ, ·, ε, ·, ·)$,
-      )),
-      declare-rule(rule(
-        name: "Σ-cons",
-        $deisebrs(Γ, lb("L"), ε, M, A)$,
-        $dehasty(#$Γ, x : A$, ε, a, A)$,
-        $deisebrs(Γ, #$lb("L"), lty(lb("l"), A)$, ε, #$M, ebr(lb("l"), x, a)$, A)$,
-      )),
-      declare-rule(rule(
-        name: "iter",
-        $eisinf(ε)$,
-        $dehasty(Γ, ε, a, A)$,
-        $dehasty(Γ, ε, e, B + A)$,
-        $dehasty(Γ, ε, eiter(a, x, e), B)$,
-      )),
+      declare-rule(r-eff-var),
+      declare-rule(r-eff-coe),
+      declare-rule(r-eff-app),
+      declare-rule(r-eff-inj),
+      declare-rule(r-eff-proj),
+      declare-rule(r-eff-tuple),
+      declare-rule(r-eff-pi-nil),
+      declare-rule(r-eff-pi-cons),
+      declare-rule(r-eff-let),
+      declare-rule(r-eff-cases),
+      declare-rule(r-eff-sigma-nil),
+      declare-rule(r-eff-sigma-cons),
+      declare-rule(r-eff-iter),
     )
     \
   ],
@@ -1367,80 +1309,19 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 #figure(
   [
     #eqn-set(
-      declare-rule(rule(
-        name: "var",
-        $Γ med x = A$,
-        $tyref(Γ, ms("R"), x, x, A)$,
-      )),
-      declare-rule(rule(
-        name: "coe",
-        $tyref(Γ, ms("R"), a, a', A)$,
-        $tywk(A, A')$,
-        $tyref(Γ, ms("R"), a, a', A')$,
-      )),
-      declare-rule(rule(
-        name: "app",
-        $isfn(Γ, f, A, B)$,
-        $tyref(Γ, ms("R"), a, a', A)$,
-        $tyref(Γ, ms("R"), f med a, f med a', B)$,
-      )),
-      declare-rule(rule(
-        name: "inj",
-        $tyref(Γ, ms("R"), a, a', A)$,
-        $tyref(Γ, ms("R"), lb("l") med a, lb("l") med a', Σ (lty(lb("l"), A)))$,
-      )),
-      declare-rule(rule(
-        name: "proj",
-        $tyref(Γ, ms("R"), e, e', Π (fty(lb("f"), A)))$,
-        $tyref(Γ, ms("R"), lb("f") med e, lb("f") med e', A)$,
-      )),
-      declare-rule(rule(
-        name: "tuple",
-        $tupref(Γ, ms("R"), E, E', lb("T"))$,
-        $tyref(Γ, ms("R"), (E), (E'), Π lb("T"))$,
-      )),
-      declare-rule(rule(
-        name: "Π-nil",
-        $tupref(Γ, ms("R"), ·, ·, ·)$,
-      )),
-      declare-rule(rule(
-        name: "Π-cons",
-        $tupref(Γ, ms("R"), E, E', lb("T"))$,
-        $tyref(Γ, ms("R"), e, e', A)$,
-        $tupref(Γ, ms("R"), #$E, e$, #$E', e'$, #$lb("T"), fty(lb("f"), A)$)$,
-      )),
-      declare-rule(rule(
-        name: "let",
-        $tyref(Γ, ms("R"), a, a', A)$,
-        $tyref(#$Γ, x : A$, ms("R"), b, b', B)$,
-        $tyref(Γ, ms("R"), elet(x, a, b), elet(x, a', b'), B)$,
-      )),
-      declare-rule(rule(
-        name: "cases",
-        $tyref(Γ, ms("R"), e, e', Σ lb("L"))$,
-        $ebrsref(Γ, lb("L"), ms("R"), M, M', A)$,
-        $tyref(Γ, ms("R"), ecase(e, M), ecase(e', M'), A)$,
-      )),
-      declare-rule(rule(
-        name: "Σ-nil",
-        $ebrsref(Γ, ·, ms("R"), ·, ·, ·)$,
-      )),
-      declare-rule(rule(
-        name: "Σ-cons",
-        $ebrsref(Γ, lb("L"), ms("R"), M, M', A)$,
-        $tyref(#$Γ, x : A$, ms("R"), a, a', A)$,
-        $ebrsref(
-          Γ, #$lb("L"), lty(lb("l"), A)$, ms("R"),
-          (#$M, ebr(lb("l"), x, a)$), (#$M', ebr(lb("l"), x, a')$),
-          A
-        )$,
-      )),
-      declare-rule(rule(
-        name: "iter",
-        $tyref(Γ, ms("R"), a, a', A)$,
-        $tyref(Γ, ms("R"), e, e', B + A)$,
-        $tyref(Γ, ms("R"), eiter(a, x, e), eiter(e', x, a'), B)$,
-      )),
+      declare-rule(r-ref-var),
+      declare-rule(r-ref-coe),
+      declare-rule(r-ref-app),
+      declare-rule(r-ref-inj),
+      declare-rule(r-ref-proj),
+      declare-rule(r-ref-tuple),
+      declare-rule(r-ref-pi-nil),
+      declare-rule(r-ref-pi-cons),
+      declare-rule(r-ref-let),
+      declare-rule(r-ref-cases),
+      declare-rule(r-ref-sigma-nil),
+      declare-rule(r-ref-sigma-cons),
+      declare-rule(r-ref-iter),
     )
     \
   ],
