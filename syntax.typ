@@ -145,11 +145,14 @@
 #let tlist(A) = $mb("List") med #A$
 
 // Injections and projections
-#let linj = $ι_lb("l")$
-#let rinj = $ι_lb("r")$
+#let kwl = $ms("l")$
+#let kwr = $ms("r")$
 
-#let lpi = $π_lb("l")$
-#let rpi = $π_lb("r")$
+#let linj = $ι_kwl$
+#let rinj = $ι_kwr$
+
+#let lpi = $π_kwl$
+#let rpi = $π_kwr$
 
 // Orders
 #let sle(X) = $scripts(≤)_#X$

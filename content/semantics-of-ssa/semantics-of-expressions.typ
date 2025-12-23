@@ -19,8 +19,8 @@ $
 $
 
 $
-  ∀ f : cal(C)(A, Σ icol("B")) . ccase(f) := clet(l) ; idistl(A, icol("B")) 
-    : cal(C)(A, Σ (A ⊗ icol("B")))
+  ∀ f : cal(C)(A, Σ icol("B")) . ccase(f) := clet(l) ; idistl(A, icol("B"))
+  : cal(C)(A, Σ (A ⊗ icol("B")))
 $
 
 #todo[Let-theorem; Kleisli category since this is a reader monad type thing...]
@@ -75,19 +75,29 @@ $
 )
 
 #eqn-set(
-  dntdef(r-inj, $⟦hasty(Γ, a, A)⟧ ; α^+$),
+  dntdef(r-inj, $⟦hasty(Γ, a, A)⟧ ; ι_lb("l")$),
   dntdef(r-proj, $⟦hasty(Γ, e, Π (fty(lb("f"), A)))⟧ ; π_lb("f")$),
-  dntdef(r-tuple, $⟦istup(Γ, E, lb("T"))⟧$)
+  dntdef(r-tuple, $⟦istup(Γ, E, lb("T"))⟧$),
 )
 
 #eqn-astack(
-  dntdef(r-cases, $
-    ccase(⟦hasty(Γ, e, Σ lb("L"))⟧)
-    ; ⟦isebrs(Γ, lb("L"), M, A)⟧
-    $)
+  dntdef(
+    r-cases,
+    $
+      ccase(⟦hasty(Γ, e, Σ lb("L"))⟧)
+      ; ⟦isebrs(Γ, lb("L"), M, A)⟧
+    $,
+  ),
 )
 
-#todo[let]
+#eqn-set(
+  dntdef(
+    r-let,
+    $
+      clet(⟦hasty(Γ, a, A)⟧) ; α^⊗ ; ⟦hasty(#$Γ, x : A$, b, B)⟧
+    $,
+  ),
+)
 
 #todo[iter]
 
@@ -95,7 +105,7 @@ $
 
 #eqn-set(
   dntdef(r-pi-nil, $!_(Π⟦Γ⟧)$),
-  dntdef(r-pi-cons, $Δ_(Π⟦Γ⟧) ; ⟦istup(Γ, E, lb("T"))⟧ ⋉ ⟦hasty(Γ, e, A)⟧ ; α^⊗$)
+  dntdef(r-pi-cons, $Δ_(Π⟦Γ⟧) ; ⟦istup(Γ, E, lb("T"))⟧ ⋉ ⟦hasty(Γ, e, A)⟧ ; α^⊗$),
 )
 
 #dntty($kebrs(cal(K), M, A)$, $cal(C)(Σ ⟦cal(K)⟧, A)$)
@@ -103,8 +113,9 @@ $
 #eqn-set(
   dntdef(r-csigma-nil, $0_A$),
   dntdef(
-    r-csigma-cons, 
-    $α^+ ; ⟦kebrs(cal(K), M, A)⟧ + ⟦hasty(#$Γ, x : B$, a, A)⟧ ; ∇_⟦A⟧$)
+    r-csigma-cons,
+    $α^+ ; ⟦kebrs(cal(K), M, A)⟧ + ⟦hasty(#$Γ, x : B$, a, A)⟧ ; ∇_⟦A⟧$,
+  ),
 )
 
 #todo[

@@ -916,8 +916,8 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
       ),
     )
     $
-      A × B & := Π ( lb("l") : A, lb("r") : B ) & #h(3em) & mb(1) & := Π (·) \
-      A + B & := Σ ( lb("l")(A), lb("r")(B) )   &         & mb(0) & := Σ (·)
+      A × B & := Π ( kwl : A, kwr : B ) & #h(3em) & mb(1) & := Π (·) \
+      A + B & := Σ ( kwl(A), kwr(B) )   &         & mb(0) & := Σ (·)
     $
     $
       Π [A_0,...,A_(n - 1)] & = Π_i A_i & := Π ( lb("p")_0 : A_0, ..., lb("p")_(n - 1) : A_(n - 1) ) \
