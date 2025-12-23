@@ -3,8 +3,8 @@
 #let r-twk-base = rule(
   name: "base",
   // $X, Y ∈ ms("X")$,
-  $X sle(X) Y$,
-  $tywk(X, Y)$,
+  $X sle(ms("X")) Y$,
+  $tywk(tybase(X), tybase(Y))$,
 );
 
 #let r-twk-sigma = rule(

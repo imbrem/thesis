@@ -324,6 +324,7 @@
 
 #let ctxwk(Γ, Δ) = $#Γ ≤ #Δ$
 #let lbctxwk(L, M) = $#L ≤ #M$
+#let elbctxwk(K, M) = $#K ≤ #M$
 
 #let isfn(Γ, f, A, B) = $#Γ ⊢ #f : #A → #B$
 #let istup(Γ, E, T) = $#Γ ⊢ #E scripts(:)^* #T$
@@ -350,14 +351,17 @@
 #let ehasty(Γ, e, a, A) = $#Γ scripts(⊢)^#e #a : #A$
 #let eistup(Γ, e, E, T) = $#Γ scripts(⊢)^#e #E scripts(:)^* #T$
 #let eisebrs(Γ, L, e, B, A) = $#Γ csplat #L scripts(⊢)^#e #B scripts(:)^* #A$
+#let ehaslb(Γ, e, r, L) = $#Γ scripts(⊢)^#e #r triangle.stroked.small.r #L$
 
 #let tyeq(Γ, Eq, a, b, A) = $#Γ scripts(⊢)_#Eq #a ≈ #b : #A$
 #let tupeq(Γ, Eq, E, F, T) = $#Γ scripts(⊢)_#Eq #E ≈ #F scripts(:)^* #T$
 #let ebrseq(Γ, L, Eq, B, B2, A) = $#Γ csplat #L scripts(⊢)_#Eq #B ≈ #B2 scripts(:)^* #A$
+#let lbeq(Γ, Eq, s, t, L) = $#Γ scripts(⊢)_#Eq #s ≈ #t triangle.stroked.small.r #L$
 
 #let tyref(Γ, R, a, b, A) = $#Γ scripts(⊢)_#R #a ->> #b : #A$
 #let tupref(Γ, R, E, F, T) = $#Γ scripts(⊢)_#R #E ->> #F scripts(:)^* #T$
 #let ebrsref(Γ, L, R, B, B2, A) = $#Γ csplat #L scripts(⊢)_#R #B ->> #B2 scripts(:)^* #A$
+#let lbref(Γ, R, s, t, L) = $#Γ scripts(⊢)_#R #s ->> #t triangle.stroked.small.r #L$
 
 #let lupg(γ) = $upright(↑)#γ$
 #let rupg(γ) = $#γ upright(↑)$
@@ -375,6 +379,8 @@
     supplement: [(#p.name)],
   ) #l
 ]
+
+#let deriv(j) = $ms("deriv")(#j)$
 
 #let boxed(A) = box(A, stroke: black, inset: 0.75em)
 
@@ -409,6 +415,9 @@
     eqns.pos().fold($$, (acc, eqn) => $acc \ \ eqn$)
   },
 ))
+
+#let req = ms("Eq")
+#let rref = ms("R")
 
 #let show-syntax(body) = [
   #show: thm-rules

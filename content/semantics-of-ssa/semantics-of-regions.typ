@@ -5,17 +5,19 @@
 
 #show: show-syntax
 
-#todo[
-  Definition: an SSA model over an expression space $ms("E")$ and terminator space $ms("T")$
-  --  Note that the previous section means one of these is _generated_ for every model over a
-  function space $ms("F")$
+#definition[
+  #todo-inline[
+    an SSA model over an expression space $ms("E")$ and terminator space $ms("T")$
+    --  Note that the previous section means one of these is _generated_ for every model over a
+    function space $ms("F")$
+  ]
 ]
 
 #todo[Note that #br-calc() is a sublanguage of #gssa-calc()]
 
 #todo[#ssa-calc() is a sublanguage of #gssa-calc()]
 
-#todo[typing]
+#dntty($haslb(Γ, r, ms("L"))$, $cal(C)(Π ⟦Γ⟧, Σ ⟦ms("L")⟧)$)
 
 #eqn-astack(
   dntdef(r-g-assign, $clet(⟦hasty(Γ, e, A)⟧) ; α^⊗ ; ⟦haslb(#$Γ, x : A$, r, ms("L"))⟧$),
@@ -24,42 +26,76 @@
   dntdef(r-g-scope, todo-inline("this")),
 )
 
-#todo[typing]
+#dntty($klbrs(cal(K), L, ms("L"))$, $cal(C)(Σ ⟦Γ csplat K⟧, Σ ⟦ms("L")⟧)$)
+
+#todo[General $cal(K)$-rules...]
 
 #eqn-astack(
   dntdef(r-g-lb-nil, todo-inline("this")),
   dntdef(r-g-lb-cons, todo-inline("this")),
 )
 
-#theorem(name: "Weakening")[
-  #todo[this]
+#lemma(name: "Weakening")[
+  For all derivations $D : deriv(haslb(Γ, r, ms("K"))) $, $D' : deriv(haslb(Δ, r, ms("L")))$,
+  if $ctxwk(Γ, Δ)$ and $lbctxwk(ms("L"), ms("K"))$, we have that
+  $⟦D⟧ = ⟦ctxwk(Γ, Δ)⟧ ; ⟦D'⟧ ; ⟦lbctxwk(ms("L"), ms("K"))⟧$.
+
+  In particular, if $Γ = Δ$ and $ms("L") = ms("K")$, then $⟦D⟧ = ⟦D'⟧$.
 ]
 
-#corollary(name: "Coherence")[
-  #todo[this]
+#lemma(name: "Soundness (Effect)")[
+  If $ehaslb(Γ, ε, a, ms("L"))$, then $⟦haslb(Γ, a, ms("L"))⟧ : cal(C)_ε (Π ⟦Γ⟧, Σ ⟦ms("L")⟧)$
 ]
 
-#theorem(name: "Soundness (Effect)")[
-  #todo[this]
-]
-
-#theorem(name: "Soundness (Substitution)")[
-  #todo[this]
+#lemma(name: "Soundness (Substitution)")[
+  #todo-inline[this]
 ]
 
 #theorem(name: "Soundness (Equivalence)")[
-  #todo[this]
+  Given $lbeq(Γ, req, s, t, ms("L"))$ and $cal(M) ⊧ req$, we have
+  $
+    ⟦haslb(Γ, s, ms("L"))⟧_cal(M) ->> ⟦haslb(Γ, t, ms("L"))⟧_cal(M)
+  $
 ]
 
 #theorem(name: "Completeness (Equivalence)")[
-  #todo[this]
+  Given $haslb(Γ, s, ms("L"))$ and $hasty(Γ, t, ms("L"))$, we have
+  $
+    lbeq(Γ, req, s, t, ms("L"))
+    <==> (∀ cal(M) ⊧ req . haslb(Γ, s, A)⟧_cal(M) = ⟦haslb(Γ, t, A)⟧_cal(M))
+  $
+]
+
+
+#definition[
+  #todo-inline[
+    a $cal(V)$-enriched SSA model over a function space $ms("F")$
+    w/ _linear_ effect system $cal(E)$
+  ]
+]
+
+#lemma(name: "Soundness (Directed Substitution)")[
+  #todo-inline[this]
+]
+
+
+#definition[
+  #todo-inline[
+    a $cal(V)$-enriched SSA model modeling a refinement theory $rref$
+  ]
 ]
 
 #theorem(name: "Soundness (Refinement)")[
-  #todo[this]
+  Given $lbref(Γ, rref, s, t, ms("L"))$ and $cal(M) ⊧ rref$, we have
+  $
+    ⟦haslb(Γ, s, ms("L"))⟧_cal(M) ->> ⟦haslb(Γ, t, ms("L"))⟧_cal(M)
+  $
 ]
 
 #theorem(name: "Completeness (Refinement)")[
-  #todo[this]
+  Given $haslb(Γ, s, ms("L"))$ and $haslb(Γ, t, ms("L"))$, we have
+  $
+    tyref(Γ, rref, a, b, A)
+    <==> (∀ cal(M) ⊧ rref . ⟦haslb(Γ, s, ms("L"))⟧_cal(M) ->> ⟦hasty(Γ, t, ms("L"))⟧_cal(M))
+  $
 ]
-

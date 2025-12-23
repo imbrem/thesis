@@ -7,8 +7,8 @@
 #show: show-syntax
 
 #definition[
-  #todo[
-    Definition: a $cal(V)$-enriched SSA model over a function space $ms("F")$
+  #todo-inline[
+    a $cal(V)$-enriched SSA model over a function space $ms("F")$
   ]
 ]
 
@@ -24,6 +24,10 @@ $
   ⟦Π lb("X")⟧ = Π ⟦lb("X")⟧
   quad quad
   ⟦lb("X")⟧ = (lb("f") ↦ ⟦A⟧ | fty(lb("f"), A) ∈ lb("X"))
+$
+
+$
+  ⟦cal(K)⟧ = (lb("l") ↦ Π ⟦Γ⟧ ⊗ ⟦A⟧ | clty(lb("l"), Γ, A) ∈ cal(K))
 $
 
 #todo[
@@ -42,7 +46,11 @@ $
   dntdef(r-twk-pi, $α^⊗ ; ⟦tywk(Π lb("L"), Π lb("L")')⟧ ⊗ ⟦tywk(A, A')⟧ ; α^⊗$),
 )
 
-#todo[Type weakening composes]
+#lemma(name: "Coherence (Type weakening)")[
+  For all derivations $D, D' : deriv(tywk(A, B))$, we have that $⟦D⟧ = ⟦D'⟧$.
+  //
+  In particular, if $A = B$, then $⟦D⟧ = id_(⟦A⟧)$.
+]
 
 #dntty($ctxwk(Γ, Δ)$, $cal(C)_⊥(Π ⟦Γ⟧, Π ⟦Δ⟧)$)
 
@@ -50,15 +58,34 @@ $
   ⟦ctxwk(Γ, Δ)⟧ := ⟦tywk(Π Γ, Π Δ)⟧
 $
 
-#todo[Var weakening composes]
+#lemma(name: "Coherence (Weakening)")[
+  For all derivations $D, D' : deriv(ctxwk(Γ, Δ))$, we have that $⟦D⟧ = ⟦D'⟧$.
+  //
+  In particular, if $Γ = Δ$, then $⟦D⟧ = id_(Π ⟦Γ⟧)$.
+]
 
-#dntty($lbctxwk(ms("L"), ms("M"))$, $cal(C)_⊥(Σ ⟦ms("L")⟧, Σ ⟦ms("M")⟧)$)
+#dntty($lbctxwk(ms("L"), ms("K"))$, $cal(C)_⊥(Σ ⟦ms("L")⟧, Σ ⟦ms("K")⟧)$)
 
 $
-  ⟦lbctxwk(ms("L"), ms("M"))⟧ := ⟦tywk(Σ ms("L"), Σ ms("M"))⟧
+  ⟦lbctxwk(ms("L"), ms("K"))⟧ := ⟦tywk(Σ ms("L"), Σ ms("K"))⟧
 $
 
-#todo[Label weakening composes]
+
+#lemma(name: "Coherence (Label weakening)")[
+  For all derivations $D, D' : deriv(lbctxwk(ms("L"), ms("K")))$, we have that $⟦D⟧ = ⟦D'⟧$.
+  //
+  In particular, if $ms("L") = ms("K")$, then $⟦D⟧ = id_(Σ ⟦ms("L")⟧)$.
+]
+
+#dntty($elbctxwk(cal("L"), cal("K"))$, $cal(C)_⊥(Σ ⟦cal("L")⟧, Σ ⟦cal("K")⟧)$)
+
+#todo[rules for control-context weakening]
+
+#lemma(name: "Coherence (Control weakening)")[
+  For all derivations $D, D' : deriv(lbctxwk(cal("L"), cal("K")))$, we have that $⟦D⟧ = ⟦D'⟧$.
+  //
+  In particular, if $cal("L") = cal("K")$, then $⟦D⟧ = id_(Σ ⟦cal("K")⟧)$.
+]
 
 $
   ∀ f : cal(C)(A, B) . clet(f) := Δ_A ; A ⊗ f : cal(C)(A, A ⊗ B)
@@ -69,8 +96,6 @@ $
   : cal(C)(A, Σ (A ⊗ icol("B")))
 $
 
-#todo[let theorems]
-
 #dntty($hasty(Γ, a, A)$, $cal(C)(Π ⟦Γ⟧, ⟦A⟧)$)
 
 #eqn-set(
@@ -79,7 +104,7 @@ $
 )
 
 #eqn-astack(
-  dntdef(r-app, $clet(⟦hasty(Γ, a, A)⟧) ; ⟦isfn(Γ, a, A, B)⟧$),
+  dntdef(r-app, $clet(⟦hasty(Γ, a, A)⟧) ; ⟦isfn(Γ, f, A, B)⟧$),
 )
 
 #eqn-set(
@@ -106,8 +131,8 @@ $
     r-iter,
     $
       clet(⟦hasty(Γ, a, A)⟧) ; (ccase(⟦hasty(Γ, e, B + A)⟧))^† ; rpi
-    $
-  )
+    $,
+  ),
 )
 
 #dntty($istup(Γ, E, lb("T"))$, $cal(C)(Π ⟦Γ⟧, Π ⟦lb("T")⟧)$)
@@ -127,46 +152,80 @@ $
   ),
 )
 
-#theorem(name: "Weakening")[
-  #todo[this]
-]
+#lemma(name: "Weakening")[
+  For all derivations $D : deriv(hasty(Γ, a, A))$, $D' : deriv(hasty(Δ, a, A))$,
+  given $ctxwk(Γ, Δ)$, we have that
+  $⟦D'⟧ = ⟦ctxwk(Γ, Δ)⟧ ; ⟦D⟧$.
 
-#corollary(name: "Coherence")[
-  #todo[this]
+  In particular, it follows that, if $Γ = Δ$, $⟦D⟧ = ⟦D'⟧$.
 ]
 
 #definition[
-  #todo[
-    Definition: a $cal(V)$-enriched SSA model over a function space $ms("F")$
+  #todo-inline[
+    a $cal(V)$-enriched SSA model over a function space $ms("F")$
     w/ effect system $cal(E)$
   ]
 ]
 
-#theorem(name: "Soundness (Effect)")[
-  #todo[this]
+#lemma(name: "Soundness (Effect)")[
+  If $ehasty(Γ, ε, a, A)$, then $⟦hasty(Γ, a, A)⟧ : cal(C)_ε (Π ⟦Γ⟧, ⟦A⟧)$
 ]
 
-#theorem(name: "Soundness (Substitution)")[
-  #todo[this]
+#lemma(name: "Soundness (Substitution)")[
+  #todo-inline[this]
+]
+
+#definition[
+  #todo-inline[
+    a $cal(V)$-enriched SSA model modeling an equational theory $req$
+  ]
 ]
 
 #theorem(name: "Soundness (Equivalence)")[
-  #todo[this]
+  Given $tyeq(Γ, req, a, b, A)$ and $cal(M) ⊧ req$, we have
+  $
+  ⟦hasty(Γ, a, A)⟧_cal(M) = ⟦hasty(Γ, b, A)⟧_cal(M)
+  $
 ]
 
 #theorem(name: "Completeness (Equivalence)")[
-  #todo[this]
+  Given $hasty(Γ, a, A)$ and $hasty(Γ, b, A)$, we have
+  $
+    tyeq(Γ, req, a, b, A) 
+    <==> (∀ cal(M) ⊧ req . ⟦hasty(Γ, a, A)⟧_cal(M) = ⟦hasty(Γ, b, A)⟧_cal(M))
+  $
 ]
 
-#todo[
-  Definition: a $cal(V)$-enriched SSA model over a function space $ms("F")$
-  w/ _linear_ effect system $cal(E)$
+
+#definition[
+  #todo-inline[
+    a $cal(V)$-enriched SSA model over a function space $ms("F")$
+    w/ _linear_ effect system $cal(E)$
+  ]
+]
+
+#lemma(name: "Soundness (Directed Substitution)")[
+  #todo-inline[this]
+]
+
+
+#definition[
+  #todo-inline[
+    a $cal(V)$-enriched SSA model modeling a refinement theory $rref$
+  ]
 ]
 
 #theorem(name: "Soundness (Refinement)")[
-  #todo[this]
+  Given $tyref(Γ, rref, a, b, A)$ and $cal(M) ⊧ rref$, we have
+  $
+  ⟦hasty(Γ, a, A)⟧_cal(M) ->> ⟦hasty(Γ, b, A)⟧_cal(M)
+  $
 ]
 
 #theorem(name: "Completeness (Refinement)")[
-  #todo[this]
+  Given $hasty(Γ, a, A)$ and $hasty(Γ, b, A)$, we have
+  $
+    tyref(Γ, rref, a, b, A) 
+    <==> (∀ cal(M) ⊧ rref . ⟦hasty(Γ, a, A)⟧_cal(M) ->> ⟦hasty(Γ, b, A)⟧_cal(M))
+  $
 ]

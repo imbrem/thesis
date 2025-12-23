@@ -86,8 +86,6 @@
 
 // Congruence rules for Γ ⊢_Eq a ≈ b : A
 
-#let req = ms("Eq")
-
 #let r-eq-var = rule(
   name: "var",
   $Γ med x = A$,
@@ -238,8 +236,6 @@
 )
 
 // Congruence rules for Γ ⊢_R a ->> b : A
-
-#let rref = ms("R")
 
 #let r-ref-var = rule(
   name: "var",

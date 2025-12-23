@@ -1330,7 +1330,19 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 == Regions
 
-#todo[equational rules for regions]
+#figure(
+  [
+    #todo[this]
+  ],
+  caption: [Equivalence rules for #gssa-calc()],
+)
+
+#figure(
+  [
+    #todo[this]
+  ],
+  caption: [Congruence rules for #gssa-calc() equivalence],
+)
 
 === Effects
 
@@ -1345,7 +1357,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
   [
     #todo[this]
   ],
-  caption: [Effect rules for #iter-calc()],
+  caption: [Effect rules for #gssa-calc()],
 )
 
 === Linearity
@@ -1370,7 +1382,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
   [
     #todo[this]
   ],
-  caption: [Linearity rules for #ssa-calc()],
+  caption: [Linearity rules for #gssa-calc()],
 )
 
 === Refinement
@@ -1379,7 +1391,14 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
   [
     #todo[this]
   ],
-  caption: [Refinement rules for #ssa-calc()],
+  caption: [Refinement rules for #gssa-calc()],
+)
+
+#figure(
+  [
+    #todo[this]
+  ],
+  caption: [Congruence rules for #gssa-calc() refinement],
 )
 
 = Semantics of SSA <ssa-semantics>
