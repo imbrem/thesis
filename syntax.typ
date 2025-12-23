@@ -234,6 +234,9 @@
 #let scat(C) = $sfam(cal(#C))$
 #let munit = $upright(I)$
 
+#let clet(f) = $ms("let")(#f)$
+#let ccase(f) = $ms("case")(#f)$
+
 #let distl(A, L) = $δ_(#A, #L)$
 #let idistl(A, L) = $δ^(-1)_(#A, #L)$
 

@@ -15,6 +15,17 @@
 ]
 
 $
+  ∀ f : cal(C)(A, B) . clet(f) := Δ_A ; A ⊗ f : cal(C)(A, A ⊗ B)
+$
+
+$
+  ∀ f : cal(C)(A, Σ icol("B")) . ccase(f) := clet(l) ; idistl(A, icol("B")) 
+    : cal(C)(A, Σ (A ⊗ icol("B")))
+$
+
+#todo[Let-theorem; Kleisli category since this is a reader monad type thing...]
+
+$
   ⟦Σ lb("L")⟧ = Σ ⟦lb("L")⟧
   quad quad
   ⟦lb("L")⟧ = (lb("l") ↦ ⟦A⟧ | lty(lb("l"), A) ∈ lb("L"))
@@ -60,7 +71,7 @@ $
 )
 
 #eqn-astack(
-  dntdef(r-app, $Δ_(Π ⟦Γ⟧) ; Π⟦Γ⟧ ⊗ ⟦hasty(Γ, a, A)⟧ ; ⟦isfn(Γ, a, A, B)⟧$),
+  dntdef(r-app, $clet(⟦hasty(Γ, a, A)⟧) ; ⟦isfn(Γ, a, A, B)⟧$),
 )
 
 #eqn-set(
@@ -70,9 +81,8 @@ $
 )
 
 #eqn-astack(
-  dntdef(r-cases, $Δ_(Π ⟦Γ⟧) 
-    ; Π⟦Γ⟧ ⊗ ⟦hasty(Γ, e, Σ lb("L"))⟧ 
-    ; idistl(Π ⟦Γ⟧, ⟦lb("L")⟧)
+  dntdef(r-cases, $
+    ccase(⟦hasty(Γ, e, Σ lb("L"))⟧)
     ; ⟦isebrs(Γ, lb("L"), M, A)⟧
     $)
 )
