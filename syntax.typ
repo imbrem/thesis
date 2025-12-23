@@ -1,4 +1,21 @@
+#import "@preview/lemmify:0.1.8": *
 #import "@preview/curryst:0.6.0": prooftree, rule, rule-set
+
+#let (
+  theorem,
+  lemma,
+  corollary,
+  remark,
+  proposition,
+  example,
+  proof,
+  rules: thm-rules,
+) = default-theorems("thm-group", lang: "en")
+
+#let (
+  definition,
+  rules: thm-rules-b,
+) = default-theorems("thm-group-b")
 
 // == Fonts ==
 
@@ -215,6 +232,9 @@
 #let scat(C) = $sfam(cal(#C))$
 #let munit = $upright(I)$
 
+#let distl(A, L) = $δ_(#A, #L)$
+#let idistl(A, L) = $δ^(-1)_(#A, #L)$
+
 #let ntag(n, A) = $n · A$
 
 // Punctuation
@@ -295,31 +315,42 @@
 #let tywk(A, B) = $#A ≤ #B$
 #let lbwk(L, M) = $#L ≤ #M$
 
+#let ctxwk(Γ, Δ) = $#Γ ≤ #Δ$
+#let lbctxwk(L, M) = $#L ≤ #M$
+
 #let isfn(Γ, f, A, B) = $#Γ ⊢ #f : #A → #B$
 #let istup(Γ, E, T) = $#Γ ⊢ #E scripts(:)^* #T$
-#let isebrs(Γ, L, B, A) = $#Γ * #L ⊢ #B scripts(:)^* #A$
+
 #let hasty(Γ, a, A) = $#Γ ⊢ #a : #A$
 #let haslb(Γ, r, L) = $#Γ ⊢ #r triangle.stroked.small.r #L$
-#let issbrs(Γ, K, B, L) = $#Γ * #K ⊢ #B triangle.stroked.small.r^* #L$
-#let islbrs(Γ, K, B, L) = $#Γ * #K ⊢ #B triangle.stroked.small.r^* #L$
+
+#let kebrs(K, B, A) = $#K ⊢ #B scripts(:) #A$
+#let ksbrs(K, B, L) = $#K ⊢ #B triangle.stroked.small.r #L$
+#let klbrs(K, B, L) = $#K ⊢ #B triangle.stroked.small.r #L$
+
+#let csplat = $*$
+
+#let isebrs(Γ, L, B, A) = kebrs($#Γ csplat #L$, B, A)
+#let issbrs(Γ, K, B, L) = ksbrs($#Γ csplat #K$, B, L)
+#let islbrs(Γ, K, B, L) = klbrs($#Γ csplat #K$, B, L)
 
 #let eisfn(Γ, e, f, A, B) = $#Γ scripts(⊢)^#e #f : #A → #B$
 #let dehasty(Γ, e, a, A) = $#Γ scripts(⊢)^(≡#e) #a : #A$
 #let deistup(Γ, e, E, T) = $#Γ scripts(⊢)^(≡#e) #E scripts(:)^* #T$
-#let deisebrs(Γ, L, e, B, A) = $#Γ * #L scripts(⊢)^(≡#e) #B scripts(:)^* #A$
+#let deisebrs(Γ, L, e, B, A) = $#Γ csplat #L scripts(⊢)^(≡#e) #B scripts(:)^* #A$
 #let eisinf(e) = $∞(#e) = #e$
 
 #let ehasty(Γ, e, a, A) = $#Γ scripts(⊢)^#e #a : #A$
 #let eistup(Γ, e, E, T) = $#Γ scripts(⊢)^#e #E scripts(:)^* #T$
-#let eisebrs(Γ, L, e, B, A) = $#Γ * #L scripts(⊢)^#e #B scripts(:)^* #A$
+#let eisebrs(Γ, L, e, B, A) = $#Γ csplat #L scripts(⊢)^#e #B scripts(:)^* #A$
 
 #let tyeq(Γ, Eq, a, b, A) = $#Γ scripts(⊢)_#Eq #a ≈ #b : #A$
 #let tupeq(Γ, Eq, E, F, T) = $#Γ scripts(⊢)_#Eq #E ≈ #F scripts(:)^* #T$
-#let ebrseq(Γ, L, Eq, B, B2, A) = $#Γ * #L scripts(⊢)_#Eq #B ≈ #B2 scripts(:)^* #A$
+#let ebrseq(Γ, L, Eq, B, B2, A) = $#Γ csplat #L scripts(⊢)_#Eq #B ≈ #B2 scripts(:)^* #A$
 
 #let tyref(Γ, R, a, b, A) = $#Γ scripts(⊢)_#R #a ->> #b : #A$
 #let tupref(Γ, R, E, F, T) = $#Γ scripts(⊢)_#R #E ->> #F scripts(:)^* #T$
-#let ebrsref(Γ, L, R, B, B2, A) = $#Γ * #L scripts(⊢)_#R #B ->> #B2 scripts(:)^* #A$
+#let ebrsref(Γ, L, R, B, B2, A) = $#Γ csplat #L scripts(⊢)_#R #B ->> #B2 scripts(:)^* #A$
 
 #let lupg(γ) = $upright(↑)#γ$
 #let rupg(γ) = $#γ upright(↑)$
@@ -336,4 +367,36 @@
     kind: "rule",
     supplement: [(#p.name)],
   ) #l
+]
+
+#let boxed(A) = box(A, stroke: black, inset: 0.75em)
+
+#let dntree(r) = {
+  r.name = none;
+  $⟦#prooftree(r)⟧$
+}
+
+#let denote-rule(r, d) = (
+  rule : r,
+  den : d
+)
+
+#let dntty(j, t) = align(center, $boxed(⟦#j⟧ : #t)$)
+
+#let dntdef(r, d) = $#dntree(r) &:= #d$
+
+#let eqn-set(column-gutter: 3em, row-gutter: 2em, ..eqns) = align(center, {
+  set par(leading: row-gutter)
+  block(eqns.pos().map(box).join(h(column-gutter, weak: true)))
+})
+
+#let eqn-astack(..eqns) = align(center, {
+  eqns.pos().fold($ \ \ $, (acc, eqn) => $acc eqn \ \ $)
+})
+
+#let show-syntax(body) = [
+  #show: thm-rules
+  #show: thm-rules-b
+  
+  #body
 ]

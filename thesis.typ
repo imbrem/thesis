@@ -1,29 +1,8 @@
 #import "@preview/simplebnf:0.1.1": *
 #import "@preview/subpar:0.2.2"
-#import "@preview/lemmify:0.1.8": *
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, edge, node
 
 #set heading(numbering: "1.", supplement: [Chapter])
-
-#let (
-  theorem,
-  lemma,
-  corollary,
-  remark,
-  proposition,
-  example,
-  proof,
-  rules: thm-rules,
-) = default-theorems("thm-group", lang: "en")
-
-#let (
-  definition,
-  rules: thm-rules-b,
-) = default-theorems("thm-group-b")
-
-#show: thm-rules
-
-#show: thm-rules-b
 
 #import "@preview/wordometer:0.1.5": word-count
 #show: word-count.with(exclude: (<no-wc>, <appendix>))
@@ -34,6 +13,8 @@
 #import "todos.typ": *
 
 #import "syntax.typ": *
+
+#show: show-syntax
 
 #show ref: it => {
   let el = it.element
@@ -866,7 +847,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
         - Can be _strong_ w.r.t. product structure
         - Can be _commutative_ w.r.t. themselves
         - Have a standard presentation in #cset via pure/bind
-          - LEARNING: 
+          - LEARNING:
             How general is the standard presentation? Do we need additional structure over a CCC?
       - Concrete categories
         - Concrete (functors)
@@ -876,18 +857,18 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 #todo[
   The idea:
-    - Background knowledge up here; skippable. Need a better title than "Conventions and Notation".
-      Perhaps even "Background"?
-    - Then: type theory. As cats are pre-developed, light mentions are OK, and nothing is enriched.
-    - Then: 
-    - Then: category theory
-      - Rapidly develop everything _again_ in the $cal(V)$-enriched setting, so no _true_ duplication
-      - Second explanation focuses on computational intuition
-        - First explanation (here) focuses on categorical intuition 
-    - Then: basic models in category theory
-    - Then: concrete models
+  - Background knowledge up here; skippable. Need a better title than "Conventions and Notation".
+    Perhaps even "Background"?
+  - Then: type theory. As cats are pre-developed, light mentions are OK, and nothing is enriched.
+  - Then:
+  - Then: category theory
+    - Rapidly develop everything _again_ in the $cal(V)$-enriched setting, so no _true_ duplication
+    - Second explanation focuses on computational intuition
+      - First explanation (here) focuses on categorical intuition
+  - Then: basic models in category theory
+  - Then: concrete models
 
-    - LEVEL 3: _substructural_ models of #iter-calc(), associated lore
+  - LEVEL 3: _substructural_ models of #iter-calc(), associated lore
 ]
 == Conventions and Notation
 
@@ -1203,7 +1184,7 @@ $
 ]
 
 #definition(name: "Category of posets")[
-  We define the category of posets to have objects _partially-ordered sets_ $A$ 
+  We define the category of posets to have objects _partially-ordered sets_ $A$
   (equipped with partial orders $scripts(≤)_A$)
   and morphisms $f: cposet(A, B)$ _monotone_ functions $f: A → B$; i.e. functions such that
   $
@@ -1212,7 +1193,7 @@ $
 ]
 
 #todo[
-  the category of posets is a _full subcategory_ of the category of preorders; 
+  the category of posets is a _full subcategory_ of the category of preorders;
   versus a _wide_ subcategory
 ]
 
@@ -1340,7 +1321,7 @@ itself with the structure of a category, the _category of categories_ $ms("Cat")
   _underlying function_ of $f$.
 ]
 
-Where there is no risk of confusion, 
+Where there is no risk of confusion,
 we will freely identify $|A|$ with $A$ and $|f|$ with $f$,
 allowing abuses of notation like
 $(a ∈ A) := (a ∈ |A|)$
@@ -1354,7 +1335,7 @@ on elements of the source carrier: $f = g$ if and only if
 $∀ a ∈ A . f(a) = g(a)$.
 
 #definition(name: "Concrete Functor")[
-  Given concrete categories $U_cal(V) : cal(V) → cset, U_cal(W) : cal(W) -> cset$, 
+  Given concrete categories $U_cal(V) : cal(V) → cset, U_cal(W) : cal(W) -> cset$,
   a _(strict) concrete functor_ is a functor $F : cal(V) → cal(W)$ such that the following
   diagram commutes#footnote[
     One could weaken this definition by requiring the square to commute only up to
@@ -1362,22 +1343,18 @@ $∀ a ∈ A . f(a) = g(a)$.
     considered in this thesis will be assumed to be strict.
   ]:
   $
-    #diagram(cell-size: 15mm, 
-      $ cal(V) edge(F, ->) edge("dr", U_cal(V), ->, label-side: #right) 
-        & cal(W) edge("d", U_cal(W), ->, label-side: #left)
-      \ & cset 
-      $
-    )
+    #diagram(cell-size: 15mm, $ cal(V) edge(F, ->) edge("dr", U_cal(V), ->, label-side: #right) & cal(W) edge("d", U_cal(W), ->, label-side: #left) \
+                                                                    & cset $)
   $
 
-  Equivalently, 
+  Equivalently,
   for all objects $A, B : |cal(V)|$ and morphisms $f : cal(V)(A, B)$,
   $|F A| = |A|$ and $|F f| = |f|$.
 ]
 
-Note that, as the composition of two concrete functors is again a concrete functor, 
-we can form a category $cconc$ of concrete functors 
-with objects concrete categories $cal(V), cal(W)$ 
+Note that, as the composition of two concrete functors is again a concrete functor,
+we can form a category $cconc$ of concrete functors
+with objects concrete categories $cal(V), cal(W)$
 and morphisms $cconc(cal(V), cal(W))$ concrete functors $F: cal(V) → cal(W)$ between them.
 
 == Products
@@ -1413,7 +1390,7 @@ and morphisms $cconc(cal(V), cal(W))$ concrete functors $F: cal(V) → cal(W)$ b
   $
 
   Where it is unambiguous from context, we omit the superscript $P$ and
-  write $π_i : cal(C)(P, A_i)$ for the projections 
+  write $π_i : cal(C)(P, A_i)$ for the projections
   and $⟨icol(f)⟩$, $⟨f_i⟩_(i ∈ I)$, $⟨f_i⟩_i$, or $⟨f_1,...,f_n⟩$ for the product.
 
   We note that the product $P$ of a family of objects $A_i$ is unique up to isomorphism;
@@ -1451,7 +1428,7 @@ In general, where the appropriate products exist, we write
 
   Given a family of $cal(D)$-objects $F_icol(A) ∈ |cal(D)|$
   indexed by $icol(A) := (A_i | i ∈ I)$ where each $A_i ∈ cal(C)$ is a $cal(C)$-object,
-  we say $F$ is _functorial in $x ∈ I$_ if, 
+  we say $F$ is _functorial in $x ∈ I$_ if,
   for each choice of objects $hat(icol(A)) := (A_i | i ∈ I sdiff {x})$,
   and morphism $f : cal(C)(X, Y)$
   there exists a canonical morphism
@@ -1461,18 +1438,17 @@ In general, where the appropriate products exist, we write
   - $F_(hat(icol(A)), x) (f ; g) = F_(hat(icol(A)), x) f ; F_(hat(icol(A)), x) g$
     for $f : cal(C)(X, Y), g : cal(C)(Y, Z)$.
 
-  Given a family of morphisms $η_icol(A) : cal(D)(F_icol(A), G_icol(A))$, 
+  Given a family of morphisms $η_icol(A) : cal(D)(F_icol(A), G_icol(A))$,
   for $F, G$ functorial in $x ∈ I$,
   we say $η$ is _natural_ in $x$ if,
   for each choice of objects $hat(icol(A)) := (A_i | i ∈ I sdiff {x})$,
   for each morphism $f : cal(C)(X, Y)$ in $cal(C)$,
   the expected naturality square commutes
   $
-    #diagram(cell-size: 15mm, $ 
-      F_(hat(icol(A))[x := X]) edge(η_(hat(icol(A))[x := X]), ->) edge("d", F med f, ->) 
-      & G_(hat(icol(A))[x := X]) edge("d", G med f, ->, label-side: #left) \
-      F_(hat(icol(A))[x := Y]) edge(η_(hat(icol(A))[x := Y]), ->, label-side: #right) 
-      & G_(hat(icol(A))[x := Y]) $)
+    #diagram(cell-size: 15mm, $ F_(hat(icol(A))[x := X]) edge(η_(hat(icol(A))[x := X]), ->) edge("d", F med f, ->)
+    & G_(hat(icol(A))[x := X]) edge("d", G med f, ->, label-side: #left) \
+    F_(hat(icol(A))[x := Y]) edge(η_(hat(icol(A))[x := Y]), ->, label-side: #right)
+    & G_(hat(icol(A))[x := Y]) $)
   $
 
   Equivalently, the family
@@ -1500,8 +1476,8 @@ There exist canonical isomorphisms:
   A category $cal(C)$ is _cartesian_ if it has all finite products;
   i.e. all products $Π icol(A)$ where $icol(A)$ is finite.
 
-  Note that it suffices for $cal(C)$ to have 
-  a terminal object $tunit$ 
+  Note that it suffices for $cal(C)$ to have
+  a terminal object $tunit$
   and all binary products $A × B$.
 ]
 
@@ -1514,7 +1490,7 @@ There exist canonical isomorphisms:
 #todo[there's a pattern here:]
 
 #definition(name: "Concretely Cartesian Category")[
-  A concrete category $cal(V)$ is _(strict) concretely cartesian_ 
+  A concrete category $cal(V)$ is _(strict) concretely cartesian_
   if its underlying-set functor  $U : cal(V) -> cset$
   preserves finite products;
   i.e., we have
@@ -1676,40 +1652,11 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 
 #todo[introduce _weakening_ of types]
 
-#let r-twk-base = rule(
-  name: "base",
-  $X, Y ∈ ms("X")$,
-  $X sle(X) Y$,
-  $atywk(X, Y, ms("X"))$,
-);
-
-#let r-twk-sigma = rule(
-  name: $Σ$,
-  $atywk(Σ lb("T"), Σ lb("T"'), ms("X"))$,
-  $atywk(A, A', ms("X"))$,
-  $atywk(Σ (lb("T"), lty(lb("f"), A)), Σ (lb("T")', lty(lb("f"), A')), ms("X"))$,
-);
-
-#let r-twk-pi = rule(
-  name: $Π$,
-  $atywk(Π lb("T"), Π lb("T"'), ms("X"))$,
-  $atywk(A, A', ms("X"))$,
-  $atywk(Π (lb("T"), fty(lb("f"), A)), Π (lb("T")', fty(lb("f"), A')), ms("X"))$,
-);
-
-#let r-twk-unit = rule(
-  name: $tunit$,
-  $atywk(A, Π [], ms("X"))$,
-);
-
-#let r-twk-zero = rule(
-  name: $tzero$,
-  $atywk(A, Σ [], ms("X"))$,
-);
+#import "content/rules/twk.typ": *
 
 #figure(
   [
-    #rule-set(
+    #eqn-set(
       declare-rule(r-twk-base, label: <twk-base>),
       declare-rule(r-twk-sigma, label: <twk-sigma>),
       declare-rule(r-twk-pi, label: <twk-pi>),
@@ -1807,79 +1754,24 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 
 #todo[IMPORTANT: while $Π$-types are unordered, tuples $(E)$ are _ordered_ left-to-right!]
 
+#import "content/rules/hasty.typ": *
+
 #figure(
   [
-    #rule-set(
-      declare-rule(rule(
-        name: "var",
-        $Γ med x = A$,
-        $hasty(Γ, x, A)$,
-      )),
-      declare-rule(rule(
-        name: "coe",
-        $hasty(Γ, a, A)$,
-        $tywk(A, A')$,
-        $hasty(Γ, a, A')$,
-      )),
-      declare-rule(rule(
-        name: "app",
-        $isfn(Γ, f, A, B)$,
-        $hasty(Γ, a, A)$,
-        $hasty(Γ, f med a, B)$,
-      )),
-      declare-rule(rule(
-        name: "inj",
-        $hasty(Γ, a, A)$,
-        $hasty(Γ, lb("l") med a, Σ (lty(lb("l"), A)))$,
-      )),
-      declare-rule(rule(
-        name: "proj",
-        $hasty(Γ, e, Π (fty(lb("f"), A)))$,
-        $hasty(Γ, lb("f") med e, A)$,
-      )),
-      declare-rule(rule(
-        name: "tuple",
-        $istup(Γ, E, lb("T"))$,
-        $hasty(Γ, (E), Π lb("T"))$,
-      )),
-      declare-rule(rule(
-        name: "Π-nil",
-        $istup(Γ, ·, ·)$,
-      )),
-      declare-rule(rule(
-        name: "Π-cons",
-        $istup(Γ, E, lb("T"))$,
-        $hasty(Γ, e, A)$,
-        $istup(Γ, #$E, e$, #$lb("T"), fty(lb("f"), A)$)$,
-      )),
-      declare-rule(rule(
-        name: "let",
-        $hasty(Γ, a, A)$,
-        $hasty(#$Γ, x : A$, b, B)$,
-        $hasty(Γ, elet(x, a, b), B)$
-      )),
-      declare-rule(rule(
-        name: "cases",
-        $hasty(Γ, e, Σ lb("L"))$,
-        $isebrs(Γ, lb("L"), M, A)$,
-        $hasty(Γ, ecase(e, M), A)$,
-      )),
-      declare-rule(rule(
-        name: "Σ-nil",
-        $isebrs(Γ, ·, ·, ·)$,
-      )),
-      declare-rule(rule(
-        name: "Σ-cons",
-        $isebrs(Γ, lb("L"), M, A)$,
-        $hasty(#$Γ, x : A$, a, A)$,
-        $isebrs(Γ, #$lb("L"), lty(lb("l"), A)$, #$M, ebr(lb("l"), x, a)$, A)$,
-      )),
-      declare-rule(rule(
-        name: "iter",
-        $hasty(Γ, a, A)$,
-        $hasty(Γ, e, B + A)$,
-        $hasty(Γ, eiter(a, x, e), B)$,
-      )),
+    #eqn-set(
+      declare-rule(r-var),
+      declare-rule(r-coe),
+      declare-rule(r-app),
+      declare-rule(r-inj),
+      declare-rule(r-proj),
+      declare-rule(r-tuple),
+      declare-rule(r-pi-nil),
+      declare-rule(r-pi-cons),
+      declare-rule(r-let),
+      declare-rule(r-cases),
+      declare-rule(r-sigma-nil),
+      declare-rule(r-sigma-cons),
+      declare-rule(r-iter),
     )
     \
   ],
@@ -1894,37 +1786,16 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 
 #todo[fix notation for expression space judgement]
 
+#import "content/rules/haslb.typ": *
+
 #figure(
   [
-    #rule-set(
-      declare-rule(rule(
-        name: "br",
-        $lbwk(lty(lb("l"), A), ms("L"))$,
-        $hasty(Γ, e, A)$,
-        $haslb(Γ, brb(lb("l"), e), ms("L"))$,
-      )),
-      declare-rule(rule(
-        name: "case",
-        $hasty(Γ, e, Σ lb("L"))$,
-        $issbrs(Γ, lb("L"), K, ms("K"))$,
-        $haslb(Γ, scase(e, K), ms("K"))$
-      )),
-      declare-rule(rule(
-        name: "case",
-        $hasty(Γ, e, Σ lb("L"))$,
-        $issbrs(Γ, lb("L"), K, ms("K"))$,
-        $haslb(Γ, scase(e, K), ms("K"))$
-      )),
-      declare-rule(rule(
-        name: "case-nil",
-        $issbrs(Γ, ·, ·, ·)$,
-      )),
-      declare-rule(rule(
-        name: "case-cons",
-        $issbrs(Γ, lb("L"), K, ms("K"))$,
-        $haslb(#$Γ, x : A$, brb(lb("k"), e), ms("K"))$,
-        $issbrs(Γ, #$lb("L"), lty(lb("l"), A)$, #$K, sbr(lb("l"), x, brb(lb("k"), e))$, ms("K"))$,
-      )),
+    #eqn-set(
+      declare-rule(r-br),
+      declare-rule(r-case),
+      declare-rule(r-case),
+      declare-rule(r-case-nil),
+      declare-rule(r-case-cons),
     )
     \
   ],
@@ -1935,29 +1806,11 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 
 #figure(
   [
-    #rule-set(
-      declare-rule(rule(
-        name: "assign",
-        $hasty(Γ, e, A)$,
-        $haslb(#$Γ, x : A$, r, ms("L"))$,
-        $haslb(#$Γ$, slet(x, e, r), ms("L"))$
-      )),
-      declare-rule(rule(
-        name: "tm",
-        $haslb(Γ, τ, #$ms("L"), ms("K")$)$,
-        $islbrs(Γ, ms("K"), L, #$ms("L"), ms("K")$)$,
-        $haslb(Γ, #$τ ; L$, ms("L"))$
-      )),
-      declare-rule(rule(
-        name: "lb-nil",
-        $islbrs(Γ, ·, ·, ·)$,
-      )),
-      declare-rule(rule(
-        name: "lb-cons",
-        $issbrs(Γ, ms("K"), L, ms("L"))$,
-        $haslb(#$Γ, x : A$, r, ms("L"))$,
-        $islbrs(Γ, #$ms("K"), lty(lb("k"), A)$, #$K, sbr(lb("k"), x, r)$, ms("L"))$,
-      )),
+    #eqn-set(
+      declare-rule(r-assign),
+      declare-rule(r-tm),
+      declare-rule(r-lb-nil),
+      declare-rule(r-lb-cons),
     )
     \
   ],
@@ -1996,12 +1849,12 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 
 #figure(
   [
-    #rule-set(
+    #eqn-set(
       declare-rule(rule(
         name: "assign",
         $hasty(Γ, e, A)$,
         $haslb(#$Γ, x : A$, r, ms("L"))$,
-        $haslb(#$Γ$, slet(x, e, r), ms("L"))$
+        $haslb(#$Γ$, slet(x, e, r), ms("L"))$,
       )),
       declare-rule(rule(
         name: "br",
@@ -2013,13 +1866,13 @@ Similarly to products, coproducts satisfy some basic algebraic properties
         name: "case",
         $hasty(Γ, e, Σ lb("L"))$,
         $issbrs(Γ, lb("L"), L, ms("K"))$,
-        $haslb(Γ, scase(e, L), ms("K"))$
+        $haslb(Γ, scase(e, L), ms("K"))$,
       )),
       declare-rule(rule(
         name: "scope",
         $haslb(Γ, r, #$ms("L"), ms("K")$)$,
         $islbrs(Γ, ms("K"), L, #$ms("L"), ms("K")$)$,
-        $haslb(Γ, #${r} ; L$, ms("L"))$
+        $haslb(Γ, #${r} ; L$, ms("L"))$,
       )),
       declare-rule(rule(
         name: "lb-nil",
@@ -2061,6 +1914,8 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 
 #todo[introduce the concept of an _equational theory_ $ms("Eq")$]
 
+#todo[_elas_ ; we need effects for $β$ and $η$ rules! I always forget $η$ is green...]
+
 #figure(
   [
     #todo[this]
@@ -2070,7 +1925,7 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 
 #figure(
   [
-    #rule-set(
+    #eqn-set(
       declare-rule(rule(
         name: "var",
         $Γ med x = A$,
@@ -2085,7 +1940,7 @@ Similarly to products, coproducts satisfy some basic algebraic properties
       declare-rule(rule(
         name: "app",
         $isfn(Γ, f, A, B)$,
-        $tyeq(Γ, ms("Eq"),  a, a', A)$,
+        $tyeq(Γ, ms("Eq"), a, a', A)$,
         $tyeq(Γ, ms("Eq"), f med a, f med a', B)$,
       )),
       declare-rule(rule(
@@ -2117,7 +1972,7 @@ Similarly to products, coproducts satisfy some basic algebraic properties
         name: "let",
         $tyeq(Γ, ms("Eq"), a, a', A)$,
         $tyeq(#$Γ, x : A$, ms("Eq"), b, b', B)$,
-        $tyeq(Γ, ms("Eq"), elet(x, a, b), elet(x, a', b'), B)$
+        $tyeq(Γ, ms("Eq"), elet(x, a, b), elet(x, a', b'), B)$,
       )),
       declare-rule(rule(
         name: "cases",
@@ -2134,7 +1989,7 @@ Similarly to products, coproducts satisfy some basic algebraic properties
         $ebrseq(Γ, lb("L"), ms("Eq"), M, M', A)$,
         $tyeq(#$Γ, x : A$, ms("Eq"), a, a', A)$,
         $ebrseq(
-          Γ, #$lb("L"), lty(lb("l"), A)$, ms("Eq"), 
+          Γ, #$lb("L"), lty(lb("l"), A)$, ms("Eq"),
           (#$M, ebr(lb("l"), x, a)$), (#$M', ebr(lb("l"), x, a')$),
           A
         )$,
@@ -2164,7 +2019,7 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 
 #figure(
   [
-    #rule-set(
+    #eqn-set(
       declare-rule(rule(
         name: "var",
         $Γ med x = A$,
@@ -2211,7 +2066,7 @@ Similarly to products, coproducts satisfy some basic algebraic properties
         name: "let",
         $dehasty(Γ, ε, a, A)$,
         $dehasty(#$Γ, x : A$, ε, b, B)$,
-        $dehasty(Γ, ε, elet(x, a, b), B)$
+        $dehasty(Γ, ε, elet(x, a, b), B)$,
       )),
       declare-rule(rule(
         name: "cases",
@@ -2313,7 +2168,7 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 
 #figure(
   [
-    #rule-set(
+    #eqn-set(
       declare-rule(rule(
         name: "var",
         $Γ med x = A$,
@@ -2328,7 +2183,7 @@ Similarly to products, coproducts satisfy some basic algebraic properties
       declare-rule(rule(
         name: "app",
         $isfn(Γ, f, A, B)$,
-        $tyref(Γ, ms("R"),  a, a', A)$,
+        $tyref(Γ, ms("R"), a, a', A)$,
         $tyref(Γ, ms("R"), f med a, f med a', B)$,
       )),
       declare-rule(rule(
@@ -2360,7 +2215,7 @@ Similarly to products, coproducts satisfy some basic algebraic properties
         name: "let",
         $tyref(Γ, ms("R"), a, a', A)$,
         $tyref(#$Γ, x : A$, ms("R"), b, b', B)$,
-        $tyref(Γ, ms("R"), elet(x, a, b), elet(x, a', b'), B)$
+        $tyref(Γ, ms("R"), elet(x, a, b), elet(x, a', b'), B)$,
       )),
       declare-rule(rule(
         name: "cases",
@@ -2377,7 +2232,7 @@ Similarly to products, coproducts satisfy some basic algebraic properties
         $ebrsref(Γ, lb("L"), ms("R"), M, M', A)$,
         $tyref(#$Γ, x : A$, ms("R"), a, a', A)$,
         $ebrsref(
-          Γ, #$lb("L"), lty(lb("l"), A)$, ms("R"), 
+          Γ, #$lb("L"), lty(lb("l"), A)$, ms("R"),
           (#$M, ebr(lb("l"), x, a)$), (#$M', ebr(lb("l"), x, a')$),
           A
         )$,
@@ -2452,7 +2307,7 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 
 #todo[
   Chapter structure:
-  - We introduce some category theory. 
+  - We introduce some category theory.
     The goal is a _$cal(V)$-enriched distributive copy-discard Elgot category_.
   - Each _enriched structure_ corresponds to some form of _control_:
     - Categories: sequential control-flow
@@ -2755,27 +2610,7 @@ so we will not repeat them.
 
 == Semantics of Expressions
 
-#todo[
-  Definition: a $cal(V)$-enriched SSA model over a function space $ms("F")$
-]
-
-$
-  ⟦Σ lb("L")⟧ = Σ ⟦lb("L")⟧
-  quad quad
-  ⟦lb("L")⟧ = (lb("l") ↦ ⟦A⟧ | lty(lb("l"), A) ∈ lb("L"))
-  \
-  ⟦Π lb("X")⟧ = Π ⟦lb("X")⟧  
-  quad quad
-  ⟦lb("X")⟧ = (lb("f") ↦ ⟦A⟧ | fty(lb("f"), A) ∈ lb("X"))
-$
-
-#todo[Semantics of #iter-calc()]
-
-#todo[Soundness of Substitution]
-
-#todo[Soundness of Equivalence]
-
-#todo[Completeness of Equivalence]
+#include "content/semantics-of-ssa/semantics-of-expressions.typ"
 
 == Equational Models
 
@@ -2803,23 +2638,7 @@ $
 
 == Semantics of Regions
 
-#todo[
-  Definition: an SSA model over an expression space $ms("E")$
-  --  Note that the previous section means one of these is _generated_ for every model over a 
-      function space $ms("F")$
-]
-
-#todo[Semantics of #ssa-calc()]
-
-#todo[Soundness of Substitution]
-
-#todo[Soundness of Equivalence]
-
-#todo[Completeness of Equivalence]
-
-#todo[Soundness of Refinement]
-
-#todo[Completeness of Refinement]
+#include "content/semantics-of-ssa/semantics-of-regions.typ"
 
 = Monadic Models of SSA <concrete-models>
 
