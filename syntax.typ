@@ -322,8 +322,8 @@
 #let tywk(A, B) = $#A ≤ #B$
 #let lbwk(L, M) = $#L ≤ #M$
 
-#let ctxwk(Γ, Δ) = $#Γ ≤ #Δ$
-#let lbwk(L, M) = $#L ≤ #M$
+#let cwk(Γ, Δ) = $#Γ ≤ #Δ$
+#let lbcwk(L, M) = $#L ≤ #M$
 #let clbwk(K, M) = $#K ≤ #M$
 
 #let isfn(Γ, f, A, B) = $#Γ ⊢ #f : #A → #B$
@@ -357,6 +357,23 @@
 #let tupeq(Γ, Eq, E, F, T) = $#Γ scripts(⊢)_#Eq #E ≈ #F scripts(:)^* #T$
 #let ebrseq(Γ, L, Eq, B, B2, A) = $#Γ csplat #L scripts(⊢)_#Eq #B ≈ #B2 scripts(:)^* #A$
 #let lbeq(Γ, Eq, s, t, L) = $#Γ scripts(⊢)_#Eq #s ≈ #t triangle.stroked.small.r #L$
+
+#let isaff(U, A) = $ms("aff")_#U med #A$
+#let isrel(U, A) = $ms("rel")_#U med #A$
+
+#let utywk(U, A, B) = $#A scripts(≤)_#U #B$
+#let ulbwk(U, L, M) = $#L scripts(≤)_#U #M$
+
+#let uctxwk(U, Γ, Δ) = $#Γ scripts(≤)_#U #Δ$
+#let ulbcwk(U, L, M) = $#L scripts(≤)_#U #M$
+#let uclbwk(U, K, M) = $#K scripts(≤)_#U #M$
+
+#let usplits(U, Γ, Δ, Ξ) = $Γ scripts(=>)_#U Δ ⊗ Ξ$
+
+#let uisfn(Γ, U, f, A, B) = $#Γ scripts(⊢)_#U #f : #A → #B$
+#let uhasty(Γ, U, a, A) = $#Γ scripts(⊢)_#U #a : #A$
+#let uhaslb(Γ, U, r, L) = $#Γ scripts(⊢)_#U #r triangle.stroked.small.r #L$
+#let uistup(Γ, U, E, T) = $#Γ scripts(⊢)_#U #E scripts(:)^* #T$
 
 #let tyref(Γ, R, a, b, A) = $#Γ scripts(⊢)_#R #a ->> #b : #A$
 #let tupref(Γ, R, E, F, T) = $#Γ scripts(⊢)_#R #E ->> #F scripts(:)^* #T$

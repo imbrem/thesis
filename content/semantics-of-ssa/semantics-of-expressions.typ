@@ -55,26 +55,26 @@ $
   In particular, if $A = B$, then $⟦D⟧ = id_(⟦A⟧)$.
 ]
 
-#dntty($ctxwk(Γ, Δ)$, $cal(C)_⊥(Π ⟦Γ⟧, Π ⟦Δ⟧)$)
+#dntty($cwk(Γ, Δ)$, $cal(C)_⊥(Π ⟦Γ⟧, Π ⟦Δ⟧)$)
 
 $
-  ⟦ctxwk(Γ, Δ)⟧ := ⟦tywk(Π Γ, Π Δ)⟧
+  ⟦cwk(Γ, Δ)⟧ := ⟦tywk(Π Γ, Π Δ)⟧
 $
 
 #lemma(name: "Coherence (Weakening)")[
-  For all derivations $D, D' : deriv(ctxwk(Γ, Δ))$, we have that $⟦D⟧ = ⟦D'⟧$.
+  For all derivations $D, D' : deriv(cwk(Γ, Δ))$, we have that $⟦D⟧ = ⟦D'⟧$.
   //
   In particular, if $Γ = Δ$, then $⟦D⟧ = id_(Π ⟦Γ⟧)$.
 ]
 
-#dntty($lbwk(ms("L"), ms("K"))$, $cal(C)_⊥(Σ ⟦ms("L")⟧, Σ ⟦ms("K")⟧)$)
+#dntty($lbcwk(ms("L"), ms("K"))$, $cal(C)_⊥(Σ ⟦ms("L")⟧, Σ ⟦ms("K")⟧)$)
 
 $
-  ⟦lbwk(ms("L"), ms("K"))⟧ := ⟦tywk(Σ ms("L"), Σ ms("K"))⟧
+  ⟦lbcwk(ms("L"), ms("K"))⟧ := ⟦tywk(Σ ms("L"), Σ ms("K"))⟧
 $
 
 #lemma(name: "Coherence (Label weakening)")[
-  For all derivations $D, D' : deriv(lbwk(ms("L"), ms("K")))$, we have that $⟦D⟧ = ⟦D'⟧$.
+  For all derivations $D, D' : deriv(lbcwk(ms("L"), ms("K")))$, we have that $⟦D⟧ = ⟦D'⟧$.
   //
   In particular, if $ms("L") = ms("K")$, then $⟦D⟧ = id_(Σ ⟦ms("L")⟧)$.
 ]
@@ -83,11 +83,11 @@ $
 
 #eqn-set(
   dntdef(r-clwk-nil, $0_(Σ ms("K"))$),
-  dntdef(r-clwk-cons, $α^+ ; ⟦clbwk(cal("L"), cal("K"))⟧ + (⟦ctxwk(Γ, Δ)⟧ ⊗ ⟦tywk(A, B)⟧) ; α^+$),
+  dntdef(r-clwk-cons, $α^+ ; ⟦clbwk(cal("L"), cal("K"))⟧ + (⟦cwk(Γ, Δ)⟧ ⊗ ⟦tywk(A, B)⟧) ; α^+$),
 )
 
 #lemma(name: "Coherence (Control weakening)")[
-  For all derivations $D, D' : deriv(lbwk(cal("L"), cal("K")))$, we have that $⟦D⟧ = ⟦D'⟧$.
+  For all derivations $D, D' : deriv(lbcwk(cal("L"), cal("K")))$, we have that $⟦D⟧ = ⟦D'⟧$.
   //
   In particular, if $cal("L") = cal("K")$, then $⟦D⟧ = id_(Σ ⟦cal("K")⟧)$.
 ]
@@ -159,8 +159,8 @@ $
 
 #lemma(name: "Weakening")[
   For all derivations $D : deriv(hasty(Γ, a, A))$, $D' : deriv(hasty(Δ, a, A))$,
-  given $ctxwk(Γ, Δ)$, we have that
-  $⟦D'⟧ = ⟦ctxwk(Γ, Δ)⟧ ; ⟦D⟧$.
+  given $cwk(Γ, Δ)$, we have that
+  $⟦D'⟧ = ⟦cwk(Γ, Δ)⟧ ; ⟦D⟧$.
 
   In particular, it follows that, if $Γ = Δ$, $⟦D⟧ = ⟦D'⟧$.
 ]

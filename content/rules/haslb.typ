@@ -3,7 +3,7 @@
 // Rules for br-calc(E)
 #let r-br = rule(
   name: "br",
-  $lbwk(lty(lb("l"), A), ms("L"))$,
+  $lbcwk(lty(lb("l"), A), ms("L"))$,
   $hasty(Γ, e, A)$,
   $haslb(Γ, brb(lb("l"), e), ms("L"))$,
 );
@@ -58,7 +58,7 @@
 )
 #let r-g-br = rule(
   name: "br",
-  $lbwk(lty(lb("l"), A), ms("L"))$,
+  $lbcwk(lty(lb("l"), A), ms("L"))$,
   $hasty(Γ, e, A)$,
   $haslb(Γ, brb(lb("l"), e), ms("L"))$,
 )

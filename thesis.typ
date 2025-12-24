@@ -1060,27 +1060,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 #import "content/rules/hasty.typ": *
 
-#figure(
-  [
-    #rule-set(
-      declare-rule(r-var),
-      declare-rule(r-coe),
-      declare-rule(r-app),
-      declare-rule(r-inj),
-      declare-rule(r-proj),
-      declare-rule(r-tuple),
-      declare-rule(r-pi-nil),
-      declare-rule(r-pi-cons),
-      declare-rule(r-let),
-      declare-rule(r-cases),
-      declare-rule(r-sigma-nil),
-      declare-rule(r-sigma-cons),
-      declare-rule(r-iter),
-    )
-    \
-  ],
-  caption: [Typing rules for #iter-calc(ms("F"))],
-)
+#fig-r-hasty
 
 #todo[explain #op-calc(ms("F")), #case-calc(ms("F")) as sublanguages of #iter-calc(ms("F"))]
 
@@ -1199,27 +1179,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
   caption: [Equivalence rules for #iter-calc(ms("F"))],
 )
 
-#figure(
-  [
-    #rule-set(
-      declare-rule(r-eq-var),
-      declare-rule(r-eq-coe),
-      declare-rule(r-eq-app),
-      declare-rule(r-eq-inj),
-      declare-rule(r-eq-proj),
-      declare-rule(r-eq-tuple),
-      declare-rule(r-eq-pi-nil),
-      declare-rule(r-eq-pi-cons),
-      declare-rule(r-eq-let),
-      declare-rule(r-eq-cases),
-      declare-rule(r-eq-sigma-nil),
-      declare-rule(r-eq-sigma-cons),
-      declare-rule(r-eq-iter),
-    )
-    \
-  ],
-  caption: [Congruence rules for #iter-calc() equivalence],
-)
+#fig-r-eq-congr-hasty
 
 === Effects
 
@@ -1232,27 +1192,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 #todo[introduce notion of _direct_ effect]
 
-#figure(
-  [
-    #rule-set(
-      declare-rule(r-eff-var),
-      declare-rule(r-eff-coe),
-      declare-rule(r-eff-app),
-      declare-rule(r-eff-inj),
-      declare-rule(r-eff-proj),
-      declare-rule(r-eff-tuple),
-      declare-rule(r-eff-pi-nil),
-      declare-rule(r-eff-pi-cons),
-      declare-rule(r-eff-let),
-      declare-rule(r-eff-cases),
-      declare-rule(r-eff-sigma-nil),
-      declare-rule(r-eff-sigma-cons),
-      declare-rule(r-eff-iter),
-    )
-    \
-  ],
-  caption: [Direct effect rules for #iter-calc()],
-)
+#fig-r-eff-hasty
 
 #todo[introduce _$β$-rule_]
 
@@ -1296,7 +1236,13 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 #figure(
   [
-    #todo[this] \
+    #rule-set(
+      declare-rule(r-q-var),
+      declare-rule(r-q-coe),
+      declare-rule(r-q-app),
+    )
+    #todo[Glory + pain]
+    \
   ],
   caption: [Linearity rules for #iter-calc()],
 )
@@ -1323,27 +1269,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
   caption: [Refinement rules for #iter-calc()],
 )
 
-#figure(
-  [
-    #rule-set(
-      declare-rule(r-ref-var),
-      declare-rule(r-ref-coe),
-      declare-rule(r-ref-app),
-      declare-rule(r-ref-inj),
-      declare-rule(r-ref-proj),
-      declare-rule(r-ref-tuple),
-      declare-rule(r-ref-pi-nil),
-      declare-rule(r-ref-pi-cons),
-      declare-rule(r-ref-let),
-      declare-rule(r-ref-cases),
-      declare-rule(r-ref-sigma-nil),
-      declare-rule(r-ref-sigma-cons),
-      declare-rule(r-ref-iter),
-    )
-    \
-  ],
-  caption: [Congruence rules for #iter-calc() refinement],
-)
+#fig-r-ref-congr-hasty
 
 == Regions
 

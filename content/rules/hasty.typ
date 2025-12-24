@@ -1,4 +1,9 @@
 #import "../../syntax.typ": *
+#import "../../todos.typ": *
+
+/*
+Add some documentation here? Shouldn't print!
+*/
 
 // Rules for Γ ⊢ a : A
 
@@ -72,6 +77,30 @@
   $hasty(Γ, e, B + A)$,
   $hasty(Γ, eiter(a, x, e), B)$,
 );
+
+#let fig-r-hasty = figure(
+  [
+    #rule-set(
+      declare-rule(r-var),
+      declare-rule(r-coe),
+      declare-rule(r-app),
+      declare-rule(r-inj),
+      declare-rule(r-proj),
+      declare-rule(r-tuple),
+      declare-rule(r-pi-nil),
+      declare-rule(r-pi-cons),
+      declare-rule(r-let),
+      declare-rule(r-cases),
+      declare-rule(r-sigma-nil),
+      declare-rule(r-sigma-cons),
+      declare-rule(r-iter),
+    )
+    \
+  ],
+  caption: [Typing rules for #iter-calc(ms("F"))],
+)
+
+#fig-r-hasty
 
 #let r-csigma-nil = rule(
   name: "Σ-nil",
@@ -161,6 +190,30 @@
   $tyeq(Γ, req, eiter(a, x, e), eiter(e', x, a'), B)$,
 )
 
+#let fig-r-eq-congr-hasty = figure(
+  [
+    #rule-set(
+      declare-rule(r-eq-var),
+      declare-rule(r-eq-coe),
+      declare-rule(r-eq-app),
+      declare-rule(r-eq-inj),
+      declare-rule(r-eq-proj),
+      declare-rule(r-eq-tuple),
+      declare-rule(r-eq-pi-nil),
+      declare-rule(r-eq-pi-cons),
+      declare-rule(r-eq-let),
+      declare-rule(r-eq-cases),
+      declare-rule(r-eq-sigma-nil),
+      declare-rule(r-eq-sigma-cons),
+      declare-rule(r-eq-iter),
+    )
+    \
+  ],
+  caption: [Congruence rules for #iter-calc() equivalence],
+)
+
+#fig-r-eq-congr-hasty
+
 // Effect rules Γ ⊢_ε a : A
 
 #let r-eff-var = rule(
@@ -234,6 +287,71 @@
   $dehasty(Γ, ε, e, B + A)$,
   $dehasty(Γ, ε, eiter(a, x, e), B)$,
 )
+
+#let fig-r-eff-hasty = figure(
+  [
+    #rule-set(
+      declare-rule(r-eff-var),
+      declare-rule(r-eff-coe),
+      declare-rule(r-eff-app),
+      declare-rule(r-eff-inj),
+      declare-rule(r-eff-proj),
+      declare-rule(r-eff-tuple),
+      declare-rule(r-eff-pi-nil),
+      declare-rule(r-eff-pi-cons),
+      declare-rule(r-eff-let),
+      declare-rule(r-eff-cases),
+      declare-rule(r-eff-sigma-nil),
+      declare-rule(r-eff-sigma-cons),
+      declare-rule(r-eff-iter),
+    )
+    \
+  ],
+  caption: [Direct effect rules for #iter-calc()],
+)
+
+#fig-r-eff-hasty
+
+// Quantity rules for Γ ⊢_U a : A
+#let r-q-var = rule(
+  name: "var",
+  $uctxwk(ms("U"), Γ, #$x : A^1$)$,
+  $uhasty(Γ, ms("U"), x, A)$,
+)
+#let r-q-coe = rule(
+  name: "coe",
+  $uhasty(Γ, ms("U"), a, A)$,
+  $utywk(ms("U"), A, A')$,
+  $uhasty(Γ, ms("U"), a, A')$,
+)
+#let r-q-app = rule(
+  name: "app",
+  $usplits(ms("U"), Γ, Γ_kwl, Γ_kwr)$,
+  $uisfn(Γ_kwl, ms("U"), f, A, B)$,
+  $uhasty(Γ_kwr, ms("U"), a, A)$,
+  $uhasty(Γ, ms("U"), f med a, B)$,
+);
+
+#let fig-r-q-hasty = figure(
+  [
+    #rule-set(
+      declare-rule(r-q-var),
+      declare-rule(r-q-coe),
+      declare-rule(r-q-app),
+    )
+    #todo[inj]
+    #todo[proj]
+    #todo[tuple]
+    #todo[Σ-nil]
+    #todo[Σ-cons]
+    #todo[Π-nil]
+    #todo[Π-cons]
+    \
+  ],
+  caption: [Linearity rules for #iter-calc()],
+)
+
+#fig-r-q-hasty
 
 // Congruence rules for Γ ⊢_R a ->> b : A
 
@@ -311,3 +429,27 @@
   $tyref(Γ, ms("R"), e, e', B + A)$,
   $tyref(Γ, ms("R"), eiter(a, x, e), eiter(e', x, a'), B)$,
 )
+
+#let fig-r-ref-congr-hasty = figure(
+  [
+    #rule-set(
+      declare-rule(r-ref-var),
+      declare-rule(r-ref-coe),
+      declare-rule(r-ref-app),
+      declare-rule(r-ref-inj),
+      declare-rule(r-ref-proj),
+      declare-rule(r-ref-tuple),
+      declare-rule(r-ref-pi-nil),
+      declare-rule(r-ref-pi-cons),
+      declare-rule(r-ref-let),
+      declare-rule(r-ref-cases),
+      declare-rule(r-ref-sigma-nil),
+      declare-rule(r-ref-sigma-cons),
+      declare-rule(r-ref-iter),
+    )
+    \
+  ],
+  caption: [Congruence rules for #iter-calc() refinement],
+)
+
+#fig-r-ref-congr-hasty
