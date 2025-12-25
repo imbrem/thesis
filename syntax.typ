@@ -23,7 +23,7 @@
 
 #let ms(txt) = $sans(txt)$
 #let mb(txt) = $bold(txt)$
-#let lb(txt, annot: none) = $mono(txt)_annot$
+#let lb(txt) = $mono(txt)$
 
 // == Branding ==
 
@@ -152,7 +152,11 @@
 #let rpi = $π_kwr$
 
 // Orders
-#let sle(X) = $scripts(≤)_#X$
+#let sle(..xs) = if xs.pos().len() == 1 {
+  $scripts(⊑)_(#xs.pos().at(0))$
+} else {
+  $scripts(⊑)$
+}
 
 // Finite sets
 #let kfin = $ms("Fin")$
@@ -319,12 +323,23 @@
 
 #let atywk(A, B, ..xs) = $#A tyle(..xs) #B$
 
-#let tywk(A, B) = $#A ≤ #B$
-#let lbwk(L, M) = $#L ≤ #M$
+#let ktywk = sle()
+#let klbwk = sle()
 
-#let cwk(Γ, Δ) = $#Γ ≤ #Δ$
-#let lbcwk(L, M) = $#L ≤ #M$
-#let clbwk(K, M) = $#K ≤ #M$
+#let tywk(A, B) = $#A ktywk #B$
+#let lbwk(L, M) = $#L klbwk #M$
+
+#let kcwk = sle()
+#let klbwk = sle()
+#let kclbwk = sle()
+
+#let cwk(Γ, Δ) = $#Γ kcwk #Δ$
+#let lbcwk(L, M) = $#L klbwk #M$
+#let clbwk(K, M) = $#K kclbwk #M$
+
+#let kqwk = sle()
+
+#let qwk(ql, qr) = $#ql kqwk #qr$
 
 #let isfn(Γ, f, A, B) = $#Γ ⊢ #f : #A → #B$
 #let istup(Γ, E, T) = $#Γ ⊢ #E scripts(:)^* #T$
@@ -358,8 +373,23 @@
 #let ebrseq(Γ, L, Eq, B, B2, A) = $#Γ csplat #L scripts(⊢)_#Eq #B ≈ #B2 scripts(:)^* #A$
 #let lbeq(Γ, Eq, s, t, L) = $#Γ scripts(⊢)_#Eq #s ≈ #t triangle.stroked.small.r #L$
 
-#let isaff(U, A) = $ms("aff")_#U med #A$
-#let isrel(U, A) = $ms("rel")_#U med #A$
+
+#let tyquant(U, A, q) = $#U ⊢ #A^#q$
+#let lquant(U, L, q) = $#U ⊢ #L^#q$
+#let cquant(U, Γ, q) = $#U ⊢ #Γ^#q$
+
+#let qlin = $1$
+#let qrel = $+$
+#let qaff = $?$
+#let qint = $*$
+
+#let tqlin = $1$
+#let tqrel = $(+)$
+#let tqaff = $(op(?))$
+#let tqint = $(*)$
+
+#let isaff(U, A) = $tyquant(#U, #A, qaff)$
+#let isrel(U, A) = $tyquant(#U, #A, qrel)$
 
 #let utywk(U, A, B) = $#A scripts(≤)_#U #B$
 #let ulbwk(U, L, M) = $#L scripts(≤)_#U #M$
@@ -368,7 +398,8 @@
 #let ulbcwk(U, L, M) = $#L scripts(≤)_#U #M$
 #let uclbwk(U, K, M) = $#K scripts(≤)_#U #M$
 
-#let usplits(U, Γ, Δ, Ξ) = $Γ scripts(=>)_#U Δ ⊗ Ξ$
+#let tysplits(U, A, B, C) = $#A scripts(=>)_#U #B ⊗ #C$
+#let usplits(U, Γ, Δ, Ξ) = $#Γ scripts(=>)_#U #Δ ⊗ #Ξ$
 
 #let uisfn(Γ, U, f, A, B) = $#Γ scripts(⊢)_#U #f : #A → #B$
 #let uhasty(Γ, U, a, A) = $#Γ scripts(⊢)_#U #a : #A$
@@ -460,4 +491,7 @@
   is-appendix: true,
 )
 
-#let thesis-state = safe-state(()=>{}, standalone-state)
+#let thesis-state = safe-state(() => {}, standalone-state)
+
+#let cdem = gray.darken(50%)
+#let dem(x) = text(cdem, x)

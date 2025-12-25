@@ -941,19 +941,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 #import "content/rules/twk.typ": *
 
-#figure(
-  [
-    #rule-set(
-      declare-rule(r-twk-base, label: <twk-base>),
-      declare-rule(r-twk-sigma, label: <twk-sigma>),
-      declare-rule(r-twk-pi, label: <twk-pi>),
-      declare-rule(r-twk-unit, label: <twk-unit>),
-      declare-rule(r-twk-zero, label: <twk-zero>),
-    )
-    \
-  ],
-  caption: [Weakening for simple types $sty(ms("X"))$],
-)
+#fig-r-twk
 
 #lemma[
   If $sle(ms("X"))$ is a partial order, so is $tyle(ms("X"))$
@@ -1035,20 +1023,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
   not quite the same as distinguishing $lb("T"), lb("L")$, since _these_ have different variance
 ]
 
-#figure(
-  [
-    #rule-set(
-      declare-rule(r-ctxwk-nil, label: <ctxwk-nil>),
-      declare-rule(r-ctxwk-cons, label: <ctxwk-cons>),
-      declare-rule(r-lbwk-nil, label: <lbwk-nil>),
-      declare-rule(r-lbwk-cons, label: <lbwk-cons>),
-      declare-rule(r-clwk-nil, label: <clwk-nil>),
-      declare-rule(r-clwk-cons, label: <clwk-cons>)
-    )
-    \
-  ],
-  caption: [Weakening for contexts],
-)
+#fig-r-cwk
 
 === Expressions
 

@@ -331,6 +331,26 @@ Add some documentation here? Shouldn't print!
   $uhasty(Γ_kwr, ms("U"), a, A)$,
   $uhasty(Γ, ms("U"), f med a, B)$,
 );
+#let r-q-inj = rule(
+  name: "inj",
+  $uhasty(Γ, ms("U"), a, A)$,
+  $uhasty(Γ, ms("U"), lb("l") med a, Σ (lty(lb("l"), A)))$,
+)
+#let r-q-proj = rule(
+  name: "proj",
+  $uhasty(Γ, ms("U"), e, Π (fty(lb("f"), A)))$,
+  $uhasty(Γ, ms("U"), lb("f") med e, A)$,
+)
+#let r-q-tuple = rule(
+  name: "tuple",
+  $uistup(Γ, ms("U"), E, lb("T"))$,
+  $uhasty(Γ, ms("U"), (E), Π lb("T"))$,
+)
+#let r-q-pi-nil = rule(
+  name: "Π-nil",
+  $uctxwk(ms("U"), Γ, ·)$,
+  $uistup(Γ, ms("U"), ·, ·)$,
+)
 
 #let fig-r-q-hasty = figure(
   [
@@ -338,10 +358,11 @@ Add some documentation here? Shouldn't print!
       declare-rule(r-q-var),
       declare-rule(r-q-coe),
       declare-rule(r-q-app),
+      declare-rule(r-q-inj),
+      declare-rule(r-q-proj),
+      declare-rule(r-q-tuple),
+      declare-rule(r-q-pi-nil),
     )
-    #todo[inj]
-    #todo[proj]
-    #todo[tuple]
     #todo[Σ-nil]
     #todo[Σ-cons]
     #todo[Π-nil]

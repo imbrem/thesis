@@ -85,16 +85,6 @@ $
   ∀ f ∈ hperm(icol(a), icol(b)), f^(-1) ∈ hperm(icol(b), icol(a))
 $
 
-/*
-TODO: separate _ordered_ collection section... or just list...
-
-If $I$ and $J$ are equipped with a preorder, we say a reindexing $f : hfam(icol(a), icol(b))$ is
-- _order-preserving_ or _monotone_ if $∀ j sle(J) j' . f(j) sle(I) f(j')$
-- _order-reflecting_ if $∀ j, j' . f(j) sle(I) f(j') ⇒ j sle(J) j'$
-- _order-embedding_ if it is both monotone and reflecting,
-  i.e. if $∀ j, j' . j sle(J) j' <==> f(j) sle(I) f(j')$
-*/
-
 We define some of the basic operations on indexed families as follows:
 
 - Given indexed families $icol(a) = (a_i | i ∈ I)$, $icol(b) = (b_i | j ∈ J)$,
