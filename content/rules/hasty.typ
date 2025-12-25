@@ -346,11 +346,28 @@ Add some documentation here? Shouldn't print!
   $uistup(Γ, ms("U"), E, lb("T"))$,
   $uhasty(Γ, ms("U"), (E), Π lb("T"))$,
 )
+#let r-q-sigma-nil = rule(
+  name: "Σ-nil",
+  $uisebrs(Γ, ms("U"), ·, ·, A)$
+)
+#let r-q-sigma-cons = rule(
+  name: "Σ-cons",
+  $uisebrs(Γ, ms("U"), lb("L"), M, A)$,
+  $uhasty(#$Γ, x : B^qint$, ms("U"), a, A)$,
+  $uisebrs(Γ, ms("U"), #$lb("L"), lty(lb("l"), B)$, #$M, ebr(lb("l"), x, a)$, A)$,
+);
 #let r-q-pi-nil = rule(
   name: "Π-nil",
   $uctxwk(ms("U"), Γ, ·)$,
   $uistup(Γ, ms("U"), ·, ·)$,
 )
+#let r-q-pi-cons = rule(
+  name: "Π-cons",
+  $usplits(ms("U"), Γ, Γ_kwl, Γ_kwr)$,
+  $uistup(Γ_kwl, ms("U"), E, lb("T"))$,
+  $uhasty(Γ_kwr, ms("U"), e, A)$,
+  $uistup(Γ, ms("U"), #$E, e$, #$lb("T"), fty(lb("f"), A)$)$,
+);
 
 #let fig-r-q-hasty = figure(
   [
@@ -361,12 +378,14 @@ Add some documentation here? Shouldn't print!
       declare-rule(r-q-inj),
       declare-rule(r-q-proj),
       declare-rule(r-q-tuple),
+      declare-rule(r-q-sigma-nil),
+      declare-rule(r-q-sigma-cons),
       declare-rule(r-q-pi-nil),
+      declare-rule(r-q-pi-cons),
     )
-    #todo[Σ-nil]
-    #todo[Σ-cons]
-    #todo[Π-nil]
-    #todo[Π-cons]
+    #todo[let]
+    #todo[cases]
+    #todo[iter]
     \
   ],
   caption: [Linearity rules for #iter-calc()],

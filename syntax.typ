@@ -405,6 +405,7 @@
 #let uhasty(Γ, U, a, A) = $#Γ scripts(⊢)_#U #a : #A$
 #let uhaslb(Γ, U, r, L) = $#Γ scripts(⊢)_#U #r triangle.stroked.small.r #L$
 #let uistup(Γ, U, E, T) = $#Γ scripts(⊢)_#U #E scripts(:)^* #T$
+#let uisebrs(Γ, U, L, B, A) = $#Γ csplat #L scripts(⊢)_#U #B scripts(:)^* #A$
 
 #let tyref(Γ, R, a, b, A) = $#Γ scripts(⊢)_#R #a ->> #b : #A$
 #let tupref(Γ, R, E, F, T) = $#Γ scripts(⊢)_#R #E ->> #F scripts(:)^* #T$

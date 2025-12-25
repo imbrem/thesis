@@ -32,13 +32,22 @@
 #show heading.where(level: 0): set heading(supplement: [Chapter])
 
 #set document(
-  title: [Categorical imperative programming: type theory, refinement, and semantics for SSA],
+  title: [
+    Categorical imperative programming
+    //: type theory, refinement, and semantics for SSA
+  ],
   author: "Jad-Elkhaleq Ghalayini",
   date: datetime(day: 12, month: 1, year: 2026),
 )
 
 #align(center + horizon)[
   #title()
+
+  *Type theory, refinement, and semantics for SSA*
+
+  \
+
+  \
 
   #context document.author.at(0)
 
@@ -1145,22 +1154,31 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 #todo[introduce the concept of an _equational theory_ $req$]
 
+#todo[begin with globally valid rewrites?]
+
+#todo[note: 
+  _all_ rewrites are globally valid _except_ for:
+  - $β$, which needs $ε$ to be:
+    - relevant + affine. _intuitionistic_?
+    - central w.r.t. $η$
+  - 
+]
+
 #todo[_elas_ ; we need effects for $β$ and $η$ rules! I always forget $η$ is green...]
 
-#figure(
-  [
-    #todo[this]
-  ],
-  caption: [Equivalence rules for #iter-calc(ms("F"))],
-)
-
-#fig-r-eq-congr-hasty
+#todo[discuss _refinement_ via effects]
 
 === Effects
 
 #todo[
   introduce the concept of an _effect system_ $cal("E")$;
-  for simplicity, want a _bounded partial order_ of effects
+  for simplicity, want a _bounded partial order_ of effects.
+
+  Effect systems are _always_ linear, because why not?
+]
+
+#todo[
+  - 
 ]
 
 #todo[effects and nontermination; introduce the concept of an _iterative_ effect system]
@@ -1180,56 +1198,40 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
   and equivalence theory
 ]
 
+#figure(
+  [
+    #todo[this]
+  ],
+  caption: [Equivalence rules for #iter-calc(ms("F"))],
+)
+
+#fig-r-eq-congr-hasty
+
 === Linearity
 
 #todo[introduce the concept of a _quantity_; view it as an extension of a type]
 
 #todo[
-  introduce the concept of a _linearity system_ $ms("U")$
-  - Tells us what can split
-  - Tells us what can be _dropped_ (is _affine_);
-    for an affine type, split is _compatible_ with weakening
-  - Splitting is:
-    - _coassociative_
-    - _cocommutative_
-    - _drop-preserving_
-  - Tells us what can't
-  - _Induces_ $sle(ms("U"))$ via split-to-drop + reflexivity
-  - _Given_ a $ms("U")$, _we_ can a multiple natural order on #sty(ms("X")) with one parameter:
-  - Is $tzero$ affine?
-    - Default: _yes_, since $tywk(tzero, tunit)$ obviously
-    - But, _no is an option_.
-
-      Going with this option enables _strengthening_ in the resulting equational theory.
-
-      Need a name for this.
-
-    - Oh yeah... we've got to re-do all the equations...
-
-  - Note: _lo_; this is the _typestate pattern_...
+  introduce the concept of a _linearity system_ $ms("U")$: 
+  assigns lattice quantities to base types _and that's it_.
 ]
 
-#figure(
-  [
-    #rule-set(
-      declare-rule(r-q-var),
-      declare-rule(r-q-coe),
-      declare-rule(r-q-app),
-    )
-    #todo[Glory + pain]
-    \
-  ],
-  caption: [Linearity rules for #iter-calc()],
-)
+#fig-r-utywk
+
+#fig-r-uctxwk
+
+#fig-r-q-hasty
 
 === Refinement
 
+#todo[
+  introduce the concept of a _linear effect system_ $cal(E)$
+]
+
 #todo[introduce the concept of a _refinement theory_ $ms("R")$]
 
-#todo[introduce the concept of a _linear effect system_]
-
 #todo[
-  note: we don't track effects of duplication because that would be hard;
+  note: we don't track effects of duplication/deletion because that would be hard;
   cool for RC but not for us
 ]
 
