@@ -1,7 +1,7 @@
 #import "../../syntax.typ": *
 #import "../../todos.typ": *
 
-#import "../rules/twk.typ": *
+#import "../rules/types.typ": *
 #import "../rules/hasty.typ": *
 
 #show: show-syntax

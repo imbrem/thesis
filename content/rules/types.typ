@@ -1,5 +1,49 @@
 #import "../../syntax.typ": *
 
+#let fig-ty-grammar = figure(
+  [
+    #grid(
+      align: left,
+      columns: 2,
+      gutter: (2em, 2em),
+      bnf(
+        Prod($A$, {
+          Or[$tybase(X)$][_base type_ $X ∈ ms("X")$]
+          Or[$Σ lb("L")$][_Σ (coproduct)_]
+          Or[$Π lb("T")$][_Π (product)_]
+        }),
+      ),
+      bnf(
+        Prod($lb("L")$, {
+          Or[$·$][]
+          Or[$lb("L"), lty(lb("l"), A)$][]
+        }),
+        Prod($lb("T")$, {
+          Or[$·$][]
+          Or[$lb("T"), fty(lb("f"), A)$][]
+        }),
+      ),
+    )
+    $
+      A × B & := Π ( kwl : A, kwr : B ) & #h(3em) & mb(1) & := Π (·) \
+      A + B & := Σ ( kwl(A), kwr(B) )   &         & mb(0) & := Σ (·)
+    $
+    $
+      Π [A_0,...,A_(n - 1)] & = Π_i A_i & := Π ( lb("p")_0 : A_0, ..., lb("p")_(n - 1) : A_(n - 1) ) \
+      Σ [A_0,...,A_(n - 1)] & = Σ_i A_i &   := Σ ( lb("i")_0(A_0), ..., lb("i")_(n - 1)(A_(n - 1)) )
+    $
+    \
+  ],
+  caption: [
+    Grammar for simple types parametrized by base types $ms("X")$.
+    We treat $lb("L"), lb("T")$ as _label-indexed families_ of types,
+    and in particular quotient by order.
+  ],
+  kind: image,
+);
+
+#fig-ty-grammar
+
 #let r-twk-base = rule(
   name: "base",
   $X sle(ms("X")) Y$,
@@ -41,6 +85,67 @@
 )
 
 #fig-r-twk
+
+#let fig-ty-lattice = figure(
+  [
+    $
+      X ⊔_(sty(ms("X"))) Y = cases(X ⊔_X Y "if defined", tunit "otherwise")
+      quad quad quad
+      X ⊓_(sty(ms("X"))) Y = cases(X ⊓_X Y "if defined", tzero "otherwise")
+      \
+      A ⊔ tunit = tunit ⊔ A = tunit quad quad
+      A ⊔ tzero = tzero ⊔ A = A quad quad
+      A ⊓ tunit = tunit ⊓ A = A quad quad
+      A ⊓ tzero = tzero ⊓ A = tzero
+    $
+    $
+      Σ lb("L") ⊔ Σ lb("L'") & :=
+                               Σ (lty(lb("l"), labhi(lb("L"), lb("l")) ⊔ labhi(lb("L"), lb("l")))
+                                 | lb("l") ∈ lab(lb("L")) ∪ lab(lb("L"'))) \
+      Π lb("T") ⊔ Π lb("T'") & :=
+                               Π (fty(lb("l"), fldhi(lb("T"), lb("l")) ⊔ fldhi(lb("X"'), lb("l")))
+                                 | lb("l") ∈ fld(lb("T")) ∩ fld(lb("X"'))) \
+      Σ lb("L") ⊓ Σ lb("L'") & :=
+                               Σ (lty(lb("l"), lablo(lb("L"), lb("l")) ⊓ lablo(lb("L"), lb("l")))
+                                 | lb("l") ∈ lab(lb("L")) ∩ lab(lb("L"'))) \
+      Π lb("T") ⊓ Π lb("T'") & :=
+                               Π (fty(lb("l"), fldlo(lb("T"), lb("l")) ⊓ fldlo(lb("T"), lb("l")))
+                                 | lb("l") ∈ fld(lb("T")) ∪ fld(lb("X"')))
+    $
+    where
+    $
+      lablo(lb("L"), lb("l")) = cases(
+        A "if" lty(lb("l"), A) ∈ lb("L"),
+        tzero "otherwise"
+      ) quad quad
+      labhi(lb("L"), lb("l")) = cases(
+        A "if" lty(lb("l"), A) ∈ lb("L"),
+        tunit "otherwise"
+      )
+    $
+    $
+      fldlo(lb("T"), lb("f")) = cases(
+        A "if" fty(lb("f"), A) ∈ lb("T"),
+        tzero "otherwise"
+      ) quad quad
+      fldhi(lb("T"), lb("f")) = cases(
+        A "if" fty(lb("f"), A) ∈ lb("T"),
+        tunit "otherwise"
+      )
+    $
+    $
+      lab(·) = ∅ quad
+      lab(lb("L"), lty(lb("l"), A)) = lab(lb("L")) ∪ { lb("l") } quad
+      fld(·) = ∅ quad
+      fld(lb("T"), fty(lb("f"), A)) = fld(lb("T")) ∪ { lb("f") }
+    $
+
+    \
+  ],
+  caption: [Lattice structure on simple types $sty(ms("X"))$],
+);
+
+#fig-ty-lattice
 
 #let r-ctxwk-nil = rule(
   name: "Π-nil",

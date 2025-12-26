@@ -224,18 +224,18 @@
 }
 
 @inproceedings{moggi-89-monad,
-  author       = {Eugenio Moggi},
-  title        = {Computational Lambda-Calculus and Monads},
-  booktitle    = {Proceedings of the Fourth Annual Symposium on Logic in Computer Science
-                  {(LICS} '89), Pacific Grove, California, USA, June 5-8, 1989},
-  pages        = {14--23},
-  publisher    = {{IEEE} Computer Society},
-  year         = {1989},
-  url          = {https://doi.org/10.1109/LICS.1989.39155},
-  doi          = {10.1109/LICS.1989.39155},
-  timestamp    = {Fri, 24 Mar 2023 00:01:49 +0100},
-  biburl       = {https://dblp.org/rec/conf/lics/Moggi89.bib},
-  bibsource    = {dblp computer science bibliography, https://dblp.org}
+  author    = {Eugenio Moggi},
+  title     = {Computational Lambda-Calculus and Monads},
+  booktitle = {Proceedings of the Fourth Annual Symposium on Logic in Computer Science
+               {(LICS} '89), Pacific Grove, California, USA, June 5-8, 1989},
+  pages     = {14--23},
+  publisher = {{IEEE} Computer Society},
+  year      = {1989},
+  url       = {https://doi.org/10.1109/LICS.1989.39155},
+  doi       = {10.1109/LICS.1989.39155},
+  timestamp = {Fri, 24 Mar 2023 00:01:49 +0100},
+  biburl    = {https://dblp.org/rec/conf/lics/Moggi89.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 
 @article{power-97-premonoidal,
@@ -329,10 +329,100 @@
 }
 
 @misc{nlab:family,
-  author = {{nLab authors}},
-  title = {family},
+  author       = {{nLab authors}},
+  title        = {family},
   howpublished = {\url{https://ncatlab.org/nlab/show/family}},
-  note = {\href{https://ncatlab.org/nlab/revision/family/13}{Revision 13}},
-  month = dec,
-  year = 2025
+  note         = {\href{https://ncatlab.org/nlab/revision/family/13}{Revision 13}},
+  month        = dec,
+  year         = 2025
+}
+
+@article{reissmann-20-rvsdg,
+  author     = {Reissmann, Nico and Meyer, Jan Christian and Bahmann, Helge and Sj\"{a}lander, Magnus},
+  title      = {RVSDG: An Intermediate Representation for Optimizing Compilers},
+  year       = {2020},
+  issue_date = {November 2020},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {19},
+  number     = {6},
+  issn       = {1539-9087},
+  url        = {https://doi.org/10.1145/3391902},
+  doi        = {10.1145/3391902},
+  abstract   = {Intermediate Representations (IRs) are central to optimizing compilers as the way the program is represented may enhance or limit analyses and transformations. Suitable IRs focus on exposing the most relevant information and establish invariants that different compiler passes can rely on. While control-flow centric IRs appear to be a natural fit for imperative programming languages, analyses required by compilers have increasingly shifted to understand data dependencies and work at multiple abstraction layers at the same time. This is partially evidenced in recent developments such as the Multi-Level Intermediate Representation (MLIR) proposed by Google. However, rigorous use of data flow centric IRs in general purpose compilers has not been evaluated for feasibility and usability as previous works provide no practical implementations.We present the Regionalized Value State Dependence Graph (RVSDG) IR for optimizing compilers. The RVSDG is a data flow centric IR where nodes represent computations, edges represent computational dependencies, and regions capture the hierarchical structure of programs. It represents programs in demand-dependence form, implicitly supports structured control flow, and models entire programs within a single IR. We provide a complete specification of the RVSDG, construction and destruction methods, as well as exemplify its utility by presenting Dead Node and Common Node Elimination optimizations. We implemented a prototype compiler and evaluate it in terms of performance, code size, compilation time, and representational overhead. Our results indicate that the RVSDG can serve as a competitive IR in optimizing compilers while reducing complexity.},
+  journal    = {ACM Trans. Embed. Comput. Syst.},
+  month      = dec,
+  articleno  = {49},
+  numpages   = {28},
+  keywords   = {intermediate representation, Regionalized value state dependence graph (RVSDG), LLVM}
+}
+
+@article{click-00-sea-of-nodes-thesis,
+  author  = {Click, Cliff and Cooper, Keith},
+  year    = {2000},
+  month   = {12},
+  pages   = {},
+  title   = {Combining Analyses, Combining Optimizations},
+  volume  = {17},
+  journal = {ACM Transactions on Programming Languages and Systems},
+  doi     = {10.1145/201059.201061}
+}
+
+@article{click-97-quads-to-graphs,
+  author = {Click, Cliff},
+  year   = {1997},
+  month  = {02},
+  pages  = {},
+  title  = {From Quads to Graphs: An Intermediate Representation's Journey}
+}
+
+@article{10.1145/202530.202534,
+  author     = {Click, Cliff and Paleczny, Michael},
+  title      = {A simple graph-based intermediate representation},
+  year       = {1995},
+  issue_date = {March 1993},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {30},
+  number     = {3},
+  issn       = {0362-1340},
+  url        = {https://doi.org/10.1145/202530.202534},
+  doi        = {10.1145/202530.202534},
+  abstract   = {We present a graph-based intermediate representation (IR) with simple semantics and a low-memory-cost C++ implementation. The IR uses a directed graph with labeled vertices and ordered inputs but unordered outputs. Vertices are labeled with opcodes, edges are unlabeled. We represent the CFG and basic blocks with the same vertex and edge structures. Each opcode is defined by a C++ class that encapsulates opcode-specific data and behavior. We use inheritance to abstract common opcode behavior, allowing new opcodes to be easily defined from old ones. The resulting IR is simple, fast and easy to use.},
+  journal    = {SIGPLAN Not.},
+  month      = mar,
+  pages      = {35–49},
+  numpages   = {15}
+}
+
+@inproceedings{click-95-simple-graph,
+  author    = {Click, Cliff and Paleczny, Michael},
+  title     = {A simple graph-based intermediate representation},
+  year      = {1995},
+  isbn      = {0897917545},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  url       = {https://doi.org/10.1145/202529.202534},
+  doi       = {10.1145/202529.202534},
+  abstract  = {We present a graph-based intermediate representation (IR) with simple semantics and a low-memory-cost C++ implementation. The IR uses a directed graph with labeled vertices and ordered inputs but unordered outputs. Vertices are labeled with opcodes, edges are unlabeled. We represent the CFG and basic blocks with the same vertex and edge structures. Each opcode is defined by a C++ class that encapsulates opcode-specific data and behavior. We use inheritance to abstract common opcode behavior, allowing new opcodes to be easily defined from old ones. The resulting IR is simple, fast and easy to use.},
+  booktitle = {Papers from the 1995 ACM SIGPLAN Workshop on Intermediate Representations},
+  pages     = {35–49},
+  numpages  = {15},
+  location  = {San Francisco, California, USA},
+  series    = {IR '95}
+}
+
+@article{roman-25-premonoidal,
+  author    = {Mario Rom{\'{a}}n and
+               Pawel Sobocinski},
+  title     = {String Diagrams for Premonoidal Categories},
+  journal   = {Log. Methods Comput. Sci.},
+  volume    = {21},
+  number    = {2},
+  year      = {2025},
+  url       = {https://doi.org/10.46298/lmcs-21(2:9)2025},
+  doi       = {10.46298/LMCS-21(2:9)2025},
+  timestamp = {Wed, 16 Jul 2025 12:27:35 +0200},
+  biburl    = {https://dblp.org/rec/journals/lmcs/RomanS25.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
 }

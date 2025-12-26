@@ -3,7 +3,33 @@
 
 #show: show-syntax
 
-// TODO: should we put categorical notation up here?
+#todo[
+  do we stick conventions up here?
+  - Pros: chapter-per-file, follows organization structure
+  - Cons: forcing people to read the category theory chapter for notation... _not good yaar_
+    - Or maybe good...
+    - But might scare them off...
+    - Background to mathematical preliminaries? 
+      I suppose enriched category theory _is_ general enough...
+    - Basic category theory?
+    - Maybe we _can_ just have a _separate_ notation/conventions chapter right at the beginning?
+
+  - Current idea:
+    - Factor out notation chapter
+    - _Then_ type theory
+      - standard [all three; injection $#ssa-calc() ⊆ #gssa-calc()$]
+      - effectful $#iter-calc()$
+      - linear $#iter-calc()$
+      - effectful $#gssa-calc()$
+      - linear $#gssa-calc()$
+    - _Then_ syntactic results; probably stick as last section of type theory chapter
+      - $#iter-calc()$ is $#ssa-calc()$ is $#gssa-calc()$
+    - BONUS: sublanguages and conservativity results:
+      - $#seq-calc() ⊆ #case-calc() ⊆ #iter-calc()$
+      - $#dssa-calc() ⊆ #ssa-calc()$; $#dssa-calc() ⊆ #dgssa-calc() ⊆ #gssa-calc()$
+      - $#dgssa-calc() ⊆ #gssa-calc()$
+    - _Then_ semantics
+]
 
 = Categories
 
@@ -486,7 +512,13 @@ Similarly to products, coproducts satisfy some basic algebraic properties
       & G med B $)
   $
   We call a diagram of this form a _naturality square_.
+
+  #todo[natural isomorphisms]
 ]
+
+#todo[natural families and friends?]
+
+#todo[then: enriched category theory]
 
 /*
 == Monads and Kliesli Categories
@@ -504,6 +536,159 @@ Similarly to products, coproducts satisfy some basic algebraic properties
     - but this is not necessary for our Freyd case
 ]
 */
+
+= Enriched Categories
+
+#todo[
+  Rework plan:
+  - Our goal is a _categorical semantics of imperative programming_
+  - Standard:
+    - Program fragment: morphisms
+    - Textual composition: composition of various kinds
+      - Sequential $=>$ Vertical
+      - Data $=>$ Horizontal
+      - Control-flow $=>$ Coproducts + Iterativity
+    - But, we don't just study equality, we study refinement
+  - We need a way to compare refinements
+  - $=>$ We need a partial order on refinements _compatible_ with our categorical structure
+  - $cal(V)$-enrichment for $cal(V)$ concretely cartesian: 
+    how to equip hom-sets with structure compatible w/ category theory
+    - categories: compatible with composition
+    - other stuff: compatible with that stuff
+    - give definition
+    - can be more general than "sets with structure;" we won't
+    - quickly: change-of-basis
+  - Direct approach: enrich with $cal(V) = cposet$; get the _2-posets_
+  - But we might be interested in other things too/instead
+    - More restrictive than posets: e.g. _lattices_
+    - Unrelated: e.g. _abelian groups_ (add quantum pointer here)
+  - In general, want to _project out_ the structure we _need_
+    - A $cal(V)$-category is _equipped with_ structure $cal(W)$ 
+      if there's a canonical concretely cartesian functor s.t. the nice diagram commutes;
+      note this _implies_ faithfulness!
+    - Note, for a $cal(V)$-categort $cal(C)$:
+      - $cal(C)$ is always equipped with $cal(V)$
+      - $cal(C)$ is always $cset$ equipped; i.e. equipped with nothing
+      - $cal(C)$ can _always_ be equipped with a partial order: the _discrete_ partial order
+      - The equipment is treated as structure on $cal(C)$, _not_ structure on $cal(V)$ (!!!)
+]
+
+/*
+For the rest of this thesis,
+$cal(V)$ will range over concretely cartesian categories unless otherwise specified.
+*/
+
+#definition(name: [$cal(V)$-enriched category])[
+  Given a concretely cartesian category $cal(V)$,
+  a $cal(V)$-enriched category $cal(C)$, or _$cal(V)$-category_, consists of
+  - An set of objects $|cal(C)|$
+  - For each pair of objects $A, B ∈ |cal(C)|$, a _hom-object_ $cal(C)(A, B) ∈ |cal(V)|$
+  - For each object $A ∈ |cal(C)|$, an _identity morphism_ $id_A : cal(C)(A, B)$
+  - For each triple of objects $A, B, C ∈ |cal(C)|$, a _composition morphism_
+    $
+      (;)_(A, B, C) : cal(V)(cal(C)(A, B) × cal(C)(B, C), cal(C)(A, C))
+    $
+]
+
+#todo[add (foot)note about more general notion of $cal(V)$ enrichment for $cal(V)$ monoidal]
+
+#todo[More generally, we can do change of basis w.r.t. any concart-functor]
+
+We note that every $cal(V)$-category $cal(C)$ induces an ordinary category $U cal(C)$
+with:
+- The same set of objects $|U cal(C)| = |cal(C)|$
+- Hom-sets $(U cal(C))(A, B) = U(cal(C)(A, B))$.
+
+  In particular, as $U : cal(V) → cset$ is faithful, every $g ∈ (U cal(C))(A, B)$
+  can be written in a unique way as an application $U f$ for $f : cal(C)(A, B)$.
+- Composition given by
+  $
+    ∀ f : (U cal(C))(A, B), g : (U cal(C))(B, C) . f ; g = (U (;)_(A, B, C)) (f, g)
+  $
+
+#todo[pull up concart-functor to background]
+
+In fact, this construction can be generalized quite readily:
+
+#definition(name: "Concretely Cartesian Functor")[
+  Let $F : cal(V) → cal(W)$ be a functor between concretely cartesian categories
+  $(cal(V), U_cal(V))$ and $(cal(W), U_cal(W))$. We say $F$ is _concretely cartesian_ if
+  - $F$ preserves erasure: $F ; U_cal(W) = U_cal(V)$
+  - $F$ preserves finite products: $∀ [A_1,...,A_n] . F (Π [A_1,...,A_n]) = Π [F A_1,...,F A_n]$
+
+  Note in particular that the erasure $U : cal(V) → cset$
+  is always a concretely cartesian functor.
+]
+
+#todo[
+  Neel says ok for real definition _but_ we suppress notation and pretend everything is strict;
+  and also most examples are actually strict this is really just for $cal(V) × cal(W)$
+]
+
+This allows us to define the _change of basis_ of a $cal(V)$-category along a
+concretely cartesian functor as follows:
+
+#definition(name: "Change of Basis")[
+  Given a concretely cartesian functor $F : cal(V) → cal(W)$ and a $cal(V)$-category $cal(C)$,
+  we define its _change of basis_ $F cal(C)$ to be the $cal(W)$-category with
+  - Objects $|F cal(C)| = |cal(C)|$
+  - Hom objects $F cal(C)(A, B) = F(cal(C)(A, B))$
+  - Identity morphisms $id_A^(F cal(C)) = id_A^(cal(C))$
+  - Composition morphisms
+    $
+      (;)_(A, B, C)^(F cal(C)) = (F × F) ; (;)_(A, B, C)^(cal(C))
+    $
+]
+
+We will often consider two particularly important cases:
+
+- A $cset$-category $cal(C)$ is precisely an ordinary category
+- A $ms("Pos")$-category $cal(C)$, i.e. a _poset-enriched category_ or _2-poset_,
+  is simply a category in which
+  - Each hom-set $cal(C)(A, B)$ is equipped with a partial order
+  - Composition respects this partial order, i.e.,
+    for all $f_1, f_2 : cal(C)(A, B)$, $g_1, g_2 ∈ cal(C)(B, C)$,
+    $
+      f_1 ≤ f_2 ∧ g_1 ≤ g_2 => (f_1 ; g_1) ≤ (f_2 ; g_2)
+    $
+
+Throughout the rest of this section, we fix a concretely cartesian category $cal(V)$.
+
+#definition(name: [$cal(V)$-functor])[
+  Given $cal(V)$-categories $cal(C), cal(D)$, a $cal(V)$-functor consists of
+  - A mapping on objects $|F| ∈ |cal(C)| → |cal(D)|$
+  - For each pair of objects $A, B ∈ |cal(C)|$, a $cal(V)$-morphism
+    $
+      F_(A, B) : cal(V)(cal(C)(A, B), cal(D)(F A, F B))
+    $
+    inducing an action on morphisms $f : cal(C)(A, B)$ by $F f = F_(A, B) f$.
+]
+
+Similarly to before,
+- A $cset$-functor $cal(C)$ is precisely an ordinary functor
+- A $ms("Pos")$-functor $F : cal(C) → cal(D)$... #todo[this]
+
+#todo[just as for regular functors, we can compose $cal(V)$-functors, and there's an identity...]
+
+#definition(name: [Category of $cal(V)$-categories])[
+  The category of $cal(V)$-categories $cal(V)ms("Cat")$ has
+  - Objects $|cal(V)ms("Cat")|$ $cal(V)$-categories
+  - Morphisms $cal(V)ms("Cat")(cal(C), cal(D))$ $cal(V)$-functors $F : cal(C) → cal(D)$
+]
+
+#todo[
+  and in particular, change-of-basis $F : cal(V) → cal(W)$
+  induces $F_* : cal(V)ms("Cat") → cal(W)ms("Cat")$
+]
+
+#todo[
+  do this better...
+]
+
+In general, we can recover the standard category-theoretic definitions of a concept by taking $cal(V) = cset$.
+Often, many definitions for $cal(V)$-categories are in fact identical;
+in particular, the definitions for terminal objects, initial objects, products and coproducts are exactly the same,
+so we will not repeat them.
 
 #context if (thesis-state.get)().is-standalone {
   the-bibliography

@@ -2,6 +2,7 @@
 #import "@preview/curryst:0.6.0": prooftree, rule, rule-set
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, edge, node
 #import "@preview/typsy:0.2.1": safe-state
+#import "@preview/simplebnf:0.1.1": *
 
 #let (
   theorem,
@@ -98,10 +99,33 @@
   $λ_ms("iter")[#xs.pos().at(0)]$
 }
 
+#let seq-calc(..xs) = if xs.pos().at(0, default: none) == none {
+  $λ_ms("seq")$
+} else {
+  $λ_ms("seq")[#xs.pos().at(0)]$
+}
+
 #let case-calc(..xs) = if xs.pos().at(0, default: none) == none {
   $λ_ms("case")$
 } else {
   $λ_ms("case")[#xs.pos().at(0)]$
+}
+
+
+#let dssa-calc(..xs) = if xs.pos().at(0, default: none) == none {
+  $λ_ms("dssa")$
+} else if xs.pos().at(1, default: none) == none {
+  $λ_ms("dssa")[#xs.pos().at(0)]$
+} else {
+  $λ_ms("dssa")[#xs.pos().at(0), #xs.pos().at(1)]$
+}
+
+#let dgssa-calc(..xs) = if xs.pos().at(0, default: none) == none {
+  $λ_ms("dssa")^*$
+} else if xs.pos().at(1, default: none) == none {
+  $λ_ms("dssa")^*[#xs.pos().at(0)]$
+} else {
+  $λ_ms("dssa")^*[#xs.pos().at(0), #xs.pos().at(1)]$
 }
 
 #let expr2fun(E) = $ms("LN")(#E)$
@@ -112,6 +136,12 @@
 } else {
   $ms("Ty")[#xs.pos().at(0)]$
 }
+
+// Order theory
+#let uua = math.class("unary", $↑$)
+#let ula = math.class("unary", $↓$)
+#let ubs(A) = $uua #A$
+#let lbs(A) = $ula #A$
 
 // == Tokens ==
 

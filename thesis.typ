@@ -1,4 +1,3 @@
-#import "@preview/simplebnf:0.1.1": *
 #import "@preview/subpar:0.2.2"
 
 #import "@preview/wordometer:0.1.5": word-count
@@ -113,15 +112,6 @@
 ]
 
 #todo[
-  Thesis Map:
-
-  - What is SSA? > @chap-ssa
-  - Background, conventions, and notation > @background
-  - Type theory, equivalence, and refinement > @ssa-type
-  - Semantics of SSA > @ssa-semantics
-]
-
-#todo[
   High level:
   - Step 1: we want an MVP thesis, which is:
     - The type theory of TOPLAS, but refined and with λiter
@@ -197,7 +187,6 @@
             - Type theory of λiter with _only quantities_
 
 ]
-
 
 #todo[
   maybe: explain what a compiler is at a high-level because the intro both sets the tone and pads
@@ -827,69 +816,11 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
   kind: image,
 ) <tt-ssa-grammar>
 
-= Background <background>
-
-#todo[
-  Add a map here:
-  - Foundations:
-    - Grothendieck-Tarski set theory
-    - Formalizations in Lean 4 (≈ intuitionistic MLTT variant w/ universe hierarchy)
-  - Basic data structure notations:
-    - Conventions: zero-indexing, Perl-like duck typing (lists are ℕ-indexed families), etc.
-    - Families, reindexings, sequences, and lists
-    - Section on basic syntax/grammar? _Probably_ not...
-  - Categorical basics?
-    - Move up commutative diagrams, functors, natural transformations?
-    - Products + terminal here? Coproducts / initial?
-    - Monads here? Relate to computational monads? Definitely need products...
-    - Sketch:
-      - Categories and diagrams
-      - Functors and natural transformations
-      - Natural isomorphisms; equivalence of categories vs. isomorphism of categories
-      - Opposite cateogry, _contravariant_ functors, duality
-      - Products, terminal object
-      - LEVEL 2: CCCs and exponentials
-        - LEARNING: what is a coexponential?
-      - Coproducts, initial object
-      - Monads
-        - Preserve coproducts
-          - LEARNING: any exact conditions here? Tfw "works in #cset"
-        - Can be _strong_ w.r.t. product structure
-        - Can be _commutative_ w.r.t. themselves
-        - Have a standard presentation in #cset via pure/bind
-          - LEARNING:
-            How general is the standard presentation? Do we need additional structure over a CCC?
-      - Concrete categories
-        - Concrete (functors)
-        - Concretely cartesian (functors)
-        - LEVEL 2: CCCC (functors) from @adamek-09-cats
-]
-
-#todo[
-  The idea:
-  - Background knowledge up here; skippable. Need a better title than "Conventions and Notation".
-    Perhaps even "Background"?
-  - Then: type theory. As cats are pre-developed, light mentions are OK, and nothing is enriched.
-  - Then:
-  - Then: category theory
-    - Rapidly develop everything _again_ in the $cal(V)$-enriched setting, so no _true_ duplication
-    - Second explanation focuses on computational intuition
-      - First explanation (here) focuses on categorical intuition
-  - Then: basic models in category theory
-  - Then: concrete models
-
-  - LEVEL 3: _substructural_ models of #iter-calc(), associated lore
-]
-
-#[
-  == Conventions and Notation
-  #set heading(offset: 2)
-  #include "content/background/conventions.typ"
-]
+= Conventions and Notation
 
 #[
   #set heading(offset: 1)
-  #include "content/background/category-theory.typ"
+  #include "content/background/conventions.typ"
 ]
 
 = Type Theory <ssa-type>
@@ -898,57 +829,13 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 === Types and Contexts
 
+#import "content/rules/types.typ": *
+
 #todo[introduce types]
 
-#figure(
-  [
-    #grid(
-      align: left,
-      columns: 2,
-      gutter: (2em, 2em),
-      bnf(
-        Prod($A$, {
-          Or[$tybase(X)$][_base type_ $X ∈ ms("X")$]
-          Or[$Σ lb("L")$][_Σ (coproduct)_]
-          Or[$Π lb("T")$][_Π (product)_]
-        }),
-      ),
-      bnf(
-        Prod($lb("L")$, {
-          Or[$·$][]
-          Or[$lb("L"), lty(lb("l"), A)$][]
-        }),
-        Prod($lb("T")$, {
-          Or[$·$][]
-          Or[$lb("T"), fty(lb("f"), A)$][]
-        }),
-      ),
-    )
-    $
-      A × B & := Π ( kwl : A, kwr : B ) & #h(3em) & mb(1) & := Π (·) \
-      A + B & := Σ ( kwl(A), kwr(B) )   &         & mb(0) & := Σ (·)
-    $
-    $
-      Π [A_0,...,A_(n - 1)] & = Π_i A_i & := Π ( lb("p")_0 : A_0, ..., lb("p")_(n - 1) : A_(n - 1) ) \
-      Σ [A_0,...,A_(n - 1)] & = Σ_i A_i &   := Σ ( lb("i")_0(A_0), ..., lb("i")_(n - 1)(A_(n - 1)) )
-    $
-    \
-  ],
-  caption: [Grammar for simple types parametrized by base types $ms("X")$],
-  kind: image,
-)
-
-#todo[
-  We treat $lb("L"), lb("T")$ as _label-indexed families_, quotiented by order
-
-  For example, we could sort by labels, and assume no duplicates.
-
-  Note on the locally-nameless trick
-]
+#fig-ty-grammar
 
 #todo[introduce _weakening_ of types]
-
-#import "content/rules/twk.typ": *
 
 #fig-r-twk
 
@@ -960,64 +847,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 #todo[Has meets when $ms("X")$ has _bounded_ meets]
 
-#figure(
-  [
-    $
-      X ⊔_(sty(ms("X"))) Y = cases(X ⊔_X Y "if defined", tunit "otherwise")
-      quad quad quad
-      X ⊓_(sty(ms("X"))) Y = cases(X ⊓_X Y "if defined", tzero "otherwise")
-      \
-      A ⊔ tunit = tunit ⊔ A = tunit quad quad
-      A ⊔ tzero = tzero ⊔ A = A quad quad
-      A ⊓ tunit = tunit ⊓ A = A quad quad
-      A ⊓ tzero = tzero ⊓ A = tzero
-    $
-    $
-      Σ lb("L") ⊔ Σ lb("L'") & :=
-                               Σ (lty(lb("l"), labhi(lb("L"), lb("l")) ⊔ labhi(lb("L"), lb("l")))
-                                 | lb("l") ∈ lab(lb("L")) ∪ lab(lb("L"'))) \
-      Π lb("T") ⊔ Π lb("T'") & :=
-                               Π (fty(lb("l"), fldhi(lb("T"), lb("l")) ⊔ fldhi(lb("X"'), lb("l")))
-                                 | lb("l") ∈ fld(lb("T")) ∩ fld(lb("X"'))) \
-      Σ lb("L") ⊓ Σ lb("L'") & :=
-                               Σ (lty(lb("l"), lablo(lb("L"), lb("l")) ⊓ lablo(lb("L"), lb("l")))
-                                 | lb("l") ∈ lab(lb("L")) ∩ lab(lb("L"'))) \
-      Π lb("T") ⊓ Π lb("T'") & :=
-                               Π (fty(lb("l"), fldlo(lb("T"), lb("l")) ⊓ fldlo(lb("T"), lb("l")))
-                                 | lb("l") ∈ fld(lb("T")) ∪ fld(lb("X"')))
-    $
-    where
-    $
-      lablo(lb("L"), lb("l")) = cases(
-        A "if" lty(lb("l"), A) ∈ lb("L"),
-        tzero "otherwise"
-      ) quad quad
-      labhi(lb("L"), lb("l")) = cases(
-        A "if" lty(lb("l"), A) ∈ lb("L"),
-        tunit "otherwise"
-      )
-    $
-    $
-      fldlo(lb("T"), lb("f")) = cases(
-        A "if" fty(lb("f"), A) ∈ lb("T"),
-        tzero "otherwise"
-      ) quad quad
-      fldhi(lb("T"), lb("f")) = cases(
-        A "if" fty(lb("f"), A) ∈ lb("T"),
-        tunit "otherwise"
-      )
-    $
-    $
-      lab(·) = ∅ quad
-      lab(lb("L"), lty(lb("l"), A)) = lab(lb("L")) ∪ { lb("l") } quad
-      fld(·) = ∅ quad
-      fld(lb("T"), fty(lb("f"), A)) = fld(lb("T")) ∪ { lb("f") }
-    $
-
-    \
-  ],
-  caption: [Lattice structure on simple types $sty(ms("X"))$],
-)
+#fig-ty-lattice
 
 #todo[Grammar for (label) contexts]
 
@@ -1321,7 +1151,14 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
   caption: [Congruence rules for #gssa-calc() refinement],
 )
 
-= Semantics of SSA <ssa-semantics>
+= Basic (Enriched) Category Theory
+
+#[
+  #set heading(offset: 1)
+  #include "content/background/category-theory.typ"
+]
+
+= Semantics of Imperative Programming <imp-cats>
 
 #todo[
   Chapter structure:
@@ -1402,278 +1239,29 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
         of a Kleisli category over a cartesian base
 ]
 
-== Enriched Categories
+#[
+  #set heading(offset: 1)
 
-For the rest of this thesis,
-$cal(V)$ will range over concretely cartesian categories unless otherwise specified.
-
-#definition(name: [$cal(V)$-enriched category])[
-  Given a concretely cartesian category $cal(V)$,
-  a $cal(V)$-enriched category $cal(C)$, or _$cal(V)$-category_, consists of
-  - An set of objects $|cal(C)|$
-  - For each pair of objects $A, B ∈ |cal(C)|$, a _hom-object_ $cal(C)(A, B) ∈ |cal(V)|$
-  - For each object $A ∈ |cal(C)|$, an _identity morphism_ $id_A : cal(C)(A, B)$
-  - For each triple of objects $A, B, C ∈ |cal(C)|$, a _composition morphism_
-    $
-      (;)_(A, B, C) : cal(V)(cal(C)(A, B) × cal(C)(B, C), cal(C)(A, C))
-    $
+  #include "content/semantics-of-ssa/strong-elgot-categories.typ"
 ]
 
-We note that every $cal(V)$-category $cal(C)$ induces an ordinary category $U cal(C)$
-with:
-- The same set of objects $|U cal(C)| = |cal(C)|$
-- Hom-sets $(U cal(C))(A, B) = U(cal(C)(A, B))$.
-
-  In particular, as $U : cal(V) → cset$ is faithful, every $g ∈ (U cal(C))(A, B)$
-  can be written in a unique way as an application $U f$ for $f : cal(C)(A, B)$.
-- Composition given by
-  $
-    ∀ f : (U cal(C))(A, B), g : (U cal(C))(B, C) . f ; g = (U (;)_(A, B, C)) (f, g)
-  $
-
-In fact, this construction can be generalized quite readily:
-
-#definition(name: "Concretely Cartesian Functor")[
-  Let $F : cal(V) → cal(W)$ be a functor between concretely cartesian categories
-  $(cal(V), U_cal(V))$ and $(cal(W), U_cal(W))$. We say $F$ is _concretely cartesian_ if
-  - $F$ preserves erasure: $F ; U_cal(W) = U_cal(V)$
-  - $F$ preserves finite products: $∀ [A_1,...,A_n] . F (Π [A_1,...,A_n]) = Π [F A_1,...,F A_n]$
-
-  Note in particular that the erasure $U : cal(V) → cset$
-  is always a concretely cartesian functor.
-]
-
-#todo[
-  Neel says ok for real definition _but_ we suppress notation and pretend everything is strict;
-  and also most examples are actually strict this is really just for $cal(V) × cal(W)$
-]
-
-This allows us to define the _change of basis_ of a $cal(V)$-category along a
-concretely cartesian functor as follows:
-
-#definition(name: "Change of Basis")[
-  Given a concretely cartesian functor $F : cal(V) → cal(W)$ and a $cal(V)$-category $cal(C)$,
-  we define its _change of basis_ $F cal(C)$ to be the $cal(W)$-category with
-  - Objects $|F cal(C)| = |cal(C)|$
-  - Hom objects $F cal(C)(A, B) = F(cal(C)(A, B))$
-  - Identity morphisms $id_A^(F cal(C)) = id_A^(cal(C))$
-  - Composition morphisms
-    $
-      (;)_(A, B, C)^(F cal(C)) = (F × F) ; (;)_(A, B, C)^(cal(C))
-    $
-]
-
-We will often consider two particularly important cases:
-
-- A $cset$-category $cal(C)$ is precisely an ordinary category
-- A $ms("Pos")$-category $cal(C)$, i.e. a _poset-enriched category_ or _2-poset_,
-  is simply a category in which
-  - Each hom-set $cal(C)(A, B)$ is equipped with a partial order
-  - Composition respects this partial order, i.e.,
-    for all $f_1, f_2 : cal(C)(A, B)$, $g_1, g_2 ∈ cal(C)(B, C)$,
-    $
-      f_1 ≤ f_2 ∧ g_1 ≤ g_2 => (f_1 ; g_1) ≤ (f_2 ; g_2)
-    $
-
-Throughout the rest of this section, we fix a concretely cartesian category $cal(V)$.
-
-#definition(name: [$cal(V)$-functor])[
-  Given $cal(V)$-categories $cal(C), cal(D)$, a $cal(V)$-functor consists of
-  - A mapping on objects $|F| ∈ |cal(C)| → |cal(D)|$
-  - For each pair of objects $A, B ∈ |cal(C)|$, a $cal(V)$-morphism
-    $
-      F_(A, B) : cal(V)(cal(C)(A, B), cal(D)(F A, F B))
-    $
-    inducing an action on morphisms $f : cal(C)(A, B)$ by $F f = F_(A, B) f$.
-]
-
-Similarly to before,
-- A $cset$-functor $cal(C)$ is precisely an ordinary functor
-- A $ms("Pos")$-functor $F : cal(C) → cal(D)$... #todo[this]
-
-#todo[just as for regular functors, we can compose $cal(V)$-functors, and there's an identity...]
-
-#definition(name: [Category of $cal(V)$-categories])[
-  The category of $cal(V)$-categories $cal(V)ms("Cat")$ has
-  - Objects $|cal(V)ms("Cat")|$ $cal(V)$-categories
-  - Morphisms $cal(V)ms("Cat")(cal(C), cal(D))$ $cal(V)$-functors $F : cal(C) → cal(D)$
-]
-
-#todo[
-  and in particular, change-of-basis $F : cal(V) → cal(W)$
-  induces $F_* : cal(V)ms("Cat") → cal(W)ms("Cat")$
-]
-
-In general, we can recover the standard category-theoretic definitions of a concept by taking $cal(V) = cset$.
-Often, many definitions for $cal(V)$-categories are in fact identical;
-in particular, the definitions for terminal objects, initial objects, products and coproducts are exactly the same,
-so we will not repeat them.
-
-== Premonoidal Categories
-
-#definition(name: [$cal(V)$-Binoidal Category])[
-  A $cal(V)$-binoidal category is a $cal(V)$-category equipped with
-  - A function on objects $- ⊗ - ∈ |cal(C)| × |cal(C)| → |cal(C)|$
-  - For each object $A ∈ |cal(C)|$, $cal(V)$-functors $A ⊗ -, - ⊗ A : cal(C) → cal(C)$ which
-    agree with $- ⊗ -$ on objects
-
-  In general, given $f: A_1 → B_1$ and $g : A_2 → B_2$, we define:
-  - $f ⋉ g = f ⊗ A_2 ; B_1 ⊗ g : cal(C)(A_1 ⊗ A_2, B_1 ⊗ B_2)$
-  - $f ⋊ g = A_1 ⊗ g ; f ⊗ B_2 : cal(C)(A_1 ⊗ A_2, B_1 ⊗ B_2)$
-
-  We say that a morphism $f$ is _central_ if
-  $
-    ∀ A_2, B_2 ∈ |cal(C)|, ∀ g : cal(C)(A_2, B_2) . (f ⋉ g = f ⋊ g) ∧ (g ⋉ f = g ⋊ f)
-  $
-  In this case, we write
-  $
-    f ⊗ g := f ⋉ g = f ⋊ g
-  $
-  for the common value of $f ⋉ g$ and $f ⋊ g$.
-]
-
-#definition(name: [$cal(V)$-Premonoidal Category])[
-  A $cal(V)$-premonoidal category is a $cal(V)$-binoidal category $cal(C)$
-  equipped with
-  - A distinguished _identity object_ $munit ∈ |cal(C)|$
-  - Central natural isomorphisms:
-    - $α_(A, B, C) : cal(C)((A ⊗ B) ⊗ C, A ⊗ (B ⊗ C))$ (the _associator_)
-    - $λ_A : cal(C)(munit ⊗ A, A)$ (the _left unitor_)
-    - $ρ_A : cal(C)(A ⊗ munit, A)$ (the _right unitor_)
-
-  By natural, we mean that $α_(A, B, C)$. $λ_A$, and $ρ_A$ are natural in each of their components;
-  i.e., for all morphisms $f: cal(C)(A, A')$, $g: cal(C)(B, B')$, and $h: cal(C)(C, C')$, the following
-  _naturality squares_ hold:
-  $
-    (f ⊗ B) ⊗ C ; α_(A', B, C) & = α_(A, B, C) ; f ⊗ (g ⊗ h) //
-                                           && : cal(C)((A ⊗ B) ⊗ C, A' ⊗ (B ⊗ C)) \
-    A ⊗ (g ⊗ C) ; α_(A, B', C) & = α_(A, B, C) ; A ⊗ (g ⊗ h) //
-                                           && : cal(C)((A ⊗ B) ⊗ C, A ⊗ (B' ⊗ C)) \
-      A ⊗ B ⊗ h ; α_(A, B, C') & = α_(A, B, C) ; A ⊗ B ⊗ h //
-                                           && : cal(C)((A ⊗ B) ⊗ C, A ⊗ (B ⊗ C')) \
-            munit ⊗ f ; λ_(A') & = λ_A ; f && : cal(C)(munit ⊗ A, A') \
-            f ⊗ munit ; ρ_(A') & = ρ_A ; f && : cal(C)(A ⊗ munit, A')
-  $
-
-  Such that the following coherence conditions hold:
-  - (Pentagon Identity)
-    For all objects $A, B, C, D ∈ |cal(C)|$, the following diagram commutes:
-    $
-      #diagram($
-        //
-        & (A ⊗ B) ⊗ (C ⊗ D) edge("dr", α_(A, B, (C ⊗ D)), ->)
-        &\ ((A ⊗ B) ⊗ C) ⊗ D edge("ur", α_((A ⊗ B), C, D), ->) edge("d", α_(A, B, C) ⊗ D, ->)
-        && A ⊗ (B ⊗ (C ⊗ D)) \
-        (A ⊗ (B ⊗ C)) ⊗ D edge("rr", α_(A, B ⊗ C, D), ->) & & A ⊗ ((B ⊗ C) ⊗ D)
-        edge("u", A ⊗ α_(B, C, D), ->)
-      $)
-    $
-
-  - (Triangle Identity)
-    For all objects $A, B ∈ |cal(C)|$, the following diagram commutes:
-    $
-      #diagram(cell-size: 15mm, $
-        //
-        (A ⊗ munit) ⊗ B edge(α_(A, munit, B), ->) edge("dr", ρ_A ⊗ id_B, ->, label-side: #right)
-        & A ⊗ (munit ⊗ B) edge("d", id_A ⊗ λ_B, ->, label-side: #left) \
-        & A ⊗ B
-      $)
-    $
-
-    We say that a $cal(V)$-premonoidal category is _symmetric_ if it is equipped with an additional
-    central natural isomorphism
-    - $σ_(A, B) : cal(C)(A ⊗ B, B ⊗ A)$ (the _braiding_)
-
-    Satisfying:
-    - (Naturality): $∀ f : cal(C)(A, A') . f ⊗ B ; σ_(A', B) = σ_(A, B) ; B ⊗ f
-      : cal(C)(A ⊗ B, B ⊗ A')$
-    - (Symmetry): $σ_(A, B)^(-1) = σ_(B, A)$
-
-    Such that the following coherence conditions hold:
-    - (Hexagon Identity)
-      For all objects $A, B, C ∈ |cal(C)|$, the following diagram commutes:
-      $
-        #diagram($ (A ⊗ B) ⊗ C edge(α_(A, B, C), ->) edge("d", σ_(A, B) ⊗ C, ->, label-side: #right) &
-        A ⊗ (B ⊗ C) edge(σ_(A, B ⊗ C), ->, label-side: #left) &
-        (B ⊗ C) ⊗ A edge("d", α_(B, C, A), ->, label-side: #left) \
-        (B ⊗ A) ⊗ C edge(α_(B, A, C), ->, label-side: #right) &
-        B ⊗ (A ⊗ C) edge(B ⊗ σ_(A, C), ->, label-side: #right) &
-        B ⊗ (C ⊗ A) $)
-      $
-]
-
-#definition(name: [Freyd Category])[
-  #todo[this]
-]
-
-#definition(name: [$n$-ary Tensor Product])[
-  Given a $cal(V)$-premonoidal category $cal(C)$...
-  #todo[finish definition]
-]
-
-#todo[
-  - In the literature, we have:
-    - A Freyd category is a _choice_ of $cal(C)_⊥$
-      - $cal(C)_⊥$ is structure for Freyd
-      - Is property in the copy-discard / Markov worlds
-    - _copy-discard_ categories, which are premonoidal + comonoids
-      - These _induce_ a Freyd category
-      - A morphism is _relevant_ if ...
-      - A morphism is _affine_ if ...
-      - What if I want to keep track of which morphisms are relevant/affine/central?
-      - I need more structure
-    - Effectful category
-      - An effect system $cal(E)$ is just a bounded lattice with monotone functions
-        is relevant, is affine, is central
-      - An effectful category over an effect system $cal(E)$ maps effects to subcategories with
-        $⊤$ to top
-      - Morphisms between effect systems induce identity-on-objects functors
-        between effectful categories
-      - A Freyd category is just an effectful category over ${⊤, ⊥}$
-      - A Cartesian category is just an effectful category over ${⊥}$
-]
-
-== Semantics of Expressions
+== Cartesian models of #iter-calc()
 
 #include "content/semantics-of-ssa/semantics-of-expressions.typ"
 
-== Equational Models
+== Substructural models of #iter-calc()
 
-#todo[Category of $cal(V)$-enriched SSA models]
+#todo[this]
 
-#todo[Syntactic $cal(V)$-enriched SSA model]
-
-#todo[Modeling an equational theory $req$ w.r.t. an effect system $cal(E)$]
-
-#todo[Full subcategory]
-
-#todo[Soundness of Equivalence]
-
-#todo[Completeness of Equivalence]
-
-#todo[Initiality]
-
-== Refinement Models
-
-#todo[Modeling a refinement theory $ms("R")$ w.r.t. a _linear_ effect system $cal(E)$]
-
-#todo[Soundness of Refinement]
-
-#todo[Completeness of Refinement]
+= Semantics of SSA
 
 == Semantics of Regions
 
 #include "content/semantics-of-ssa/semantics-of-regions.typ"
 
-= Monadic Models of SSA <concrete-models>
+= Monadic Models of SSA
 
-== Monad Transformers, Partiality, Nondeterminism, Logging, and State
-
-#todo[Partiality over #cset]
-
-== $cal(V)$-Enriched Monads and Monad Transformers
-
-#todo[_All_ of the above are $cal(V)$-enriched!]
+#todo[this]
 
 #the-bibliography
 
