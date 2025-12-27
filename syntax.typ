@@ -257,6 +257,13 @@
 #let sfam(A) = $bold(upright(#A))$
 #let pset(X) = $cal(P)(X)$
 
+#let fmark = $ms("fin")$
+#let fset(X) = $cal(P)_fmark(X)$
+#let fdiff = $op(scripts(=)_fmark)$
+
+#let ucof = $∀^c$
+#let ecof = $∃^c$
+
 // Categories
 #let cset = $ms("Set")$
 #let cposet = $ms("Poset")$

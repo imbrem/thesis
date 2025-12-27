@@ -8,6 +8,12 @@
   title()
 }
 
+#set quote(block: true)
+
+#quote(attribution: [Abraham Lincoln (up to natural transformation)])[
+  Give me six hours to chop down a tree and I will spend the first four sharpening the axe.
+]
+
 
 In this chapter, we briefly cover the basic definitions, mathematical conventions, and
 notation used throughout this thesis.
@@ -59,7 +65,7 @@ We note that
 
   For clarity, we will write this as $f famcomp g$ to emphasize that $f$ is a reindexing.
 
-This makes the reindexings into a _category_ with objects indexed families and morphisms 
+This makes the reindexings into a _category_ with objects indexed families and morphisms
 reindexings.
 
 An injective reindexing is called a _thinning_,
@@ -100,7 +106,7 @@ We define some of the basic operations on indexed families as follows:
 
     If $icol(a)$ and $icol(b)$ are in fact disjoint, we write $icol(a) ⊔ icol(b)$.
 
-  When there is no risk of confusion, we will write the override $icol(a) ovrd icol(b)$ as the 
+  When there is no risk of confusion, we will write the override $icol(a) ovrd icol(b)$ as the
   juxtaposition of families $icol(a) icol(b)$; this admits the familiar notation for
   single-point updates $(x ↦ a)icol(b)$.
 
@@ -231,7 +237,7 @@ We define some of the basic operations on indexed families as follows:
 ]
 
 #definition(name: "Upper Set, Lower Set")[
-  We say a set $U ⊆ X$ in a preorder $X$ is an _upper set_ or is _upward closed_ if 
+  We say a set $U ⊆ X$ in a preorder $X$ is an _upper set_ or is _upward closed_ if
   $x ∈ U$ and $x ≤ y$ implies $y ∈ U$.
   Dually, we say a set $L ⊆ X$ in a preorder $X$ is a _lower set_ or is _downward closed_ if
   $y ∈ L$ and $x ≤ y$ implies $x ∈ L$.
@@ -249,7 +255,7 @@ We define some of the basic operations on indexed families as follows:
   subset $A ⊆ X$ where one exists.
   Without loss of generality, we may always take $max{a}, min{a} := a$.
 
-  We denote the set of upper bounds of $A$ as $ubs(A)$, 
+  We denote the set of upper bounds of $A$ as $ubs(A)$,
   and the set of lower bounds of $A$ as $lbs(A)$.
 
   Where there is no risk of confusion, we write $ubs(a) := ubs({a})$ and $lbs(a) := lbs({a})$
@@ -268,7 +274,7 @@ We define some of the basic operations on indexed families as follows:
   subset $A ⊆ X$ where one exists.
   Without loss of generality, we may always take $⨆{a}, ⨅{a} := a$.
   #footnote[
-    While we could define $⨆ A := min(ubs(A))$ and $⨅ A := max(lbs(A))$ when they exist, 
+    While we could define $⨆ A := min(ubs(A))$ and $⨅ A := max(lbs(A))$ when they exist,
     we would not be able to satisfy the condition $∀ a . ⨆{a}, ⨅{a} := a$ unless $X$ is a poset,
     as all equivalent elements $a ≈ b$ have the same set of upper and lower bounds.
   ]
@@ -290,7 +296,7 @@ We define some of the basic operations on indexed families as follows:
   - $X$ is a _complete prelattice_ if every subset $A ⊆ X$ has both a meet and a join
   - $X$ is a _complete lattice_ if it is a poset and a complete prelattice
 
-  Note that we restrict the term semilattice to posets; 
+  Note that we restrict the term semilattice to posets;
   for preorders, we simply say "has binary joins" or "has binary meets."
 ]
 
@@ -338,26 +344,79 @@ a meet "at negative infinity." To do so, we introduce the following definition:
   - $X$ has _(nonempty) $ω$-joins_ if every (nonempty) ω-chain $A$ has a join
 
   If $X$ is a partial order
-    #footnote[
-      By our convention, directed sets and $ω$-chains may be empty. Hence, we only need to state
-      "has directed joins" and "has $ω$-joins," which implicitly implies the existence of a bottom
-      element (the join of the empty set). 
-    ],
+  #footnote[
+    By our convention, directed sets and $ω$-chains may be empty. Hence, we only need to state
+    "has directed joins" and "has $ω$-joins," which implicitly implies the existence of a bottom
+    element (the join of the empty set).
+  ],
   - We say $X$ is a _directed complete partial order_ or _dcpo_ if it has directed joins
   - We say $X$ is an _$ω$-complete partial order_ or _$ω$cpo_ if it has $ω$-joins
 ]
 
 = Cofinite Quantification
 
-#todo[Forall cofinite]
+#definition(name: "Cofinite Quantifiers")[
+  Given a set $X$, we write the set of finite subsets of $X$ as $fset(X)$.
 
-#todo[Exists cofinite]
+  We define _cofinite quantifiers_ as follows:
+  #eqn-set(
+    $ucof x ∈ X . φ := ∃ L ∈ fset(X) . ∀ x ∉ L . φ$,
+    $ecof x ∈ X . φ := ∀ L ∈ fset(X) . ∃ x ∉ L . φ$,
+  )
 
-#todo[Example: $ℕ$ even]
+  Equivalently,
+  #eqn-set(
+    $
+      ucof x ∈ X . φ <==> { x ∈ X | ¬ φ } "finite"
+    $,
+    $
+      ecof x ∈ X . φ <==> { x ∈ X | φ } "infinite"
+    $
+  )
 
-#todo[Example: $ℕ$ nonzero]
+  When clear from context, we omit the set $X$ being quantified over, writing simply
+  $ucof x . φ$ and $ecof x . φ$.
 
-#todo[Example: $ℕ$ zero]
+  If $ucof x . φ$, we say $φ$ _holds cofinitely_ or _holds modulo a finite set_.
+
+  In particular,
+  - $f, g : A -> B$ are _finitely different_ or _cofinitely equal_, written $f fdiff g$, 
+    if $ucof a . f med a = g med a$
+  - $f : A -> B$ is _cofinitely constant_ or _constant modulo a finite set_ if 
+    it is finitely different from a constant function, i.e.
+    $∃ b . ucof a . f med a = b$
+]
+
+#align(center, table(
+  columns: 2,
+  stroke: none,
+  inset: 1em,
+  [Example], [Explanation],
+  $ucof x ∈ ℕ . x > 2$, [Only finitely many natural numbers ${0, 1, 2}$ are not $> 2$],
+  $¬ (ucof x ∈ ℕ . x "prime")$, [There are infinitely many non-prime numbers],
+  $¬ (ucof x ∈ ℕ . x = 1)$, [There are infinitely many numbers $≠ 1$],
+  $ecof x ∈ ℕ . x > 2$, [There are infinitely many numbers $> 2$],
+  $ecof x ∈ ℕ . x "prime"$, [There are infinitely many prime numbers],
+  $¬ (ecof x ∈ ℕ . x = 1)$, [There are only finitely many numbers $= 1$],
+))
+
+#eqn-set(
+  $¬ (ucof x ∈ X . φ) <==> ecof x ∈ X . ¬ φ$,
+  $¬ (ecof x ∈ X . φ) <==> ucof x ∈ X . ¬ φ$,
+)
+
+$
+  #diagram($
+    //
+      & ∀ x ∈ X . φ edge("dl", =>) edge("dr", X "infinite", =>) //
+                    &                               \
+    ucof x ∈ X . φ edge("dr", X ≠ ∅, =>, label-side: #right)
+    edge("rr", X "infinite", "=>", label-side: #right)
+    //
+      &             & ecof x ∈ X . φ edge("dl", =>) \
+      & ∃ x ∈ X . φ
+  $)
+$
 
 /*
 
