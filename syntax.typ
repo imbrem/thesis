@@ -264,6 +264,18 @@
 #let ucof = $∀^c$
 #let ecof = $∃^c$
 
+#let pfn = $harpoon$
+#let rfn = $arrow.r.struck$
+
+#let brel(R, a, b) = $#a class("binary", #R) #b$
+
+#let stor(R) = $⟨#R⟩$
+
+#let scol = $class("normal", ⊕)$
+#let tcol = $class("normal", ⊗)$
+
+#let lflat(a) = $μ #a$
+
 // Categories
 #let cset = $ms("Set")$
 #let cposet = $ms("Poset")$

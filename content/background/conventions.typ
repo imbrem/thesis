@@ -14,7 +14,6 @@
   Give me six hours to chop down a tree and I will spend the first four sharpening the axe.
 ]
 
-
 In this chapter, we briefly cover the basic definitions, mathematical conventions, and
 notation used throughout this thesis.
 
@@ -26,188 +25,6 @@ We work in (informal) Grothendieck-Tarski set theory. In particular,
 In general, definitions are implicitly $ℓ$-polymorphic unless stated otherwise.
 For example, when we define a category, we really mean an $ℓ$-category with $ℓ$-small hom-sets.
 We hence for the most part ignore size issues.
-
-= Families, Sequences, Lists, and Streams
-
-An _($I$-indexed) family_ @nlab:family $icol(a) := (a_i | i ∈ I)$ consists of
-
-- An _index set_ $I$, whose elements are the _indices_ of the family.
-  We will sometimes write $cix(icol(a)) := I$.
-
-- For each index $i ∈ I$, an _element_ $a_i$.
-  We will sometimes write this as a function application $icol(a) med i$.
-
-Families are considered equal when they have the same index set and agree pointwise.
-
-We will often write an indexed family as $(i ↦ a_i)_(i ∈ I)$ or $(a_i)_(i ∈ I)$,
-or even $(i_1 ↦ a_(i_1),...,i_n ↦ a_(i_n))$ for $I = {i_1,...,i_n}$ finite.
-In general, we will omit $I$ when clear from context.
-
-We write the empty indexed family as $()$.
-
-We say $icol(a)$ is a _subfamily_ of $icol(b)$, written $icol(a) ⊆ icol(b)$, if
-$cix(icol(a)) ⊆ cix(icol(b))$
-and
-$∀ i ∈ cix(icol(a)), a_i = b_i$.
-
-Given families $icol(a) = (a_i | i ∈ I)$, $icol(b) = (b_j | j ∈ J)$,
-we define the _reindexings_ from $icol(b)$ into $icol(a)$ as follows:
-$
-  hfam(icol(a), icol(b)) := { f : J → I | ∀ j ∈ J . a_(f(j)) = b_j }
-$
-
-We note that
-
-- We always have $id_I : hfam(icol(a), icol(a))$
-
-- If $f : hfam(icol(a), icol(b))$ and $g : hfam(icol(b), icol(c))$,
-  then $f ∘ g : hfam(icol(a), icol(c))$ (_not_ $g ∘ f$!)
-
-  For clarity, we will write this as $f famcomp g$ to emphasize that $f$ is a reindexing.
-
-This makes the reindexings into a _category_ with objects indexed families and morphisms
-reindexings.
-
-An injective reindexing is called a _thinning_,
-while a bijective reindexing is called a _permutation_.
-We denote the sets of such reindexings as
-$
-  hthin(icol(a), icol(b)) & := { f ∈ hfam(icol(a), icol(b)) | f "is injective" } \
-  hperm(icol(a), icol(b)) & := { f ∈ hthin(icol(a), icol(b)) | f "is bijective" } \
-$
-
-Thinnings model dropping indices, while permutations model reordering.
-
-Both these subsets contain the identity reindexing and are closed under (reverse) composition
-(i.e., are wide subcategories of the category of reindexings).
-Furthermore, the set of permutations is closed under inverses (which always exist):
-$
-  ∀ f ∈ hperm(icol(a), icol(b)), f^(-1) ∈ hperm(icol(b), icol(a))
-$
-That is, the permutations are in fact a _groupoid_.
-
-We define some of the basic operations on indexed families as follows:
-
-- Given indexed families $icol(a) = (a_i | i ∈ I)$, $icol(b) = (b_i | j ∈ J)$,
-  we define their _override_ as follows:
-  $
-    icol(a) ovrd icol(b) = [λ k . site(k ∈ I, a_k, b_k) | k ∈ I ∪ J]
-  $
-
-  We note that
-  - $() ovrd icol(a) = icol(a) ovrd () = icol(a)$
-  - $icol(a) ovrd (icol(b) ovrd icol(c)) = (icol(a) ovrd icol(b)) ovrd icol(c)$
-
-  That is, indexed families form a monoid with the empty family $()$ as identity.
-  In particular:
-
-  - $icol(a) ovrd icol(b) = icol(b) ovrd icol(a) <==> ∀ i ∈ I ∩ J . a_i = b_i$
-    in which case we write $icol(a) ∪ icol(b)$.
-
-    If $icol(a)$ and $icol(b)$ are in fact disjoint, we write $icol(a) ⊔ icol(b)$.
-
-  When there is no risk of confusion, we will write the override $icol(a) ovrd icol(b)$ as the
-  juxtaposition of families $icol(a) icol(b)$; this admits the familiar notation for
-  single-point updates $(x ↦ a)icol(b)$.
-
-- We define the _selection_ of $J ⊆ I$ from an indexed family $icol(a) = (a_i | i ∈ I)$
-  as follows:
-  $
-    csel(icol(a), J) = (a_i | i ∈ I ∩ J)
-  $
-
-- We define the _removal_ of $J ⊆ I$ from an indexed family $icol(a) = (a_i | i ∈ I)$
-  as follows:
-  $
-    crem(icol(a), J) = (a_i | i ∈ I sdiff J)
-  $
-
-  We note that
-  $csel(icol(a), J) ⊔ (crem(icol(a), J)) = (crem(icol(a), J)) ⊔ csel(icol(a), J) = icol(a)$.
-
-/*
-- We may define the _coproduct_ of two indexed families
-  $icol(a) = (a_i | i ∈ I)$,
-  $icol(b) = (b_j | j ∈ J)$ using the pointwise map as follows:
-  $
-    icol(a) + icol(b)
-    = (linj i ↦ a_i | i ∈ I) ⊔ (rinj j ↦ b_j | j ∈ J)
-  $
-
-  This has projection thinnings
-  $
-    lthin(icol(a), icol(b)) := (λ i . linj i) : hthin(icol(a) + icol(b), icol(a)) quad quad
-    rthin(icol(a), icol(b)) := (λ j . rinj j) : hthin(icol(a) + icol(b), icol(b))
-  $
-
-- Likewise, we may define the _product_ of two indexed families
-  $icol(a) = (a_i | i ∈ I)$,
-  $icol(b) = (b_j | j ∈ J)$ as follows:
-  $
-    icol(a) × icol(b) = ((i, j) ↦ (a, b) | (i, j) ∈ I × J)
-  $
-*/
-
-- A _sequence_ $icol(a) = [a_i | i ∈ I]$ is an indexed family $(a_i | i ∈ I)$ where
-  - $I = ℕ$ , in which case we call $icol(a)$ a _stream_, or
-  - $I = fin(n)$ for some $n ∈ ℕ$, in which case we call $icol(a)$ a _list_ or _$n$-tuple_.
-
-  In general, we will reserve square brackets $[ - ]$ for lists
-  (rather than general indexed families), writing
-
-  - $lnil := ()$ for the empty list
-  - $[a_0,...,a_(n - 1)]$ for a list of length $n$
-  - $[a_0, a_1, a_2, ...]$ for a stream
-  - _Comprehensions_ $[f(a) | a ∈ icol(a)] := [f(a_i) | i ∈ I]$
-
-    In general, we will often interpret $ℕ$ and $fin(n)$ as a stream and a list.
-
-  Note that, following the convention in computer science, our sequences are _zero-indexed_.
-
-- Given an arbitrary sequence $icol(a)$, we can append an element $x$ to the front of $icol(a)$
-  to form a new sequence $x :: icol(a)$ (pronounced "$x$ _cons_ $icol(a)$") as follows:
-  $
-    x :: icol(a)
-    := [λ | 0 => x | i + 1 => icol(a) med i]
-    = [x, a_0, a_1, ...]
-  $
-
-  If $icol(a)$ is in fact finite, we may append an element $x$ to the back,
-  forming a new sequence $icol(a) lsnoc x$ (pronounced "$icol(a)$ _snoc_ $x$") analogously:
-  $
-    icol(a) lsnoc x
-    := [λ i . site(i < |icol(a)|, icol(a) med i, x)]
-    = [a_0, a_1, ..., a_(n - 1), x]
-  $
-
-- We define the _concatenation_ of a list $icol(a)$ to a sequence $icol(b)$,
-  written $icol(a) lcat icol(b)$, by induction on $icol(a)$ as follows:
-  $
-    lnil lcat icol(b) = icol(b) quad quad quad
-    (x :: icol(a)) lcat icol(b) = x :: (icol(a) lcat icol(b))
-  $
-
-  For $icol(a)$ of length $n$, we can show by induction that
-  $
-    icol(a) lcat icol(b)
-    = [a_0,...,a_(n - 1),b_0, b_1, ...]
-    = [λ i . site(i < n, a_i, b_(i - n))]
-  $
-
-  In particular, we note that
-  $
-    lnil lcat icol(a) = icol(a) lcat lnil = icol(a) quad quad quad
-    [a] lcat icol(a) = a :: icol(a) quad quad quad
-    icol(a) lcat [b] = icol(a) lsnoc b
-  $
-  $
-    icol(a) lcat (icol(b) lcat icol(c)) = (icol(a) lcat icol(b)) lcat icol(c)
-  $
-
-- We define the _repetition_ of a list $icol(a)$, written $n · icol(a)$, by induction as follows:
-  $
-    0 · icol(a) = lnil quad quad quad (n + 1) · icol(a) = icol(a) lcat n · icol(a)
-  $
 
 = Order Theory
 
@@ -353,6 +170,254 @@ a meet "at negative infinity." To do so, we introduce the following definition:
   - We say $X$ is an _$ω$-complete partial order_ or _$ω$cpo_ if it has $ω$-joins
 ]
 
+= Families, Sequences, Lists, and Streams
+
+Our primitive data structure will be the 
+_($I$-indexed) family_ @nlab:family $icol(a) := (a_i | i ∈ I)$, consisting of
+
+- An _index set_ $I$, whose elements are the _indices_ of the family.
+  We will sometimes write $cix(icol(a)) := I$.
+
+- For each index $i ∈ I$, an _element_ $a_i$.
+  We will sometimes write this as a function application $icol(a) med i$.
+
+Families are considered equal when they have the same index set and agree pointwise.
+
+We will often write an indexed family as $(i ↦ a_i)_(i ∈ I)$ or $(a_i)_(i ∈ I)$,
+or even $(i_1 ↦ a_(i_1),...,i_n ↦ a_(i_n))$ for $I = {i_1,...,i_n}$ finite.
+In general, we will omit $I$ when clear from context.
+
+We write the empty indexed family as $()$.
+
+Given indexed families $icol(a) = (a_i | i ∈ I)$, $icol(b) = (b_j | j ∈ J)$,
+we define their _override_ as follows:
+$
+  icol(a) ovrd icol(b) = [λ k . site(k ∈ I, a_k, b_k) | k ∈ I ∪ J]
+$
+
+By convention, $ovrd$ is left-biased: when both families define an index, the left value is chosen.
+
+We note that $ovrd$ is a monoid with identity $()$ -- i.e.
+$() ovrd icol(a) = icol(a) ovrd () = icol(a)$ and
+$icol(a) ovrd (icol(b) ovrd icol(c)) = (icol(a) ovrd icol(b)) ovrd icol(c)$
+
+We say $icol(a)$ is a _subfamily_ of $icol(b)$, written $icol(a) ⊆ icol(b)$, if
+$cix(icol(a)) ⊆ cix(icol(b))$
+and
+$∀ i ∈ cix(icol(a)), a_i = b_i$;
+this induces an upper meet-semilattice on families, with 
+- bottom element $⊥ := ()$
+- meet $icol(a) ⊓ icol(b) := (a_i | i ∈ cix(icol(a)) ∩ cix(icol(b)) ∧ a_i = b_i)$
+- join $icol(a) ⊔ icol(b) := icol(a) ovrd icol(b) = icol(b) ovrd icol(a)$ 
+  whenever $∀ i ∈ I ∩ J . a_i = b_i$
+
+/*
+We define some basic structural operations on indexed families as follows:
+- We define the _selection_ of $J ⊆ I$ from an indexed family $icol(a) = (a_i | i ∈ I)$
+  as follows:
+  $
+    csel(icol(a), J) = (a_i | i ∈ I ∩ J)
+  $
+
+- We define the _removal_ of $J ⊆ I$ from an indexed family $icol(a) = (a_i | i ∈ I)$
+  as follows:
+  $
+    crem(icol(a), J) = (a_i | i ∈ I sdiff J)
+  $
+
+  We note that
+  $csel(icol(a), J) ⊔ (crem(icol(a), J)) = (crem(icol(a), J)) ⊔ csel(icol(a), J) = icol(a)$.
+*/
+
+As in Lua @ierusalimschy-06-lua (which uses tables), we define lists, sequences, and streams in 
+terms of indexed families, allowing us to re-use definitions and operations. In particular,
+
+#definition(name: "Sequence, List, Stream")[
+  A _sequence_ $icol(a) = [a_i | i ∈ I]$ is an indexed family $(a_i | i ∈ I)$ where
+  - $I = fin(n)$ for some $n ∈ ℕ$, in which case we call $icol(a)$ a _list_ or _$n$-tuple_, or
+  - $I = ℕ$ , in which case we call $icol(a)$ a _stream_
+
+  In general, we will reserve square brackets $[ - ]$ for sequences
+  (rather than general indexed families), writing
+
+  - $lnil := ()$ for the empty list
+  - $[a_0,...,a_(n - 1)]$ for a list of length $n$
+  - $[a_0, a_1, a_2, ...]$ for a stream
+  - _Comprehensions_ $[f(a) | a ∈ icol(a)] := [f(a_i) | i ∈ I]$ for $I = ℕ$ or $I = fin(n)$.
+
+  Note that, following the convention in computer science, our sequences are _zero-indexed_.
+]
+
+The basic operations on lists and sequences can then be given either inductively or functionally
+in terms of indexed families:
+
+- Given an arbitrary sequence $icol(a)$, we can append an element $x$ to the front of $icol(a)$
+  to form a new sequence $x :: icol(a)$ (pronounced "$x$ _cons_ $icol(a)$") as follows:
+  $
+    x :: icol(a)
+    := [λ | 0 => x | i + 1 => icol(a) med i]
+    = [x, a_0, a_1, ...]
+  $
+
+  If $icol(a)$ is in fact finite, we may append an element $x$ to the back,
+  forming a new sequence $icol(a) lsnoc x$ (pronounced "$icol(a)$ _snoc_ $x$") analogously:
+  $
+    icol(a) lsnoc x
+    := [λ i . site(i < |icol(a)|, icol(a) med i, x)]
+    = [a_0, a_1, ..., a_(n - 1), x]
+  $
+
+- We define the _concatenation_ of a list $icol(a)$ to a sequence $icol(b)$,
+  written $icol(a) lcat icol(b)$, by induction on $icol(a)$ as follows:
+  #eqn-set(
+    $lnil lcat icol(b) = icol(b)$,
+    $(x :: icol(a)) lcat icol(b) = x :: (icol(a) lcat icol(b))$
+  )
+
+  For $icol(a)$ of length $n$, we can show by induction that
+  $
+    icol(a) lcat icol(b)
+    = [a_0,...,a_(n - 1),b_0, b_1, ...]
+    = [λ i . site(i < n, a_i, b_(i - n))]
+  $
+
+  In particular, we note that
+  #eqn-set(
+    $lnil lcat icol(a) = icol(a) lcat lnil = icol(a)$,
+    $[a] lcat icol(a) = a :: icol(a)$,
+    $icol(a) lcat [b] = icol(a) lsnoc b$,
+    $icol(a) lcat (icol(b) lcat icol(c)) = (icol(a) lcat icol(b)) lcat icol(c)$
+  )
+
+- We define the _repetition_ of a list $icol(a)$, written $n · icol(a)$, by induction as follows:
+  #eqn-set(
+    $0 · icol(a) = lnil$,
+    $(n + 1) · icol(a) = icol(a) lcat n · icol(a)$
+  )
+
+- We define the _flattening_ of a list of lists $icol(a)$, written $lflat(icol(a))$, 
+  by induction as follows:
+  #eqn-set(
+    $lflat(lnil) := lnil$,
+    $lflat((x :: icol(a))) := x lcat lflat(icol(a))$
+  )
+  We note in particular that
+  #eqn-set(
+    $lflat(icol(a) lsnoc x) = lflat(icol(a)) lcat x$,
+    $lflat(icol(a) lcat icol(b)) = lflat(icol(a)) lcat lflat(icol(b))$
+  )
+
+Given a family of sets $icol(A) = (A_i | i ∈ I)$, we define their _product_ $Π icol(A)$ and
+_coproduct_ $Σ icol(A)$ as follows:
+#eqn-set(
+  $Π icol(A) := {icol(a) := (a_i | i ∈ I) | ∀ i . a_i ∈ A_i}$,
+  $Σ icol(A) := {(i, a) | i ∈ I, a ∈ A_i}$
+)
+These are equipped with the usual projection and injection functions
+#eqn-set(
+  $π_i : Π icol(A) -> A_i := λ icol(a) . a_i$,
+  $ι_i : A_i -> Σ icol(A) := λ a . (i, a)$
+)
+
+We will transparently identify binary products and coproducts $A × B$, $A + B$ with the 
+product and coproduct of $(kwl ↦ A, kwr ↦ B)$, respectively.
+
+We note the existence of canonical isomorphisms
+- $(A × B) × C ≈ A × (B × C)$ and $(A + B) + C ≈ A + (B + C)$ (the _associators_)
+- $A × tunit ≈ tunit × A ≈ A$ and $A + tzero ≈ tzero + A ≈ A$ (the _unitors_), 
+  where we define $tunit := Π() = {()}$ and $tzero := Σ() = ∅$
+- $Π (icol(A) lcat icol(B)) ≈ Π icol(A) × Π icol(B)$ and 
+  $Σ (icol(A) lcat icol(B)) ≈ Σ icol(A) + Σ icol(B)$
+- $Π (i ↦ A) ≈ A$ and $Σ (i ↦ A) ≈ A$ for singleton index sets
+
+In general, we write $α^×$ for arbitrary compositions of these isomorphisms for products, 
+and likewise $α^+$ for coproducts.
+This is unambiguous, since any two such composites define the same canonical isomorphism.
+
+We can extend the product and coproduct to _families_ of functions 
+$icol(f) = (f_i : A_i -> B_i | i ∈ I)$ pointwise:
+#eqn-set(
+  $Π icol(f) : Π icol(A) -> Π icol(B) := λ icol(a). (f_i med a_i | i ∈ I)$,
+  $Σ icol(f) : Σ icol(A) -> Σ icol(B) := λ (i, a) . (i, f_i med a)$
+)
+In particular, this yields the usual
+$f × g : A_kwl × A_kwr → B_kwl × B_kwr$ and 
+$f + g : A_kwl + A_kwr → B_kwl + B_kwr$.
+
+As a notational convenience, we will write $A × f := id_A × f$, $f × A := f × id_A$.
+
+We may likewise
+- Given a family of functions $icol(f) := (f_i : A -> B_i)$, define the product _constructor_
+  $
+    ⟨icol(f)⟩ : A → Π icol(B) := λ a . (f_i med a | i ∈ I)
+  $
+- Given a family of functions $icol(f) := (f_i : A_i -> B)$, define the coproduct _eliminator_
+  $
+    [icol(f)] : Σ icol(A) → B := λ (i, a) . f_i med a
+  $
+
+As a notational convenience, we will often write:
+- $⟨f_i | i ∈ I⟩$ to mean $⟨(f_i | i ∈ I)⟩$
+- $⟨f_0,...,f_(n - 1)⟩$ to mean $⟨[f_0,...,f_(n - 1)]⟩$ or, in the case of $n = 1$, 
+  $⟨(kwl ↦ f_0, kwr ↦ f_1)⟩$
+
+and likewise for products.
+
+#definition(name: "Reindexing")[
+  Given families $icol(a) = (a_i | i ∈ I)$, $icol(b) = (b_j | j ∈ J)$,
+  we define the _reindexings_ from $icol(b)$ into $icol(a)$:
+  $
+    hfam(icol(a), icol(b)) := { ρ : J → I | ∀ j ∈ J . a_(ρ med j) = b_j }
+  $
+  We note that
+  - We always have $id_cix(icol(a)) : hfam(icol(a), icol(a))$
+
+  - If $ρ_1 : hfam(icol(a), icol(b))$ and $ρ_2 : hfam(icol(b), icol(c))$,
+    then $ρ_1 ∘ ρ_2 : hfam(icol(a), icol(c))$ (_not_ $ρ_1 ; ρ_2$, which is $ρ_2 ∘ ρ_1$!)
+
+    For clarity, we will write this as $ρ_1 famcomp ρ_2$ to emphasize that $ρ_1$ is a reindexing.
+  
+  In particular, this makes the reindexings into a _category_ with objects indexed families and 
+  morphisms reindexings. 
+]
+
+Given families of sets $icol(A), icol(B)$, a reindexing $ρ: hfam(icol(A), icol(B))$ induces maps
+#eqn-set(
+  $ρ^* : Π icol(A) -> Π icol(B) := λ icol(a), (a_(ρ med j) | j ∈ J)$,
+  $ρ_* : Σ icol(B) -> Σ icol(A) := λ (j, b) . (ρ med j, b)$
+)
+
+These operations are functorial:
+#eqn-set(
+  $id_(cix(icol(A)))^* = id_(Π icol(A))$,
+  $id_(cix(icol(A))*) = id_(Σ icol(A))$,
+  $(ρ_1 famcomp ρ_2)^* = ρ_1^* ; ρ_2^*$,
+  $(ρ_1 famcomp ρ_2)_* = ρ_(2*) ; ρ_(1*)$,
+)
+
+#definition(name: "Thinning, Permutation")[
+  An injective reindexing is called a _thinning_,
+  while a bijective reindexing is called a _permutation_.
+  We denote the sets of such reindexings as
+  $
+    hthin(icol(a), icol(b)) & := { ρ ∈ hfam(icol(a), icol(b)) | ρ "is injective" } \
+    hperm(icol(a), icol(b)) & := { ρ ∈ hthin(icol(a), icol(b)) | ρ "is bijective" } \
+  $
+]
+
+Thinnings model dropping indices, while permutations model reordering. In particular,
+
+- If $ρ : hthin(icol(A), icol(B))$, $ρ^*$ is surjective and $ρ_*$ is injective
+- If $ρ : hperm(icol(A), icol(B))$, both $ρ^*$ and $ρ_*$ are isomorphisms
+
+Both these subsets contain the identity reindexing and are closed under (reverse) composition
+(i.e., are wide subcategories of the category of reindexings).
+Furthermore, the set of permutations is closed under inverses (which always exist):
+$
+  ∀ ρ ∈ hperm(icol(a), icol(b)), ρ^(-1) ∈ hperm(icol(b), icol(a))
+$
+That is, the permutations are in fact a _groupoid_.
+
 = Cofinite Quantification
 
 #definition(name: "Cofinite Quantifiers")[
@@ -371,7 +436,7 @@ a meet "at negative infinity." To do so, we introduce the following definition:
     $,
     $
       ecof x ∈ X . φ <==> { x ∈ X | φ } "infinite"
-    $
+    $,
   )
 
   When clear from context, we omit the set $X$ being quantified over, writing simply
@@ -380,9 +445,9 @@ a meet "at negative infinity." To do so, we introduce the following definition:
   If $ucof x . φ$, we say $φ$ _holds cofinitely_ or _holds modulo a finite set_.
 
   In particular,
-  - $f, g : A -> B$ are _finitely different_ or _cofinitely equal_, written $f fdiff g$, 
+  - $f, g : A -> B$ are _finitely different_ or _cofinitely equal_, written $f fdiff g$,
     if $ucof a . f med a = g med a$
-  - $f : A -> B$ is _cofinitely constant_ or _constant modulo a finite set_ if 
+  - $f : A -> B$ is _cofinitely constant_ or _constant modulo a finite set_ if
     it is finitely different from a constant function, i.e.
     $∃ b . ucof a . f med a = b$
 ]
@@ -439,6 +504,125 @@ $
 #todo[What we write and what we mean]
 
 */
+
+= Relational Algebra
+
+#definition(name: "Relation")[
+  We define a _relation_ between $A$ and $B$, written $R : A rfn B$, to be a function
+  $A -> cal(P)(B)$ from $A$ to sets of $B$.
+
+  Noting the isomorphism betweeen $A -> cal(P)(B)$ and sets of related pairs $S ⊆ A × B$,
+  we define
+  $
+    (a, b) ∈ R <==> brel(R, a, b) <==> a ∈ stor(R)
+  $
+  To be maximally explicit, we write $stor(S) : A rfn B$ to mean the coercion of set of pairs
+  $S ⊆ A × B$ to a relation $A rfn B$; in the reverse direction, we will implicitly coerce relations
+  to sets of pairs. In particular, basic operations on sets lift to relations in the usual manner:
+  $
+    R ⊆ S := & ∀ (a, b) ∈ R . (a, b) ∈ S \
+    R ∪ S := & stor({(a, b) | (a, b) ∈ R ∨ (a, b) ∈ S}) \
+    R ∩ S := & stor({(a, b) | (a, b) ∈ R ∧ (a, b) ∈ S})
+  $
+
+  We define:
+  - The _identity relation_ $id_A : A rfn A := stor({(a, a) | a ∈ A})$
+
+  - The _composition_ of relations $R : A rfn B$, $S : B rfn C$ as
+    $
+      R ; S : A rfn C
+      := & (λ a : A. scripts(⋃)_(b ∈ R(a)) S(b)) \
+       = & stor({(a, c) | ∃ b ∈ B . (a, b) ∈ R ∧ (b, c) ∈ S})
+    $
+
+  This equips relations with the structure of a (concrete) _category_, 
+  with objects sets and morphisms relations.
+  
+  - The _transpose_ of a relation $R : A rfn B$ to be
+    $R^† : B rfn A := stor({(b, a) | (a, b) ∈ R})$
+]
+
+We note that the transpose acts as a _contravariant involutive functor_:
+#eqn-set(
+  $id_A^† = id_A$,
+  $(f ; g)^† = g^† ; f^†$,
+  $(R^†)^† = R$
+)
+
+#definition(name: "Graph")[
+  Given a (partial) function $f : A pfn B$, we define
+
+  - It's _graph_ $f_* : A rfn B := stor({(a, f med a) | a ∈ A})$. 
+  
+    This is a _(covariant) functor_: $(id_A)_* = id_A$ and $(f ; g)_* = f_* ; g_*$.
+
+  - It's _transpose_ $f^* : B rfn A := stor({(f med a, a) | a ∈ A}) = f_*^†$
+
+    This is a _contravariant functor_: $(id_A)^* = id_A$ and $(f ; g)^* = g^* ; f^*$
+]
+
+If $f$ is an injection, and so has a (partial) inverse, we note that 
+$(f^(-1))_* = f^*$ and $(f^(-1))^* = f_*$.
+
+#definition(name: "Family of relations")[
+  Given families of sets 
+  $icol(A) = (A_i | i ∈ I)$,
+  $icol(B) = (B_i | i ∈ I)$,
+  we define a _family of relations_ $icol(R) : icol(A) rfn icol(B)$ to be a family
+  $icol(R) = (R_i : A_i rfn B_i | i ∈ I)$.
+
+  We generalize the definition of the identity, composition, and transpose of relations pointwise:
+  #eqn-set(
+    $id_(icol(A)) := (id_(A_i) | i ∈ I)$,
+    $icol(R) ; icol(S) := (R_i ; S_i | i ∈ I)$,
+    $icol(R)^† := (R_i^† | i ∈ I)$
+  )
+
+  We can likewise define the graph and transpose of a family of functions 
+  $icol(f): icol(A) -> icol(B)$ pointwise:
+  #eqn-set(
+    $icol(f)_* = ((f_i)_* | i ∈ I)$,
+    $icol(f)^* = ((f_i)^* | i ∈ I)$
+  )
+]
+
+#definition(name: "Tensor product of relations")[
+  Given a family of relations $icol(R) : icol(A) rfn icol(B)$, we define its _tensor product_
+  pointwise as follows
+  $
+    tcol icol(R) : Π icol(A) rfn Π icol(B) 
+      := stor({(icol(a), icol(b)) | ∀ i . brel(R_i, a_i, b_i)})
+  $
+
+  This readily specializes to the binary tensor product of relations 
+  $R : A_kwl rfn B_kwl$, $S : A_kwr rfn B_kwr$:
+  $
+    R ⊗ S : A_kwl × A_kwr rfn B_kwl × B_kwr
+      := stor({((a_kwl, a_kwr), (b_kwl, b_kwr)) | brel(R, a_kwl, b_kwl) ∧ brel(S, a_kwr, b_kwr)})
+  $
+]
+
+As a syntactic convenience 
+(and for consistency with our later notation of premonoidal categories), 
+we will define notation 
+- $A ⊗ R := id_A ⊗ R$ and $R ⊗ A := R ⊗ id_A$ for sets $A$.
+- Associator isomorphisms $α^⊗ := α^×_*$
+
+We note that the tensor product is also functorial and transpose-preserving:
+#eqn-set(
+  $tcol id_icol(A) = id_(Π icol(A))$,
+  $tcol (icol(R) ; icol(S)) = tcol icol(R) ; tcol icol(S)$,
+  $tcol icol(R)^† = (tcol icol(R))^†$
+)
+and, in particular,
+#eqn-set(
+  $id_A ⊗ id_B = id_(A × B)$,
+  $(R_kwl ⊗ R_kwr) ; (S_kwl ⊗ S_kwr) = (R_kwl ; R_kwl) ⊗ (S_kwl ; S_kwr)$
+)
+implying that _sliding_ holds:
+$
+  R ⊗ A_kwr ; B_kwl ⊗ S = A_kwl ⊗ S ; R ⊗ B_kwr
+$
 
 #context if (thesis-state.get)().is-standalone {
   the-bibliography
