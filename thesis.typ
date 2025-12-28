@@ -823,7 +823,9 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
   #include "content/background/conventions.typ"
 ]
 
-= Type Theory <ssa-type>
+= Type-Theoretic SSA <ssa-type>
+
+The goal of this section
 
 == Typing Rules
 
@@ -831,7 +833,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 #import "content/rules/types.typ": *
 
-#todo[introduce types]
+#todo[introduce _cartesian_ types]
 
 #fig-ty-grammar
 
@@ -839,15 +841,19 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 #fig-r-twk
 
+#todo[$sle(ms("X"))$ is always a near-prelattice]
+
 #lemma[
-  If $sle(ms("X"))$ is a partial order, so is $tyle(ms("X"))$
+  If $sle(ms("X"))$ is a near-lattice, so is $tyle(ms("X"))$
 ]
 
+/*
 #todo[Has joins when $ms("X")$ has _bounded_ joins]
 
 #todo[Has meets when $ms("X")$ has _bounded_ meets]
 
 #fig-ty-lattice
+*/
 
 #todo[Grammar for (label) contexts]
 
@@ -1037,46 +1043,7 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 #fig-r-eq-congr-hasty
 
-=== Linearity
-
-#todo[introduce the concept of a _quantity_; view it as an extension of a type]
-
-#todo[
-  introduce the concept of a _linearity system_ $ms("U")$: 
-  assigns lattice quantities to base types _and that's it_.
-]
-
-#fig-r-utywk
-
-#fig-r-uctxwk
-
-#fig-r-q-hasty
-
-=== Refinement
-
-#todo[
-  introduce the concept of a _linear effect system_ $cal(E)$
-]
-
-#todo[introduce the concept of a _refinement theory_ $ms("R")$]
-
-#todo[
-  note: we don't track effects of duplication/deletion because that would be hard;
-  cool for RC but not for us
-]
-
-#todo[introduce _directed $β$-rule_]
-
-#todo[introduce _directed uniformity_]
-
-#figure(
-  [
-    #todo[this] \
-  ],
-  caption: [Refinement rules for #iter-calc()],
-)
-
-#fig-r-ref-congr-hasty
+#todo[refinement goes here]
 
 == Regions
 
@@ -1110,46 +1077,53 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
   caption: [Effect rules for #gssa-calc()],
 )
 
-=== Linearity
+#todo[refinement goes here]
 
-#todo[likewise, linearity is the same...]
+= Substructural SSA
 
-#todo[except that we need to track usage information across labels...]
-
-#todo[
-  which means tracking usage/type information across labels too;
-  so we need an _extended label context_
-]
+== Substructural Types
 
 #todo[
-  this gets a judgement which is irritating, but routine;
-  it's just pointwise weakening.
-
-  Can allow synthesis across branches due to locally nameless lore.
+  two components:
+  - _quantities_ in contexts
+  - substructural types themselves
 ]
 
-#figure(
-  [
-    #todo[this]
-  ],
-  caption: [Linearity rules for #gssa-calc()],
-)
+#todo[definition]
 
-=== Refinement
+#todo[affinity rules]
 
-#figure(
-  [
-    #todo[this]
-  ],
-  caption: [Refinement rules for #gssa-calc()],
-)
+#todo[weakening rules]
 
-#figure(
-  [
-    #todo[this]
-  ],
-  caption: [Congruence rules for #gssa-calc() refinement],
-)
+#todo[splitting rules]
+
+#todo[
+  - split vs. splat : consider $tysplits(tzero, tunit, tunit)$
+]
+
+#todo[lattice structure 2]
+
+== Expressions
+
+#todo[typing + effect rules]
+
+#todo[weakening]
+
+#todo[linear substitution]
+
+#todo[refinement calculus]
+
+== Regions
+
+#todo[typing + effect rules]
+
+#todo[weakening]
+
+#todo[substitution]
+
+#todo[label substitution]
+
+#todo[refinement calculus]
 
 = Basic (Enriched) Category Theory
 

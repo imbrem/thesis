@@ -271,6 +271,7 @@
 #let pfn = $harpoon$
 #let rfn = $arrow.r.struck$
 
+#let urel(R, a) = $#a #R$
 #let brel(R, a, b) = $#a class("binary", #R) #b$
 
 #let stor(R) = $⟨#R⟩$
@@ -466,8 +467,13 @@
 #let ulbcwk(U, L, M) = $#L scripts(≤)_#U #M$
 #let uclbwk(U, K, M) = $#K scripts(≤)_#U #M$
 
-#let tysplits(U, A, B, C) = $#A scripts(=>)_#U #B ⊗ #C$
-#let usplits(U, Γ, Δ, Ξ) = $#Γ scripts(=>)_#U #Δ ⊗ #Ξ$
+#let affm = $ms("aff")$
+#let splitr = $scripts(=>)$
+
+#let tysplits(A, B, C) = $#A splitr #B ⊗ #C$
+
+#let utysplits(U, A, B, C) = $#A splitr(=>)_#U #B ⊗ #C$
+#let usplits(U, Γ, Δ, Ξ) = $#Γ splitr(=>)_#U #Δ ⊗ #Ξ$
 
 #let uisfn(Γ, U, f, A, B) = $#Γ scripts(⊢)_#U #f : #A → #B$
 #let uhasty(Γ, U, a, A) = $#Γ scripts(⊢)_#U #a : #A$

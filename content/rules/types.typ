@@ -1,5 +1,13 @@
 #import "../../syntax.typ": *
 
+#show: show-syntax
+
+#let def-sub-ty-sys = definition(name: "Cartesian Type System")[
+  We define a _cartesian type system_ $ms("X")$ to consist of:
+  - A set of _base types_ $ms("X")$
+  - A near-prelattice $(sle()) : ms("X") rfn ms("X")$ on base types, _weakening_
+]
+
 #let fig-ty-grammar = figure(
   [
     #grid(
@@ -86,6 +94,7 @@
 
 #fig-r-twk
 
+/*
 #let fig-ty-lattice = figure(
   [
     $
@@ -146,6 +155,7 @@
 );
 
 #fig-ty-lattice
+*/
 
 #let r-ctxwk-nil = rule(
   name: "Π-nil",
@@ -193,10 +203,40 @@
     )
     \
   ],
-  caption: [Weakening for contexts],
+  caption: [Weakening for cartesian contexts],
 )
 
 #fig-r-cwk
+
+#let def-sub-ty-sys = definition(name: "Type System")[
+  We define a _type system_ $ms("X")$ to consist of:
+  - A set of _base types_ $ms("X")$
+  - A set of _affine_ base types $affm : ms("X") rfn tunit$
+  - A near-prelattice $(sle()) : ms("X") rfn ms("X")$ on base types, _weakening_
+  - A _splitting_ relation $(splitr) : ms("X") rfn ms("X") × ms("X")$
+  such that
+  - Splitting $(splitr)$ is coassociative and cocommutative, i.e.
+    $tysplits(X, Y, Z) <==> tysplits(X, Z, Y)$ and
+    $
+    (∃ X_(12) . tysplits(X_(123), X_(12), X_3) ∧ tysplits(X_(12), X_1, X_2))
+    <==>
+    (∃ X_(23) . tysplits(X_(123), X_1, X_(23)) ∧ tysplits(X_(23), X_2, X_3))
+    $
+  - If $tysplits(X, Y, Z)$ and $urel(affm, Z)$, then $tywk(X, Y)$ 
+    ("affine components can be discarded")
+
+  We say a base type $X$ is _relevant_ if $tysplits(X, X, X)$.
+
+  We say a type system $ms("X")$ is _relevant_ if every type $X ∈ ms("X")$ is relevant;
+  likewise, $ms("X")$ is _affine_ if every $X ∈ ms("X")$ is affine.
+  If $ms("X")$ both affine and relevant, we say it is _cartesian_;
+  in this case, we can recover all our structure from the weakening relation alone, since 
+  $
+  tysplits(X, Y, Z) <==> tywk(X, Y) ∧ tywk(X, Z)
+  $
+]
+
+#def-sub-ty-sys
 
 #let fig-quant-lattice = figure(
   [
@@ -321,22 +361,22 @@
 
 #let r-ty-split-left = rule(
   name: "left",
-  $tysplits(ms("U"), A, 1, A)$,
+  $utysplits(ms("U"), A, 1, A)$,
 )
 #let r-ty-split-right = rule(
   name: "right",
-  $tysplits(ms("U"), A, A, 1)$,
+  $utysplits(ms("U"), A, A, 1)$,
 )
 #let r-ty-split-both = rule(
   name: "both",
   $isrel(ms("U"), A)$,
-  $tysplits(ms("U"), A, A, A)$,
+  $utysplits(ms("U"), A, A, A)$,
 )
 #let r-ty-split-pi = rule(
   name: "Π",
-  $tysplits(ms("U"), Π lb("T"), Π lb("T")_kwl, Π lb("T")_kwr)$,
-  $tysplits(ms("U"), A, A_kwl, A_kwr)$,
-  $tysplits(
+  $utysplits(ms("U"), Π lb("T"), Π lb("T")_kwl, Π lb("T")_kwr)$,
+  $utysplits(ms("U"), A, A_kwl, A_kwr)$,
+  $utysplits(
     ms("U"),
     Π (lb("T"), fty(lb("f"), A)),
     (lb("T")_kwl, fty(lb("f"), A_kwl)), (lb("T")_kwr, fty(lb("f"), A_kwr))
@@ -431,7 +471,7 @@
 #let r-ctx-split = rule(
   name: "both",
   $usplits(ms("U"), Γ, Γ_kwl, Γ_kwr)$,
-  $tysplits(ms("U"), A, A_kwl, A_kwr)$,
+  $utysplits(ms("U"), A, A_kwl, A_kwr)$,
   $q = q_kwl + q_kwr$,
   $usplits(ms("U"), #$Γ, x : A^q$, #$Γ_kwl, x : A_kwl^(q_kwl)$, #$Γ_kwr, x : A_kwr^(q_kwr)$)$,
 )
