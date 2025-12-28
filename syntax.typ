@@ -257,6 +257,10 @@
 #let sfam(A) = $bold(upright(#A))$
 #let pset(X) = $cal(P)(X)$
 
+#let sffam(A) = $A^ms("fin")$
+
+#let famle = $⊑$
+
 #let fmark = $ms("fin")$
 #let fset(X) = $cal(P)_fmark(X)$
 #let fdiff = $op(scripts(=)_fmark)$
@@ -275,6 +279,21 @@
 #let tcol = $class("normal", ⊗)$
 
 #let lflat(a) = $μ #a$
+#let listof(A) = $#A^*$
+
+#let grof(f) = $ms("gr")(#f)$
+
+#let wbaglift(R, S) = $#R^ms("bag")_#S$
+#let baglift(R) = $#R^ms("bag")$
+
+#let dropm = $class("normal", !)$
+
+#let foldn(R, n) = $ms("fold")_#n med #R$
+#let fold(R) = $ms("fold") med #R$
+#let cofoldn(R, n) = $ms("cofold")_#n med #R$
+#let cofold(R) = $ms("cofold") med #R$
+#let lfoldn(R, n) = $#R^([#n])$
+#let lfold(R) = $#R^([*])$
 
 // Categories
 #let cset = $ms("Set")$

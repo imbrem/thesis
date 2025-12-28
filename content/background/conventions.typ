@@ -183,6 +183,10 @@ _($I$-indexed) family_ @nlab:family $icol(a) := (a_i | i ∈ I)$, consisting of
 
 Families are considered equal when they have the same index set and agree pointwise.
 
+We write $A^I$ for the set of indexed families with index set $I$ and elements of type $A$.
+We say $icol(a) ∈ A^I$ is _finite_ if $I$ is finite; 
+we write the set of finite families of $A$ as $sffam(A)$.
+
 We will often write an indexed family as $(i ↦ a_i)_(i ∈ I)$ or $(a_i)_(i ∈ I)$,
 or even $(i_1 ↦ a_(i_1),...,i_n ↦ a_(i_n))$ for $I = {i_1,...,i_n}$ finite.
 In general, we will omit $I$ when clear from context.
@@ -201,8 +205,8 @@ We note that $ovrd$ is a monoid with identity $()$ -- i.e.
 $() ovrd icol(a) = icol(a) ovrd () = icol(a)$ and
 $icol(a) ovrd (icol(b) ovrd icol(c)) = (icol(a) ovrd icol(b)) ovrd icol(c)$
 
-We say $icol(a)$ is a _subfamily_ of $icol(b)$, written $icol(a) ⊆ icol(b)$, if
-$cix(icol(a)) ⊆ cix(icol(b))$
+We say $icol(a)$ is a _subfamily_ of $icol(b)$, written $icol(a) famle icol(b)$, if
+$cix(icol(a)) famle cix(icol(b))$
 and
 $∀ i ∈ cix(icol(a)), a_i = b_i$;
 this induces an upper meet-semilattice on families, with 
@@ -236,6 +240,13 @@ terms of indexed families, allowing us to re-use definitions and operations. In 
   A _sequence_ $icol(a) = [a_i | i ∈ I]$ is an indexed family $(a_i | i ∈ I)$ where
   - $I = fin(n)$ for some $n ∈ ℕ$, in which case we call $icol(a)$ a _list_ or _$n$-tuple_, or
   - $I = ℕ$ , in which case we call $icol(a)$ a _stream_
+
+  We write: 
+  - the set of lists of length $n$ as $A^n$
+  - the set of all lists as $A^* := ⋃_(n ∈ ℕ) A^n$; 
+    the set of nonempty lists as $A^+ := ⋃_(n ≥ 1) A^n$
+  - the set of streams as $A^ω$
+    ; the set of sequences as $A^(≤ω) := A^ω ∪ A^*$
 
   In general, we will reserve square brackets $[ - ]$ for sequences
   (rather than general indexed families), writing
@@ -307,6 +318,8 @@ in terms of indexed families:
     $lflat(icol(a) lcat icol(b)) = lflat(icol(a)) lcat lflat(icol(b))$
   )
 
+= Products, Coproducts, and Reindexing
+
 Given a family of sets $icol(A) = (A_i | i ∈ I)$, we define their _product_ $Π icol(A)$ and
 _coproduct_ $Σ icol(A)$ as follows:
 #eqn-set(
@@ -333,6 +346,17 @@ We note the existence of canonical isomorphisms
 In general, we write $α^×$ for arbitrary compositions of these isomorphisms for products, 
 and likewise $α^+$ for coproducts.
 This is unambiguous, since any two such composites define the same canonical isomorphism.
+
+Similarly, we have canonical isomorphisms
+- $σ^× : A × B ≈ B × A$, $σ^+ : A + B ≈ B + A$ (the _symmetry_)
+- $δ_kwl : Σ (A × icol(B)) ≈ A × Σ icol(B)$,
+  $δ_kwr : Σ (icol(A) × B) ≈ Σ icol(A) × B$ (the _distributors_)
+where
+#eqn-set(
+  $A × (B_i | i ∈ I) := (i ↦ A × B_i | i ∈ I)$,
+  $(A_i | i ∈ I) × B := (i ↦ A_i × B | i ∈ I)$
+)
+are defined pointwise.
 
 We can extend the product and coproduct to _families_ of functions 
 $icol(f) = (f_i : A_i -> B_i | i ∈ I)$ pointwise:
@@ -417,6 +441,293 @@ $
   ∀ ρ ∈ hperm(icol(a), icol(b)), ρ^(-1) ∈ hperm(icol(b), icol(a))
 $
 That is, the permutations are in fact a _groupoid_.
+
+Given indexed families $icol(A)$, $icol(B)$, we say $icol(A) ⊆ icol(B)$ if
+$
+  ∃ icol(A)' . hperm(icol(A), icol(A)') ≠ ∅ ∧ icol(A)' famle icol(B)
+$
+We say two families are _equivalent_, written $icol(A) ≈ icol(B)$, if
+$
+  icol(A) ≈ icol(B) <==> icol(A) ⊆ icol(B) ∧ icol(B) ⊆ icol(A) <==> hperm(icol(A), icol(B)) ≠ ∅
+$
+
+/*
+#definition(name: "Multiset, Bag")[
+  We define a _multiset_ $A$ to be an indexed family quotiented by permutations; 
+  i.e., an equivalence class of indexed families. 
+  #footnote[
+    Note this differs slightly from the standard definition, in that the same element may appear
+    (uncountably) infinitely many times; e.g. 0 in the multiset $(t ↦ 0 | t ∈ ℝ)$.
+  ]
+  We call a finite multiset a _bag_.
+
+  We will identify the set of bags having elements of type $A$ with $ℕ^((A))$: 
+  the finitely supported functions from $A$ to $ℕ$.
+]
+*/
+
+= Relational Algebra
+
+#definition(name: "Relation")[
+  We define a _relation_ between $A$ and $B$, written $R : A rfn B$, to be a function
+  $A -> cal(P)(B)$ from $A$ to sets of $B$.
+
+  Noting the isomorphism betweeen $A -> cal(P)(B)$ and sets of related pairs $S ⊆ A × B$,
+  we define
+  $
+    (a, b) ∈ R <==> brel(R, a, b) <==> a ∈ stor(R)
+  $
+  To be maximally explicit, we write $stor(S) : A rfn B$ to mean the coercion of set of pairs
+  $S ⊆ A × B$ to a relation $A rfn B$; in the reverse direction, we will implicitly coerce relations
+  to sets of pairs. In particular, basic operations on sets lift to relations in the usual manner:
+  $
+    R ⊆ S := & ∀ (a, b) ∈ R . (a, b) ∈ S \
+    R ∪ S := & stor({(a, b) | (a, b) ∈ R ∨ (a, b) ∈ S}) \
+    R ∩ S := & stor({(a, b) | (a, b) ∈ R ∧ (a, b) ∈ S})
+  $
+
+  We define:
+  - The _identity relation_ $id_A : A rfn A := stor({(a, a) | a ∈ A})$
+
+  - The _composition_ of relations $R : A rfn B$, $S : B rfn C$ as
+    $
+      R ; S : A rfn C
+      := & (λ a : A. scripts(⋃)_(b ∈ R(a)) S(b)) \
+       = & stor({(a, c) | ∃ b ∈ B . (a, b) ∈ R ∧ (b, c) ∈ S})
+    $
+
+  This equips relations with the structure of a (concrete) _category_, 
+  with objects sets and morphisms relations.
+  
+  - The _transpose_ of a relation $R : A rfn B$ to be
+    $R^† : B rfn A := stor({(b, a) | (a, b) ∈ R})$
+]
+
+We note that the transpose acts as a _contravariant involutive functor_:
+#eqn-set(
+  $id_A^† = id_A$,
+  $(f ; g)^† = g^† ; f^†$,
+  $(R^†)^† = R$
+)
+
+#definition(name: "Graph")[
+  Given a (partial) function $f : A pfn B$, 
+  we define its _graph_ 
+  $
+  grof(f) : A rfn B := stor({(a, f med a) | a ∈ A})
+  $ 
+  This is a _(covariant) functor_: $grof(id_A) = id_A$ and $grof(#$f ; g$) = grof(f) ; grof(g)$.
+
+  Where confusion is unlikely, we identify a (partial) function $f$ with its graph $grof(f)$.
+]
+
+If $f$ is an injection, and so has a (partial) inverse, we have
+$grof(f^(-1)) = grof(f)^†$ and $grof(f^(-1))^† = grof(f)$.
+
+#definition(name: "Family of relations")[
+  Given families of sets 
+  $icol(A) = (A_i | i ∈ I)$,
+  $icol(B) = (B_i | i ∈ I)$,
+  we define a _family of relations_ $icol(R) : icol(A) rfn icol(B)$ to be a family
+  $icol(R) = (R_i : A_i rfn B_i | i ∈ I)$.
+
+  We generalize the definition of the identity, composition, and transpose of relations pointwise:
+  #eqn-set(
+    $id_(icol(A)) := (id_(A_i) | i ∈ I)$,
+    $icol(R) ; icol(S) := (R_i ; S_i | i ∈ I)$,
+    $icol(R)^† := (R_i^† | i ∈ I)$
+  )
+
+  We can likewise define the graph of a family of functions 
+  $icol(f): icol(A) -> icol(B)$ pointwise:
+  $
+    grof(icol(f)) = (grof(f_i) | i ∈ I)
+  $
+]
+
+#definition(name: "Tensor product of relations")[
+  Given a family of relations $icol(R) : icol(A) rfn icol(B)$, we define its _tensor product_
+  pointwise as follows
+  $
+    tcol icol(R) : Π icol(A) rfn Π icol(B) 
+      := stor({(icol(a), icol(b)) | ∀ i . brel(R_i, a_i, b_i)})
+  $
+
+  This readily specializes to the binary tensor product of relations 
+  $R : A_kwl rfn B_kwl$, $S : A_kwr rfn B_kwr$:
+  $
+    R ⊗ S : A_kwl × A_kwr rfn B_kwl × B_kwr
+      := stor({((a_kwl, a_kwr), (b_kwl, b_kwr)) | brel(R, a_kwl, b_kwl) ∧ brel(S, a_kwr, b_kwr)})
+  $
+]
+
+We note that the tensor product is also functorial and transpose-preserving:
+#eqn-set(
+  $tcol id_icol(A) = id_(Π icol(A))$,
+  $tcol (icol(R) ; icol(S)) = tcol icol(R) ; tcol icol(S)$,
+  $tcol icol(R)^† = (tcol icol(R))^†$
+)
+and, in particular,
+#eqn-set(
+  $id_A ⊗ id_B = id_(A × B)$,
+  $(R_kwl ⊗ R_kwr) ; (S_kwl ⊗ S_kwr) = (R_kwl ; R_kwl) ⊗ (S_kwl ; S_kwr)$
+)
+
+As a syntactic convenience 
+(and for consistency with our later notation of premonoidal categories), 
+we will define notation 
+- $A ⊗ R := id_A ⊗ R$ and $R ⊗ A := R ⊗ id_A$ for sets $A$.
+- Associator isomorphisms $α^⊗ := α^×_*$
+- Symmetry isomorphism $σ^⊗ := σ^×_*$
+- Distributor isomorphisms $δ^⊗_kwl := δ^×_(kwl*)$, $δ^⊗_kwr := δ^×_(kwr*)$
+
+Where there is no risk of confusion, we will drop the superscript.
+
+We say that a binary operation $m: A × A -> A$ is 
+- _commutative_ if $∀ a, b . m(a, b) = m(b, a)$
+- _associative_ if $∀ a, b, c . m(m(a, b), c) = m(a, m(b, c))$
+
+Written in point-free style, these become 
+- _commutative_: $σ^× ; m = m$
+- _associative_: $m ⊗ A ; m = α^× ; A ⊗ m ; m$
+
+We can directly generalize these definitions to relations: a relation $R : A × A rfn A$ is
+- _commutative_ if $σ^⊗ ; R = R$, or, pointwise,
+  $
+    brel(R, (a, b), c) <==> brel(R, (b, a), c)
+  $
+- _associative_ if $R ⊗ A ; R = α^⊗ ; A ⊗ R ; R$, or, pointwise,
+  $
+    (∃ a_(12) . brel(R, (a_1, a_2), a_(12)) ∧ brel(R, (a_(12), a_3), a_(123))) 
+    <==> 
+    (∃ a_(23) . brel(R, (a_2, a_3), a_(23)) ∧ brel(R, (a_1, a_(23)), a_(123)))
+  $
+
+Transposing these, we say a relation $R : A rfn A × A$ is
+- _cocommutative_ if $R^†$ is commutative -- i.e., $R ; σ^⊗ = R$, or, pointwise,
+  $
+    brel(R, a, (b, c)) <==> brel(R, a, (c, b))
+  $
+- _coassociative_ if $R^†$ is associative -- i.e., $R ; R ⊗ A = R ; A ⊗ R ; α^⊗$, or, pointwise,
+  $
+    (∃ a_(12) . brel(R, a_(123), (a_(12), a_3)) ∧ brel(R, a_(12), (a_1, a_2))) 
+    <==> 
+    (∃ a_(23) . brel(R, a_(123), (a_1, a_(23))) ∧ brel(R, a_(23), (a_2, a_3)))
+  $
+
+#todo[More generally: permutation invariant, coassociative]
+
+/*
+We will make particular use of relations $R : listof(A) rfn B$; such relations are in bijection with
+collections of restrictions $R_n : A^n rfn B$ for each $n ∈ ℕ$ where
+#eqn-set(
+  $brel(R, [a_0,...,a_(n - 1)], b) <==> brel(R_n, [a_0,...,a_(n - 1)], b)$,
+  $R = ⋃_(n ∈ ℕ) R_n$
+)
+Likewise, relations $R : A rfn listof(B)$; such relations are in bijection with
+collections of restrictions $R_n : A rfn B^n$ for each $n ∈ ℕ$ where
+#eqn-set(
+  $brel(R, a, [b_0,...,b_(n - 1)]) <==> brel(R_n, a, [b_0,...,b_(n - 1)])$,
+  $R = ⋃_(n ∈ ℕ) R_n$
+)
+
+Note that, in both cases, since list length is unique, the union is disjoint.
+
+/*
+Given a reindexing $ρ : hfam(icol(A), icol(B))$, recall that we have an induced function
+$ρ^* : Π icol(A) -> Π icol(B)$. We will write the relation $grof(ρ^*) : Π icol(A) rfn Π icol(B)$
+as $ρ^*$.
+*/
+
+We say a relation $R: A^n rfn B$ is _permutation invariant_ if,
+for every permutation $ρ$, we have $ρ^* ; R = R$; $R : A^* rfn B$ is permutation invariant
+if all its restrictions $R_n$ are so.
+
+Dually, we say a relation $R : A rfn B^n$ is _copermutation invariant_ if, 
+for every permutation $ρ$, we have $R ; ρ^* = R$; $R : A rfn B^*$ is copermutation invariant
+if all its restrictions $R_n$ are so.
+
+#todo[introduce notations for the set of finite families of $A$]
+
+#todo[relation on finite families]
+
+#todo[in fact, relation on bags]
+
+Given a relation $R : A × A rfn A$, we define the _list folds_ of $R$ by induction as follows:
+#eqn-set(
+  $foldn(R, 0) := ∅$,
+  $foldn(R, 1) := id_A$,
+  $foldn(R, n + 2) := α^⊗ ; A ⊗ foldn(R, n + 1) ; R$,
+  $fold(R) := ⋃_(n ∈ ℕ)foldn(R, n)$
+)
+Given a relation $R : A rfn A × A$, we define the _list cofolds_ of $R$ by induction as follows:
+#eqn-set(
+  $cofoldn(R, 0) := ∅$,
+  $cofoldn(R, 1) := id_A$,
+  $cofoldn(R, n + 2) := R ; A ⊗ cofoldn(R, n + 1) ; α$,
+  $cofold(R) := ⋃_(n ∈ ℕ)cofoldn(R, n)$
+)
+We introduce lightweight syntax 
+$lfoldn(R, n) := foldn(R, n)$ and $lfold(R) := fold(R)$ for $R : A × A rfn A$ and
+$lfoldn(R, n) := cofoldn(R, n)$, $lfold(R) := cofold(R)$ for $R : A rfn A × A$ where
+there is no risk of confusion.
+
+We note that:
+- If $R$ is (co)commutative and (co)associative, then so are $lfoldn(R, n)$ and $lfold(R)$
+*/
+
+Given a relation $R : A rfn A^ms("fin")$ we define:
+- Its _components_ $R_n : A rfn A^n ⊆ R$ to be its restriction to target $A^n$ for each $n ∈ ℕ$.
+
+  We note in particular that any relation $S : A rfn A^n$, and in particular $R_n$,
+  may be considered a relation $S: A rfn A^ms("fin")$ 
+  by transport along the inclusion $A^n ⊆ A^ms("fin")$.
+
+- Its _bag lifting_ $baglift(R) : A rfn A^ms("fin")$ to be the least relation closed under the 
+  following rules: 
+  $
+    #rule-set(
+    prooftree(rule(name: "base", $brel(R, a, icol(a))$, $brel(baglift(R), a, icol(a))$)),
+    prooftree(rule(name: "unit", $brel(baglift(R), a, (i ↦ a))$)),
+    prooftree(rule(name: "split", 
+      $brel(baglift(R), a, (b_i | i ∈ I))$, 
+      $∀ i . brel(baglift(R), b_i, icol(c)_i)$,
+      $∀ i, j . cix(icol(c)_i) ∩ cix(icol(c)_j) = ∅$,
+      $brel(baglift(R), a, (⨆_(i ∈ I) icol(c)_i))$
+    )),
+    )
+  $
+
+We note that:
+- $R ⊆ baglift(R) = baglift((baglift(R)))$; $R ⊆ S ==> baglift(R) ⊆ baglift(S)$
+- If $R : A rfn A × A$ is cocommutative and coassociative, then $baglift(R)_2 = R$
+
+In general, we call a relation $R : A rfn A^ms("fin")$ _Segal_ if there exists $S : A rfn A × A$ 
+s.t. $R = baglift(S)$; in which case $S = R_2$.
+
+#definition(name: "Diagonal, codiagonal, discard")[
+  Given a set $A$, we define 
+  - the _discard relation_
+    $dropm_A : A rfn tunit := ⟨{(a, ()) | a ∈ A}⟩$
+  - the _diagonal relation_ 
+    $Δ^(⊗I)_A : A rfn A^I := ⟨{(a, (i ↦ a | i ∈ I)) | a ∈ A}⟩$
+  - the _codiagonal relation_ 
+    $∇^(⊗I)_A : A^I rfn A := (Δ^⊗_(I, A))^† = ⟨{((i ↦ a | i ∈ I), a) | a ∈ A}⟩$
+
+  Where there is no risk of confusion, we will drop the subscript $A$. 
+  
+  Likewise, we will often drop the index set annotation $I$, 
+  and, when it is not implied by the context, assume $I = {kwl, kwr}$ by default, 
+  i.e., the usual binary diagonal and codiagonal relations.
+]
+
+We note in particular that:
+- $Δ^⊗$ is coassociative and cocommutative, and has _unit_ $dropm$:
+  $Δ^⊗ ; ! ⊗ A = id ; α^⊗$
+- $Δ^(⊗ ms("fin")) := ⋃_(|I| < ω)Δ^(⊗ I)$ and $Δ^(⊗ ms("fin")+) := ⋃_(1 ≤ |I| < ω)Δ^(⊗ I)$
+  are Segal,
+  with $baglift((Δ^⊗ ∪ dropm)) = Δ^(⊗ ms("fin"))$, and $baglift((Δ^⊗)) = Δ^(⊗ ms("fin")+)$
+  respectively.
 
 = Cofinite Quantification
 
@@ -504,125 +815,6 @@ $
 #todo[What we write and what we mean]
 
 */
-
-= Relational Algebra
-
-#definition(name: "Relation")[
-  We define a _relation_ between $A$ and $B$, written $R : A rfn B$, to be a function
-  $A -> cal(P)(B)$ from $A$ to sets of $B$.
-
-  Noting the isomorphism betweeen $A -> cal(P)(B)$ and sets of related pairs $S ⊆ A × B$,
-  we define
-  $
-    (a, b) ∈ R <==> brel(R, a, b) <==> a ∈ stor(R)
-  $
-  To be maximally explicit, we write $stor(S) : A rfn B$ to mean the coercion of set of pairs
-  $S ⊆ A × B$ to a relation $A rfn B$; in the reverse direction, we will implicitly coerce relations
-  to sets of pairs. In particular, basic operations on sets lift to relations in the usual manner:
-  $
-    R ⊆ S := & ∀ (a, b) ∈ R . (a, b) ∈ S \
-    R ∪ S := & stor({(a, b) | (a, b) ∈ R ∨ (a, b) ∈ S}) \
-    R ∩ S := & stor({(a, b) | (a, b) ∈ R ∧ (a, b) ∈ S})
-  $
-
-  We define:
-  - The _identity relation_ $id_A : A rfn A := stor({(a, a) | a ∈ A})$
-
-  - The _composition_ of relations $R : A rfn B$, $S : B rfn C$ as
-    $
-      R ; S : A rfn C
-      := & (λ a : A. scripts(⋃)_(b ∈ R(a)) S(b)) \
-       = & stor({(a, c) | ∃ b ∈ B . (a, b) ∈ R ∧ (b, c) ∈ S})
-    $
-
-  This equips relations with the structure of a (concrete) _category_, 
-  with objects sets and morphisms relations.
-  
-  - The _transpose_ of a relation $R : A rfn B$ to be
-    $R^† : B rfn A := stor({(b, a) | (a, b) ∈ R})$
-]
-
-We note that the transpose acts as a _contravariant involutive functor_:
-#eqn-set(
-  $id_A^† = id_A$,
-  $(f ; g)^† = g^† ; f^†$,
-  $(R^†)^† = R$
-)
-
-#definition(name: "Graph")[
-  Given a (partial) function $f : A pfn B$, we define
-
-  - It's _graph_ $f_* : A rfn B := stor({(a, f med a) | a ∈ A})$. 
-  
-    This is a _(covariant) functor_: $(id_A)_* = id_A$ and $(f ; g)_* = f_* ; g_*$.
-
-  - It's _transpose_ $f^* : B rfn A := stor({(f med a, a) | a ∈ A}) = f_*^†$
-
-    This is a _contravariant functor_: $(id_A)^* = id_A$ and $(f ; g)^* = g^* ; f^*$
-]
-
-If $f$ is an injection, and so has a (partial) inverse, we note that 
-$(f^(-1))_* = f^*$ and $(f^(-1))^* = f_*$.
-
-#definition(name: "Family of relations")[
-  Given families of sets 
-  $icol(A) = (A_i | i ∈ I)$,
-  $icol(B) = (B_i | i ∈ I)$,
-  we define a _family of relations_ $icol(R) : icol(A) rfn icol(B)$ to be a family
-  $icol(R) = (R_i : A_i rfn B_i | i ∈ I)$.
-
-  We generalize the definition of the identity, composition, and transpose of relations pointwise:
-  #eqn-set(
-    $id_(icol(A)) := (id_(A_i) | i ∈ I)$,
-    $icol(R) ; icol(S) := (R_i ; S_i | i ∈ I)$,
-    $icol(R)^† := (R_i^† | i ∈ I)$
-  )
-
-  We can likewise define the graph and transpose of a family of functions 
-  $icol(f): icol(A) -> icol(B)$ pointwise:
-  #eqn-set(
-    $icol(f)_* = ((f_i)_* | i ∈ I)$,
-    $icol(f)^* = ((f_i)^* | i ∈ I)$
-  )
-]
-
-#definition(name: "Tensor product of relations")[
-  Given a family of relations $icol(R) : icol(A) rfn icol(B)$, we define its _tensor product_
-  pointwise as follows
-  $
-    tcol icol(R) : Π icol(A) rfn Π icol(B) 
-      := stor({(icol(a), icol(b)) | ∀ i . brel(R_i, a_i, b_i)})
-  $
-
-  This readily specializes to the binary tensor product of relations 
-  $R : A_kwl rfn B_kwl$, $S : A_kwr rfn B_kwr$:
-  $
-    R ⊗ S : A_kwl × A_kwr rfn B_kwl × B_kwr
-      := stor({((a_kwl, a_kwr), (b_kwl, b_kwr)) | brel(R, a_kwl, b_kwl) ∧ brel(S, a_kwr, b_kwr)})
-  $
-]
-
-As a syntactic convenience 
-(and for consistency with our later notation of premonoidal categories), 
-we will define notation 
-- $A ⊗ R := id_A ⊗ R$ and $R ⊗ A := R ⊗ id_A$ for sets $A$.
-- Associator isomorphisms $α^⊗ := α^×_*$
-
-We note that the tensor product is also functorial and transpose-preserving:
-#eqn-set(
-  $tcol id_icol(A) = id_(Π icol(A))$,
-  $tcol (icol(R) ; icol(S)) = tcol icol(R) ; tcol icol(S)$,
-  $tcol icol(R)^† = (tcol icol(R))^†$
-)
-and, in particular,
-#eqn-set(
-  $id_A ⊗ id_B = id_(A × B)$,
-  $(R_kwl ⊗ R_kwr) ; (S_kwl ⊗ S_kwr) = (R_kwl ; R_kwl) ⊗ (S_kwl ; S_kwr)$
-)
-implying that _sliding_ holds:
-$
-  R ⊗ A_kwr ; B_kwl ⊗ S = A_kwl ⊗ S ; R ⊗ B_kwr
-$
 
 #context if (thesis-state.get)().is-standalone {
   the-bibliography
