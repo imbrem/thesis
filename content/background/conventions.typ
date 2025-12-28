@@ -615,67 +615,6 @@ Transposing these, we say a relation $R : A rfn A × A$ is
     (∃ a_(23) . brel(R, a_(123), (a_1, a_(23))) ∧ brel(R, a_(23), (a_2, a_3)))
   $
 
-#todo[More generally: permutation invariant, coassociative]
-
-/*
-We will make particular use of relations $R : listof(A) rfn B$; such relations are in bijection with
-collections of restrictions $R_n : A^n rfn B$ for each $n ∈ ℕ$ where
-#eqn-set(
-  $brel(R, [a_0,...,a_(n - 1)], b) <==> brel(R_n, [a_0,...,a_(n - 1)], b)$,
-  $R = ⋃_(n ∈ ℕ) R_n$
-)
-Likewise, relations $R : A rfn listof(B)$; such relations are in bijection with
-collections of restrictions $R_n : A rfn B^n$ for each $n ∈ ℕ$ where
-#eqn-set(
-  $brel(R, a, [b_0,...,b_(n - 1)]) <==> brel(R_n, a, [b_0,...,b_(n - 1)])$,
-  $R = ⋃_(n ∈ ℕ) R_n$
-)
-
-Note that, in both cases, since list length is unique, the union is disjoint.
-
-/*
-Given a reindexing $ρ : hfam(icol(A), icol(B))$, recall that we have an induced function
-$ρ^* : Π icol(A) -> Π icol(B)$. We will write the relation $grof(ρ^*) : Π icol(A) rfn Π icol(B)$
-as $ρ^*$.
-*/
-
-We say a relation $R: A^n rfn B$ is _permutation invariant_ if,
-for every permutation $ρ$, we have $ρ^* ; R = R$; $R : A^* rfn B$ is permutation invariant
-if all its restrictions $R_n$ are so.
-
-Dually, we say a relation $R : A rfn B^n$ is _copermutation invariant_ if, 
-for every permutation $ρ$, we have $R ; ρ^* = R$; $R : A rfn B^*$ is copermutation invariant
-if all its restrictions $R_n$ are so.
-
-#todo[introduce notations for the set of finite families of $A$]
-
-#todo[relation on finite families]
-
-#todo[in fact, relation on bags]
-
-Given a relation $R : A × A rfn A$, we define the _list folds_ of $R$ by induction as follows:
-#eqn-set(
-  $foldn(R, 0) := ∅$,
-  $foldn(R, 1) := id_A$,
-  $foldn(R, n + 2) := α^⊗ ; A ⊗ foldn(R, n + 1) ; R$,
-  $fold(R) := ⋃_(n ∈ ℕ)foldn(R, n)$
-)
-Given a relation $R : A rfn A × A$, we define the _list cofolds_ of $R$ by induction as follows:
-#eqn-set(
-  $cofoldn(R, 0) := ∅$,
-  $cofoldn(R, 1) := id_A$,
-  $cofoldn(R, n + 2) := R ; A ⊗ cofoldn(R, n + 1) ; α$,
-  $cofold(R) := ⋃_(n ∈ ℕ)cofoldn(R, n)$
-)
-We introduce lightweight syntax 
-$lfoldn(R, n) := foldn(R, n)$ and $lfold(R) := fold(R)$ for $R : A × A rfn A$ and
-$lfoldn(R, n) := cofoldn(R, n)$, $lfold(R) := cofold(R)$ for $R : A rfn A × A$ where
-there is no risk of confusion.
-
-We note that:
-- If $R$ is (co)commutative and (co)associative, then so are $lfoldn(R, n)$ and $lfold(R)$
-*/
-
 Given a relation $R : A rfn A^ms("fin")$ we define:
 - Its _components_ $R_n : A rfn A^n ⊆ R$ to be its restriction to target $A^n$ for each $n ∈ ℕ$.
 
@@ -690,6 +629,7 @@ Given a relation $R : A rfn A^ms("fin")$ we define:
     prooftree(rule(name: "base", $brel(R, a, icol(a))$, $brel(baglift(R), a, icol(a))$)),
     prooftree(rule(name: "unit", $brel(baglift(R), a, (i ↦ a))$)),
     prooftree(rule(name: "split", 
+      $I "finite"$,
       $brel(baglift(R), a, (b_i | i ∈ I))$, 
       $∀ i . brel(baglift(R), b_i, icol(c)_i)$,
       $∀ i, j . cix(icol(c)_i) ∩ cix(icol(c)_j) = ∅$,
