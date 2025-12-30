@@ -3,6 +3,7 @@
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, edge, node
 #import "@preview/typsy:0.2.1": safe-state
 #import "@preview/simplebnf:0.1.1": *
+#import "@preview/subpar:0.2.2"
 
 #let (
   theorem,
@@ -488,7 +489,9 @@
 #let ulbcwk(U, L, M) = $#L scripts(≤)_#U #M$
 #let uclbwk(U, K, M) = $#K scripts(≤)_#U #M$
 
-#let affm = $ms("aff")$
+#let saff = $ms("aff")$
+#let srel = $ms("rel")$
+
 #let splitr = $scripts(=>)$
 
 #let tysplits(A, B, C) = $#A splitr #B ⊗ #C$

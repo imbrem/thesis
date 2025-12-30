@@ -2,11 +2,41 @@
 
 #show: show-syntax
 
-#let def-cart-ty-sys = definition(name: "Cartesian Type System")[
-  We define a _cartesian type system_ $ms("X")$ to consist of:
+#let def-ty-sys = definition(name: "Type System")[
+  We define a _type system_ $ms("X")$ to consist of:
   - A set of _types_ $ms("X")$
-  - A near-prelattice $(sle()) : ms("X") rfn ms("X")$ on base types, _weakening_
+  - A near-prelattice $X sle() Y$ on base types, _weakening_
+  - An upper set $saff ⊆ X$ of _affine_ types
+  - A lower set $srel ⊆ X$ of _relevant types_
+
+  We say two types $X, Y$ are _equivalent_, written $X ≈ Y$, if $X sle() Y$ and $Y sle() X$.
+
+  We say a type system is _cartesian_ if $saff = srel = X$.
 ]
+
+#let def-res-sys = definition(name: "Type System")[
+  We define a _resource system_ $ms("X")$ to consist of a type system $ms("X")$
+  equipped with a _splitting_ relation $(splitr) : ms("X") rfn ms("X") × ms("X")$
+  such that
+  - Splitting $(splitr)$ is coassociative and cocommutative, i.e.
+    $tysplits(X, Y, Z) <==> tysplits(X, Z, Y)$ and
+    $
+      (∃ X_(12) . (tysplits(X_(123), X_(12), X_3)) ∧ (tysplits(X_(12), X_1, X_2))) \
+      <==> \
+      (∃ X_(23) . (tysplits(X_(123), X_1, X_(23))) ∧ (tysplits(X_(23), X_2, X_3)))
+    $
+  - If $tysplits(X, Y, Z)$ and $urel(saff, Z)$, then $tywk(X, Y)$
+    ("affine components can be discarded")
+  - If $urel(srel, X)$ iff $tysplits(X, X, X)$
+
+  We note that, if $ms("X")$ is cartesian, our splitting relation is uniquely determined by
+  $
+    tysplits(X, Y, Z) <==> tywk(X, Y) ∧ tywk(X, Z)
+  $
+
+]
+
+#def-res-sys
 
 #let fig-ty-grammar = figure(
   [
@@ -59,9 +89,9 @@
 );
 #let r-twk-sigma = rule(
   name: $Σ$,
-  $tywk(Σ lb("T"), Σ lb("T"'))$,
+  $tywk(Σ lb("L"), Σ lb("L"'))$,
   $tywk(A, A')$,
-  $tywk(Σ (lb("T"), lty(lb("f"), A)), Σ (lb("T")', lty(lb("f"), A')))$,
+  $tywk(Σ (lb("L"), lty(lb("l"), A)), Σ (lb("L")', lty(lb("l"), A')))$,
 );
 #let r-twk-pi = rule(
   name: $Π$,
@@ -69,6 +99,18 @@
   $tywk(A, A')$,
   $tywk(Π (lb("T"), fty(lb("f"), A)), Π (lb("T")', fty(lb("f"), A')))$,
 );
+#let r-twk-sigma-perm = rule(
+  name: [$Σ$-perm],
+  $σ "perm"$,
+  $tywk(Σ lb("L"), A)$,
+  $tywk(Σ (σ · lb("L")), A)$,
+)
+#let r-twk-pi-perm = rule(
+  name: [$Π$-perm],
+  $σ "perm"$,
+  $tywk(Π lb("T"), A)$,
+  $tywk(Π (σ · lb("T")), A)$,
+)
 #let r-twk-zero = rule(
   name: $tzero$,
   $tywk(tzero, A)$,
@@ -84,8 +126,10 @@
       declare-rule(r-twk-base, label: <twk-base>),
       declare-rule(r-twk-sigma, label: <twk-sigma>),
       declare-rule(r-twk-pi, label: <twk-pi>),
-      declare-rule(r-twk-unit, label: <twk-unit>),
+      declare-rule(r-twk-sigma-perm, label: <twk-sigma-perm>),
+      declare-rule(r-twk-pi-perm, label: <twk-pi-perm>),
       declare-rule(r-twk-zero, label: <twk-zero>),
+      declare-rule(r-twk-unit, label: <twk-unit>),
     )
     \
   ],
@@ -208,35 +252,7 @@
 
 #fig-r-cwk
 
-#let def-ty-sys = definition(name: "Type System")[
-  We define a _type system_ $ms("X")$ to consist of:
-  - A set of _base types_ $ms("X")$
-  - A set of _affine_ base types $affm : ms("X") rfn tunit$
-  - A near-prelattice $(sle()) : ms("X") rfn ms("X")$ on base types, _weakening_
-  - A _splitting_ relation $(splitr) : ms("X") rfn ms("X") × ms("X")$
-  such that
-  - Splitting $(splitr)$ is coassociative and cocommutative, i.e.
-    $tysplits(X, Y, Z) <==> tysplits(X, Z, Y)$ and
-    $
-    (∃ X_(12) . tysplits(X_(123), X_(12), X_3) ∧ tysplits(X_(12), X_1, X_2))
-    <==>
-    (∃ X_(23) . tysplits(X_(123), X_1, X_(23)) ∧ tysplits(X_(23), X_2, X_3))
-    $
-  - If $tysplits(X, Y, Z)$ and $urel(affm, Z)$, then $tywk(X, Y)$ 
-    ("affine components can be discarded")
-
-  We say a base type $X$ is _relevant_ if $tysplits(X, X, X)$.
-
-  We say a type system $ms("X")$ is _relevant_ if every type $X ∈ ms("X")$ is relevant;
-  likewise, $ms("X")$ is _affine_ if every $X ∈ ms("X")$ is affine.
-  If $ms("X")$ both affine and relevant, we say it is _cartesian_;
-  in this case, we can recover all our structure from the weakening relation alone, since 
-  $
-  tysplits(X, Y, Z) <==> tywk(X, Y) ∧ tywk(X, Z)
-  $
-]
-
-#def-ty-sys
+// TODO: flip this diagram
 
 #let fig-quant-lattice = figure(
   [
@@ -247,24 +263,24 @@
         $
                                     \
                                     \
-          tqaff + 1 = tqaff + tqrel & = tqint #h(2em) &       q & kqwk tqint \
+          tqaff + 1 = tqaff + tqrel & = tqint #h(2em) & tqint & kqwk q \
           tqaff + tqaff = tqint + q & = tqint \
                                     \
-                  tqrel + 1 = 1 + 1 & = tqrel         &   tqlin & kqwk tqrel \
-                      tqrel + tqrel & = tqrel         &          \
+                  tqrel + 1 = 1 + 1 & = tqrel         & tqrel & kqwk tqlin \
+                      tqrel + tqrel & = tqrel         &        \
                                     \
-                                    &                 &   tqlin & kqwk tqaff \
+                                    &                 & tqaff & kqwk tqlin \
                                     \
                                     \
-                              0 + q & = q             &       0 & kqwk tqaff \
-                                    &                 & (n + 1) & kqwk tqrel
+                              0 + q & = q             & tqaff & kqwk 0 \
+                                    &                 & tqrel & kqwk (n + 1)
         $
       ],
       diagram(
         $
                                & tqint \
-          tqaff edge("ur", ->) &       & tqrel edge("ul", ->) \
-                               & tqlin edge("ul", ->) edge("ur", ->) //
+          tqaff edge("ur", <-) &       & tqrel edge("ul", <-) \
+                               & tqlin edge("ul", <-) edge("ur", <-) //
                                    \
           dem(0) edge("uu", "--", stroke: cdem) //
                                & dem(1) edge("u", "=", stroke: cdem) //

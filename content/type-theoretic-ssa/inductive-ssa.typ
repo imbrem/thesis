@@ -26,7 +26,11 @@
 
 #todo[Everything is parametrized by a set of _base types_ $ms("X")$]
 
-#def-cart-ty-sys
+#def-ty-sys
+
+#todo[
+  For now, we assume a _cartesian_ type system
+]
 
 #todo[
   We define a type system $sty(ms("X"))$. 
@@ -38,3 +42,7 @@
 #todo[We equip it with an order]
 
 #fig-r-twk
+
+#todo[
+  This is in fact a near-prelattice; and hence induces a cartesian type system on $sty(ms("X"))$
+]

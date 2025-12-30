@@ -1,3 +1,318 @@
+= Introduction
+
+/*
+
+#todo[
+  High level:
+  - Step 1: we want an MVP thesis, which is:
+    - The type theory of TOPLAS, but refined and with λiter
+      - Sandwich:
+        - Introduction:
+          - Buildup RTL => SSA => LexSSA in language to go from states to variables
+          - Buildup LexSSA ⊆ LexSSA ExpTree [mention Cranelift as prior art]
+            ⊆ LexSSA CaseExpTree [conditional moves, don't introduce big branches]
+            ⊆ LexSSA λiter [natural generalization, mention ML, Peggy, and RVSDG as prior art]
+          - Buildup LexSSA λiter ⊆ TTSSA λiter
+          - Expressions first (as classical), control later (as this is us, but prior art too see Peggy)
+          - Power is the same, and since ⊆ rather than $=>$ type theory for top level gives us type theory for everything else
+            - (But, not a type theory for RTL and SSA; see MVP₃)
+        - Body:
+          - Chapter 1: TT following POPL; _no quantities_, _no effects_
+            - TT for λiter
+              - NO talk about quantities; DO LATER
+              - NO _extended_ talk about effects; DO LATER
+              - But do note, when stating substitution theorem, that just because the term _makes sense_ doesn't mean the substitution is _valid_
+              - Unlike POPL instead of coproducts we have enums. This will be more familiar to complier folks, but we need to discuss how booleans and coproducts are just a special case.
+            - TT for λSSA (parametric over expression language instantiate for λiter)
+              - Talk about labels
+              - This is a lot easier than before, since instead of coproducts we have enums. So a label is a glorified enum.
+            - Pure syntatic metatheory of:
+              - Substitution
+              - Label-substitution
+          - Chapter 2:
+            - Expo:
+              - Motivate refinement by means of effects as below
+              - Introduce λiter type theory with effects parametrized by primitive effects on terms
+              - Motivate usage tracking by means of _advanced_ refinements
+                - `unspec` would always need to be a refinement without usage tracking
+                - but _with_ usage tracking, linear use is not a refinement!
+              - Introduce λiter type theory with _only_ usage tracking
+
+              - Observation:
+                - λiter with effects is trivial, λssa with effects is trivial
+                - λiter with usage introduces a complex concept: _splitting_
+
+
+            - Pure and impure `let x = read(); (x, x) ≠ (read(), read())`
+            - But, _refinement_ (point to probabilistic programming and friends)
+
+              `let x = unspec(); (x, x) ≠ (unspec(), unspec())`
+
+              but
+
+              `let x = unspec(); (x, x) <- (unspec(), unspec())`
+
+              Note: for `nondet`, people will think Prolog rather than C
+          - And this depends both _usage_ and _effect_ of sub-expressions, so we need to track both
+
+            `let x = unspec(); e = e` for `e ∉ fv(x)`
+
+            On the other hand,
+
+            `let x = ub(); e -> [ub()/x]e`
+
+            but
+
+            `let x = ub(); e = e` if `e` _pure_ and `x ∈ fv(e)`.
+
+            - In power paper:
+
+              - Axiomatization of `ub` is:
+                - I can send it forwards in time
+                - I can replace it with anything
+              - _Therefore_, when combined with `case`
+                - I can send arbitrary information about anything _purely_ computable forwards in time
+                - I can safely _remove_ information sent forwards in time, so my compiler can do this aggressively
+          - So, let's start with λiter
+            - Type theory of λiter with _only effects_
+            - Type theory of λiter with _only quantities_
+
+]
+
+#todo[
+  maybe: explain what a compiler is at a high-level because the intro both sets the tone and pads
+  wordcount
+]
+
+Directly optimizing a source language can be difficult,
+because surface languages are often very large and have features
+(such as type inference and overloading)
+which make it difficult to express sound program equivalences.
+On the other hand, compiling naïvely to executable code and _then_ optimizing is equally challenging,
+if it is even feasible to write a one-pass compiler for a given high-level language at all.
+This is because,
+just as programming languages are designed to be written (and hopefully, read) by humans,
+machine code is designed to be efficiently _executed_ by hardware (or an interpreter),
+and is therefore often difficult both to analyze and to generate from high-level constructs.
+//
+Compiler writers deal with this by using _intermediate representations (IRs)_:
+- Like programming languages, they are designed to be read and written, rather than executed, but
+- Like executable code, they are designed to be processed by _machines_, rather than people
+
+A good IR is _simple_: it has a few features which compose well in a predictable manner.
+This makes it
+- Easy to _generate_ from high-level source code
+- Easy to _lower_ to low-level executable code
+- Easy to _analyze_ to determine both properties of programs and program equivalence
+
+In particular, a good intermediate representation should be _regular_, in both colloquial senses:
+- It should have few to no edge cases in the interpretation of its constructs
+- Equivalent programs should map to similar, or preferably the same, IR, as much as possible
+
+To achieve this, we want our IR to have rigorous _invariants_: for example, we might require
+- Operations have only pure expressions as arguments, or even
+- Operations have only variables or constants as arguments (yielding _A-normal form_, or _ANF_)
+- Loops always take canonical, structured forms
+  (this is always possible due to the Böhm-Jacopini theorem @bohm-66-structured)
+
+Invariants make both analysis and lowering much easier to reason about and implement, since
+there are both fewer cases to consider
+and, when considering each case, we have more assumptions to work with.
+//
+However, this is a double-edged sword:
+the more invariants we have, the more difficult it is both to
+_generate_ our intermediate representation
+and, if we've discovered an optimization opportunity, to _rewrite_ it while preserving invariants.
+For example, six of the 13 most invoked passes in the LLVM compiler are spent
+discovering and restoring invariants such as SSA or canonical loop forms @reissmann-19-rvsdg.
+
+/*
+#scaffold[
+  - It is generally accepted that IRs are useful
+  - It is generally accepted that SSA is the "standard" IR,
+    and many other IRs are variants and dialects of SSA
+
+  Usually, though:
+  - Study of IRs, including SSA, is _informal_ and based on engineering practice
+    without any rigorous mathematical model for correctness
+
+  So we want to argue:
+  - IRs need a _formal_ semantics to:
+    - _Verify_ optimizations are correct
+    - Provide a _framework_ for
+      - Developing new optimizations (IR $=>$ IR)
+      - Generalizing optimizations across different platforms
+    - _Verify_ the _relationships_ between
+      - Different IRs
+      - Source languages and IRs
+      - IRs and target languages
+  - We provide a formal semantics for SSA because:
+    - SSA is the canonical IR, and _therefore_
+    - A semantics for SSA can be used to provide semantics for _other_ imperative IRs
+    - And all these semantic models can be rigorously proven _equivalent_
+    - Giving us a theory of categorical imperative programming (title drop)
+]
+
+#block-note[
+  - _Specific_ intermediate representations each strike a different balance between
+    simplicity and regularity (via invariants)
+    - A smaller IR is often both simpler and more regular, but
+    - More invariants $=>$ less simple, _so_ harder to generate and rewrite
+    - Less invariants $=>$ more simple, _but_ harder to analyze and optimize
+
+  - In general, a compiler looks like
+    $
+      ms("MyCompiler") : ms("Language")_1 => ms("Language")_2
+    $
+    while preserving, or rather _refining_, semantics.
+
+    An _optimizer_ is therefore a special case which looks like
+    $
+      ms("MyOptimizer") : ms("Language") => ms("Language")
+    $
+
+    Here, the language is usually an IR.
+
+    An optimizer might more specifically _read_ the input IR (_analysis_) and then, as necessary,
+    _rewrite_ parts of the input IR (_rewriting_ or _transformation_) based on the results of the
+    analysis. So while we model it as a function from IR to IR, in implementation, it is actually
+    a mutable imperative rewriter on the IR _data structure_.
+
+    So an _optimizing compiler_ with a single IR in the middle might look like
+
+    $
+      ms("MyOC") : ms("Source")
+        =>^ms("Generation") ms("IR")
+        =>^ms("Optimization") ms("IR")
+        =>^ms("Lowering") ms("Target")
+    $
+
+    A real compiler often uses _multiple_ IRs each with specialized optimization and analysis
+    functions.
+
+    So notice:
+    - _Simplicity_ generally makes things easier to _write_. So if $ms("IR")$ is simple:
+      - $ms("Generation")$ is easier since we write $ms("IR")$
+      - _Rewriting_ is easier since we already know what we need to do
+        (by analysis, reading the IR)
+        and it's easy to generate valid IR
+    - _Regularity_ generally makes this easier to _read_. So if $ms("IR")$ is regular:
+      - $ms("Lowering")$ is easier since we read $ms("IR")$
+      - _Analysis_ is easier since we can make more assumptions about the IR
+        and hence consider fewer edge cases.
+
+        Note even a very simple language can have many edge cases in _analysis_,
+        even (in fact _especially_) if it has few edge cases in its _definition_.
+
+    This is precisely why we need an $ms("IR")$,
+    because both these goals are orthogonal to the usual goals of both
+    programming language design and
+    executable language design.
+
+    Executable languages are rarely either regular or simple:
+    they have lots of flexibility and edge cases
+    to take advantage of the unique features of a given processor's architecutre and
+    extract maximum performance.
+
+    Likewise, programming languages need to be simple and regular to _humans_,
+    but this is often very different from mathematical simplicity and regularity.
+    Humans find it very convenient, for example,
+    to be able to write both `x.find()` and `find(x)` depending on what type of function `find` is,
+    and this extra context makes things more readable.
+    It's now also double the effort writing a compiler, since we've got two cases instead of one.
+    So we want to normalize everything
+    to the standard `find(x)` form as early as possible to avoid duplicating work.
+
+    Notice, this is totally separate from optimization:
+    the two programs have essentially the _same_ performance characteristics, size, and complexity.
+    This is about _regularity_ and _simplicity_:
+    by enforcing everything be in a normal form,
+    a program operating on IR has to deal with fewer cases.
+    This is essentially a proof by induction, and we want as few base cases as possible.
+
+    A good programming language focuses on making things readable,
+    which often requires making things _short_.
+
+    An IR on the other hand should be _maximally explicit_
+    even if no one would ever want to type the entire program,
+    for the exact same reason:
+    it's much easier for a machine to reason about a fully explicit expression,
+    since we don't need to take as much context into account.
+
+    As an example,
+    a source language might have an expression with type-dependent meaning,
+    like `a + b`.
+    - If `a, b` are integers, `a + b` means `addInt a b`
+    - If `a, b` are floats, `a + b` means `addFloat a b`
+    - If `a, b` are strings, `a + b` means `concatString a b`
+
+    Having an IR reason about `+` is a pain, since we both:
+    - Need to do cases on type information when rewriting `+`
+    - Have an additional case in our expression language itself, namely the `+` case
+
+    Lowering everything to fully explicit typed functions right at the beginning is hence
+    almost universally applied in compiler design.
+]
+
+#scaffold[
+  - But it also has lots of _invariants_, making it easy to _analyze_ and _rewrite_ while preserving soundness
+    - Talk about analysis passes and dataflow
+      - Classical IRs are _very good at this_, but they're often underspecified because of imperativity, see: simulation arguments
+    - Talk about _optimization passes_
+      - Easy to generate code with correct semantics
+        - And, very importantly, easy to _inline_: meaning _compositional_
+          - High-level languages often make inlining _hard_ because the normies don't prove substitution
+      - Peephole rewriting is important and needs to be sound
+      - Control-flow rewriting is import and needs to be sound
+      - _Fusing these_ is often where the suffering begins, see conditional move instruction
+    - Talk about abstract interpretation ==> needs to be easy to do induction on, few cases
+      - Classical IRs are _very bad at this_; this is our contribution!
+  - And it also needs to be easy to _lower_ to executable code
+  - Two natural ways to derive an IR
+    - Go "upwards" from machine code, regularizing it to make it easier to read, write, and analyze
+      - This is the "classical" approach used by compilers like LLVM
+    - Go "downwards" from high-level code, desugaring features and making things easier for machines to read, write, and analyze
+      - Modern compilers often do this many times as part of _lowering passes_; the first attempt at this is usually called a HIR, and then you can recursively apply this until you get to either assembly (Forth/Lisp style) or the low-level IR defined upwards (the usual).
+
+        If you apply this to HIR you get MIR
+      - In practice, compilers may go back and forth between RTL and SSA; e.g. Rust's MIR is a constrained RTL, which goes to LLVM SSA, which goes down to the SelectionDAG (RTL), which then goes down to ASM (machine code)
+    - We have semantics for all these stages except the very top and bottom. Another multi-stage technology along these lines is MLIR, so this naturally acts as a semantics for a well-behaved subset of MLIR
+
+    - Completeness (our big theoretical contributions) means:
+      - _we get to use category theory without any additional assumptions_
+      - _we get to check whether our actual models are compatible with standard compiler transformations in an implementation-independent, generalizable manner_
+        - Neel says: the completeness theorem means that our equations give us a complete API that both the compiler writer can depend on and the model designer can target. i.e.,
+          - This gives us an API which can be shared by
+          - Model designers and hardware people, who need to show that their model allows common compiler optimizations by showing that it forms an isotope SSA model
+            - Going back, what they need to show is that $ms("SSACongr")(cal(R)) = cal(R)$
+              where $cal(R)$ is the set of rewrites validated by their model.
+
+              What we give is the function $ms("SSACongr")(cal(R))$
+
+          - Compiler writers, who _need_ to show that their optimizations are compatible with our model + their set of assumptions. You can _always_ do this with a large enough set of assumptions (though of course the assumption might simply be "transformation always holds" since they're allowed to be quantified as long as they respect weakening + substitution)!
+
+            That is, given assumptions $cal(R)$, their optimizations must hold in $ms("SSACongr")(cal(R))$, so we tell them exactly how to derive things from a set of _primitve_ assumptions in a model-independent way: the compiler writers only need the kernel generating the assumptions, not either the entire set of assumptions or the model (which are basically the same thing if you're a classical mathematician).
+]
+*/
+
+#todo[what is an IR]
+
+#todo[what is SSA at a high level; briefly describe RTL as part of the "up from assembly narrative"]
+
+#todo[our actual contributions and why they matter]
+
+#todo[
+  Not a thesis statement (Neel); contributions:
+  - We give a formal framework for reasoning about SSA
+  - We give a categorical semantics
+  - We show these are the _same_: sound and _complete_
+  - We use this to talk about imperative programming in general (RTL lore)
+]
+
+*/
+
+= Concrete Lore
+
 /*
 #todo[rewrite this]
 
