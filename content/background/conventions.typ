@@ -8,23 +8,28 @@
   title()
 }
 
-#set quote(block: true)
-
 #quote(attribution: [Abraham Lincoln (up to natural transformation)])[
   Give me six hours to chop down a tree and I will spend the first four sharpening the axe.
 ]
 
-In this chapter, we briefly cover the basic definitions, mathematical conventions, and
-notation used throughout this thesis.
+We begin with an overview of the conventions, notation, and definitions 
+we will use throughout this thesis.
 
 We work in (informal) Grothendieck-Tarski set theory. In particular,
 - We assume _Tarski's axiom_: every set is an element of some Grothendieck universe $cal(U)$.
-- In particular, we postulate an infinite hierarchy of Grothendieck universes $cal(U)_ℓ$
+- In particular, this implies an infinite hierarchy of Grothendieck universes $cal(U)_ℓ$
 - We call an element of $cal(U)_ℓ$ _ℓ-small_
 
-In general, definitions are implicitly $ℓ$-polymorphic unless stated otherwise.
-For example, when we define a category, we really mean an $ℓ$-category with $ℓ$-small hom-sets.
-We hence for the most part ignore size issues.
+In general, we ignore size issues, with definitions taken to be implicitly $ℓ$-polymorphic
+
+We write function composition for $f: X → Y$, $g: Y → Z$ as 
+$
+f ; g := g ∘ f := λ x . g(f(x)) : X → Z
+$
+
+Given $f : X -> Y$, where there is no risk of confusion, we will write:
+- For subsets $A ⊆ X$, the _image_ of $A$ under $f$ as $f(A) := { f(a) | a ∈ A } ⊆ Y$
+- For subsets $B ⊆ Y$, the _preimage_ of $B$ under $f$ as $f^(-1)(B) := { x ∈ X | f(x) ∈ B } ⊆ X$
 
 = Order Theory
 
@@ -42,12 +47,15 @@ We hence for the most part ignore size issues.
   - _reflexive_: $∀ x ∈ X . x ≤ x$
   - _transitive_: $∀ x, y, z ∈ X . x ≤ y ==> y ≤ z ==> x ≤ z$
 
-  We call two elements in a preorder _equivalent_, written $x ≈ y$, if $x ≤ y$ and $y ≤ x$.
+  Every preorder $≤$ induces an equivalence relation $x ≈ y := x ≤ y ∧ y ≤ x$ on $X$. We say
+  $x, y ∈ X$ are _equivalent_ (w.r.t. $≤$) if $x ≈ y$.
 
   Where $X$ has a distinguished preorder $≤$, we will often simply say "the preorder $X$."
 
-  We call $≤$ a _partial order_ if all equivalent elements are equal -- i.e., we satisfy
-  - _antisymmetry_: $∀ x, y ∈ X . x ≤ y ==> y ≤ x ==> x = y$
+  We call $≤$ a _partial order_ if it is _antisymmetric_ -- 
+  i.e., $∀ x, y ∈ X . x ≤ y ==> y ≤ x ==> x = y$.
+
+  If $≤$ is also _total_ -- i.e., $∀ x , y ∈ X . x ≤ y ∨ y ≤ x$, we call it a _total order_.
 
   We call a set $X$ equipped with a distinguished partial order a
   _partially ordered set_ or _poset_.
@@ -70,7 +78,9 @@ We hence for the most part ignore size issues.
 
   We may hence equip a preorder with a distinguished maximum $max A$ and minimum $min A$ for each
   subset $A ⊆ X$ where one exists.
+  /*
   Without loss of generality, we may always take $max{a}, min{a} := a$.
+  */
 
   We denote the set of upper bounds of $A$ as $ubs(A)$,
   and the set of lower bounds of $A$ as $lbs(A)$.
@@ -89,12 +99,14 @@ We hence for the most part ignore size issues.
 
   We may hence equip a preorder with a distinguished meet $⨅ A$ and join $⨆ A$ for each
   subset $A ⊆ X$ where one exists.
+  /*
   Without loss of generality, we may always take $⨆{a}, ⨅{a} := a$.
   #footnote[
     While we could define $⨆ A := min(ubs(A))$ and $⨅ A := max(lbs(A))$ when they exist,
     we would not be able to satisfy the condition $∀ a . ⨆{a}, ⨅{a} := a$ unless $X$ is a poset,
     as all equivalent elements $a ≈ b$ have the same set of upper and lower bounds.
   ]
+  */
 
   Where they exist, we write
   - $⊥ := ⨆ ∅$; in this case, we say $X$ is _bounded below_
@@ -110,7 +122,9 @@ We hence for the most part ignore size issues.
   - $X$ is a _join-semilattice_ if it is a poset with binary joins
   - $X$ is a _meet-semilattice_ if it is a poset with binary meets
   - $X$ is a _lattice_ if it is a join-semilattice and a meet-semilattice
-  - $X$ is a _complete prelattice_ if every subset $A ⊆ X$ has both a meet and a join
+  - $X$ is a _complete prelattice_ if every subset $A ⊆ X$ has both a meet and a join.
+    It suffices to show that every subset $A ⊆ X$ has a join,
+    or alternatively that every subset $A ⊆ X$ has a meet.
   - $X$ is a _complete lattice_ if it is a poset and a complete prelattice
 
   Note that we restrict the term semilattice to posets;
@@ -143,9 +157,72 @@ a meet "at negative infinity." To do so, we introduce the following definition:
   - $X$ is a _conditionally-complete lattice_ when it is a conditionally-complete prelattice
 ]
 
+#definition(name: "Prime, Coprime")[
+  Given a preorder $X$, we say
+  - An element $p ∈ X$ is _prime_ if, for all $x, y ∈ X$, if the meet $x ⊓ y$ exists, then
+    $
+    x ⊓ y ≤ p ==> x ≤ p ∨ y ≤ p
+    $
+  - An element $p ∈ X$ is _coprime_ or _dual-primte_ 
+    if, for all $x, y ∈ X$, if the join $x ⊔ y$ exists, then
+    $
+    p ≤ x ⊔ y ==> p ≤ x ∨ p ≤ y
+    $
+]
+
+#definition(name: "Ideal, Filter")[
+  A subset $A ⊆ X$ of a preorder $X$ is
+  - _directed_ if every pair $a, b ∈ A$ has an upper bound in $A$
+  - _filtered_ if every pair $a, b ∈ A$ has a lower bound in $A$
+  - an _ideal_ if it is a downward-closed directed set; 
+    we write the set of ideals of $X$ as $idls(X)$
+  - a _filter_ if it is an upward-closed filtered set;
+    we write the set of filters of $X$ as $fils(X)$
+
+  We note that $idls(X), fils(X) ⊆ cal(P)(X)$ form a complete lattice.
+  In particular, meets $⋀_i A_i$ are just set intersections $⋂_i A_i$, but joins do _not_ generally
+  coincide with unions.
+
+  As $X$ is always both an ideal and a filter, 
+  we may hence write $genidl(A)$ for the smallest ideal containing $A$ 
+  and $genfil(A)$ for the smallest filter containing $A$.
+
+  Given an ideal $I ⊆ X$, we say
+  - $I$ is _principal_ if there exists $a$ s.t. $I = lbs(a)$
+  - $I$ is _proper_ if $I ≠ X$
+  - $I$ is _maximal_ if it is proper and $ubs(I) = {X, I}$
+  - $I$ is _prime_ if, for all ideals $J, K$, $J ∩ K ⊆ I ==> J ⊆ I ∨ K ⊆ I$
+    i.e. $I$ is prime in $idls(X)$.
+
+  Likewise, given a filter $F ⊆ X$, we say
+  - $F$ is _proper_ if $F ≠ X$
+  - $F$ is _principal_ if there exists $a$ s.t. $F = ubs(a)$\
+  - $F$ is _maximal_ if it is proper and $ubs(F) = {X, F}$
+  - $F$ is _prime_ if, for all filters $J, K$, $J ∩ K ⊆ F ==> J ⊆ F ∨ K ⊆ F$
+    i.e. $F$ is prime in $fils(X)$.
+]
+
+We note that:
+- The complement $X sdiff I$ of an ideal $I$ is a filter; 
+  likewise, the complement $X sdiff F$ of a filter $F$ is an ideal
+- An ideal $I$ is proper/principal/maximal/prime 
+  iff its complement is a proper/principal/maximal/prime filter
+
+Every subset $A ⊆ X$ of a preorder $X$ inherits a preorder from $X$ by restriction; we may therefore
+ask whether $A$ has meets or joins; these in general may be different from meets and joins in $X$.
+For example:
+- The join of $2, 3$ in $ℕ$ under the divisiblity order is 6
+- The join of $2, 3$ in ${2, 3, 12} ⊆ ℕ$ under the divisiblity order is $12$ 
+
+If (binary) joins/meets in $A$ and $X$ in fact coincide, 
+we say that $A$ is _closed under (binary) joins/meets_.
+
+We note in particular that:
+- If $X$ has joins, a set $A$ is an ideal iff it is downward-closed and closed under binary joins
+- If $X$ has meets, a set $A$ is a filter iff it is upward-closed and closed under binary meets
+
 #definition(name: [dcpo, $ω$cpo])[
   Given a preorder $X$,
-  - A subset $A ⊆ X$ is _(upward) directed_  if every pair $a, b ∈ A$ has an upper bound in $A$
   - $X$ has _(nonempty) directed joins_ if every (nonempty) directed subset $A ⊆ X$ has a join
   - A subset $A ⊆ X$ is a _pointed, or nonempty, ω-chain_
     if we can write it as an infinite nondecreasing sequence
@@ -173,7 +250,7 @@ a meet "at negative infinity." To do so, we introduce the following definition:
 = Families, Sequences, Lists, and Streams
 
 Our primitive data structure will be the 
-_($I$-indexed) family_ @nlab:family $icol(a) := (a_i | i ∈ I)$, consisting of
+_($I$-indexed) family_ @nlab:family $icol(a) := (i ↦ a_i | i ∈ I)$, consisting of
 
 - An _index set_ $I$, whose elements are the _indices_ of the family.
   We will sometimes write $cix(icol(a)) := I$.
@@ -187,11 +264,15 @@ We write $A^I$ for the set of indexed families with index set $I$ and elements o
 We say $icol(a) ∈ A^I$ is _finite_ if $I$ is finite; 
 we write the set of finite families of $A$ as $sffam(A)$.
 
-We will often write an indexed family as $(i ↦ a_i)_(i ∈ I)$ or $(a_i)_(i ∈ I)$,
-or even $(i_1 ↦ a_(i_1),...,i_n ↦ a_(i_n))$ for $I = {i_1,...,i_n}$ finite.
-In general, we will omit $I$ when clear from context.
+We introduce notation:
+- $(a_i | i ∈ I) := (i ↦ a_i | i ∈ I)$; where $I$ is clear from context, we write $(a_i)_i$
+- $(t_i ↦ a_i | i ∈ I) := (t ↦ a_(f^(-1)(i)) | t ∈ f(I))$
+  where $f(i) := t_i$ is an injection
 
-We write the empty indexed family as $()$.
+Where the indexing set $I$ is clear from context, 
+we will write $(a_i | i ∈ I)$ or $(a_i)_i$ as shorthand for $(i ↦ a_i | i ∈ I)$.
+For $I$ finite, we write $(i_0 ↦ a_(i_0),...,i_(n-1) ↦ a_(n-1))$.
+In particular, we write the empty indexed family as $()$.
 
 Given indexed families $icol(a) = (a_i | i ∈ I)$, $icol(b) = (b_j | j ∈ J)$,
 we define their _override_ as follows:
@@ -205,15 +286,19 @@ We note that $ovrd$ is a monoid with identity $()$ -- i.e.
 $() ovrd icol(a) = icol(a) ovrd () = icol(a)$ and
 $icol(a) ovrd (icol(b) ovrd icol(c)) = (icol(a) ovrd icol(b)) ovrd icol(c)$
 
-We say $icol(a)$ is a _subfamily_ of $icol(b)$, written $icol(a) famle icol(b)$, if
-$cix(icol(a)) famle cix(icol(b))$
-and
-$∀ i ∈ cix(icol(a)), a_i = b_i$;
-this induces an upper meet-semilattice on families, with 
-- bottom element $⊥ := ()$
-- meet $icol(a) ⊓ icol(b) := (a_i | i ∈ cix(icol(a)) ∩ cix(icol(b)) ∧ a_i = b_i)$
-- join $icol(a) ⊔ icol(b) := icol(a) ovrd icol(b) = icol(b) ovrd icol(a)$ 
-  whenever $∀ i ∈ I ∩ J . a_i = b_i$
+We say
+- $icol(a), icol(b)$ are _compatible_, written $icol(a) cmpfam icol(b)$, 
+  if $∀ i ∈ cix(icol(a)) ∩ cix(icol(b)) . a_i = b_i$
+- $icol(a), icol(b)$ are _disjoint_, written $icol(a) aprtfam icol(b)$, 
+  if $cix(icol(a)) ∩ cix(icol(b)) = ∅$
+- $icol(a)$ is a _subfamily_ of $icol(b)$, written $icol(a) ⊆ icol(b)$,
+  if $cix(icol(a)) ⊆ cix(icol(b))$ and $icol(a) cmpfam icol(b)$
+
+The relation $icol(a) ⊆ icol(b)$ induces an upper meet-semilattice on families, with
+- bottom element $()$
+- meet $icol(a) ∩ icol(b) := (a_i | i ∈ cix(icol(a)) ∩ cix(icol(b)) ∧ a_i = b_i)$
+- join $icol(a) ∪ icol(b) := icol(a) ovrd icol(b) = icol(b) ovrd icol(a)$ 
+  defined whenever $icol(a) cmpfam icol(b)$
 
 /*
 We define some basic structural operations on indexed families as follows:
@@ -232,6 +317,14 @@ We define some basic structural operations on indexed families as follows:
   We note that
   $csel(icol(a), J) ⊔ (crem(icol(a), J)) = (crem(icol(a), J)) ⊔ csel(icol(a), J) = icol(a)$.
 */
+
+#todo[_ordered_ indexed families]
+
+#todo[square bracket notation $[]$ means ordered family]
+
+#todo[lift of $⊆$ ignores order]
+
+#todo[new $⊑$ respects order]
 
 As in Lua @ierusalimschy-06-lua (which uses tables), we define lists, sequences, and streams in 
 terms of indexed families, allowing us to re-use definitions and operations. In particular,
@@ -441,30 +534,6 @@ $
   ∀ ρ ∈ hperm(icol(a), icol(b)), ρ^(-1) ∈ hperm(icol(b), icol(a))
 $
 That is, the permutations are in fact a _groupoid_.
-
-Given indexed families $icol(A)$, $icol(B)$, we say $icol(A) ⊆ icol(B)$ if
-$
-  ∃ icol(A)' . hperm(icol(A), icol(A)') ≠ ∅ ∧ icol(A)' famle icol(B)
-$
-We say two families are _equivalent_, written $icol(A) ≈ icol(B)$, if
-$
-  icol(A) ≈ icol(B) <==> icol(A) ⊆ icol(B) ∧ icol(B) ⊆ icol(A) <==> hperm(icol(A), icol(B)) ≠ ∅
-$
-
-/*
-#definition(name: "Multiset, Bag")[
-  We define a _multiset_ $A$ to be an indexed family quotiented by permutations; 
-  i.e., an equivalence class of indexed families. 
-  #footnote[
-    Note this differs slightly from the standard definition, in that the same element may appear
-    (uncountably) infinitely many times; e.g. 0 in the multiset $(t ↦ 0 | t ∈ ℝ)$.
-  ]
-  We call a finite multiset a _bag_.
-
-  We will identify the set of bags having elements of type $A$ with $ℕ^((A))$: 
-  the finitely supported functions from $A$ to $ℕ$.
-]
-*/
 
 = Relational Algebra
 

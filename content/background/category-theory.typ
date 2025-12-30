@@ -3,6 +3,18 @@
 
 #show: show-syntax
 
+#context if (thesis-state.get)().is-standalone {
+  set document(title: "Basic (Enriched) Category Theory")
+  title()
+}
+
+#quote(attribution: [
+  Gregory Moore, Nathan Seiberg. "Classical and quantum conformal field theory." @moore-89-conformal
+])[
+  We will need to use some very simple notions of category theory,
+  an esoteric subject noted for its difficulty and irrelevance.
+]
+
 #todo[
   do we stick conventions up here?
   - Pros: chapter-per-file, follows organization structure

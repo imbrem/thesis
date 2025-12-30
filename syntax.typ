@@ -136,6 +136,16 @@
 } else {
   $ms("Ty")[#xs.pos().at(0)]$
 }
+#let sctx(..xs) = if xs.pos().at(0, default: none) == none {
+  $ms("Ctx")$
+} else {
+  $ms("Ctx")[#xs.pos().at(0)]$
+}
+#let slctx(..xs) = if xs.pos().at(0, default: none) == none {
+  $ms("LCtx")$
+} else {
+  $ms("LCtx")[#xs.pos().at(0)]$
+}
 
 // Order theory
 #let uua = math.class("unary", $↑$)
@@ -257,9 +267,20 @@
 #let sfam(A) = $bold(upright(#A))$
 #let pset(X) = $cal(P)(X)$
 
+#let idls(X) = $ms("Idl")(#X)$
+#let fils(X) = $ms("Fil")(#X)$
+
+#let ksidl = $ms("idl")$
+#let ksfil = $ms("fil")$
+
+#let genidl(A) = $⟨#A⟩_ksidl$
+#let genfil(A) = $⟨#A⟩_ksfil$
+
 #let sffam(A) = $A^ms("fin")$
 
-#let famle = $⊑$
+#let subfam = $⊆$
+#let cmpfam = $class("binary", ⌣)$
+#let aprtfam = $class("binary", \#)$
 
 #let fmark = $ms("fin")$
 #let fset(X) = $cal(P)_fmark(X)$
@@ -545,6 +566,8 @@
 #let show-syntax(body) = [
   #show: thm-rules
   #show: thm-rules-b
+
+  #set quote(block: true)
 
   #body
 ]

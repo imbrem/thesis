@@ -825,8 +825,6 @@ discovering and restoring invariants such as SSA or canonical loop forms @reissm
 
 = Type-Theoretic SSA <ssa-type>
 
-The goal of this section
-
 == Typing Rules
 
 === Types and Contexts

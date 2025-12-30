@@ -2,9 +2,9 @@
 
 #show: show-syntax
 
-#let def-sub-ty-sys = definition(name: "Cartesian Type System")[
+#let def-cart-ty-sys = definition(name: "Cartesian Type System")[
   We define a _cartesian type system_ $ms("X")$ to consist of:
-  - A set of _base types_ $ms("X")$
+  - A set of _types_ $ms("X")$
   - A near-prelattice $(sle()) : ms("X") rfn ms("X")$ on base types, _weakening_
 ]
 
@@ -54,7 +54,7 @@
 
 #let r-twk-base = rule(
   name: "base",
-  $X sle(ms("X")) Y$,
+  $X sle() Y$,
   $tywk(tybase(X), tybase(Y))$,
 );
 #let r-twk-sigma = rule(
@@ -208,7 +208,7 @@
 
 #fig-r-cwk
 
-#let def-sub-ty-sys = definition(name: "Type System")[
+#let def-ty-sys = definition(name: "Type System")[
   We define a _type system_ $ms("X")$ to consist of:
   - A set of _base types_ $ms("X")$
   - A set of _affine_ base types $affm : ms("X") rfn tunit$
@@ -236,7 +236,7 @@
   $
 ]
 
-#def-sub-ty-sys
+#def-ty-sys
 
 #let fig-quant-lattice = figure(
   [
