@@ -190,79 +190,19 @@
 
 #import "content/rules/haslb.typ": *
 
-#figure(
-  [
-    #rule-set(
-      declare-rule(r-br),
-      declare-rule(r-case),
-      declare-rule(r-case),
-      declare-rule(r-case-nil),
-      declare-rule(r-case-cons),
-    )
-    \
-  ],
-  caption: [Typing rules for #br-calc(ms("E"))],
-)
+#fig-haslb-br
 
 #todo[introduce concept of a _region space_]
 
-#figure(
-  [
-    #rule-set(
-      declare-rule(r-assign),
-      declare-rule(r-tm),
-      declare-rule(r-lb-nil),
-      declare-rule(r-lb-cons),
-    )
-    \
-  ],
-  caption: [Typing rules for #ssa-calc(ms("E"), ms("T"))],
-)
+#fig-haslb-ssa
 
 #todo[SSA is just a region-space too... hence gSSA]
 
 #todo[_slightly_ adjust grammar; this allows for custom terminators, which is always fun!]
 
-#figure(
-  [
-    #grid(
-      align: left,
-      columns: 3,
-      gutter: (2em, 1em),
-      bnf(Prod($r$, {
-        Or[$x = e seq r$][_assign_]
-        Or[$brb(lb("l"), e)$][_branch_]
-        Or[$scase(e, L)$][_case_]
-        Or[$τ$][_terminator_]
-        Or[${ r } seq L$][_braces_]
-      })),
-      bnf(
-        Prod($L$, {
-          Or[$·$][]
-          Or[$gbr(lb("l"), x, {r}) seq L$][]
-        }),
-      ),
-    )
-    \
-  ],
-  caption: [Grammar for #gssa-calc(ms("E"), ms("T"))],
-  kind: image,
-)
+#fig-gssa-grammar
 
-#figure(
-  [
-    #rule-set(
-      declare-rule(r-g-assign),
-      declare-rule(r-g-br),
-      declare-rule(r-g-case),
-      declare-rule(r-g-scope),
-      declare-rule(r-g-lb-nil),
-      declare-rule(r-g-lb-cons),
-    )
-    \
-  ],
-  caption: [Typing rules for #gssa-calc(ms("E"), ms("T"))],
-)
+#fig-haslb-gssa
 
 === Metatheory
 

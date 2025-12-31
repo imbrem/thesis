@@ -114,7 +114,7 @@ $
 
 #eqn-set(
   dntdef(r-inj, $⟦hasty(Γ, a, A)⟧ ; ι_lb("l")$),
-  dntdef(r-proj, $⟦hasty(Γ, e, Π (fty(lb("f"), A)))⟧ ; π_lb("f")$),
+  dntdef(r-destruct, $⟦hasty(Γ, e, Π (fty(lb("f"), A)))⟧ ; π_lb("f")$),
   dntdef(r-tuple, $⟦istup(Γ, E, lb("T"))⟧$),
 )
 

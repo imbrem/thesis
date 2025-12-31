@@ -5,6 +5,8 @@
 Add some documentation here? Shouldn't print!
 */
 
+//TODO: construct rule lists?
+
 // Rules for Γ ⊢ a : A
 
 #let r-var = rule(
@@ -29,11 +31,6 @@ Add some documentation here? Shouldn't print!
   $hasty(Γ, a, A)$,
   $hasty(Γ, lb("l") med a, Σ (lty(lb("l"), A)))$,
 );
-#let r-proj = rule(
-  name: "proj",
-  $hasty(Γ, e, Π (fty(lb("f"), A)))$,
-  $hasty(Γ, lb("f") med e, A)$,
-);
 #let r-tuple = rule(
   name: "tuple",
   $istup(Γ, E, lb("T"))$,
@@ -54,6 +51,12 @@ Add some documentation here? Shouldn't print!
   $hasty(Γ, a, A)$,
   $hasty(#$Γ, x : A$, b, B)$,
   $hasty(Γ, elet(x, a, b), B)$,
+);
+#let r-destruct = rule(
+  name: [$"let"_n$],
+  $hasty(Γ, e_1, Π lb("T"))$,
+  $hasty(#$Γ, lb("T")^V$, e_2, A)$,
+  $hasty(Γ, elet((V), e_1, e_2), A)$,
 );
 #let r-cases = rule(
   name: "cases",
@@ -85,11 +88,11 @@ Add some documentation here? Shouldn't print!
       declare-rule(r-coe),
       declare-rule(r-app),
       declare-rule(r-inj),
-      declare-rule(r-proj),
       declare-rule(r-tuple),
       declare-rule(r-pi-nil),
       declare-rule(r-pi-cons),
       declare-rule(r-let),
+      declare-rule(r-destruct),
       declare-rule(r-cases),
       declare-rule(r-sigma-nil),
       declare-rule(r-sigma-cons),
@@ -137,11 +140,6 @@ Add some documentation here? Shouldn't print!
   $tyeq(Γ, req, a, a', A)$,
   $tyeq(Γ, req, lb("l") med a, lb("l") med a', Σ (lty(lb("l"), A)))$,
 )
-#let r-eq-proj = rule(
-  name: "proj",
-  $tyeq(Γ, req, e, e', Π (fty(lb("f"), A)))$,
-  $tyeq(Γ, req, lb("f") med e, lb("f") med e', A)$,
-)
 #let r-eq-tuple = rule(
   name: "tuple",
   $tupref(Γ, req, E, E', lb("T"))$,
@@ -162,6 +160,12 @@ Add some documentation here? Shouldn't print!
   $tyeq(Γ, req, a, a', A)$,
   $tyeq(#$Γ, x : A$, req, b, b', B)$,
   $tyeq(Γ, req, elet(x, a, b), elet(x, a', b'), B)$,
+)
+#let r-eq-destruct = rule(
+  name: [$"let"_n$],
+  $tyeq(Γ, req, e_1, e'_1, Π lb("T"))$,
+  $tyeq(#$Γ, lb("T")^V$, req, e_2, e'_2, A)$,
+  $tyeq(Γ, req, elet((V), e_1, e_2), elet((V), e'_1, e'_2), A)$,
 )
 #let r-eq-cases = rule(
   name: "cases",
@@ -197,11 +201,11 @@ Add some documentation here? Shouldn't print!
       declare-rule(r-eq-coe),
       declare-rule(r-eq-app),
       declare-rule(r-eq-inj),
-      declare-rule(r-eq-proj),
       declare-rule(r-eq-tuple),
       declare-rule(r-eq-pi-nil),
       declare-rule(r-eq-pi-cons),
       declare-rule(r-eq-let),
+      declare-rule(r-eq-destruct),
       declare-rule(r-eq-cases),
       declare-rule(r-eq-sigma-nil),
       declare-rule(r-eq-sigma-cons),
@@ -311,185 +315,3 @@ Add some documentation here? Shouldn't print!
 )
 
 #fig-r-eff-hasty
-
-// Quantity rules for Γ ⊢_U a : A
-#let r-q-var = rule(
-  name: "var",
-  $uctxwk(ms("U"), Γ, #$x : A^1$)$,
-  $uhasty(Γ, ms("U"), x, A)$,
-)
-#let r-q-coe = rule(
-  name: "coe",
-  $uhasty(Γ, ms("U"), a, A)$,
-  $utywk(ms("U"), A, A')$,
-  $uhasty(Γ, ms("U"), a, A')$,
-)
-#let r-q-app = rule(
-  name: "app",
-  $usplits(ms("U"), Γ, Γ_kwl, Γ_kwr)$,
-  $uisfn(Γ_kwl, ms("U"), f, A, B)$,
-  $uhasty(Γ_kwr, ms("U"), a, A)$,
-  $uhasty(Γ, ms("U"), f med a, B)$,
-);
-#let r-q-inj = rule(
-  name: "inj",
-  $uhasty(Γ, ms("U"), a, A)$,
-  $uhasty(Γ, ms("U"), lb("l") med a, Σ (lty(lb("l"), A)))$,
-)
-#let r-q-proj = rule(
-  name: "proj",
-  $uhasty(Γ, ms("U"), e, Π (fty(lb("f"), A)))$,
-  $uhasty(Γ, ms("U"), lb("f") med e, A)$,
-)
-#let r-q-tuple = rule(
-  name: "tuple",
-  $uistup(Γ, ms("U"), E, lb("T"))$,
-  $uhasty(Γ, ms("U"), (E), Π lb("T"))$,
-)
-#let r-q-sigma-nil = rule(
-  name: "Σ-nil",
-  $uisebrs(Γ, ms("U"), ·, ·, A)$
-)
-#let r-q-sigma-cons = rule(
-  name: "Σ-cons",
-  $uisebrs(Γ, ms("U"), lb("L"), M, A)$,
-  $uhasty(#$Γ, x : B^qint$, ms("U"), a, A)$,
-  $uisebrs(Γ, ms("U"), #$lb("L"), lty(lb("l"), B)$, #$M, ebr(lb("l"), x, a)$, A)$,
-);
-#let r-q-pi-nil = rule(
-  name: "Π-nil",
-  $uctxwk(ms("U"), Γ, ·)$,
-  $uistup(Γ, ms("U"), ·, ·)$,
-)
-#let r-q-pi-cons = rule(
-  name: "Π-cons",
-  $usplits(ms("U"), Γ, Γ_kwl, Γ_kwr)$,
-  $uistup(Γ_kwl, ms("U"), E, lb("T"))$,
-  $uhasty(Γ_kwr, ms("U"), e, A)$,
-  $uistup(Γ, ms("U"), #$E, e$, #$lb("T"), fty(lb("f"), A)$)$,
-);
-
-#let fig-r-q-hasty = figure(
-  [
-    #rule-set(
-      declare-rule(r-q-var),
-      declare-rule(r-q-coe),
-      declare-rule(r-q-app),
-      declare-rule(r-q-inj),
-      declare-rule(r-q-proj),
-      declare-rule(r-q-tuple),
-      declare-rule(r-q-sigma-nil),
-      declare-rule(r-q-sigma-cons),
-      declare-rule(r-q-pi-nil),
-      declare-rule(r-q-pi-cons),
-    )
-    #todo[let]
-    #todo[cases]
-    #todo[iter]
-    \
-  ],
-  caption: [Linearity rules for #iter-calc()],
-)
-
-#fig-r-q-hasty
-
-// Congruence rules for Γ ⊢_R a ->> b : A
-
-#let r-ref-var = rule(
-  name: "var",
-  $Γ med x = A$,
-  $tyref(Γ, ms("R"), x, x, A)$,
-)
-#let r-ref-coe = rule(
-  name: "coe",
-  $tyref(Γ, ms("R"), a, a', A)$,
-  $tywk(A, A')$,
-  $tyref(Γ, ms("R"), a, a', A')$,
-)
-#let r-ref-app = rule(
-  name: "app",
-  $isfn(Γ, f, A, B)$,
-  $tyref(Γ, ms("R"), a, a', A)$,
-  $tyref(Γ, ms("R"), f med a, f med a', B)$,
-)
-#let r-ref-inj = rule(
-  name: "inj",
-  $tyref(Γ, ms("R"), a, a', A)$,
-  $tyref(Γ, ms("R"), lb("l") med a, lb("l") med a', Σ (lty(lb("l"), A)))$,
-)
-#let r-ref-proj = rule(
-  name: "proj",
-  $tyref(Γ, ms("R"), e, e', Π (fty(lb("f"), A)))$,
-  $tyref(Γ, ms("R"), lb("f") med e, lb("f") med e', A)$,
-)
-#let r-ref-tuple = rule(
-  name: "tuple",
-  $tupref(Γ, ms("R"), E, E', lb("T"))$,
-  $tyref(Γ, ms("R"), (E), (E'), Π lb("T"))$,
-)
-#let r-ref-pi-nil = rule(
-  name: "Π-nil",
-  $tupref(Γ, ms("R"), ·, ·, ·)$,
-)
-#let r-ref-pi-cons = rule(
-  name: "Π-cons",
-  $tupref(Γ, ms("R"), E, E', lb("T"))$,
-  $tyref(Γ, ms("R"), e, e', A)$,
-  $tupref(Γ, ms("R"), #$E, e$, #$E', e'$, #$lb("T"), fty(lb("f"), A)$)$,
-)
-#let r-ref-let = rule(
-  name: "let",
-  $tyref(Γ, ms("R"), a, a', A)$,
-  $tyref(#$Γ, x : A$, ms("R"), b, b', B)$,
-  $tyref(Γ, ms("R"), elet(x, a, b), elet(x, a', b'), B)$,
-)
-#let r-ref-cases = rule(
-  name: "cases",
-  $tyref(Γ, ms("R"), e, e', Σ lb("L"))$,
-  $ebrsref(Γ, lb("L"), ms("R"), M, M', A)$,
-  $tyref(Γ, ms("R"), ecase(e, M), ecase(e', M'), A)$,
-)
-#let r-ref-sigma-nil = rule(
-  name: "Σ-nil",
-  $ebrsref(Γ, ·, ms("R"), ·, ·, ·)$,
-)
-#let r-ref-sigma-cons = rule(
-  name: "Σ-cons",
-  $ebrsref(Γ, lb("L"), ms("R"), M, M', A)$,
-  $tyref(#$Γ, x : A$, ms("R"), a, a', A)$,
-  $ebrsref(
-    Γ, #$lb("L"), lty(lb("l"), A)$, ms("R"),
-    (#$M, ebr(lb("l"), x, a)$), (#$M', ebr(lb("l"), x, a')$),
-    A
-  )$,
-)
-#let r-ref-iter = rule(
-  name: "iter",
-  $tyref(Γ, ms("R"), a, a', A)$,
-  $tyref(Γ, ms("R"), e, e', B + A)$,
-  $tyref(Γ, ms("R"), eiter(a, x, e), eiter(e', x, a'), B)$,
-)
-
-#let fig-r-ref-congr-hasty = figure(
-  [
-    #rule-set(
-      declare-rule(r-ref-var),
-      declare-rule(r-ref-coe),
-      declare-rule(r-ref-app),
-      declare-rule(r-ref-inj),
-      declare-rule(r-ref-proj),
-      declare-rule(r-ref-tuple),
-      declare-rule(r-ref-pi-nil),
-      declare-rule(r-ref-pi-cons),
-      declare-rule(r-ref-let),
-      declare-rule(r-ref-cases),
-      declare-rule(r-ref-sigma-nil),
-      declare-rule(r-ref-sigma-cons),
-      declare-rule(r-ref-iter),
-    )
-    \
-  ],
-  caption: [Congruence rules for #iter-calc() refinement],
-)
-
-#fig-r-ref-congr-hasty
