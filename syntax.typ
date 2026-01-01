@@ -23,6 +23,8 @@
 
 // == Fonts ==
 
+#let qd = $class("punctuation", .)$
+
 #let ms(txt) = $sans(txt)$
 #let mb(txt) = $bold(txt)$
 #let lb(txt) = $mono(txt)$
@@ -246,7 +248,8 @@
 #let rfn = $arrow.r.struck$
 
 #let urel(R, a) = $#a #R$
-#let brel(R, a, b) = $#a class("binary", #R) #b$
+#let cc = math.class("binary", $;$)
+#let brel(R, a, b) = $#a class("binary", #box($#R$)) #b$
 
 #let stor(R) = $⟨#R⟩$
 

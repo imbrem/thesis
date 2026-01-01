@@ -33,19 +33,19 @@ to fix notations. Recall the definition of a category $cal(C)$:
   - For each pair of objects $A, B in |cal(C)|$, a set of _morphisms_ $cal(C)(A, B)$.
     We call this set a _hom-set_.
   - For each object $A in |cal(C)|$, an _identity morphism_ $id_A : cal(C)(A, A)$
-  - A binary operation, $- med ; -$,
+  - A binary operation, $- med cc -$,
     mapping each pair of morphisms $f : cal(C)(A, B)$ and $g : cal(C)(B, C)$
-    to their _composition_ $f ; g : cal(C)(A, C)$
+    to their _composition_ $f cc g : cal(C)(A, C)$
 
   Such that:
-  - For all $A, B∈ |cal(C)|$, $id_A ; f = f ; id_B = f$
-  - For all $f: cal(C)(A, B), g: cal(C)(B, C), h: cal(C)(C, D)$, $(f ; g) ; h = f ; (g ; h)$
+  - For all $A, B∈ |cal(C)|$, $id_A cc f = f cc id_B = f$
+  - For all $f: cal(C)(A, B), g: cal(C)(B, C), h: cal(C)(C, D)$, $(f cc g) cc h = f cc (g cc h)$
 
   We will sometimes write the set $cal(C)(A, B)$ as $A ahm(cal(C)) B$ or,
   where $cal(C)$ is clear from context, $A -> B$.
 ]
 
-We follow the convention in computer science and define composition "forwards" as $f ; g$.
+We follow the convention in computer science and define composition "forwards" as $f cc g$.
 
 /*
 If we interpret objects $A, B$ as _states_
@@ -54,7 +54,7 @@ then their _sequential composition_
 $
   #diagram(cell-size: 15mm, $ A edge(f, ->) & B edge(g, ->) & C $)
 $
-is precisely $f ; g : cal(C)(A, C)$: the composite path from $A$ to $C$ through $B$.
+is precisely $f cc g : cal(C)(A, C)$: the composite path from $A$ to $C$ through $B$.
 
 #todo[nicer introduction to commutative diagrams]
 
@@ -64,7 +64,7 @@ Viewing morphisms in a category as diagrams, the laws of a category become graph
 if the identity transformation from $A$ to $A$ is doing nothing, i.e. the null path, then the
 axiom that
 $
-  id_A ; f = f ; id_B = f
+  id_A cc f = f cc id_B = f
 $
 becomes the (trivial) equation on diagrams
 $
@@ -94,7 +94,7 @@ $
   objects sets $A$
   and morphisms $f : cset(A, B)$ functions $f : A → B$.
 
-  Composition $f ; g$ is simply (pointwise) composition of functions $g ∘ f$.
+  Composition $f cc g$ is simply (pointwise) composition of functions $g ∘ f$.
 ]
 
 #definition(name: "Category of preorders")[
@@ -128,7 +128,7 @@ $
   Given a morphism $f : cal(C)(A, B)$,
 
   - $f$ is an _isomorphism_ if there exists an _inverse morphism_ $g : cal(C)(B, A)$
-    such that $f ; g = id_A$ and $g ; f = id_B$.
+    such that $f cc g = id_A$ and $g cc f = id_B$.
     //
     If such a morphism exists, it is unique, so we may write it as $f^(-1)$.
 
@@ -136,12 +136,12 @@ $
     an isomorphism $f : cal(C)(A, B)$.
 
   - $f$ is an _epimorphism_ if, for all parallel morphisms $g_1, g_2 : cal(C)(B, X)$,
-    $f ; g_1 = f ; g_2$ implies $g_1 = g_2$.
+    $f cc g_1 = f cc g_2$ implies $g_1 = g_2$.
     //
     In this case, we will say $f$ is _epic_.
 
   - $f$ is a _monomorphism_ if, for all parallel morphisms $h_1, h_2 : cal(C)(X, A)$,
-    $h_1 ; f = h_2 ; f$ implies $h_1 = h_2$.
+    $h_1 cc f = h_2 cc f$ implies $h_1 = h_2$.
     //
     In this case, we will say $f$ is _monic_.
 ]
@@ -181,7 +181,7 @@ it is _not_ generally the case that a morphism which is both epic and monic is a
     to $cal(D)$-morphisms $F f : cal(D)(F A, F B)$
   such that
   - $F$ preserves identities: $F id_A = id_(F A)$
-  - $F$ preserves composition: $F (f ; g) = (F f) ; (F g)$
+  - $F$ preserves composition: $F (f cc g) = (F f) cc (F g)$
 ]
 
 #todo[_forgetful functor_ from $cposet$ to $cset$]
@@ -215,9 +215,9 @@ In general,
 #todo[in fact, these functors form an _adjunction_; but we'll talk about that later, maybe...]
 
 Given functors $F : cal(C)_1 -> cal(C)_2$ and $G : cal(C)_2 -> cal(C)_3$, we may define their
-_composition_ $F ; G$ as follows:
-- $|F ; G| = |G| ∘ |F| : |cal(C)_1| → |cal(C)_3|$
-- For all $f : cal(C)_1(A, B)$, $(F ; G) med f = G med (F f) : cal(C)_3(G med (F A), G med (F B))$
+_composition_ $F cc G$ as follows:
+- $|F cc G| = |G| ∘ |F| : |cal(C)_1| → |cal(C)_3|$
+- For all $f : cal(C)_1(A, B)$, $(F cc G) med f = G med (F f) : cal(C)_3(G med (F A), G med (F B))$
 
 Furthermore, for an arbitrary category $cal(C)$, we may define the _identity functor_ $id_cal(C)$
 as mapping objects and morphisms to themselves. In particular, this equips the set of categories
@@ -240,7 +240,7 @@ itself with the structure of a category, the _category of categories_ $ms("Cat")
   consists of a family of morphisms $η_A : cal(D)(F A, G A)$,
   indexed by objects $A ∈ |cal(C)|$, such that, //TODO: parenthetical?
   for each morphism $f : cal(C)(A, B)$, we have that
-  $η_A ; (G med f) = (F med f) ; η_B$
+  $η_A cc (G med f) = (F med f) cc η_B$
   -- i.e. the following diagram commutes:
   $
     #diagram(cell-size: 15mm, $ F med A edge(η_A, ->) edge("d", F med f, ->) & G med A edge("d", G med f, ->, label-side: #left) \
@@ -338,12 +338,12 @@ and morphisms $cconc(cal(V), cal(W))$ concrete functors $F: cal(V) → cal(W)$ b
   (the _product_ of the $f_i$)
   such that
   $
-    ∀ j : I . ⟨icol(f)⟩^P ; π_j = f_j
+    ∀ j : I . ⟨icol(f)⟩^P cc π_j = f_j
   $
 
   Equivalently, for arbitrary $g : cal(C)(X, P)$, we have that
   $
-    (∀ j : I . g ; π_j = f_j) <==> g = ⟨icol(f)⟩^P
+    (∀ j : I . g cc π_j = f_j) <==> g = ⟨icol(f)⟩^P
   $
 
   Where it is unambiguous from context, we omit the superscript $P$ and
@@ -372,7 +372,7 @@ In general, where the appropriate products exist, we write
   and morphisms $icol(f) = (f_i : cal(C)(A_i, B_i) | i ∈ I)$,
   we define
   $
-    Π mb(f) = Π_(i ∈ I)f_i := ⟨π_i^(Π icol(A)) ; f_i⟩_(i ∈ I) : cal(C)(Π icol(A), Π icol(B))
+    Π mb(f) = Π_(i ∈ I)f_i := ⟨π_i^(Π icol(A)) cc f_i⟩_(i ∈ I) : cal(C)(Π icol(A), Π icol(B))
   $
 
 - Likewise, given $f: A_1 → B_1$, $g : A_2 → B_2$, we define
@@ -392,7 +392,7 @@ In general, where the appropriate products exist, we write
   $F_(hat(icol(A)), x) med f : F_(hat(icol(A))[x := X]) → F_(hat(icol(A))[x := B])$
   such that $F_(hat(icol(A)), x): cal(C) → cal(D)$ is a functor; that is,
   - $F_(hat(icol(A)), x) id_(A_x) = id_(F_icol(A))$
-  - $F_(hat(icol(A)), x) (f ; g) = F_(hat(icol(A)), x) f ; F_(hat(icol(A)), x) g$
+  - $F_(hat(icol(A)), x) (f cc g) = F_(hat(icol(A)), x) f cc F_(hat(icol(A)), x) g$
     for $f : cal(C)(X, Y), g : cal(C)(Y, Z)$.
 
   Given a family of morphisms $η_icol(A) : cal(D)(F_icol(A), G_icol(A))$,
@@ -470,12 +470,12 @@ A coproduct, then, is just the dual notion to a product:
     (the _coproduct_ of the $f_i$)
     such that
     $
-      ∀ j : I . ι_j ; [f_i]_(i ∈ I) = f_j
+      ∀ j : I . ι_j cc [f_i]_(i ∈ I) = f_j
     $
 
     That is, for arbitrary $g : cal(C)(C, X)$, we have that
     $
-       (∀ j ∈ I . ι_j ; g = f_j) <==> g = [f_i]_(i ∈ I)
+       (∀ j ∈ I . ι_j cc g = f_j) <==> g = [f_i]_(i ∈ I)
     $
 
   We note that the coproduct $C$ of a family of objects $A_i$ is unique up to isomorphism;
@@ -493,9 +493,9 @@ A coproduct, then, is just the dual notion to a product:
   - $A + B := Σ [A, B]$
   - For $n ∈ ℕ$, $ntag(n, A) = Σ [A,...,A]$ ($n$ copies of $A$)
   - For morphisms $f_i : cal(C)(A_i, B_i)$ for arbitrary $i ∈ I$,
-    - $Σ_i f_i = ⟨f_i ; ι_i⟩_i : Σ_i A_i → Σ_i B_i$, and, therefore, in particular
-    - $Σ [f_1,...,f_n] = ⟨f_1 ; ι_1,..., f_n ; ι_n⟩ : Σ [A_1,...,A_n] → Σ [B_1,...,B_n]$
-    - $f_1 + f_2 = ⟨f_1 ; ι_1 , f_2 ; ι_2⟩ : A_1 + A_2 → B_1 + B_2$
+    - $Σ_i f_i = ⟨f_i cc ι_i⟩_i : Σ_i A_i → Σ_i B_i$, and, therefore, in particular
+    - $Σ [f_1,...,f_n] = ⟨f_1 cc ι_1,..., f_n cc ι_n⟩ : Σ [A_1,...,A_n] → Σ [B_1,...,B_n]$
+    - $f_1 + f_2 = ⟨f_1 cc ι_1 , f_2 cc ι_2⟩ : A_1 + A_2 → B_1 + B_2$
   - In particular, for $f : cal(C)(A, B)$ and objects $C$, we define
     - $f + C = f + id_C : A + C → B + C$, and
     - $C + f = id_C + f : C + A → C + B$
@@ -568,7 +568,7 @@ $cal(V)$ will range over concretely cartesian categories unless otherwise specif
   - For each object $A ∈ |cal(C)|$, an _identity morphism_ $id_A : cal(C)(A, B)$
   - For each triple of objects $A, B, C ∈ |cal(C)|$, a _composition morphism_
     $
-      (;)_(A, B, C) : cal(V)(cal(C)(A, B) × cal(C)(B, C), cal(C)(A, C))
+      (cc)_(A, B, C) : cal(V)(cal(C)(A, B) × cal(C)(B, C), cal(C)(A, C))
     $
 ]
 
@@ -585,7 +585,7 @@ with:
   can be written in a unique way as an application $U f$ for $f : cal(C)(A, B)$.
 - Composition given by
   $
-    ∀ f : (U cal(C))(A, B), g : (U cal(C))(B, C) . f ; g = (U (;)_(A, B, C)) (f, g)
+    ∀ f : (U cal(C))(A, B), g : (U cal(C))(B, C) . f cc g = (U (cc)_(A, B, C)) (f, g)
   $
 
 #todo[pull up concart-functor to background]
@@ -595,7 +595,7 @@ In fact, this construction can be generalized quite readily:
 #definition(name: "Concretely Cartesian Functor")[
   Let $F : cal(V) → cal(W)$ be a functor between concretely cartesian categories
   $(cal(V), U_cal(V))$ and $(cal(W), U_cal(W))$. We say $F$ is _concretely cartesian_ if
-  - $F$ preserves erasure: $F ; U_cal(W) = U_cal(V)$
+  - $F$ preserves erasure: $F cc U_cal(W) = U_cal(V)$
   - $F$ preserves finite products: $∀ [A_1,...,A_n] . F (Π [A_1,...,A_n]) = Π [F A_1,...,F A_n]$
 
   Note in particular that the erasure $U : cal(V) → cset$
@@ -618,7 +618,7 @@ concretely cartesian functor as follows:
   - Identity morphisms $id_A^(F cal(C)) = id_A^(cal(C))$
   - Composition morphisms
     $
-      (;)_(A, B, C)^(F cal(C)) = (F × F) ; (;)_(A, B, C)^(cal(C))
+      (cc)_(A, B, C)^(F cal(C)) = (F × F) cc (cc)_(A, B, C)^(cal(C))
     $
 ]
 
@@ -631,7 +631,7 @@ We will often consider two particularly important cases:
   - Composition respects this partial order, i.e.,
     for all $f_1, f_2 : cal(C)(A, B)$, $g_1, g_2 ∈ cal(C)(B, C)$,
     $
-      f_1 ≤ f_2 ∧ g_1 ≤ g_2 => (f_1 ; g_1) ≤ (f_2 ; g_2)
+      f_1 ≤ f_2 ∧ g_1 ≤ g_2 => (f_1 cc g_1) ≤ (f_2 cc g_2)
     $
 
 Throughout the rest of this section, we fix a concretely cartesian category $cal(V)$.
@@ -669,7 +669,8 @@ Similarly to before,
 
 In general, we can recover the standard category-theoretic definitions of a concept by taking $cal(V) = cset$.
 Often, many definitions for $cal(V)$-categories are in fact identical;
-in particular, the definitions for terminal objects, initial objects, products and coproducts are exactly the same,
+in particular, 
+the definitions for terminal objects, initial objects, products and coproducts are exactly the same,
 so we will not repeat them.
 
 #context if (thesis-state.get)().is-standalone {

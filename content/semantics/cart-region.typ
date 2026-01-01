@@ -20,7 +20,7 @@
 #dntty($haslb(Γ, r, ms("L"))$, $cal(C)(Π ⟦Γ⟧, Σ ⟦ms("L")⟧)$)
 
 #eqn-astack(
-  dntdef(r-g-assign, $clet(⟦hasty(Γ, e, A)⟧) ; α^⊗ ; ⟦haslb(#$Γ, x : A$, r, ms("L"))⟧$),
+  dntdef(r-g-assign, $clet(⟦hasty(Γ, e, A)⟧) cc α^⊗ cc ⟦haslb(#$Γ, x : A$, r, ms("L"))⟧$),
   dntdef(r-g-br, todo-inline("this")),
   dntdef(r-g-case, todo-inline("this")),
   dntdef(r-g-scope, todo-inline("this")),
@@ -38,7 +38,7 @@
 #lemma(name: "Weakening")[
   For all derivations $D : deriv(haslb(Γ, r, ms("K"))) $, $D' : deriv(haslb(Δ, r, ms("L")))$,
   if $cwk(Γ, Δ)$ and $lbcwk(ms("L"), ms("K"))$, we have that
-  $⟦D⟧ = ⟦cwk(Γ, Δ)⟧ ; ⟦D'⟧ ; ⟦lbcwk(ms("L"), ms("K"))⟧$.
+  $⟦D⟧ = ⟦cwk(Γ, Δ)⟧ cc ⟦D'⟧ cc ⟦lbcwk(ms("L"), ms("K"))⟧$.
 
   In particular, if $Γ = Δ$ and $ms("L") = ms("K")$, then $⟦D⟧ = ⟦D'⟧$.
 ]

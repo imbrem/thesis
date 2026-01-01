@@ -45,8 +45,8 @@ $
   dntdef(r-twk-unit, $!_A$),
 )
 #eqn-astack(
-  dntdef(r-twk-sigma, $α^+ ; ⟦tywk(Σ lb("L"), Σ lb("L")')⟧ + ⟦tywk(A, A')⟧ ; α^+$),
-  dntdef(r-twk-pi, $α^⊗ ; ⟦tywk(Π lb("L"), Π lb("L")')⟧ ⊗ ⟦tywk(A, A')⟧ ; α^⊗$),
+  dntdef(r-twk-sigma, $α^+ cc ⟦tywk(Σ lb("L"), Σ lb("L")')⟧ + ⟦tywk(A, A')⟧ cc α^+$),
+  dntdef(r-twk-pi, $α^⊗ cc ⟦tywk(Π lb("L"), Π lb("L")')⟧ ⊗ ⟦tywk(A, A')⟧ cc α^⊗$),
 )
 
 #lemma(name: "Coherence (Type weakening)")[
@@ -83,7 +83,7 @@ $
 
 #eqn-set(
   dntdef(r-clwk-nil, $0_(Σ ms("K"))$),
-  dntdef(r-clwk-cons, $α^+ ; ⟦clbwk(cal("L"), cal("K"))⟧ + (⟦cwk(Γ, Δ)⟧ ⊗ ⟦tywk(A, B)⟧) ; α^+$),
+  dntdef(r-clwk-cons, $α^+ cc ⟦clbwk(cal("L"), cal("K"))⟧ + (⟦cwk(Γ, Δ)⟧ ⊗ ⟦tywk(A, B)⟧) cc α^+$),
 )
 
 #lemma(name: "Coherence (Control weakening)")[
@@ -93,11 +93,11 @@ $
 ]
 
 $
-  ∀ f : cal(C)(A, B) . clet(f) := Δ_A ; A ⊗ f : cal(C)(A, A ⊗ B)
+  ∀ f : cal(C)(A, B) . clet(f) := Δ_A cc A ⊗ f : cal(C)(A, A ⊗ B)
 $
 
 $
-  ∀ f : cal(C)(A, Σ icol("B")) . ccase(f) := clet(l) ; idistl(A, icol("B"))
+  ∀ f : cal(C)(A, Σ icol("B")) . ccase(f) := clet(l) cc idistl(A, icol("B"))
   : cal(C)(A, Σ (A ⊗ icol("B")))
 $
 
@@ -105,16 +105,16 @@ $
 
 #eqn-set(
   dntdef(r-var, $π_x$),
-  dntdef(r-coe, $⟦hasty(Γ, a, A)⟧ ; ⟦tywk(A, A')⟧$),
+  dntdef(r-coe, $⟦hasty(Γ, a, A)⟧ cc ⟦tywk(A, A')⟧$),
 )
 
 #eqn-astack(
-  dntdef(r-app, $clet(⟦hasty(Γ, a, A)⟧) ; ⟦isfn(Γ, f, A, B)⟧$),
+  dntdef(r-app, $clet(⟦hasty(Γ, a, A)⟧) cc ⟦isfn(Γ, f, A, B)⟧$),
 )
 
 #eqn-set(
-  dntdef(r-inj, $⟦hasty(Γ, a, A)⟧ ; ι_lb("l")$),
-  dntdef(r-destruct, $⟦hasty(Γ, e, Π (fty(lb("f"), A)))⟧ ; π_lb("f")$),
+  dntdef(r-inj, $⟦hasty(Γ, a, A)⟧ cc ι_lb("l")$),
+  dntdef(r-destruct, $⟦hasty(Γ, e, Π (fty(lb("f"), A)))⟧ cc π_lb("f")$),
   dntdef(r-tuple, $⟦istup(Γ, E, lb("T"))⟧$),
 )
 
@@ -123,19 +123,19 @@ $
     r-cases,
     $
       ccase(⟦hasty(Γ, e, Σ lb("L"))⟧)
-      ; ⟦isebrs(Γ, lb("L"), M, A)⟧
+      cc ⟦isebrs(Γ, lb("L"), M, A)⟧
     $,
   ),
   dntdef(
     r-let,
     $
-      clet(⟦hasty(Γ, a, A)⟧) ; α^⊗ ; ⟦hasty(#$Γ, x : A$, b, B)⟧
+      clet(⟦hasty(Γ, a, A)⟧) cc α^⊗ cc ⟦hasty(#$Γ, x : A$, b, B)⟧
     $,
   ),
   dntdef(
     r-iter,
     $
-      clet(⟦hasty(Γ, a, A)⟧) ; (ccase(⟦hasty(Γ, e, B + A)⟧))^† ; rpi
+      clet(⟦hasty(Γ, a, A)⟧) cc (ccase(⟦hasty(Γ, e, B + A)⟧))^† cc rpi
     $,
   ),
 )
@@ -144,7 +144,7 @@ $
 
 #eqn-set(
   dntdef(r-pi-nil, $!_(Π⟦Γ⟧)$),
-  dntdef(r-pi-cons, $Δ_(Π⟦Γ⟧) ; ⟦istup(Γ, E, lb("T"))⟧ ⋉ ⟦hasty(Γ, e, A)⟧ ; α^⊗$),
+  dntdef(r-pi-cons, $Δ_(Π⟦Γ⟧) cc ⟦istup(Γ, E, lb("T"))⟧ ⋉ ⟦hasty(Γ, e, A)⟧ cc α^⊗$),
 )
 
 #dntty($kebrs(cal(K), M, A)$, $cal(C)(Σ ⟦cal(K)⟧, A)$)
@@ -153,14 +153,14 @@ $
   dntdef(r-csigma-nil, $0_A$),
   dntdef(
     r-csigma-cons,
-    $α^+ ; ⟦kebrs(cal(K), M, A)⟧ + ⟦hasty(#$Γ, x : B$, a, A)⟧ ; ∇_⟦A⟧$,
+    $α^+ cc ⟦kebrs(cal(K), M, A)⟧ + ⟦hasty(#$Γ, x : B$, a, A)⟧ cc ∇_⟦A⟧$,
   ),
 )
 
 #lemma(name: "Weakening")[
   For all derivations $D : deriv(hasty(Γ, a, A))$, $D' : deriv(hasty(Δ, a, A))$,
   given $cwk(Γ, Δ)$, we have that
-  $⟦D'⟧ = ⟦cwk(Γ, Δ)⟧ ; ⟦D⟧$.
+  $⟦D'⟧ = ⟦cwk(Γ, Δ)⟧ cc ⟦D⟧$.
 
   In particular, it follows that, if $Γ = Δ$, $⟦D⟧ = ⟦D'⟧$.
 ]
