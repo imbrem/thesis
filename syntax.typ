@@ -71,6 +71,7 @@
 #let rtl-calc(..xs) = lam-calc("rtl", ..xs)
 #let grtl-calc(..xs) = glam-calc("rtl", ..xs)
 #let br-calc(..xs) = lam-calc("br", ..xs)
+#let cond-calc(..xs) = lam-calc("cond", ..xs)
 #let ssa-calc(..xs) = lam-calc("ssa", ..xs)
 #let gssa-calc(..xs) = glam-calc("ssa", ..xs)
 #let op-calc(..xs) = lam-calc("op", ..xs)
@@ -386,8 +387,8 @@
 #let isfn(Γ, f, A, B) = $#Γ ⊢ #f : #A → #B$
 #let istup(Γ, E, T) = $#Γ ⊢ #E scripts(:)^* #T$
 
-#let hasty(Γ, a, A) = $#Γ ⊢ #a : #A$
-#let haslb(Γ, r, L) = $#Γ ⊢ #r triangle.stroked.small.r #L$
+#let hasty(Γ, a, A, annot: none) = $#Γ scripts(⊢)_#annot #a : #A$
+#let haslb(Γ, r, L, annot: none) = $#Γ scripts(⊢)_#annot #r triangle.stroked.small.r #L$
 
 #let kebrs(K, B, A) = $#K ⊢ #B scripts(:) #A$
 #let ksbrs(K, B, L) = $#K ⊢ #B triangle.stroked.small.r #L$

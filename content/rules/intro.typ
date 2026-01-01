@@ -14,18 +14,23 @@
         }),
         Prod($v$, {
           Or[$x$][_variable_]
+          Or[$c$][_constant_]
           Or[$(V)$][_structure_]
         }),
         Prod($V$, {
           Or[$·$][]
-          Or[$V, fexpr(lb("f"), x)$][]
+          Or[$V, fexpr(lb("f"), v)$][]
         }),
       ),
       bnf(
         Prod($β$, {
           Or[$x = o seq β$][_assign_]
-          Or[$(V) = o seq β$][_destructure_]
+          Or[$(icol(x)) = o seq β$][_destructure_]
           Or[$τ$][_terminator_]
+        }),
+        Prod($icol(x)$, {
+          Or[$·$][]
+          Or[$icol(x), fexpr(lb("f"), x)$][]
         }),
         Prod($τ$, {
           Or[$retb(o)$][_return_]
@@ -86,11 +91,12 @@
         }),
         Prod($v$, {
           Or[$x$][_variable_]
+          Or[$c$][_constant_]
           Or[$(V)$][_structure_]
         }),
         Prod($V$, {
           Or[$·$][]
-          Or[$V, fexpr(lb("f"), x)$][]
+          Or[$V, fexpr(lb("f"), v)$][]
         }),
       ),
       bnf(
@@ -98,6 +104,10 @@
           Or[$x = o seq β$][_assign_]
           Or[$(V) = o seq β$][_destructure_]
           Or[$τ$][_terminator_]
+        }),
+        Prod($icol(x)$, {
+          Or[$·$][]
+          Or[$icol(x), fexpr(lb("f"), x)$][]
         }),
         Prod($τ$, {
           Or[$brb(lb("l"), o)$][_branch_]
@@ -170,7 +180,7 @@
 
 #lex-ssa-op-grammar
 
-#let iter-calc-grammar = figure(
+#let ssa-expr-grammar = figure(
   [
     #grid(
       align: left,
@@ -181,7 +191,8 @@
           $e$,
           {
             Or[$x$][_variable_]
-            Or[$f med e$][_app_]
+            Or[$c$][_constant_]
+            Or[$f med e$][_application_]
             Or[$lb("l") med e$][_label_]
             Or[$(E)$][_structure_]
             Or[$elet(x, e_1, e_2)$][_let-binding_]
@@ -215,7 +226,7 @@
   kind: image,
 )
 
-#iter-calc-grammar
+#ssa-expr-grammar
 
 #let lex-ssa-grammar = figure(
   [

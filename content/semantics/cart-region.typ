@@ -13,7 +13,7 @@
   ]
 ]
 
-#todo[Note that #br-calc() is a sublanguage of #gssa-calc()]
+#todo[Note that #cond-calc() is a sublanguage of #gssa-calc()]
 
 #todo[#ssa-calc() is a sublanguage of #gssa-calc()]
 

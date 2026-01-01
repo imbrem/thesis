@@ -211,6 +211,12 @@
   $tywk(A, B)$,
   $cwk(#$Γ, x : A$, #$Δ, x : A$)$,
 );
+#let r-ctxwk-perm = rule(
+  name: [Π-perm],
+  $σ "perm"$,
+  $cwk(Γ, Δ)$,
+  $cwk(σ · Γ, Δ)$,
+);
 
 #let r-lbwk-nil = rule(
   name: "Σ-nil",
@@ -221,6 +227,12 @@
   $lbcwk(ms("L"), ms("K"))$,
   $tywk(A, B)$,
   $cwk(#$ms("L"), lb("l")(A)$, #$ms("K"), lb("l")(B)$)$,
+);
+#let r-lbwk-perm = rule(
+  name: [Σ-perm],
+  $σ "perm"$,
+  $lbcwk(ms("L"), ms("K"))$,
+  $lbcwk(σ · ms("L"), ms("K"))$,
 );
 
 #let r-clwk-nil = rule(
@@ -234,16 +246,25 @@
   $tywk(A, B)$,
   $clbwk(#$cal("L"), clty(lb("l"), Γ, A)$, #$cal("K"), clty(lb("l"), Δ, B)$)$,
 );
+#let r-clwk-perm = rule(
+  name: [ΣΠ-perm],
+  $σ "perm"$,
+  $clbwk(cal("L"), cal("K"))$,
+  $clbwk(σ · cal("L"), cal("K"))$,
+);
 
 #let fig-r-cwk = figure(
   [
     #rule-set(
       declare-rule(r-ctxwk-nil, label: <ctxwk-nil>),
       declare-rule(r-ctxwk-cons, label: <ctxwk-cons>),
+      declare-rule(r-ctxwk-perm, label: <ctxwk-perm>),
       declare-rule(r-lbwk-nil, label: <lbwk-nil>),
       declare-rule(r-lbwk-cons, label: <lbwk-cons>),
+      declare-rule(r-lbwk-perm, label: <lbwk-perm>),
       declare-rule(r-clwk-nil, label: <clwk-nil>),
       declare-rule(r-clwk-cons, label: <clwk-cons>),
+      declare-rule(r-clwk-perm, label: <clwk-perm>),
     )
     \
   ],
@@ -291,7 +312,7 @@
     \
   ],
   caption: [
-    Meet-semilattice of usage obligations under $kqwk$, 
+    Meet-semilattice of usage obligations under $kqwk$,
     going from "less defined/less restricted" to "more defined/more restricted."
   ],
 )

@@ -18,7 +18,8 @@ Add some documentation here? Shouldn't print!
           $e$,
           {
             Or[$x$][_variable_]
-            Or[$f med e$][_app_]
+            Or[$a$][_atom_ ($a ∈ ms("E")$)]
+            Or[$f med e$][_application_ ($f ∈ ms("F")$)]
             Or[$lb("l") med e$][_label_]
             Or[$(E)$][_structure_]
             Or[$elet(x, e_1, e_2)$][_let-binding_]
@@ -47,10 +48,12 @@ Add some documentation here? Shouldn't print!
     )
   ],
   caption: [
-    Grammar for #iter-calc()
+    Grammar for #iter-calc(ms("F"), ms("E"))
   ],
   kind: image,
 )
+
+#iter-calc-grammar
 
 // Rules for Γ ⊢ a : A
 
