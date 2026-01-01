@@ -222,8 +222,19 @@
 #let sfam(A) = $bold(upright(#A))$
 #let pset(X) = $cal(P)(X)$
 
+#let fsup(f) = $ms("supp")(#f)$
+#let fibs(R) = $ms("Fib")(#R)$
+#let delems(X) = $#X _ms("def")$
+#let ups(X) = $ms("Up")(#X)$
+#let lows(X) = $ms("Down")(#X)$
 #let idls(X) = $ms("Idl")(#X)$
 #let fils(X) = $ms("Fil")(#X)$
+
+#let peri(E, A) = $class("normal", #E)(#A)$
+
+#let rfc(R) = $scripts(#R)^?$
+#let trc(R) = $scripts(#R)^+$
+#let rtc(R) = $scripts(#R)^*$
 
 #let ksidl = $ms("idl")$
 #let ksfil = $ms("fil")$
@@ -246,6 +257,10 @@
 
 #let pfn = $harpoon$
 #let rfn = $arrow.r.struck$
+#let prfn = $↛$
+
+#let maxs = ms("Max")
+#let mins = ms("Min")
 
 #let urel(R, a) = $#a #R$
 #let cc = math.class("binary", $;$)

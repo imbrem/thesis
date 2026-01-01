@@ -17,22 +17,41 @@ we will use throughout this thesis.
 
 We work in (informal) Grothendieck-Tarski set theory. In particular,
 - We assume _Tarski's axiom_: every set is an element of some Grothendieck universe $cal(U)_ℓ$.
-- In particular, this implies an infinite hierarchy of Grothendieck universes $cal(U)_ℓ$ 
+- In particular, this implies an infinite hierarchy of Grothendieck universes $cal(U)_ℓ$
   for $ℓ = 0, 1, 2...$
 - We call an element of $cal(U)_ℓ$ _ℓ-small_
 
 In general, we ignore size issues, with definitions taken to be implicitly $ℓ$-polymorphic
 
-We write function composition for $f: X → Y$, $g: Y → Z$ as
+= Sets, Functions, and Relations
+
+As is standard, we write $X -> Y$ for the set of functions from a set $X$ to a set $Y$.
+
+We write $X pfn Y$ for the set of _partial functions_ from $X$ to $Y$
+; we treat the _total_ functions $X -> Y$ as a _subset_ of the partial functions $X pfn Y$.
+
+We will often define (partial) functions inline using _$λ$-abstraction_, writing
 $
-  f cc g := g ∘ f := λ x . g(f(x)) : X → Z
+  λ x : X . E(x) "(where" E(x) "stands for an arbitrary expression involving" x ")"
+$
+to mean the function mapping $x$ to $E(x)$ whenever $E(x)$ is defined. 
+We may omit the type annotation "$: X$" when it is clear from context.
+
+For example, we write the _identity function_ on a set $X$ as
+$
+  id_X := λ x : X . x : X -> X
 $
 
-We write $X pfn Y$ for the set of _partial functions_ from $X$ to $Y$; we take $X → Y ⊆ X pfn Y$.
-Composition of partial functions is defined pointwise as for total functions, with
+Composition of partial functions $f : X pfn Y$, $g : Y pfn Z$ is defined pointwise as
 $
   (f cc g)(x) := (g ∘ f)(x) := g(f(x)) "where" f(x), g(f(x)) "are defined"
 $
+Or, using $λ$-abstraction,
+$
+  f cc g := g ∘ f := λ x . g(f(x)) : X pfn Z
+$
+
+We note that, if $f : X -> Y$, $g : Y -> Z$ are total, then $f cc g$ is total as well.
 
 If $f: X pfn Y$ is an injection, we define its _(partial) inverse_ $f^(-1) : Y pfn X$ to be given by
 $
@@ -40,52 +59,59 @@ $
 $
 We note that $f: X -> Y$ is a bijection iff its inverse $f^(-1) : Y → X$ is total.
 
-We introduce the notation $A rfn B$ for the set of _relations_ from a set $A$ to a set $B$.
-Relations are _extensional_: 
-given $R, S : A rfn B$, $R = S$ 
-if and only if $brel(R, a, b) <==> brel(S, a, b)$ for all $a ∈ A$, $b ∈ B$.
+We introduce the notation $X rfn Y$ for the set of _relations_ from a set $X$ to a set $Y$.
+Relations are _extensional_:
+given $R, S : X rfn Y$, $R = S$
+if and only if $brel(R, x, y) <==> brel(S, x, y)$ for all $x ∈ X$, $y ∈ Y$.
 
 We write:
-- $id_A : A rfn A$ for the _identity relation_ on $A$, given by
+- $id_X : X rfn X$ for the _identity relation_ on $X$, given by
   $
-    brel(id_A, a, b) <==> a = b
+    brel(id_X, x, y) <==> x = y
   $
-- $R cc S : A rfn C$ for the _composition_ of relations $R : A rfn B$, $S : B rfn C$, given by
+- $R cc S : X rfn Z$ for the _composition_ of relations $R : X rfn Y$, $S : Y rfn Z$, given by
   $
-    brel((R cc S), a, c) <==> ∃ b ∈ B qd brel(R, a, b) ∧ brel(S, b, c)
+    brel((R cc S), x, z) <==> ∃ y ∈ Y qd brel(R, x, y) ∧ brel(S, y, z)
   $
-- $R^† : B rfn A$ for the _transpose_ of a relation $R : A rfn B$, given by
+- $R^† : Y rfn X$ for the _transpose_ of a relation $R : X rfn Y$, given by
   $
-    brel(R^†, b, a) <==> brel(R, a, b)
+    brel(R^†, y, x) <==> brel(R, x, y)
   $
-- $R(a) := {b | brel(R, a, b)}$ for the _image_ of $a$ under $R$. 
-  Dually, we write $R^†(b) = {a | brel(R, b, a)}$ for the _preimage_ of $b$ under $R$.
+- $R(x) := {y | brel(R, x, y)}$ for the _image_ of $x$ under $R$.
+  Dually, we write $R^†(y) = {x | brel(R, y, x)}$ for the _preimage_ of $y$ under $R$.
 
-  Where the meaning is unambiguous, we write
-  $R(A) := ⋃_(a ∈ A) R(a)$ for the image of $A$ under $R$
-  and
-  $R^†(B) := ⋃_(b ∈ B) R^†(b)$ for the preimage of $B$ under $R$.
+  Given sets $A, B$, we write:
+  - $R(A) := ⋃_(a ∈ A) R(a)$ for the image of $A$ under $R$
+  - $R^†(B) := ⋃_(b ∈ B) R^†(b)$ for the preimage of $B$ under $R$.
+  - $fibs(R) := {R(x) | x ∈ X}$ for the _fibers_ of $R$
 
-- $grof(f) : A rfn B$ for the _graph_ of a (partial) function $f : A pfn B$, given by
+- $grof(f) : X rfn Y$ for the _graph_ of a (partial) function $f : X pfn Y$, given by
   $
-    brel(grof(f), a, b) <==> f(a) = b
+    brel(grof(f), x, y) <==> f(x) = y
   $
   We will often identify a (partial) function with its graph.
-  
-  In particular, we note that relations and (partial) functions are compatible w.r.t. 
+
+  In particular, we note that relations and (partial) functions are compatible w.r.t.
   composition and identity (i.e., $grof(·)$ is _functorial_):
   #eqn-set(
     $grof(f) cc grof(g) = grof(f cc g)$,
-    $grof(id_A) = id_A$
+    $grof(id_X) = id_X$,
   )
-  On the other hand, $f(a)$, if defined, is a _point_, while $grof(f)(a) = {f(a)}$ is a _set_;
-  where confusion is unlikely we implicitly coerce the result as necessary.
+  Likewise, we will often write $f(A)$ to mean $grof(f)(A)$.
 
-  In particular, 
-  noting that, _when $f^(-1)$ exists_, $f^(-1)(b) = a <==> grof(f)^†(b) = {a}$, 
-  we will often write
+  On the other hand, given $x ∈ X$, 
+  $f(x)$, if defined, is a _point_ in $Y$, 
+  while $grof(f)(x) ⊆ Y$ is a _set_ (and always defined).
+
+  In general, where confusion is unlikely, we abuse notation and implicitly treat:
+  - $R(a) = {b}$ as $b$
+  - $R(a) = ∅$ as "undefined"
+
+  In particular,
+  noting that, _when $f^(-1)$ exists_, $f^(-1)(b) = a <==> grof(f)^†(b) = {a}$,
+  we will write
   $
-    f^(-1)(b) & := grof(f)^†(b) = {a ∈ A | f(a) = b} \ 
+    f^(-1)(b) & := grof(f)^†(b) = {a ∈ A | f(a) = b} \
     f^(-1)(B) & := grof(f)^†(B) = {a ∈ A | f(a) ∈ B}
   $
   even when $f$ is not injective.
@@ -96,37 +122,104 @@ $
   R ⊆ S := & ∀ a, b qd brel(R, a, b) ==> brel(S, a, b) \
   R ∪ S := & {(a, b) | brel(R, a, b) ∨ brel(S, a, b)} \
   R ∩ S := & {(a, b) | brel(R, a, b) ∧ brel(S, a, b)} \
-  R^c   := & {(a, b) | ¬ brel(R, a, b)}
+    R^c := & {(a, b) | ¬ brel(R, a, b)}
 $
 Likewise, we write
-$∅ : A rfn B$ for the _empty relation_ 
+$∅ : A rfn B$ for the _empty relation_
 and $⊤ : A rfn B := {(a, b) | a ∈ A, b ∈ B}$ for the _full_ relation.
 
-= Order Theory
+#definition(name: "Binary Relation")[
+  A _binary relation_ on a set $X$ is a relation $R : X rfn X$.
+  We say $R$ is:
+  - _reflexive_ if $∀ x ∈ X . brel(R, x, x)$ 
+    -- i.e., $id_X ⊆ R$
+  - _symmetric_ if $∀ x, y ∈ X . brel(R, x, y) <==> brel(R, y, x)$ 
+    -- i.e., $R^† = R$
+  - _transitive_ if $∀ x, y, z ∈ X . brel(R, x, y) ==> brel(R, y, z) ==> brel(R, x, z)$
+    -- i.e., $R cc R ⊆ R$
+  - _antisymmetric_ if $∀ x, y ∈ X . brel(R, x, y) ==> brel(R, y, x) ==> x = y$
+    -- i.e., $R ∩ R^† ⊆ id_X$
 
-#definition(name: "Equivalence Relation, Setoid")[
-  A relation $≈$ on a set $X$ is an _equivalence relation_ if it is
-  - _reflexive_: $∀ x ∈ X . x ≈ x$
-  - _symmetric_: $∀ x, y ∈ X . x ≈ y ==> y ≈ x$
-  - _transitive_: $∀ x, y, z ∈ X . x ≈ y ==> y ≈ z ==> x ≈ z$
+  /*
+  Given a binary relation $≈$, we say:
+  - $≈$ is a _partial equivalence relation_ or _PER_ if it is symmetric and transitive
+  - $≈$ is an _equivalence relation_ if it is reflexive, symmetric, and transitive
+  - $≤$ is a _preorder_ if it is reflexive and transitive
+  - $≤$ is a _partial order_ if it is reflexive, transitive, and antisymmetric
+  */
+]
 
-  A set equipped with a distinguished equivalence relation is called a _setoid_.
+We borrow notation from regular expressions to represent iterates of binary relations $R : X rfn X$:
+
+- We define $R^0 := id_X$ -- "apply $R$ zero times"
+- We may now define $R^(n + 1) := R^n cc R = R cc R^n$ by induction
+- We write $rfc(R) := R^0 ∪ R^1$ for "apply $R$ at most once"
+  -- this is the _reflexive closure_ of $R$, the smallest reflexive relation containing $R$
+- We write $trc(R) := ⋃_(n ≥ 1) R^n$ for "apply $R$ at least once"
+  -- this is the _transitive closure_ of $R$, the smallest transitive relation containing $R$
+- We write $rtc(R) := ⋃_(n) R^n$ for "apply $R$ any number of times"
+  -- this is the _reflexive-transitive closure_ of $R$, 
+     the smallest reflexive and transitive relation containing $R$
+
+= Order and Equivalence
+
+#definition(name: "(Partial) Equivalence Relation")[
+  We call a binary relation $≈$ on a set $X$ a 
+  _partial equivalence relation_ or _PER_ if it is _symmetric_ and _transitive_.
+  If $≈$ is also _reflexive_, we call it an _equivalence relation_. 
+
+  We say $x$ and $y$ are _equivalent_ (w.r.t. $≈$) if $x ≈ y$.
+  
+  A set with a distinguished equivalence relation is called a _setoid_.
+]
+
+We note that, 
+for any PER $≈$, $(rtc(≈)) = (rfc(≈))$ is the smallest equivalence relation containing $≈$
+
+#definition(name: "Equivalence Class")[
+  In a PER, 
+  - We say an element $x$ is _defined_ if $x ≈ x$ -- i.e., if $x ∈ peri(≈, X)$.
+  
+  - If $x$ is defined, we define its _equivalence class_ to be
+    $
+      [x]_≈ := {y ∈ X | x ≈ y}
+    $
+    This induces a partial function $[-]_≈ : X pfn [X]_≈$ with support $peri(≈, X)$.
+
+    Where clear from context, we drop the subscript $≈$.
+  
+  We say that $A$ is an _equivalence class_ if $∃ x . A = [x]_≈$. 
+  We say $A$ is a _partial equivalence class_ if
+  $A = ∅$ or $A$ is an equivalence class; 
+  or, equivalently, $∀ x, y ∈ A . x ≈ y$.
+]
+
+#definition(name: "Extensional function")[
+  Given PERs $X, Y$, we say: 
+  - A relation $R : X rfn Y$ is a _PER relation_, or _extensional_, if
+    $
+      ∀ x_1 ≈ x_2 ∈ X qd
+      ∀ y_1 ≈ y_2 ∈ Y qd
+      brel(R, x_1, y_1) ==> brel(R, x_2, y_2)
+    $
+  - A partial function $f : X pfn Y$ is _extensional_ if its graph is a PER relation
+  - An extensional partial function $f : X pfn Y$ is a _PER morphism_ if, for all $x ≈ x$, 
+    $f(x)$ is defined.
+
+    That is, $x_1 ≈ x_2 <==> f(x_1) ≈ f(x_2)$.
 ]
 
 #definition(name: "Preorder, Partial Order")[
-  A _preorder_ on a set $X$ is a binary relation $≤$ which is
-  - _reflexive_: $∀ x ∈ X . x ≤ x$
-  - _transitive_: $∀ x, y, z ∈ X . x ≤ y ==> y ≤ z ==> x ≤ z$
+  A _preorder_ on a set $X$ is a binary relation $≤$ which is reflexive and transitive.
 
-  Every preorder $≤$ induces an equivalence relation $x ≈ y := x ≤ y ∧ y ≤ x$ on $X$. We say
-  $x, y ∈ X$ are _equivalent_ (w.r.t. $≤$) if $x ≈ y$.
+  Every preorder $≤$ induces an equivalence relation on $X$ given by $x ≈ y := x ≤ y ∧ y ≤ x$.
 
-  Where $X$ has a distinguished preorder $≤$, we will often simply say "the preorder $X$."
+  We call $≤$ a _partial order_ if it is also _antisymmetric_ --
+  i.e. if $x ≈ y <==> x = y$. In particular, this holds if and only if
+  $∀ x ∈ X . [x]_≈ = {x}$.
 
-  We call $≤$ a _partial order_ if it is _antisymmetric_ --
-  i.e., $∀ x, y ∈ X . x ≤ y ==> y ≤ x ==> x = y$.
-
-  If $≤$ is also _total_ -- i.e., $∀ x , y ∈ X . x ≤ y ∨ y ≤ x$, we call it a _total order_.
+  If a partial order $≤$ is also _total_ 
+  -- i.e., $∀ x , y ∈ X . x ≤ y ∨ y ≤ x$ -- we call it a _total order_.
 
   We call a set $X$ equipped with a distinguished partial order a
   _partially ordered set_ or _poset_.
@@ -138,69 +231,148 @@ and $⊤ : A rfn B := {(a, b) | a ∈ A, b ∈ B}$ for the _full_ relation.
   Dually, we say a set $L ⊆ X$ in a preorder $X$ is a _lower set_ or is _downward closed_ if
   $y ∈ L$ and $x ≤ y$ implies $x ∈ L$.
 
+  We write the set of upward closed subsets of $X$ as $ups(X)$,
+  and the set of downward closed subsets of $X$ as $lows(X)$.
+
   We say that
-  - $x$ is an _upper bound_ of $A$ if $∀ a ∈ A . a ≤ x$
-  - $x$ is a _lower bound_ of $A$ if $∀ a ∈ A . x ≤ a$
-  - $x$ is a _maximum_ of $A$ if $x ∈ A$ is an upper bound of $A$
-  - $x$ is a _minimum_ of $A$ if $x ∈ A$ is a lower bound of $A$
+  - $x$ is an _upper bound_ of $A$ if $∀ a ∈ A . a ≤ x$;
+    we write the set of upper bounds of $A$ as $ubs(A)$
+  - $x$ is a _lower bound_ of $A$ if $∀ a ∈ A . x ≤ a$;
+    we write the set of lower bounds of $A$ as $lbs(A)$
+  - $x$ is a _greatest element_ of $A$ if $x ∈ A$ and $x$ is an upper bound of $A$
+    -- i.e. if $x ∈ maxs(A) := ubs(A) ∩ A$
+  - $x$ is a _least element_ of $A$ if $x ∈ A$ and $x$ is a lower bound of $A$;
+    -- i.e. if $x ∈ mins(A) := lbs(A) ∩ A$
 
-  For arbitrary $A$, maxima and minima, if they exist, are unique up to equivalence;
-  in particular, this implies that they are unique if $X$ is a poset.
+  Where there is no risk of confusion, we write $ubs(a) := ubs({a})$, $lbs(a) := lbs({a})$,
+  $maxs(A)$, $mins(A)$ for $a ∈ X$.
 
-  We may hence equip a preorder with a distinguished maximum $max A$ and minimum $min A$ for each
+  For arbitrary $A$, greatest and least elements, if they exist, are unique up to equivalence;
+  we may hence, up to equivalence,
+  equip any preorder with a distinguished greatest $max A$ and least $min A$ element for each
   subset $A ⊆ X$ where one exists.
-  /*
-  Without loss of generality, we may always take $max{a}, min{a} := a$.
-  */
-
-  We denote the set of upper bounds of $A$ as $ubs(A)$,
-  and the set of lower bounds of $A$ as $lbs(A)$.
-
-  Where there is no risk of confusion, we write $ubs(a) := ubs({a})$ and $lbs(a) := lbs({a})$
-  for $a ∈ X$.
 ]
 
-#definition(name: "Meet, Join, Lattice")[
+#definition(name: "Monotone")[
+  A partial function $f : X pfn Y$ between preorders $X, Y$ is _monotone_ if
+  $
+  ∀ x_1, x_2 qd x_1 ≤ x_2 ==> f(x_1) ≤ f(x_2) "where" f(x_1), f(x_2) "are defined"
+  $
+  
+  Dually, $f$ is _antitone_ if
+  $
+  ∀ x_1, x_2 qd x_1 ≤ x_2 ==> f(x_2) ≤ f(x_1) "where" f(x_1), f(x_2) "are defined"
+  $
+]
+
+We note in particular that the identity function is both monotone and antitone; moreover, both
+monotone and antitone functions are closed under composition (i.e. they form a _subcategory_).
+Moreover:
+- If $f$ is monotone, 
+  - $f(ubs(A)) ⊆ ubs(f(A))$ and $f(lbs(A)) ⊆ lbs(f(A))$
+  - If $f (max A)$ is defined, then $max f(A) ≈ f (max A)$ is as well
+  - If $f (min A)$ is defined, then $min f(A) ≈ f (min A)$ is as well
+- Dually, if $f$ is antitone, 
+  - $f(ubs(A)) ⊆ lbs(f(A))$ and $f(lbs(A)) ⊆ ubs(f(A))$
+  - If $f (max A)$ is defined, then $min f(A) ≈ f (max A)$ is as well
+  - If $f (min A)$ is defined, then $max f(A) ≈ f (min A)$ is as well
+
+#definition(name: "Profunctor")[
+  A relation $R : X rfn Y$ between preorders $X, Y$ is a _profunctor_ if
+  $
+  ∀ x_1 ≤ x_2 ∈ X qd ∀ y_1 ≤ y_2 ∈ Y qd brel(R, x_2, y_1) ==> brel(R, x_1, y_2)
+  $
+  Equivalently, we require that:
+  - For all $x ∈ X$, $R(x) ⊆ Y$ is upward-closed, and
+  - $R$ interpreted as a function $X → ups(Y)$ is _antitone_:
+    $∀ x_1, x_2 qd x_1 ≤ x_2 ==> R(x_2) ⊆ R(x_1)$
+
+  We write the set of profunctors from $X$ to $Y$ as $X prfn Y ⊆ X rfn Y$.
+]
+
+We note that:
+- The identity relation $id_X : X prfn X$ is a profunctor
+- The composition of profunctors $R : X prfn Y, S : Y prfn Z$ 
+  is itself a profunctor $(R ; S) : X prfn Z$
+
+#definition(name: "Meet, Join")[
   Given a preorder $X$ and a subset $A ⊆ X$, we say
-  - $x$ is a _meet_ of $A$ if it is a _greatest lower bound_, i.e., a maximum of $lbs(A)$
-  - $x$ is a _join_ of $A$ if it is a _least upper bound_, i.e., a minimum of $ubs(A)$
+  - $x$ is a _meet_ of $A$ if it is a _greatest lower bound_, i.e., a greatest element of $lbs(A)$
+  - $x$ is a _join_ of $A$ if it is a _least upper bound_, i.e., a least element of $ubs(A)$
 
   For arbitrary $A$, meets and joins, if they exist, are unique up to equivalence;
   in particular, this implies that they are unique if $X$ is a poset.
 
-  We may hence equip a preorder with a distinguished meet $⨅ A$ and join $⨆ A$ for each
+  We may hence, up to equivalence, 
+  equip any preorder with a distinguished meet $⨅ A$ and join $⨆ A$ for each
   subset $A ⊆ X$ where one exists.
-  /*
-  Without loss of generality, we may always take $⨆{a}, ⨅{a} := a$.
-  #footnote[
-    While we could define $⨆ A := min(ubs(A))$ and $⨅ A := max(lbs(A))$ when they exist,
-    we would not be able to satisfy the condition $∀ a . ⨆{a}, ⨅{a} := a$ unless $X$ is a poset,
-    as all equivalent elements $a ≈ b$ have the same set of upper and lower bounds.
-  ]
-  */
 
   Where they exist, we write
   - $⊥ := ⨆ ∅$; in this case, we say $X$ is _bounded below_
   - $⊤ := ⨅ ∅$; in this case, we say $X$ is _bounded above_
-    If both $⊥$ and $⊤$ exist, we say $X$ is _bounded_
   - $a ⊔ b := ⨆{a, b}$; if all binary joins exist, we say $X$ _has binary joins_
-  - If $X$ is bounded below and has binary joins, we say $X$ _has finite joins_
   - $a ⊓ b := ⨅{a, b}$; if all binary meets exist, we say $X$ _has binary meets_
-  - If $X$ is bounded above and has binary meets, we say $X$ _has finite meets_
 
+  If both $⊥$ and $⊤$ exist, we say $X$ is _bounded_
+
+  In general, we say that:
+  - $X$ _has joins_ if every nonempty $A ⊆ X$ has a join
+  - $X$ _has meets_ if every nonempty $A ⊆ X$ has a meet
+  - $X$ _has finite/countable joins_ if every finite/countable $A ⊆ X$ has a join
+  - $X$ _has finite/countable meets_ if every finite/countable $A ⊆ X$ has a meet
+]
+
+We note in particular that $X$ has finite joins iff it is bounded below and has binary joins;
+dually, $X$ has finite meets iff it is bounded above and has binary meets.
+
+#definition(name: "Lattice")[
   We say that:
   - $X$ is a _prelattice_ if it has both binary joins and meets
   - $X$ is a _join-semilattice_ if it is a poset with binary joins
   - $X$ is a _meet-semilattice_ if it is a poset with binary meets
   - $X$ is a _lattice_ if it is a join-semilattice and a meet-semilattice
+]
+
+#definition(name: "Complete Lattice")[
   - $X$ is a _complete prelattice_ if every subset $A ⊆ X$ has both a meet and a join.
     It suffices to show that every subset $A ⊆ X$ has a join,
     or alternatively that every subset $A ⊆ X$ has a meet.
   - $X$ is a _complete lattice_ if it is a poset and a complete prelattice
-
-  Note that we restrict the term semilattice to posets;
-  for preorders, we simply say "has binary joins" or "has binary meets."
 ]
+
+
+Every subset $A ⊆ X$ of a preorder $X$ inherits a preorder from $X$ by restriction.
+/*
+; we may therefore
+ask whether $A$ has meets or joins; 
+even when they exist, however, they might be different from meets and joins in $X$.
+For example:
+- The join of $2, 3$ in $ℕ$ under the divisiblity order is 6
+- The join of $2, 3$ in ${2, 3, 12} ⊆ ℕ$ under the divisiblity order is $12$
+*/
+
+We say:
+- $A$ is _closed under joins_ if, for every nonempty subset $B ⊆ A$,
+  if $x$ is a join of $B$ in $X$ then $x ∈ A$.
+- $A$ is _closed under binary/finite/countable_ joins if, 
+  for every binary/finite/countable subset $B ⊆ A$,
+  if $x$ is a join of $B$ in $X$ then $x ∈ A$.
+
+We define closure under (binary/finite/countable) meets dually.
+
+We note that:
+- If $A$ is a lower-set, it is closed under meets; 
+  dually, if $A$ is an upper-set, it is closed under joins
+
+- $ubs(X)$ and $lbs(X)$ are both closed under joins and meets as subsets of $cal(P)$
+
+- If $X$ is a complete lattice and $A ⊆ X$ is a lower set, then $A$ itself is a complete lattice
+  iff it has a maximum. In this case, it inherits meets (but _not_, in general, joins) from $X$.
+
+  Dually, if $A ⊆ X$ is an upper set, then $A$ itself is a complete lattice iff it has a minimum.
+  In this case, it inherits joins (but _not_, in general, meets) from $X$.
+
+- For any $X$, $cal(P)(X)$ forms a complete lattice under unions and intersections
 
 We are often interested in the case where any elements without a join can be treated like they have
 a join "at infinity," or dually, any elements without a meet can be treated like they have
@@ -250,9 +422,9 @@ a meet "at negative infinity." To do so, we introduce the following definition:
   - a _filter_ if it is an upward-closed filtered set;
     we write the set of filters of $X$ as $fils(X)$
 
-  We note that $idls(X), fils(X) ⊆ cal(P)(X)$ form a complete lattice.
-  In particular, meets $⋀_i A_i$ are just set intersections $⋂_i A_i$, but joins do _not_ generally
-  coincide with unions.
+  We note that the subset of an ideal/filter is itself an ideal/filter; 
+  hence, $idls(X), fils(X) ⊆ cal(P)(X)$ are lower sets 
+  and therefore complete lattices closed under meets.
 
   As $X$ is always both an ideal and a filter,
   we may hence write $genidl(A)$ for the smallest ideal containing $A$
@@ -260,6 +432,7 @@ a meet "at negative infinity." To do so, we introduce the following definition:
 
   Given an ideal $I ⊆ X$, we say
   - $I$ is _principal_ if there exists $a$ s.t. $I = lbs(a)$
+  - $I$ is _subprincipal_ if $I$ is principal or $I = ∅$
   - $I$ is _proper_ if $I ≠ X$
   - $I$ is _maximal_ if it is proper and $ubs(I) = {X, I}$
   - $I$ is _prime_ if, for all ideals $J, K$, $J ∩ K ⊆ I ==> J ⊆ I ∨ K ⊆ I$
@@ -267,7 +440,8 @@ a meet "at negative infinity." To do so, we introduce the following definition:
 
   Likewise, given a filter $F ⊆ X$, we say
   - $F$ is _proper_ if $F ≠ X$
-  - $F$ is _principal_ if there exists $a$ s.t. $F = ubs(a)$\
+  - $F$ is _principal_ if there exists $a$ s.t. $F = ubs(a)$
+  - $F$ is _subprincipal_ if $F$ is principal or $F = ∅$
   - $F$ is _maximal_ if it is proper and $ubs(F) = {X, F}$
   - $F$ is _prime_ if, for all filters $J, K$, $J ∩ K ⊆ F ==> J ⊆ F ∨ K ⊆ F$
     i.e. $F$ is prime in $fils(X)$.
@@ -278,19 +452,13 @@ We note that:
   likewise, the complement $X sdiff F$ of a filter $F$ is an ideal
 - An ideal $I$ is proper/principal/maximal/prime
   iff its complement is a proper/principal/maximal/prime filter
-
-Every subset $A ⊆ X$ of a preorder $X$ inherits a preorder from $X$ by restriction; we may therefore
-ask whether $A$ has meets or joins; these in general may be different from meets and joins in $X$.
-For example:
-- The join of $2, 3$ in $ℕ$ under the divisiblity order is 6
-- The join of $2, 3$ in ${2, 3, 12} ⊆ ℕ$ under the divisiblity order is $12$
-
-If (binary) joins/meets in $A$ and $X$ in fact coincide,
-we say that $A$ is _closed under (binary) joins/meets_.
+- $I$ is principal iff $⨆ I ∈ I$; in which case $I$ contains all joins
 
 We note in particular that:
-- If $X$ has joins, a set $A$ is an ideal iff it is downward-closed and closed under binary joins
-- If $X$ has meets, a set $A$ is a filter iff it is upward-closed and closed under binary meets
+- If $X$ has binary joins, 
+  a set $A$ is an ideal iff it is downward-closed and closed under binary joins
+- If $X$ has binary meets, 
+  a set $A$ is a filter iff it is upward-closed and closed under binary meets
 
 #definition(name: [dcpo, $ω$cpo])[
   Given a preorder $X$,
@@ -320,16 +488,19 @@ We note in particular that:
 
 = Families, Sequences, Lists, and Streams
 
-Our primitive data structure will be the
-_($I$-indexed) family_ @nlab:family $icol(a) := (i ↦ a_i | i ∈ I)$, consisting of
+Our primitive data structure will be the indexed family, which we define as follows:
 
-- An _index set_ $I$, whose elements are the _indices_ of the family.
-  We will sometimes write $cix(icol(a)) := I$.
+#definition(name: "Indexed Family")[
+  An _($I$-indexed) family_ @nlab:family $icol(a) := (i ↦ a_i | i ∈ I)$, consists of of
 
-- For each index $i ∈ I$, an _element_ $a_i$.
-  We will sometimes write this as a function application $icol(a) med i$.
+  - An _index set_ $I$, whose elements are the _indices_ of the family.
+    We will sometimes write $cix(icol(a)) := I$.
 
-Families are considered equal when they have the same index set and agree pointwise.
+  - For each index $i ∈ I$, an _element_ $a_i$.
+    We will sometimes write this as a function application $icol(a) med i$.
+
+  Families are considered equal when they have the same index set and agree pointwise.
+]
 
 We write $A^I$ for the set of indexed families with index set $I$ and elements of type $A$.
 We say $icol(a) ∈ A^I$ is _finite_ if $I$ is finite;
@@ -398,7 +569,9 @@ We define some basic structural operations on indexed families as follows:
 #todo[new $⊑$ respects order]
 
 As in Lua @ierusalimschy-06-lua (which uses tables), we define lists, sequences, and streams in
-terms of indexed families, allowing us to re-use definitions and operations. In particular,
+terms of (ordered) indexed families, allowing us to re-use definitions and operations. 
+
+In particular,
 
 #definition(name: "Sequence, List, Stream")[
   A _sequence_ $icol(a) = [a_i | i ∈ I]$ is an indexed family $(a_i | i ∈ I)$ where
@@ -606,7 +779,7 @@ $
 $
 That is, the permutations are in fact a _groupoid_.
 
-= Relational Algebra
+= Families of Relations
 
 #definition(name: "Family of relations")[
   Given families of sets
@@ -712,7 +885,14 @@ Given a relation $R : A rfn A^ms("fin")$ we define:
     #rule-set(
       prooftree(rule(name: "base", $brel(R, a, icol(a))$, $brel(baglift(R), a, icol(a))$)),
       prooftree(rule(name: "unit", $brel(baglift(R), a, (i ↦ a))$)),
-      prooftree(rule(name: "split", $I "finite"$, $brel(baglift(R), a, (b_i | i ∈ I))$, $∀ i . brel(baglift(R), b_i, icol(c)_i)$, $∀ i, j . cix(icol(c)_i) ∩ cix(icol(c)_j) = ∅$, $brel(baglift(R), a, (⨆_(i ∈ I) icol(c)_i))$)),
+      prooftree(rule(
+        name: "split",
+        $I "finite"$,
+        $brel(baglift(R), a, (b_i | i ∈ I))$,
+        $∀ i . brel(baglift(R), b_i, icol(c)_i)$,
+        $∀ i, j . cix(icol(c)_i) ∩ cix(icol(c)_j) = ∅$,
+        $brel(baglift(R), a, (⨆_(i ∈ I) icol(c)_i))$,
+      )),
     )
   $
 
