@@ -366,6 +366,9 @@
 /// A branch in a switch statement
 #let ssbr(ℓ, b) = $#ℓ : #b$
 
+#let ninl = kwl
+#let ninr = kwr
+
 /// A binary case expression
 #let ecase2(e, x, a, y, b) = ecase(e, $ebr(ninl, #x, #a) seq ebr(ninr, #y, #b)$)
 

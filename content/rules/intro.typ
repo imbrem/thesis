@@ -211,7 +211,7 @@
           },
         ),
         Prod(
-          $K$,
+          $M$,
           {
             Or[$·$][_nil_]
             Or[$M seq ebr(lb("l"), x, a)$][_cons_]
@@ -264,6 +264,45 @@
 )
 
 #lex-ssa-grammar
+
+
+#let lex-ssa-brace-grammar = figure(
+  [
+    #grid(
+      align: left,
+      columns: 3,
+      gutter: (2em, 2em),
+      bnf(
+        Prod($r$, {
+          Or[$x = e seq r$][_assign_]
+          Or[$τ$][_terminator_]
+          Or[${ r } seq L$][_braces_]
+        }),
+        Prod($L$, {
+          Or[$·$][]
+          Or[$L seq gbr(lb("l"), x, {r})$][]
+        }),
+      ),
+
+      bnf(
+        Prod($τ$, {
+          Or[$brb(lb("l"), e)$][_branch_]
+          Or[$scase(e, B)$][_case_]
+        }),
+        Prod($B$, {
+          Or[$·$][]
+          Or[$B, sbr(lb("l₁"), x, brb(lb("l₂"), e))$][]
+        }),
+      ),
+    )
+  ],
+  caption: [
+    Grammar for lexical SSA with expressions and braces (#ssa-calc(iter-calc()))
+  ],
+  kind: image,
+)
+
+#lex-ssa-brace-grammar
 
 #let tt-ssa-grammar = figure(
   [
@@ -344,3 +383,61 @@
 )
 
 #rtl-10-fact
+
+#let ssa-ϕ-10-fact = subpar.grid(
+  placement: auto,
+  align: bottom,
+
+  figure(
+    [$
+                  & n = 10 seq \
+                  & i = 1 seq \
+                  & a = 1 seq \
+                  & kbr lb("loop") seq \
+      lb("loop"): & ite(i < n, brb(lb("body")), retb(a)) seq \
+      lb("body"): & t = i + 1 seq \
+                  & a = a * t seq \
+                  & i = i + 1 seq \
+                  & kbr lb("loop") \
+                  \
+                  \
+                  \
+                  \
+                  \
+                  \
+    $],
+    caption: [
+      As RTL \ \
+    ],
+  ),
+  <rtl-factorial2>,
+
+  figure(
+    [$
+                  & n = 10 seq \
+                  & i₀ = 1 seq \
+                  & a₀ = 1 seq \
+                  & kbr lb("loop") seq \
+      lb("loop"): & i₁ = #eϕ($lb("entry") : i₀, lb("body") : i₂$) \
+                  & a₁ = #eϕ($lb("entry") : a₀, lb("body") : a₂$) \
+                  & ite(i₁ < n, brb(lb("body")), retb(a₁)) seq \
+      lb("body"): & t = i₁ + 1 seq \
+                  & a₂ = a₁ * t seq \
+                  & i₂ = i₁ + 1 seq \
+                  & kbr lb("loop") \
+                  \
+    $],
+    caption: [
+      A SSA with ϕ-nodes \ \
+    ],
+  ),
+  <ϕ-factorial>,
+
+  columns: (1fr, 1fr),
+  caption: [
+    A simple, slightly suboptimal program to compute 10! via multiplication in a loop,
+    represented in RTL and in SSA with ϕ-nodes
+  ],
+)
+
+#ssa-ϕ-10-fact
