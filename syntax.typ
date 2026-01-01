@@ -51,83 +51,34 @@
   $ms("RTL")_ms("A")[#xs.pos().at(0)]$
 }
 
+#let lam-calc(name, ..xs) = if xs.pos().at(0, default: none) == none {
+  $λ_ms(#name)$
+} else if xs.pos().at(1, default: none) == none {
+  $λ_ms(#name)[#xs.pos().at(0)]$
+} else {
+  $λ_ms(#name)[#xs.pos().at(0), #xs.pos().at(1)]$
+}
+
+#let glam-calc(name, ..xs) = if xs.pos().at(0, default: none) == none {
+  $λ_ms(#name)^*$
+} else if xs.pos().at(1, default: none) == none {
+  $λ_ms(#name)^*[#xs.pos().at(0)]$
+} else {
+  $λ_ms(#name)^*[#xs.pos().at(0), #xs.pos().at(1)]$
+}
+
 // λ
-#let rtl-calc(..xs) = if xs.pos().at(0, default: none) == none {
-  $λ_ms("rtl")$
-} else if xs.pos().at(1, default: none) == none {
-  $λ_ms("rtl")[#xs.pos().at(0)]$
-} else {
-  $λ_ms("rtl")[#xs.pos().at(0), #xs.pos().at(1)]$
-}
-
-#let grtl-calc(..xs) = if xs.pos().at(0, default: none) == none {
-  $λ_ms("rtl")^*$
-} else {
-  $λ_ms("rtl")^*[#xs.pos().at(0)]$
-}
-
-#let br-calc(..xs) = if xs.pos().at(0, default: none) == none {
-  $λ_ms("br")$
-} else if xs.pos().at(1, default: none) == none {
-  $λ_ms("br")[#xs.pos().at(0)]$
-}
-
-#let ssa-calc(..xs) = if xs.pos().at(0, default: none) == none {
-  $λ_ms("ssa")$
-} else if xs.pos().at(1, default: none) == none {
-  $λ_ms("ssa")[#xs.pos().at(0)]$
-} else {
-  $λ_ms("ssa")[#xs.pos().at(0), #xs.pos().at(1)]$
-}
-
-#let gssa-calc(..xs) = if xs.pos().at(0, default: none) == none {
-  $λ_ms("ssa")^*$
-} else if xs.pos().at(1, default: none) == none {
-  $λ_ms("ssa")^*[#xs.pos().at(0)]$
-} else {
-  $λ_ms("ssa")^*[#xs.pos().at(0), #xs.pos().at(1)]$
-}
-
-#let op-calc(..xs) = if xs.pos().at(0, default: none) == none {
-  $λ_ms("op")$
-} else {
-  $λ_ms("op")[#xs.pos().at(0)]$
-}
-
-#let iter-calc(..xs) = if xs.pos().at(0, default: none) == none {
-  $λ_ms("iter")$
-} else {
-  $λ_ms("iter")[#xs.pos().at(0)]$
-}
-
-#let seq-calc(..xs) = if xs.pos().at(0, default: none) == none {
-  $λ_ms("seq")$
-} else {
-  $λ_ms("seq")[#xs.pos().at(0)]$
-}
-
-#let case-calc(..xs) = if xs.pos().at(0, default: none) == none {
-  $λ_ms("case")$
-} else {
-  $λ_ms("case")[#xs.pos().at(0)]$
-}
-
-
-#let dssa-calc(..xs) = if xs.pos().at(0, default: none) == none {
-  $λ_ms("dssa")$
-} else if xs.pos().at(1, default: none) == none {
-  $λ_ms("dssa")[#xs.pos().at(0)]$
-} else {
-  $λ_ms("dssa")[#xs.pos().at(0), #xs.pos().at(1)]$
-}
-
-#let dgssa-calc(..xs) = if xs.pos().at(0, default: none) == none {
-  $λ_ms("dssa")^*$
-} else if xs.pos().at(1, default: none) == none {
-  $λ_ms("dssa")^*[#xs.pos().at(0)]$
-} else {
-  $λ_ms("dssa")^*[#xs.pos().at(0), #xs.pos().at(1)]$
-}
+#let rtl-calc(..xs) = lam-calc("rtl", ..xs)
+#let grtl-calc(..xs) = glam-calc("rtl", ..xs)
+#let br-calc(..xs) = lam-calc("br", ..xs)
+#let ssa-calc(..xs) = lam-calc("ssa", ..xs)
+#let gssa-calc(..xs) = glam-calc("ssa", ..xs)
+#let op-calc(..xs) = lam-calc("op", ..xs)
+#let iter-calc(..xs) = lam-calc("iter", ..xs)
+#let seq-calc(..xs) = lam-calc("seq", ..xs)
+#let case-calc(..xs) = lam-calc("case", ..xs)
+#let dssa-calc(..xs) = lam-calc("dssa", ..xs)
+#let dgssa-calc(..xs) = glam-calc("dssa", ..xs)
 
 #let expr2fun(E) = $ms("LN")(#E)$
 
