@@ -15,35 +15,9 @@
   an esoteric subject noted for its difficulty and irrelevance.
 ]
 
-#todo[
-  do we stick conventions up here?
-  - Pros: chapter-per-file, follows organization structure
-  - Cons: forcing people to read the category theory chapter for notation... _not good yaar_
-    - Or maybe good...
-    - But might scare them off...
-    - Background to mathematical preliminaries? 
-      I suppose enriched category theory _is_ general enough...
-    - Basic category theory?
-    - Maybe we _can_ just have a _separate_ notation/conventions chapter right at the beginning?
+= Preliminaries
 
-  - Current idea:
-    - Factor out notation chapter
-    - _Then_ type theory
-      - standard [all three; injection $#ssa-calc() ⊆ #gssa-calc()$]
-      - effectful $#iter-calc()$
-      - linear $#iter-calc()$
-      - effectful $#gssa-calc()$
-      - linear $#gssa-calc()$
-    - _Then_ syntactic results; probably stick as last section of type theory chapter
-      - $#iter-calc()$ is $#ssa-calc()$ is $#gssa-calc()$
-    - BONUS: sublanguages and conservativity results:
-      - $#seq-calc() ⊆ #case-calc() ⊆ #iter-calc()$
-      - $#dssa-calc() ⊆ #ssa-calc()$; $#dssa-calc() ⊆ #dgssa-calc() ⊆ #gssa-calc()$
-      - $#dgssa-calc() ⊆ #gssa-calc()$
-    - _Then_ semantics
-]
-
-= Categories
+== Categories
 
 We will begin with a brief overview of basic category theory, in which we will take the opportunity
 to fix notations. Recall the definition of a category $cal(C)$:
@@ -59,7 +33,7 @@ to fix notations. Recall the definition of a category $cal(C)$:
   - For each pair of objects $A, B in |cal(C)|$, a set of _morphisms_ $cal(C)(A, B)$.
     We call this set a _hom-set_.
   - For each object $A in |cal(C)|$, an _identity morphism_ $id_A : cal(C)(A, A)$
-  - A binary operation, $- med ; -$, 
+  - A binary operation, $- med ; -$,
     mapping each pair of morphisms $f : cal(C)(A, B)$ and $g : cal(C)(B, C)$
     to their _composition_ $f ; g : cal(C)(A, C)$
 
@@ -105,6 +79,15 @@ $
   #diagram(cell-size: 15mm, $ A edge(f, ->) & B edge(g, ->) & C edge(h, ->) & D $)
 $
 */
+
+#todo[
+  Categories we've already defined:
+  - $ms("Set")$
+  - $ms("PFun")$
+  - $ms("Rel")$
+  - $ms("PreOrd")$
+  - $ms("Poset")$
+]
 
 #definition(name: "Category of sets")[
   We define the category of sets to have
@@ -175,7 +158,7 @@ it is _not_ generally the case that a morphism which is both epic and monic is a
 
 #todo[epis, monos, and isos are always subcategories]
 
-= Functors
+== Functors and Natural Transformations
 
 #todo[
   We want to relate categories to each other, and to themselves...
@@ -251,6 +234,33 @@ itself with the structure of a category, the _category of categories_ $ms("Cat")
   - Morphisms $ms("Cat")(cal(C), cal(D))$ functors $F : cal(C) → cal(D)$
 ]
 
+#definition(name: [Natural transformation])[
+  Given functors $F, G : cal(C) → cal(D)$
+  a _natural transformation_ $η : F => G$
+  consists of a family of morphisms $η_A : cal(D)(F A, G A)$,
+  indexed by objects $A ∈ |cal(C)|$, such that, //TODO: parenthetical?
+  for each morphism $f : cal(C)(A, B)$, we have that
+  $η_A ; (G med f) = (F med f) ; η_B$
+  -- i.e. the following diagram commutes:
+  $
+    #diagram(cell-size: 15mm, $ F med A edge(η_A, ->) edge("d", F med f, ->) & G med A edge("d", G med f, ->, label-side: #left) \
+       F med B edge(η_B, ->, label-side: #right) & G med B $)
+  $
+  We call a diagram of this form a _naturality square_.
+
+  #todo[natural isomorphisms]
+]
+
+#todo[functor category]
+
+#todo[equivalence of categories]
+
+== Concrete Categories
+
+#todo[
+  A lot of categories are just "sets + structure"; we formalize this notion
+]
+
 #definition(name: "Concrete Category")[
   A _concrete category_ $cal(V)$ is a category equipped with a faithful functor
   $U : cal(V) → cset$, called the _underlying-set functor_.
@@ -274,6 +284,8 @@ Equivalently, morphisms in a concrete category are determined by their action
 on elements of the source carrier: $f = g$ if and only if
 $∀ a ∈ A . f(a) = g(a)$.
 
+#todo[Notion of a substructure; in general, translation between structures]
+
 #definition(name: "Concrete Functor")[
   Given concrete categories $U_cal(V) : cal(V) → cset, U_cal(W) : cal(W) -> cset$,
   a _(strict) concrete functor_ is a functor $F : cal(V) → cal(W)$ such that the following
@@ -281,10 +293,15 @@ $∀ a ∈ A . f(a) = g(a)$.
     One could weaken this definition by requiring the square to commute only up to
     a natural isomorphism rather than strictly.  For simplicity, all concrete functors
     considered in this thesis will be assumed to be strict.
+    #todo[General: _weak_ vs _strict_ concept]
   ]:
   $
-    #diagram(cell-size: 15mm, $ cal(V) edge(F, ->) edge("dr", U_cal(V), ->, label-side: #right) & cal(W) edge("d", U_cal(W), ->, label-side: #left) \
-                                                                    & cset $)
+    #diagram(
+      cell-size: 15mm,
+      $ cal(V) edge(F, ->) edge("dr", U_cal(V), ->, label-side: #right) //
+        & cal(W) edge("d", U_cal(W), ->, label-side: #left) \
+        & cset $,
+    )
   $
 
   Equivalently,
@@ -297,7 +314,7 @@ we can form a category $cconc$ of concrete functors
 with objects concrete categories $cal(V), cal(W)$
 and morphisms $cconc(cal(V), cal(W))$ concrete functors $F: cal(V) → cal(W)$ between them.
 
-= Products
+== Products and Coproducts
 
 #definition(name: "Terminal Object")[
   An object $X ∈ |cal(C)|$ is _terminal_ if for every object $A ∈ |cal(C)|$,
@@ -439,10 +456,6 @@ There exist canonical isomorphisms:
   $
 ]
 
-== Duality, Coproducts, and Initial Objects
-
-#todo[do this]
-
 /*
 
 A coproduct, then, is just the dual notion to a product:
@@ -506,49 +519,6 @@ Similarly to products, coproducts satisfy some basic algebraic properties
 
 */
 
-= Naturality
-
-#definition(name: [Natural transformation])[
-  Given functors $F, G : cal(C) → cal(D)$
-  a _natural transformation_ $η : F => G$ 
-  consists of a family of morphisms $η_A : cal(D)(F A, G A)$,
-  indexed by objects $A ∈ |cal(C)|$, such that, //TODO: parenthetical?
-  for each morphism $f : cal(C)(A, B)$, we have that
-  $η_A ; (G med f) = (F med f) ; η_B$ 
-  -- i.e. the following diagram commutes:
-  $
-    #diagram(cell-size: 15mm, $ 
-      F med A edge(η_A, ->) edge("d", F med f, ->) 
-      & G med A edge("d", G med f, ->, label-side: #left) 
-      \ F med B edge(η_B, ->, label-side: #right) 
-      & G med B $)
-  $
-  We call a diagram of this form a _naturality square_.
-
-  #todo[natural isomorphisms]
-]
-
-#todo[natural families and friends?]
-
-#todo[then: enriched category theory]
-
-/*
-== Monads and Kliesli Categories
-
-#todo[have this as an example of a premonoidal category]
-
-#todo[
-  - Introduce the concept of _strength_ via a strong monad
-    (later will have strong Elgot structure so this builds intuition)
-    - Every monad over $cset$ is strong, so this is often overlooked
-  - define a commutative monad; show monoidal $<=>$ commutative
-  - notice the subcategory of pure things; think about it
-    - return should be monic or it's not faithful; @moggi-89-monad calls this a
-      _computational monad_
-    - but this is not necessary for our Freyd case
-]
-*/
-
 = Enriched Categories
 
 #todo[
@@ -563,7 +533,7 @@ Similarly to products, coproducts satisfy some basic algebraic properties
     - But, we don't just study equality, we study refinement
   - We need a way to compare refinements
   - $=>$ We need a partial order on refinements _compatible_ with our categorical structure
-  - $cal(V)$-enrichment for $cal(V)$ concretely cartesian: 
+  - $cal(V)$-enrichment for $cal(V)$ concretely cartesian:
     how to equip hom-sets with structure compatible w/ category theory
     - categories: compatible with composition
     - other stuff: compatible with that stuff
@@ -575,7 +545,7 @@ Similarly to products, coproducts satisfy some basic algebraic properties
     - More restrictive than posets: e.g. _lattices_
     - Unrelated: e.g. _abelian groups_ (add quantum pointer here)
   - In general, want to _project out_ the structure we _need_
-    - A $cal(V)$-category is _equipped with_ structure $cal(W)$ 
+    - A $cal(V)$-category is _equipped with_ structure $cal(W)$
       if there's a canonical concretely cartesian functor s.t. the nice diagram commutes;
       note this _implies_ faithfulness!
     - Note, for a $cal(V)$-categort $cal(C)$:

@@ -46,3 +46,87 @@
 #todo[
   This is in fact a near-prelattice; and hence induces a cartesian type system on $sty(ms("X"))$
 ]
+
+#fig-r-cwk
+
+#todo[
+  Likewise for contexts
+]
+
+= Expressions
+
+#todo[introduce concept of a function space]
+
+#todo[fix notation for function space judgement]
+
+#import "../rules/hasty.typ": *
+
+#fig-r-hasty
+
+#todo[explain #op-calc(ms("F")), #case-calc(ms("F")) as sublanguages of #iter-calc(ms("F"))]
+
+#todo[weakening]
+
+#todo[substitution]
+
+= Regions
+
+#todo[introduce concept of an _expression space_]
+
+#todo[fix notation for expression space judgement]
+
+#import "../rules/haslb.typ": *
+
+#fig-haslb-br
+
+#todo[introduce concept of a _region space_]
+
+#fig-haslb-ssa
+
+#todo[weakening]
+
+#todo[substitution]
+
+#todo[SSA is just a region-space too... hence gSSA]
+
+#fig-haslb-gssa
+
+#todo[weakening]
+
+#todo[substitution]
+
+#todo[label-substitution]
+
+= Effects
+
+#todo[want to build an equational theory]
+
+#todo[substitution is not good equationally]
+
+#todo[want a notion of _effects_]
+
+#todo[introduce _effect systems_]
+
+== Expressions
+
+#todo[introduce _direct_ effects (versus indirect, up to equivalence)]
+
+#fig-r-eff-hasty
+
+== Regions
+
+#todo[introduce _effect labels_ for SSA]
+
+#todo[rules...]
+
+= Refinement
+
+#todo[in fact, want a _refinement theory_]
+
+#todo[(expression) basis ; refinement system _over_ $ms("E")$ ; order]
+
+#todo[basic metatheory]
+
+#todo[(region) basis ; refinement system _over_ $ms("E") ; ms("T")$ ; order embedding]
+
+#todo[basic metatheory]

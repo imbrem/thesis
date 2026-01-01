@@ -448,10 +448,12 @@
 #let issbrs(Γ, K, B, L) = ksbrs($#Γ csplat #K$, B, L)
 #let islbrs(Γ, K, B, L) = klbrs($#Γ csplat #K$, B, L)
 
-#let eisfn(Γ, e, f, A, B) = $#Γ scripts(⊢)^#e #f : #A → #B$
-#let dehasty(Γ, e, a, A) = $#Γ scripts(⊢)^(≡#e) #a : #A$
-#let deistup(Γ, e, E, T) = $#Γ scripts(⊢)^(≡#e) #E scripts(:)^* #T$
-#let deisebrs(Γ, L, e, B, A) = $#Γ csplat #L scripts(⊢)^(≡#e) #B scripts(:)^* #A$
+#let dtrn = $scripts(⊢)^•$
+
+#let eisfn(Γ, e, f, A, B) = $#Γ scripts(⊢) #f : #A →_#e #B$
+#let dehasty(Γ, e, a, A) = $#Γ dtrn_#e #a : #A$
+#let deistup(Γ, e, E, T) = $#Γ dtrn_#e #E scripts(:)^* #T$
+#let deisebrs(Γ, L, e, B, A) = $#Γ csplat #L dtrn_#e #B scripts(:)^* #A$
 #let eisinf(e) = $∞(#e) = #e$
 
 #let ehasty(Γ, e, a, A) = $#Γ scripts(⊢)^#e #a : #A$

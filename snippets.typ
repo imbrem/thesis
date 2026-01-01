@@ -395,3 +395,285 @@ a category is precisely a $cset$-enriched category.
 #todo[#iter-calc(expr2fun(iter-calc(ms("F")))) ≈ #iter-calc(ms("F"))]
 
 */
+
+= Appendix stuff
+
+
+= Type Theory
+
+/*
+TODO: shunt proof to appendix
+
+#block-note[
+  If $sle(ms("X"))$ is a preorder, so is $tyle(ms("X"))$.
+
+  - Reflexivity: if $sty(X)$ is reflexive;
+    given $A ∈ sty(ms("X"))$, prove $tywk(A, A)$.
+
+    By induction on type $A$
+    - (base): $tywk(X, X)$ (by reflexivity of $sle(ms("X"))$)
+    - ($Π$ empty): $tywk(Π [], Π [])$
+    - ($Σ$ empty): $tywk(Σ [], Σ [])$
+    - ($Π$ cons):
+      $tywk(Π lb("T"), Π lb("T"))$ and $tywk(A, A)$ so
+      $tywk(Π (lb("T"), fty(lb("f"), A)), Π (lb("T"), fty(lb("f"), A)))$
+    - ($Σ$ cons):
+      $tywk(Σ lb("T"), Σ lb("T"))$ and $tywk(A, A)$ so
+      $tywk(Σ (lb("T"), fty(lb("f"), A)), Σ (lb("T"), fty(lb("f"), A)))$
+  - Transitivity: if $sle(ms("X"))$ is transitive;
+    given $tywk(A_1, A_2)$ and $tywk(A_2, A_3)$ prove $tywk(A_1, A_3)$.
+
+    Suffices to show $∀ A_3 . tywk(A_2, A_3) => tywk(A_1, A_3)$
+    by induction on the derivation $tywk(A_1, A_2)$.
+
+    - @twk-base:
+      Have $A_1 = X_1 ∈ ms("X")$, $A_2 = X_2 ∈ ms("X")$
+      with $X_1 sle(X) X_2$.
+
+      Fix $A_3$ s.t. $tywk(A_2, A_3)$.
+      By inversion on $tywk(X_2, A_3)$, either:
+      - $A_3 = X_3 ∈ ms("X")$ with $X_2 sle(X) X_3$;
+        in which case result follows by transitivity of $sle(X)$
+      - $A_3 = tunit$;
+        in which case result follows by @twk-unit.
+
+    - @twk-sigma:
+      Have $A_1 = Σ (lb("T")_1, fty(lb("f"), B_1))$, $A_2 = Σ (lb("T")_2, fty(lb("f"), B_2))$
+      with $tywk(Σ lb("T")_1, Σ lb("T")_2)$ and $tywk(B_1, B_2)$.
+
+      Fix $A_3$ s.t. $tywk(A_2, A_3)$.
+      By inversion on $tywk(Σ (lb("T")_2, fty(lb("f"), B_2)), A_3)$, either:
+      - @twk-sigma : $A_3 = Σ (lb("T")_3, fty(lb("f"), B_3))$ with
+        $tywk(Σ lb("T")_2, Σ lb("T")_3)$ and $tywk(B_2, B_3)$;
+
+        By induction, have $Σ lb("T")_1 ≤ Σ lb("T")_3$ and $tywk(B_1, B_3)$;
+        so result follows by @twk-sigma.
+
+    - @twk-pi:
+      Have $A_1 = Π (lb("T")_1, fty(lb("f"), B_1))$, $A_2 = Π (lb("T")_2, fty(lb("f"), B_2))$
+      with $tywk(Π lb("T")_1, Π lb("T")_2)$ and $tywk(B_1, B_2)$.
+
+      Fix $A_3$ s.t. $tywk(A_2, A_3)$.
+      By inversion on $tywk(Π (lb("T")_2, fty(lb("f"), B_2)), A_3)$, either:
+      - $A_3 = Π (lb("T")_3, fty(lb("f"), B_3))$ with
+        $tywk(Π lb("T")_2, Π lb("T")_3)$ and $tywk(B_2, B_3)$;
+
+        By induction, have $Π lb("T")_1 ≤ Π lb("T")_3$ and $tywk(B_1, B_3)$;
+        so result follows by @twk-pi.
+
+      - $A_3 = tunit$;
+        in which case result follows by @twk-unit.
+
+      - @twk-unit : $A_3 = tunit$;
+        in which case result follows by @twk-unit.
+
+    - @twk-unit:
+      Have $A_2 = tunit$.
+      Fix $A_3$ s.t. $tywk(A_2, A_3)$.
+      By inversion on $tywk(tunit, A_3)$, $A_3 = tunit$; result follows by @twk-unit.
+
+    - @twk-zero: Have $A_1 = tzero$; result follows by @twk-zero.
+]
+
+#block-note[
+  If $sle(ms("X"))$ is a partial order, so is $tyle(ms("X"))$
+
+  Suffices to show: if $sle(ms("X"))$ is antisymmetric, so is $tyle(ms("X"))$
+
+  Suffices to show: by induction on $atywk(A, B, ms("X"))$ that $atywk(B, A, ms("X")) => A = B$
+
+  - @twk-base:
+    Have $A = X$, $B = Y ∈ ms("X")$ with $X sle(ms("X")) Y$.
+
+    By inversion, result follows from antisymmetry of $sle(ms("X"))$
+  - @twk-sigma:
+    Have $A = Σ (lb("T"), fty(lb("f"), A'))$, $B = Σ (lb("T"'), fty(lb("f"), B'))$ with
+    $atywk(Σ lb("T"), Σ lb("T"'), ms("X"))$ and $atywk(A', B', ms("X"))$.
+
+    By inversion, have $atywk(Σ lb("T"'), Σ lb("T"), ms("X"))$ and $atywk(B', A', ms("X"))$.
+
+    Hence, by induction, have $A' = B'$ and $Σ lb("T") = Σ lb("T"')$;
+  - @twk-pi:
+    Have $A = Π (lb("T"), fty(lb("f"), A'))$, $B = Π (lb("T"'), fty(lb("f"), B'))$ with
+    $atywk(Π lb("T"), Π lb("T"'), ms("X"))$ and $atywk(A', B', ms("X"))$.
+
+    By inversion, have $atywk(Π lb("T"'), Π lb("T"), ms("X"))$ and $atywk(B', A', ms("X"))$.
+
+    Hence, by induction, have $A' = B'$ and $Π lb("T") = Π lb("T"')$;
+    implying the desired result.
+    implying the desired result.
+  - @twk-unit: have $B = tunit$; by inversion, $A = tunit$.
+  - @twk-zero: have $A = tzero$; by inversion, $B = tzero$.
+]
+*/
+
+= Category Theory
+
+//TODO: pull down
+/*
+#definition(name: "Opposite Category")[
+  Given a category $cal(C)$, we define it's opposite category $opc(cal(C))$ to have
+  - Objects $|opc(cal(C))| = |cal(C)|$
+  - Morphisms $opc(cal(C))(A, B) = { opm(f) | f ∈ cal(C)(B, A) }$
+    #footnote[
+      This is in bijection with $cal(C)(B, A)$
+      // (and is usually defined to be equal to it!)
+      but we add the $opm(-)$-tag to avoid confusion.
+    ].
+  - Composition given by $opm(f) ; opm(g) = opm((g ; f))$
+]
+*/
+
+/*
+In particular:
+- The (unique) initial object in $cset$ is the empty set $∅$
+- Any singleton set is a terminal object in $cset$.
+  We fix a singleton set $tunit_cset = {*}$.
+- Likewise, the (unique) initial object in $ms("Cat")$ is the empty category with objects $∅$
+- The terminal object in $ms("Cat")$ has
+  one object $* ∈ mb(1)_cset$
+  and only the identity morphism $id_* : mb(1)_ms("Cat")(*, *)$
+
+#todo[fix this this is not a good discussion]
+
+The existence of the opposite category means that for every structure $cal(S)$
+defined on arbitrary categories $cal(C)$,
+we can immediately ask whether $cal(S)$ exists on the _opposite category_ $opc(cal(C))$.
+If it does, this naturally induces a structure $opc(cal(S))$ on $cal(C)$ as well,
+the _dual_ of $cal(S)$.
+
+As an example of this,
+- A category $cal(C)$ has an initial object if and only if $opc(cal(C))$ has a terminal object;
+  so the terminal object is dual to the initial object
+- Likewise, a category $cal(C)$ has a terminal object if and only if $opc(cal(C))$ has an initial object;
+  so the initial object is dual to the terminal object
+- In general, if $cal(S)$ is dual to $opc(cal(S))$, then $opc(cal(S))$ is dual to $cal(S)$.
+  In particular, this means that $opc(opc(cal(S))) = cal(S)$
+
+In general, we get the dual structure $opc(cal(S))$ to $cal(S)$
+by flipping the direction of all morphisms in the
+definition of $cal(S)$.
+*/
+
+
+/*
+#definition(name: [$cal(V)$-Quiver])[
+  A $cal(V)$-quiver $cal(Q)$ consists of
+  - A set of objects $|cal(Q)|$
+  - For each pair of objects $A, B : |cal(Q)|$, a hom-object $cal(Q)(A, B) ∈ |cal(V)|$
+
+  In particular, every $cal(V)$-category can be made into a $cal(V)$-quiver by forgetting
+  the identities and composition.
+
+  We define the category of $cal(V)$-quivers $ms("Quiv")_cal(V)$ to have:
+  - Objects $cal(V)$-quivers
+  - Morphisms $F : ms("Quiv")_cal(V)(cal(Q)_1, cal(Q)_2)$ consisting of
+    - A mapping on objects $|F| : |cal(Q)_1| → |cal(Q)_2|$
+    - For each pair of objects $A, B : |cal(Q)_1|$, a $cal(V)$-morphism
+      $
+        F_(A, B) : cal(V)(cal(Q)_1(A, B), cal(Q)_2(F A, F B))
+      $
+  - Identity morphisms $id_(cal(Q)) = (id, id)$
+  - Composition given by
+    - $|F ; G| = |G| ∘ |F|$
+    - $(F ; G)_(A, B) = F_(A, B) ; G_(F A, F B)$
+
+  In particular, this is the same as composition of functors,
+  giving us a faithful forgetful functor from the category of $cal(V)$-categories
+  $ms("Cat")_cal(V)$ to the category of $cal(V)$-quivers $ms("Quiv")_cal(V)$.
+
+  Given a family of $cal(V)$-quivers $cal(Q)_i$ for $i ∈ I$, we may define:
+  - The _product quiver_ $Π_i Q_i$
+]
+*/
+
+/*
+#definition(name: [$cal(V)$-Multifunctor])[
+  Given a family of $cal(V)$-categories $scat(C) = [cal(C)_i | i ∈ I]$
+  and a $cal(V)$-category $cal(D)$,
+  a _multifunctor_ $F$ from $icol(C)$ to $cal(D)$ consists of
+  - A mapping from families of objects $icol(A) = [A_i : |cal(C)_i| | i ∈ I]$
+    to objects $F icol(A) : |cal(D)|$
+  - For each $j ∈ I$,
+    a mapping from families of objects $icol(A)_j = [A_i : |cal(C)_i| | i ∈ I backslash {j}]$
+    a $cal(V)$-functor
+    $
+      F med icol(A)_j : cal(C)_j → cal(D)
+    $
+    such that
+    $
+      ∀ A_j : |cal(C)_j|, F_j med icol(A)_j med A_j = F med icol(A) : |cal(D)|
+    $
+    where
+    $
+      icol(A) = [j ↦ A_j] ovrd icol(A)_j = [A_i | i ∈ I]
+    $
+
+  In other words, $F$ is a function of $A_i$
+  which is a $cal(V)$-functor in each argument $A_j$ _separately_,
+  when all other arguments $A_i$ for $i ≠ j$ are held fixed.
+
+  Given $cal(V)$-multifunctors $F, G: scat(C) → D$, we say that a family of morphisms
+  $η_icol(A): cal(D)(F icol(A), G icol(A))$ is _natural_ in $j ∈ I$ if,
+  for each family of objects $icol(A)_j = [A_i : |cal(C)_i| | i ∈ I backslash {j}]$,
+  the family of morphisms $η_icol(A)_j$ given by
+  $(η_icol(A)_j)_X := η_([j ↦ X] ovrd icol(A)_j)$
+  is a natural transformation $η_(icol(A)_j) : F icol(A)_j => G icol(A)_j$.
+
+  That is, for every morphism $f : cal(C)_j (A_j, A_j')$,
+  we have that the following diagram commutes
+  $
+    #diagram(cell-size: 15mm, $
+      F med icol(A) edge(η_icol(A), ->) edge("d", F med icol(A)_j med f, ->) &
+      G med icol(A) edge("d", G med icol(A)_j med f, ->, label-side: #left) \
+      F med icol(A)' edge(η_icol(A)', ->, label-side: #right) & G med icol(A)' $)
+  $
+  where
+  $
+    icol(A) = [j ↦ A_j] ovrd icol(A)_j = [A_i | i ∈ I] quad quad quad
+    icol(A)' = [j ↦ A_j'] ovrd icol(A)_j = [A_i | i ∈ I]
+  $
+]
+*/
+
+/*
+#definition(name: [$cal(V)$-Natural Multitransformation])[
+  Given $cal(V)$-multifunctors $F, G: scat(C) → D$, we define a $cal(V)$-natural multitransformation
+  $η : F => G$ to consist of:
+  - For each family of objects $icol(A) = [A_i : cal(C)_i | i ∈ I]$,
+    a morphism $η_(icol(A)) : cal(D)(F icol(A), G icol(A))$
+  - For each $j ∈ I$,
+    a mapping from families of objects $icol(A)_j = [A_i : cal(C)_i | i ∈ I backslash {j}]$
+    a natural tranformation
+    $
+      η_icol(A)_j : F_j med icol(A)_j => G_j med icol(A)_j
+    $
+    such that
+    $
+      ∀ A_j : |cal(C)_j|, (η_(icol(A)_j))_(A_j) = η_[A_i | i ∈ I]
+        : cal(D)(F [A_i | i ∈ I]) → cal(D)(G [A_i | i ∈ I])
+    $
+
+  In other words, if we consider $F$, $G$, and $η$ as functions of $A_i$, and, for a given $j ∈ I$,
+  fix all $A_i$ for $i ≠ j$, then
+  - $F$ and $G$ are functors
+  - $η$ is a natural transformation from $F$ to $G$
+
+  That is, $η$ is a natural transformation in each argument $A_j$ _separately_,
+  i.e., is _natural in $A_j$_.
+]
+*/
+
+/*
+We define a
+
+Consider now families of objects
+$X_(A_1,...,A_n), Y_(A_1,...,A_n) ∈ |cal(C)|$ parametrized by $n$ objects $A_i ∈ |cal(C)|$
+and a family of morphisms
+$m_(A_1,...,A_n) : cal(C)(X_(A_1,...,A_n), Y_(A_1,...,A_n))$.
+We say that $m$ is _natural_ in $A_i$ if:
+- There exists a $cal(V)$-functor $F_i$ such that
+  $F_i med B = X_i$
+
+Given a function $|cal(C)|^n → |cal(C)|$
+*/

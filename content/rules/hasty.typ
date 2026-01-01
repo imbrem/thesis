@@ -242,11 +242,6 @@ Add some documentation here? Shouldn't print!
   $dehasty(Γ, ε, a, A)$,
   $dehasty(Γ, ε, lb("l") med a, Σ (lty(lb("l"), A)))$,
 )
-#let r-eff-proj = rule(
-  name: "proj",
-  $ehasty(Γ, ε, e, Π (fty(lb("f"), A)))$,
-  $dehasty(Γ, ε, lb("f") med e, A)$,
-)
 #let r-eff-tuple = rule(
   name: "tuple",
   $deistup(Γ, ε, E, lb("T"))$,
@@ -267,6 +262,12 @@ Add some documentation here? Shouldn't print!
   $dehasty(Γ, ε, a, A)$,
   $dehasty(#$Γ, x : A$, ε, b, B)$,
   $dehasty(Γ, ε, elet(x, a, b), B)$,
+)
+#let r-eff-destruct = rule(
+  name: [$"let"_n$],
+  $dehasty(Γ, ε, e_1, Π lb("T"))$,
+  $dehasty(#$Γ, lb("T")^V$, ε, e_2, B)$,
+  $dehasty(Γ, ε, elet((V), e_1, e_2), B)$,
 )
 #let r-eff-cases = rule(
   name: "cases",
@@ -299,11 +300,11 @@ Add some documentation here? Shouldn't print!
       declare-rule(r-eff-coe),
       declare-rule(r-eff-app),
       declare-rule(r-eff-inj),
-      declare-rule(r-eff-proj),
       declare-rule(r-eff-tuple),
       declare-rule(r-eff-pi-nil),
       declare-rule(r-eff-pi-cons),
       declare-rule(r-eff-let),
+      declare-rule(r-eff-destruct),
       declare-rule(r-eff-cases),
       declare-rule(r-eff-sigma-nil),
       declare-rule(r-eff-sigma-cons),

@@ -68,6 +68,8 @@
   caption: [Typing rules for #br-calc(ms("E"))],
 )
 
+#fig-haslb-br
+
 #let fig-haslb-ssa = figure(
   [
     #rule-set(
@@ -82,6 +84,8 @@
   caption: [Typing rules for #ssa-calc(ms("E"), ms("T"))],
 )
 
+#fig-haslb-ssa
+
 #let fig-gssa-grammar = figure(
   [
     #grid(
@@ -93,7 +97,7 @@
         Or[$(V) = e seq r$][_destructure_]
         Or[$brb(lb("l"), e)$][_branch_]
         Or[$scase(e, L)$][_case_]
-        Or[$τ$][_terminator_]
+        // Or[$τ$][_terminator_]
         Or[${ r } seq L$][_braces_]
       })),
       bnf(
@@ -105,9 +109,15 @@
     )
     \
   ],
-  caption: [Grammar for #gssa-calc(ms("E"), ms("T"))],
+  caption: [
+    Grammar for 
+    // #gssa-calc(ms("E"), ms("T"))
+    #gssa-calc(ms("E"))
+  ],
   kind: image,
 )
+
+#fig-gssa-grammar
 
 // Rules for gssa-calc(E, T)
 #let r-g-assign = rule(
@@ -166,3 +176,5 @@
   ],
   caption: [Typing rules for #gssa-calc(ms("E"), ms("T"))],
 )
+
+#fig-haslb-gssa
