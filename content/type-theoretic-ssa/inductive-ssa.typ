@@ -93,9 +93,11 @@ We give the rules for subtyping in @ty-wk;
 these state that we're allowed to:
 
 - Permute the fields of a product or the variants of a coproduct.
-  In particular, this means
-  that
-
+  In particular, this means that $Π lb("T")$ and $Π (ρ · lb("T"))$ are _interchangeable_, since
+  $
+    Π lb("T") sle() Π (ρ · lb("T")) sle() Π (ρ^(-1) · ρ · lb("T")) = Π lb("T")
+  $
+  and likewise for coproducts $Σ lb("L")$.
   We call such interchangeable types $A ≈ B$ _equivalent_, defining
   $
     A ≈ B := A sle() B ⊓ B sle() A
@@ -239,6 +241,9 @@ Given a type system $ms("X")$, we define
   We define the _usage_ obligation of a context $Γ$
   as the meet of the usage obligations of its constituent types:
 
+  In general, we transparently identify contexts $Γ ∈ sctx(ms("X"))$
+  and field lists $lb("T") ∈ sstruct(sty(ms("X")))$.
+
 - A _cocontext_ $ms("L") ∈ slctx(ms("X"))$ to be a list of label-type pairs $lb("l")(A)$
   where $A ∈ ms("X")$.
 
@@ -251,6 +256,9 @@ Given a type system $ms("X")$, we define
 
   We define the _usage_ obligation of a cocontext $ms("L")$
   as the meet of the usage obligations of its constituent types:
+
+  In general, we transparently identify cocontexts $ms("L") ∈ slctx(ms("X"))$
+  and label lists $lb("L") ∈ sstruct(sty(ms("X")))$.
 
 - A _polycontext_ $cal("L") ∈ sdnf(ms("X"))$ to be a list of tuples $clty(lb("l"), Γ, A)$
   where $Γ ∈ sctx(ms("X"))$ and $A ∈ ms("X")$.
@@ -360,9 +368,9 @@ in @ctx-grammar-wk.
     \
     $
           useobg(·^⊗) & := tqint & #h(5em) //
-                                     &&                 useobg(Γ, x : A) & := useobg(Γ) ⊓ useobg(A) \
-          useobg(·^⊕) & := tqint &   && useobg(ms("L"), lty(lb("l"), A)) & := useobg(ms("L")) ⊓ useobg(A) \
-      useobg(·^(⊕ ⊗)) & := tqint &   &&  useobg(cal("L"), lb("l")[Γ](A)) & := useobg(cal("L")) ⊓ useobg(Γ) ⊓ useobg(A) \
+                                     &&                      useobg(Γ, x : A) & := useobg(Γ) ⊓ useobg(A) \
+          useobg(·^⊕) & := tqint &   &&      useobg(ms("L"), lty(lb("l"), A)) & := useobg(ms("L")) ⊓ useobg(A) \
+      useobg(·^(⊕ ⊗)) & := tqint &   && useobg(cal("L"), clty(lb("l"), Γ, A)) & := useobg(cal("L")) ⊓ useobg(Γ) ⊓ useobg(A) \
     $
     \
   ],
@@ -389,47 +397,13 @@ in @ctx-grammar-wk.
 #let ctx2field(Γ) = $ms("coe")(#Γ)$
 #let lctx2var(L) = $ms("coe")(#L)$
 
-- We may coerce a field list $lb("T") ∈ sstruct(sty(ms("T")))$ 
-into a context $field2ctx(lb("T")) ∈ sctx(sty(ms("X")))$
-  by induction:
-  #eqn-set(
-    $field2ctx(·) := ·^⊗$,
-    $field2ctx(#$lb("T"), fty(lb("f"), A)$) := field2ctx(lb("T")), lb("f") : A$,
-  )
-
-  Likewise, for 
-    $Γ ∈ sctx(sty(ms("X")))$, we may define the inverse coercion 
-    $ctx2field(Γ) ∈ $ by induction:
-  #eqn-set(
-    $ctx2field(·^⊗) := ·$,
-    $ctx2field(#$Γ, x : A$) := ctx2field(Γ), fty(x, A)$,
-  )
-
-  We drop both coercions when unambiguous.
-
-- Given $Σ lb("L") ∈ sty(ms("X"))$,
-  we may coerce the label list $lb("L")$ into a cocontext $var2lctx(lb("L")) ∈ slctx(sty(ms("X")))$
-  by induction:
-  #eqn-set(
-    $var2lctx(·) := ·$,
-    $var2lctx(#$lb("L"), lty(lb("l"), A)$) := var2lctx(lb("L")), lb("l")(A)$,
-  )
-
-  Likewise, we may define the inverse coercion $lctx2var(ms("L"))$ by induction:
-  #eqn-set(
-    $lctx2var(·) := ·$,
-    $lctx2var(#$ms("L"), lb("l")(A)$) := lctx2var(ms("L")), lty(lb("l"), A)$,
-  )
-
-  We drop both coercions when unambiguous.
-
-- Given $Γ ∈ sctx(ms("X"))$ and $ms("L") ∈ slctx(ms("X"))$, we may define their
-  _distributed product_ $Γ csplat ms("L") ∈ sdnf(ms("X"))$
-  by induction as follows:
-  #eqn-set(
-    $Γ csplat · := ·$,
-    $Γ csplat (#$ms("L"), lb("l")(A)$) := Γ, clty(lb("l"), Γ, A)$,
-  )
+Given $Γ ∈ sctx(ms("X"))$ and $ms("L") ∈ slctx(ms("X"))$, we may define their
+_distributed product_ $Γ csplat ms("L") ∈ sdnf(ms("X"))$
+by induction as follows:
+#eqn-set(
+  $Γ csplat · := ·$,
+  $Γ csplat (ms("L"), lb("l")(A)) := (Γ csplat ms("L")), clty(lb("l"), Γ, A)$,
+)
 
 /*
 In general, we say a map $f : ms("X") -> ms("Y")$ is a _typing discipline morphism_ if
