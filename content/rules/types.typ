@@ -2,8 +2,8 @@
 
 #show: show-syntax
 
-#let def-ty-sys = definition(name: "Type System")[
-  We define a _type system_ $ms("X")$ to consist of:
+#let def-ty-disc = definition(name: "Type Discipline")[
+  We define a _type discipline_ $ms("X")$ to consist of:
   - A set of _types_ $ms("X")$
   - A near-prelattice $X sle() Y$ on base types, _weakening_
   - An upper set $saff ⊆ X$ of _affine_ types
@@ -14,8 +14,25 @@
   We say a type system is _cartesian_ if $saff = srel = X$.
 ]
 
-#let def-res-sys = definition(name: "Type System")[
-  We define a _resource system_ $ms("X")$ to consist of a type system $ms("X")$
+#def-ty-disc
+
+#let tyrel(X, Y) = $ms("TyRel")(#X, #Y)$
+
+#let def-ty-rel = definition(name: "Typing Relation")[
+  We define a _typing relation_ $ms("W") : tyrel(ms("X"), ms("Y"))$ 
+  from typing discipline $ms("X")$ to typing discipline $ms("Y")$
+  to be 
+  - a set of _programs_ $p ∈ |ms("W")|$
+  - a $|P|$-indexed family of relations $ms("W")_p : ms("X") rfn ms("Y")$
+
+  We call $ms("W")$ a _type system_ if each $ms("W")_p$ is a profunctor 
+  (w.r.t. the weakening order).
+]
+
+#def-ty-rel
+
+#let def-res-disc = definition(name: "Resource Discipline")[
+  We define a _resource discipline_ $ms("X")$ to consist of a type discipline $ms("X")$
   equipped with a _splitting_ relation $(splitr) : ms("X") rfn ms("X") × ms("X")$
   such that
   - Splitting $(splitr)$ is coassociative and cocommutative, i.e.
@@ -36,7 +53,7 @@
 
 ]
 
-#def-res-sys
+#def-res-disc
 
 #let fig-ty-grammar = figure(
   [
@@ -54,11 +71,11 @@
       bnf(
         Prod($lb("L")$, {
           Or[$·$][]
-          Or[$lb("L"), lty(lb("l"), A)$][]
+          Or[$lb("L"), lty(lb("l"), A)$][where $lb("l") ∉ lb("L")$]
         }),
         Prod($lb("T")$, {
           Or[$·$][]
-          Or[$lb("T"), fty(lb("f"), A)$][]
+          Or[$lb("T"), fty(lb("f"), A)$][where $lb("f") ∉ lb("T")$]
         }),
       ),
     )
@@ -73,9 +90,7 @@
     \
   ],
   caption: [
-    Grammar for simple types parametrized by base types $ms("X")$.
-    We treat $lb("L"), lb("T")$ as _label-indexed families_ of types,
-    and in particular quotient by order.
+    Grammar for simple types $A ∈ sty(ms("X"))$ parametrized by base types $ms("X")$.
   ],
   kind: image,
 );

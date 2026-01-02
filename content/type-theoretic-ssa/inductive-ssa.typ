@@ -24,9 +24,35 @@
 
 #import "../rules/types.typ": *
 
-#todo[Everything is parametrized by a set of _base types_ $ms("X")$]
+Both our expression calculus #iter-calc() and our SSA region calculus #gssa-calc() use a 
+system of _simple types_ $A$, consisting of:
 
-#def-ty-sys
+- $n$-ary coproducts $Σ lb("L")$ with named variants $lty(lb("l"), A)$ and
+
+- $n$-ary products $Π lb("T")$ with named fields $lty(lb("f"), A)$,
+
+- parametrized by a set of _base types_ $ms("X")$
+
+We give a grammar for these in @simple-ty-grammar. This system is intentionally minimalistic:
+
+- Anonymous binary products $A × B$ and coproducts $A + B$ 
+  desugar to named products and coproducts with distinguished labels $kwl, kwr$.
+
+- Anonymous $n$-ary products $Π [A_0,...,A_(n - 1)]$ 
+  and coproducts  $Σ [A_0,...,A_(n - 1)]$ desugar to named products and coproducts with 
+  distinguished labels $lb("p")_i, lb("i")_i$.
+
+  #todo[make anonymous names coherent]
+
+#fig-ty-grammar <simple-ty-grammar>
+
+#todo[
+  Segue to describing  type system; needed mainly for parametrization
+]
+
+#def-ty-disc
+
+#def-ty-rel
 
 #todo[
   For now, we assume a _cartesian_ type system
@@ -37,7 +63,6 @@
   Where clear from context, we $tybase(·)$ transparently.
 ]
 
-#fig-ty-grammar
 
 #todo[We equip it with an order]
 
@@ -55,11 +80,11 @@
 
 = Expressions
 
+#import "../rules/hasty.typ": *
+
 #todo[introduce concept of a function space]
 
 #todo[fix notation for function space judgement]
-
-#import "../rules/hasty.typ": *
 
 #fig-r-hasty
 

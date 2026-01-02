@@ -1,9 +1,7 @@
 #import "../../syntax.typ": *
 #import "../../todos.typ": *
 
-/*
-Add some documentation here? Shouldn't print!
-*/
+#show: show-syntax
 
 //TODO: construct rule lists?
 
