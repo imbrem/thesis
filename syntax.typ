@@ -498,7 +498,8 @@
   #figure(
     print-rule(p, ..xs.pos(), ..named),
     kind: "rule",
-    supplement: [(#p.name)],
+    supplement: [( #p.name],
+    numbering: (..) => [)],
   ) #l
 ]
 

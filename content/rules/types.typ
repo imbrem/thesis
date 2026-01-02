@@ -2,20 +2,6 @@
 
 #show: show-syntax
 
-#let def-ty-disc = definition(name: "Type Discipline")[
-  We define a _type discipline_ $ms("X")$ to consist of:
-  - A set of _types_ $ms("X")$
-  - A near-prelattice $X sle() Y$ on base types, _weakening_
-  - An upper set $saff ⊆ X$ of _affine_ types
-  - A lower set $srel ⊆ X$ of _relevant types_
-
-  We say two types $X, Y$ are _equivalent_, written $X ≈ Y$, if $X sle() Y$ and $Y sle() X$.
-
-  We say a type system is _cartesian_ if $saff = srel = X$.
-]
-
-#def-ty-disc
-
 #let tyrel(X, Y) = $ms("TyRel")(#X, #Y)$
 
 #let def-ty-rel = definition(name: "Typing Relation")[
