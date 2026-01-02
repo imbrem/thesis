@@ -30,7 +30,7 @@
     $
   - If $tysplits(X, Y, Z)$ and $urel(saff, Z)$, then $tywk(X, Y)$
     ("affine components can be discarded")
-  - If $urel(srel, X)$ iff $tysplits(X, X, X)$
+  - If $urel(sidm, X)$ iff $tysplits(X, X, X)$
 
   We note that, if $ms("X")$ is cartesian, our splitting relation is uniquely determined by
   $
@@ -118,6 +118,7 @@
 );
 #let r-twk-unit = rule(
   name: $tunit$,
+  $urel(saff, A)$,
   $tywk(A, tunit)$,
 );
 
@@ -273,49 +274,3 @@
 )
 
 #fig-r-cwk
-
-#let fig-quant-lattice = figure(
-  [
-    #stack(
-      dir: ltr,
-      spacing: 4em,
-      [
-        $
-                                    \
-                                    \
-          tqaff + 1 = tqaff + tqrel & = tqint #h(2em) & tqint & kqwk q \
-          tqaff + tqaff = tqint + q & = tqint \
-                                    \
-                  tqrel + 1 = 1 + 1 & = tqrel         & tqrel & kqwk tqlin \
-                      tqrel + tqrel & = tqrel         &        \
-                                    \
-                                    &                 & tqaff & kqwk tqlin \
-                                    \
-                                    \
-                              0 + q & = q             & tqaff & kqwk 0 \
-                                    &                 & tqrel & kqwk (n + 1)
-        $
-      ],
-      diagram(
-        $
-                               & tqint \
-          tqaff edge("ur", <-) &       & tqrel edge("ul", <-) \
-                               & tqlin edge("ul", <-) edge("ur", <-) //
-                                   \
-          dem(0) edge("uu", "--", stroke: cdem) //
-                               & dem(1) edge("u", "=", stroke: cdem) //
-                                       & dem(2) edge("uu", "--", stroke: cdem) //
-                                                              & dem(3) edge("uul", "--", stroke: cdem) //
-                                                                  & ... edge("uull", "--", stroke: cdem)
-        $,
-      ),
-    )
-    \
-  ],
-  caption: [
-    Meet-semilattice of usage obligations under $kqwk$,
-    going from "less defined/less restricted" to "more defined/more restricted."
-  ],
-)
-
-#fig-quant-lattice

@@ -91,6 +91,19 @@
 } else {
   $ms("Ty")[#xs.pos().at(0)]$
 }
+
+#let senum(..xs) = if xs.pos().at(0, default: none) == none {
+  $ms("Lb")^*$
+} else {
+  $ms("Lb")^*[#xs.pos().at(0)]$
+}
+
+#let sstruct(..xs) = if xs.pos().at(0, default: none) == none {
+  $ms("Fl")^*$
+} else {
+  $ms("Fl")^*[#xs.pos().at(0)]$
+}
+
 #let sctx(..xs) = if xs.pos().at(0, default: none) == none {
   $ms("Ctx")$
 } else {
@@ -100,6 +113,11 @@
   $ms("LCtx")$
 } else {
   $ms("LCtx")[#xs.pos().at(0)]$
+}
+#let sdnf(..xs) = if xs.pos().at(0, default: none) == none {
+  $ms("DNF")$
+} else {
+  $ms("DNF")[#xs.pos().at(0)]$
 }
 
 // Order theory
@@ -449,8 +467,8 @@
 #let qaff = $?$
 #let qint = $*$
 
-#let tqlin = $1$
-#let tqrel = $(+)$
+#let tqlin = $(1)$
+#let tqidm = $(+)$
 #let tqaff = $(op(?))$
 #let tqint = $(*)$
 
@@ -464,8 +482,12 @@
 #let ulbcwk(U, L, M) = $#L scripts(≤)_#U #M$
 #let uclbwk(U, K, M) = $#K scripts(≤)_#U #M$
 
+#let useobg = $ms("use")$
+#let useset = $ms("Q")$
+
 #let saff = $ms("aff")$
-#let srel = $ms("rel")$
+#let sidm = $ms("idm")$
+#let scart = $ms("cart")$
 
 #let splitr = $scripts(=>)$
 
