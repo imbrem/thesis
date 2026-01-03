@@ -9,6 +9,15 @@
 }
 
 #todo[
+  Potential intro layout:
+  - High level goals:
+    - Judgements $hasty(Γ, e, A)$ for expressions, $haslb(Γ, r, ms("L"))$ for regions
+    - _Equational theory_ $tyeq(Γ, #none, e, e', A)$, $lbeq(Γ, #none, r, r', ms("L"))$;
+    - _Refinement theory_ $tyref(Γ, #none, e, e', A)$, $lbref(Γ, #none, r, r', ms("L"))$
+  - Specifically,
+]
+
+#todo[
   In this chapter we:
   1. Give a type-and-effect system for #iter-calc() and
     SSA parametrized by a set of base types $ms("X")$
@@ -427,11 +436,15 @@ Note that the latter two conditions are trivial when $ms("Y")$ is cartesian.
 #import "../rules/hasty.typ": *
 
 We've now got everything we need to give typing rules for our expression language, #iter-calc().
-In particular, we give a grammar for #iter-calc(ms("F"), ms("A")) in @iter-calc-grammar, 
-parametrized by a set of
-- _functions_ $ms("F")$: often, these are our _primitive instructions_ like `add` and `sub`
-- _atomic expressions_ $ms("A")$: often, these are our constants like `2` and `"hello"`
+In particular, we give a grammar for #iter-calc(ms("F"), ms("A")) in @intro-iter-calc-grammar,
+parametrized by:
 
+- _functions_ $f ∈ ms("F")$: often, these are our _primitive instructions_ like `add` and `sub`
+
+- _atomic expressions_ $α ∈ ms("A")$:
+  in the original grammar from @intro-iter-calc-grammar
+  these correspond to _constants_, like `2` and `"hello"`,
+  but can be drawn from an arbitrary language $ms("A")$.
 
 #let iter-calc-grammar = figure(
   [
@@ -444,7 +457,7 @@ parametrized by a set of
           $e$,
           {
             Or[$x$][_variable_]
-            Or[$a$][_atomic expression_ ($a ∈ ms("A")$)]
+            Or[$α$][_atomic expression_ ($α ∈ ms("A")$)]
             Or[$f med e$][_application_ ($f ∈ ms("F")$)]
             Or[$lb("l") med e$][_label_]
             Or[$(E)$][_structure_]
@@ -481,18 +494,50 @@ parametrized by a set of
 
 #iter-calc-grammar <iter-calc-grammar>
 
+#todo[add a macro for judgement / meaning tables]
 
-#todo[introduce concept of a function space]
+Given typing judgements:
 
-#todo[fix notation for function space judgement]
+#align(center, table(
+  columns: 2,
+  gutter: (1em, 1em),
+  stroke: none,
+  [Judgement], [Meaning],
 
-#fig-r-hasty
+  $isfn(Γ, f, A, B)$,
 
-#todo[explain #op-calc(ms("F")), #case-calc(ms("F")) as sublanguages of #iter-calc(ms("F"))]
+  align(
+    left,
+    ["In context $Γ$, $f ∈ ms("F")$ takes an input of type $A$ to an output of type $B$"],
+  ),
 
-#todo[weakening]
+  $hasty(Γ, α, A)$,
 
-#todo[substitution]
+  align(
+    left,
+    ["In context $Γ$, atomic expression $α ∈ ms("A")$ has type $A$"],
+  ),
+))
+
+#todo[we give meaning to $hasty(Γ, e, A)$ in @cart-iter-calc-rules]
+
+#todo[
+  we note that:
+  - atomic expressions can depend on context (so don't have to be constants!)
+  - functions can depend on context (and so can be closures)
+]
+
+#todo[
+  Now, we formally introduce:
+  - _function systems_ $ms("F")$ over a typing discipline $ms("X")$
+  - _expression systems_ $ms("E")$ over a typing discipline $ms("X")$
+  - Lemma: 
+    for a typing discipline $ms("X")$,
+    if $ms("F")$ is a function system and $ms("A")$ is an expression system,
+    then #iter-calc(ms("F"), ms("A")) is an expression system
+]
+
+#fig-r-hasty <cart-iter-calc-rules>
 
 = Regions
 
@@ -555,3 +600,12 @@ parametrized by a set of
 #todo[(region) basis ; refinement system _over_ $ms("E") ; ms("T")$ ; order embedding]
 
 #todo[basic metatheory]
+
+
+#context if (thesis-state.get)().is-standalone [
+  #import "../rules/intro.typ": *
+
+  #the-bibliography
+
+  #ssa-expr-grammar <intro-iter-calc-grammar>
+]
