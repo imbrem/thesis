@@ -414,23 +414,6 @@ by induction as follows:
   $Γ csplat (ms("L"), lb("l")(A)) := (Γ csplat ms("L")), clty(lb("l"), Γ, A)$,
 )
 
-/*
-In general, we say a map $f : ms("X") -> ms("Y")$ is a _typing discipline morphism_ if
-- $f$ preserves weakening: if $X sle() Y$, then $f(X) sle() f(Y)$
-- $f$ reduces usage obligations: $useobg(f(X)) ⊑ useobg(X)$
-
-
-Recall that we say a preorder $ms("X")$
-- has _upper binary joins_ if any $X, Y ∈ |ms("X")|$ with upper bound $X, Y sle() Z$
-  have a join $X ⊔ Y$
-- has _lower binary meets_ if any $X, Y ∈ |ms("X")|$ with lower bound $Z sle() X, Y$
-  have a meet $X ⊓ Y$
-- is a _near prelattice_ if it has both upper binary joins and lower binary meets
-- is a _prelattice_ if it has binary joins and meets for all pairs $X, Y ∈ |ms("X")|$
-
-Note that the latter two conditions are trivial when $ms("Y")$ is cartesian.
-*/
-
 = Expressions
 
 #import "../rules/hasty.typ": *
@@ -499,17 +482,22 @@ Given typing judgements:
 #judgement-meaning(
   $isfn(Γ, f, A, B)$,
   ["In context $Γ$, $f ∈ ms("F")$ takes an input of type $A$ to an output of type $B$"],
-  $hasty(Γ, α, A)$,
+  $hasty(Γ, α, A, annot: ms("A"))$,
   ["In context $Γ$, atomic expression $α ∈ ms("A")$ has type $A$"],
 )
 
-#todo[we give meaning to $hasty(Γ, e, A)$ in @cart-iter-calc-rules]
+we give typing rules for judgements
 
-#todo[
-  we note that:
-  - atomic expressions can depend on context (so don't have to be constants!)
-  - functions can depend on context (and so can be closures)
-]
+#judgement-meaning(
+  $hasty(Γ, e, A)$,
+  ["In context $Γ$, expression $e ∈ #iter-calc(ms("F"), ms("A"))$ has type $A$"],
+  $istup(Γ, E, lb("T"))$,
+  ["In context $Γ$, structure expression $(E)$ has product type $Π lb("T")$"],
+  $kebrs(cal(K), M, A)$,
+  ["In polycontext $cal(K)$, case branches $M$ yield type $A$"],
+)
+
+in @cart-iter-calc-rules.
 
 #todo[
   Now, we formally introduce:

@@ -9,7 +9,7 @@
 
 #let r-var = rule(
   name: "var",
-  $Γ med x = A$,
+  $Γ ⊑ x : A$,
   $hasty(Γ, x, A)$,
 );
 #let r-coe = rule(
@@ -17,6 +17,11 @@
   $hasty(Γ, a, A)$,
   $tywk(A, A')$,
   $hasty(Γ, a, A')$,
+);
+#let r-atom = rule(
+  name: "atom",
+  $hasty(Γ, α, A, annot: ms("A"))$,
+  $hasty(Γ, α, A)$
 );
 #let r-app = rule(
   name: "app",
@@ -64,13 +69,13 @@
 );
 #let r-sigma-nil = rule(
   name: "Σ-nil",
-  $isebrs(Γ, ·, ·, A)$,
+  $kebrs(·, ·, A)$,
 );
 #let r-sigma-cons = rule(
   name: "Σ-cons",
-  $isebrs(Γ, lb("L"), M, A)$,
+  $kebrs(cal(K), M, A)$,
   $hasty(#$Γ, x : B$, a, A)$,
-  $isebrs(Γ, #$lb("L"), lty(lb("l"), B)$, #$M, ebr(lb("l"), x, a)$, A)$,
+  $kebrs(#$cal(K), clty(lb("l"), Γ, B)$, #$M, ebr(lb("l"), x, a)$, A)$,
 );
 #let r-iter = rule(
   name: "iter",
@@ -83,6 +88,7 @@
   [
     #rule-set(
       declare-rule(r-var),
+      declare-rule(r-atom),
       declare-rule(r-coe),
       declare-rule(r-app),
       declare-rule(r-inj),
