@@ -58,8 +58,8 @@
 #let r-destruct = rule(
   name: [$"let"_n$],
   $hasty(Γ, e_1, Π lb("T"))$,
-  $hasty(#$Γ, lb("T")^V$, e_2, A)$,
-  $hasty(Γ, elet((V), e_1, e_2), A)$,
+  $hasty(#$Γ, lb("T")^mb("x")$, e_2, A)$,
+  $hasty(Γ, elet((mb("x")), e_1, e_2), A)$,
 );
 #let r-cases = rule(
   name: "cases",
@@ -168,8 +168,8 @@
 #let r-eq-destruct = rule(
   name: [$"let"_n$],
   $tyeq(Γ, req, e_1, e'_1, Π lb("T"))$,
-  $tyeq(#$Γ, lb("T")^V$, req, e_2, e'_2, A)$,
-  $tyeq(Γ, req, elet((V), e_1, e_2), elet((V), e'_1, e'_2), A)$,
+  $tyeq(#$Γ, lb("T")^mb("x")$, req, e_2, e'_2, A)$,
+  $tyeq(Γ, req, elet((mb("x")), e_1, e_2), elet((mb("x")), e'_1, e'_2), A)$,
 )
 #let r-eq-cases = rule(
   name: "cases",
@@ -275,8 +275,8 @@
 #let r-eff-destruct = rule(
   name: [$"let"_n$],
   $dehasty(Γ, ε, e_1, Π lb("T"))$,
-  $dehasty(#$Γ, lb("T")^V$, ε, e_2, B)$,
-  $dehasty(Γ, ε, elet((V), e_1, e_2), B)$,
+  $dehasty(#$Γ, lb("T")^mb("x")$, ε, e_2, B)$,
+  $dehasty(Γ, ε, elet((mb("x")), e_1, e_2), B)$,
 )
 #let r-eff-cases = rule(
   name: "cases",

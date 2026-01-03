@@ -31,7 +31,7 @@ $
 $
 
 #todo[
-  Text about coherence notation: for $D: deriv(hasty(Γ, a, A))$, 
+  Text about coherence notation: for $D: deriv(hasty(Γ, a, A))$,
   write $⟦D⟧$ as $⟦hasty(Γ, a, A)⟧$.
 
   Justified now by unique argument. Justified later by coherence.
@@ -104,7 +104,8 @@ $
 #dntty($hasty(Γ, a, A)$, $cal(C)(Π ⟦Γ⟧, ⟦A⟧)$)
 
 #eqn-set(
-  dntdef(r-var, $π_x$),
+  dntdef(r-var, $⟦cwk(Γ, #$x : A$)⟧$),
+  dntdef(r-atom, $⟦hasty(Γ, α, A, annot: ms("A"))⟧$),
   dntdef(r-coe, $⟦hasty(Γ, a, A)⟧ cc ⟦tywk(A, A')⟧$),
 )
 
@@ -114,7 +115,10 @@ $
 
 #eqn-set(
   dntdef(r-inj, $⟦hasty(Γ, a, A)⟧ cc ι_lb("l")$),
-  dntdef(r-destruct, $⟦hasty(Γ, e, Π (fty(lb("f"), A)))⟧ cc π_lb("f")$),
+  dntdef(
+    r-destruct,
+    $clet(⟦hasty(Γ, e_1, Π lb("T"))⟧) cc α^⊗ cc ⟦hasty(#$Γ, lb("T")^mb("x")$, e_2, A)⟧$,
+  ),
   dntdef(r-tuple, $⟦istup(Γ, E, lb("T"))⟧$),
 )
 
@@ -189,14 +193,14 @@ $
 #theorem(name: "Soundness (Equivalence)")[
   Given $tyeq(Γ, req, a, b, A)$ and $cal(M) ⊧ req$, we have
   $
-  ⟦hasty(Γ, a, A)⟧_cal(M) = ⟦hasty(Γ, b, A)⟧_cal(M)
+    ⟦hasty(Γ, a, A)⟧_cal(M) = ⟦hasty(Γ, b, A)⟧_cal(M)
   $
 ]
 
 #theorem(name: "Completeness (Equivalence)")[
   Given $hasty(Γ, a, A)$ and $hasty(Γ, b, A)$, we have
   $
-    tyeq(Γ, req, a, b, A) 
+    tyeq(Γ, req, a, b, A)
     <==> (∀ cal(M) ⊧ req . ⟦hasty(Γ, a, A)⟧_cal(M) = ⟦hasty(Γ, b, A)⟧_cal(M))
   $
 ]
@@ -223,14 +227,14 @@ $
 #theorem(name: "Soundness (Refinement)")[
   Given $tyref(Γ, rref, a, b, A)$ and $cal(M) ⊧ rref$, we have
   $
-  ⟦hasty(Γ, a, A)⟧_cal(M) ->> ⟦hasty(Γ, b, A)⟧_cal(M)
+    ⟦hasty(Γ, a, A)⟧_cal(M) ->> ⟦hasty(Γ, b, A)⟧_cal(M)
   $
 ]
 
 #theorem(name: "Completeness (Refinement)")[
   Given $hasty(Γ, a, A)$ and $hasty(Γ, b, A)$, we have
   $
-    tyref(Γ, rref, a, b, A) 
+    tyref(Γ, rref, a, b, A)
     <==> (∀ cal(M) ⊧ rref . ⟦hasty(Γ, a, A)⟧_cal(M) ->> ⟦hasty(Γ, b, A)⟧_cal(M))
   $
 ]
