@@ -10,113 +10,15 @@
 
 #todo[From the top now!]
 
-= Types and Contexts
+= Type and Effect System
 
-#todo[
-  Fix this depending what previous sections look like. Probably:
-  - Less ultra-intro since that's in the old chapter
-  - Add usage obligation annotations $A^q$ to types-in-context
-  - Add usage obligation vectors to polycontexts
-]
+== Types and Contexts
 
-/*
+#import "../rules/types.typ": *
 
-Both our expression calculus #iter-calc() and our SSA region calculus #gssa-calc() use a
-system of _simple types_ $A ∈ sty(ms("X"))$ parametrized by a set of _base types_ $X ∈ ms("X")$,
-consisting of:
+#todo[Note: same set of types as before]
 
-- Atomic types $tybase(X)$ drawn from $ms("X")$ ;
-  where it does not introduce ambiguity,
-  we make the coercion $tybase((-)) : ms("X") -> sty(ms("X"))$ implicit.
-
-- $n$-ary coproducts /*(_$Σ$-types_)*/ $Σ lb("L")$ with named variants $lty(lb("l"), A)$ and
-
-- $n$-ary products /*(_$Π$-types_)*/ $Π lb("T")$ with named fields $lty(lb("f"), A)$,
-
-We give a grammar for these in @simple-ty-grammar. This system is intentionally minimalistic:
-
-- Anonymous $n$-ary products $Π [A_0,...,A_(n - 1)]$
-  and coproducts  $Σ [A_0,...,A_(n - 1)]$ desugar to named products and coproducts with
-  distinguished labels $lb("p")_i, lb("i")_i$.
-
-- The unit type and empty type are simply the (unique) $0$-ary product and coproduct:
-  $tunit = Π (·)$ and $tzero = Σ (·)$ respectively.
-
-#let fig-ty-grammar = figure(
-  [
-    #grid(
-      align: left,
-      columns: 2,
-      gutter: (2em, 2em),
-      bnf(
-        Prod($A ∈ sty(ms("X"))$, {
-          Or[$tybase(X)$][_base type_ $X ∈ ms("X")$]
-          Or[$Σ lb("L")$][_Σ (coproduct)_]
-          Or[$Π lb("T")$][_Π (product)_]
-        }),
-      ),
-      bnf(
-        Prod($lb("L") ∈ senum(sty(ms("X")))$, {
-          Or[$·$][]
-          Or[$lb("L"), lty(lb("l"), A)$][where $lb("l") ∉ lb("L")$]
-        }),
-        Prod($lb("T") ∈ sstruct(sty(ms("X")))$, {
-          Or[$·$][]
-          Or[$lb("T"), fty(lb("f"), A)$][where $lb("f") ∉ lb("T")$]
-        }),
-      ),
-    )
-    $
-      A × B & := Π [A, B] & #h(3em) & mb(1) & := Π (·) \
-      A + B & := Σ [A, B] &         & mb(0) & := Σ (·)
-    $
-    $
-      Π [A_0,...,A_(n - 1)] & = Π_i A_i & := Π ( lb("p")_0 : A_0, ..., lb("p")_(n - 1) : A_(n - 1) ) \
-      Σ [A_0,...,A_(n - 1)] & = Σ_i A_i &   := Σ ( lb("i")_0(A_0), ..., lb("i")_(n - 1)(A_(n - 1)) )
-    $
-    \
-  ],
-  caption: [
-    Grammar for simple types $A ∈ sty(ms("X"))$ parametrized by base types $ms("X")$.
-  ],
-  kind: image,
-);
-
-#fig-ty-grammar <simple-ty-grammar>
-
-Our type system supports _subtyping_ $A sle() B$,
-where a term of type $A$ can be used in place of a term of type $B$.
-We give the rules for subtyping in @ty-wk;
-these state that we're allowed to:
-
-- Permute the fields of a product or the variants of a coproduct.
-  In particular, this means that $Π lb("T")$ and $Π (ρ · lb("T"))$ are _interchangeable_, since
-  $
-    Π lb("T") sle() Π (ρ · lb("T")) sle() Π (ρ^(-1) · ρ · lb("T")) = Π lb("T")
-  $
-  and likewise for coproducts $Σ lb("L")$.
-  We call such interchangeable types $A ≈ B$ _equivalent_, defining
-  $
-    A ≈ B := A sle() B ⊓ B sle() A
-  $
-
-- Coerce the empty type $tzero = Π (·)$ to any type $A$
-  (using @twk-zero)
-
-- Drop any _affine_ type $A$ to the unit type $tunit = Π (·)$
-  (using @twk-unit)
-
-Combined with congruence, this allows us to repeatedly:
-
-- _Add_ variants to a coproduct:
-  "either $A$ or $B$" is a subtype of "either $A$, $B$, or $C$"
-
-- _Remove_ fields from a product:
-  _if_ $B$ is _affine_, "both $A$ and $B$" is a subtype of "just $A$"
-
-An _affine_ type is precisely a type which can be freely discarded.
-A type which is not affine is called _relevant_;
-values of such types must be used at least once when introduced.
+#todo[Segue into this ; move a bit into preface]
 
 In general, a typing discipline which restricts how often a type can be used is called
 _substructural_. We can classify substructural types $A$ based on two orthogonal axes:
@@ -183,15 +85,46 @@ usage obligations of its constituent base types:
   $useobg(tunit) = tqint$,
 )
 
-#fig-r-twk <ty-wk>
-
 We say that:
 - $A$ is _affine_, written $urel(saff, A)$, if $useobg(A) ⊑ tqaff$
 - $A$ is _idempotent_, written $urel(sidm, A)$, if $useobg(A) ⊑ tqidm$
 - $A$ is _cartesian_, written $urel(scart, A)$, if it is both affine and idempotent
   -- i.e. $useobg(A) ⊑ tqint$
 
-More formally, we define a _typing discipline_ as follows, where _weakening_, in the case of types,
+#todo[next sentences were part of the old narrative; fuse better...]
+
+An _affine_ type is precisely a type which can be freely discarded.
+A type which is not affine is called _relevant_;
+values of such types must be used at least once when introduced.
+
+#todo[Same as the old cartesian system in @cart-ty-wk except for affinity tracking]
+
+We give the rules for subtyping in @ty-wk;
+these state that we're allowed to:
+
+- Permute the fields of a product or the variants of a coproduct.
+
+- Coerce the empty type $tzero = Π (·)$ to any type $A$
+  (using @twk-zero)
+
+- Drop any _affine_ type $A$ to the unit type $tunit = Π (·)$
+  (using @twk-unit)
+
+Combined with congruence, this allows us to repeatedly:
+
+- _Add_ variants to a coproduct:
+  "either $A$ or $B$" is a subtype of "either $A$, $B$, or $C$"
+
+- _Remove_ fields from a product:
+  _if_ $B$ is _affine_, "both $A$ and $B$" is a subtype of "just $A$"
+
+
+#fig-r-twk <ty-wk>
+
+#todo[Extending the old notion of a _cartesian_ typing discipline]
+
+More formally, we define a _(substructural) typing discipline_ as follows, 
+where _weakening_, in the case of types,
 corresponds to subtyping:
 
 #let def-ty-disc = definition(name: "Typing Discipline")[
@@ -212,31 +145,30 @@ corresponds to subtyping:
   Likewise, we say a typing discipline is
   _affine_ if all types are affine,
   _idempotent_ if all types are idempotent,
-  and _cartesian_ if all types are cartesian.
+  and _cartesian_ if all types are cartesian. #todo-inline[recovering the old definition...]
 ]
 
 #def-ty-disc
 
 #lemma[
-  If $ms("X")$ is a typing discipline, then so is $sty(ms("X"))$ when equipped with:
-  - weakening the subtyping relation defined by the rules in @ty-wk.
-  - usage obligations defined inductively as above
+  If $ms("X")$ is a typing discipline, then so is $sty(ms("X"))$.
 
   Moreover, $sty(ms("X"))$ is affine/idempotent/cartesian iff $ms("X")$ is.
 ]
+
+#todo[Segue this better, add pointer to figure; also based on older version]
 
 Given a type system $ms("X")$, we define
 - A _context_ $Γ ∈ sctx(ms("X"))$ to be a list of variable-type pairs $x : A$ where
   $A ∈ ms("X")$.
 
-  Roughly speaking, a context $Γ$ describes the set of variables live on entry to a program
-  fragment; hence, weakening on contexts, $Γ sle() Δ$, allows us to:
-  - Permuting the variables in $Γ$
-  - Dropping variables $x : A$ where $A$ is affine
-  - Weakening variable types
+  As in the cartesian case, _weakening_ $Γ sle() Δ$, allows us to:
+  - Permute the variables in $Γ$
+  - Drop variables $x : A$ _where $A$ is affine_
+  - Weaken variable types pointwise
 
   We define the _usage_ obligation of a context $Γ$
-  as the meet of the usage obligations of its constituent types:
+  as the meet of the usage obligations of its constituent types.
 
   In general, we transparently identify contexts $Γ ∈ sctx(ms("X"))$
   and field lists $lb("T") ∈ sstruct(sty(ms("X")))$.
@@ -244,15 +176,10 @@ Given a type system $ms("X")$, we define
 - A _cocontext_ $ms("L") ∈ slctx(ms("X"))$ to be a list of label-type pairs $lb("l")(A)$
   where $A ∈ ms("X")$.
 
-  A cocontext $ms("L")$ describes the set of _targets_ a program fragment may jump to on exit,
-  each annotated with its parameter type; hence, weakening on cocontexts, $ms("L") sle() ms("M")$,
-  allows us to:
-  - Permuting the labels in $ms("L")$
-  - Adding new, unreachable labels $lb("l")(A)$
-  - Weakening parameter types pointwise
+  The rules for weakening cocontexts remain unchanged.
 
   We define the _usage_ obligation of a cocontext $ms("L")$
-  as the meet of the usage obligations of its constituent types:
+  as the meet of the usage obligations of its constituent types.
 
   In general, we transparently identify cocontexts $ms("L") ∈ slctx(ms("X"))$
   and label lists $lb("L") ∈ sstruct(sty(ms("X")))$.
@@ -260,14 +187,10 @@ Given a type system $ms("X")$, we define
 - A _polycontext_ $cal("L") ∈ sdnf(ms("X"))$ to be a list of tuples $clty(lb("l"), Γ, A)$
   where $Γ ∈ sctx(ms("X"))$ and $A ∈ ms("X")$.
 
-  A polycontext $cal("L")$ describes
-  the set of _entry points_ or _exit points_ -- _ports_ -- of a control-flow graph,
-  with each port $lb("l")$ associated with a context of live variables $Γ$ and a parameter $A$.
+  The rules for weakening polycontexts remain unchanged.
 
-  Weakening on polycontexts, $cal("L") sle() cal("M")$ allows us to:
-  - Permute the ports in $cal("L")$
-  - Adding new, unreachable ports $clty(lb("l"), Γ, A)$
-  - Weaken live variable contexts and parameters pointwise
+  We define the _usage_ obligation of a cocontext $ms("L")$
+  as the meet of the usage obligations of its constituent (context, type) pairs.
 
 We give a grammar for contexts, cocontexts, and polycontexts, along with typing rules,
 in @ctx-grammar-wk.
@@ -380,34 +303,27 @@ in @ctx-grammar-wk.
 
 #lemma[
   If $ms("X")$ is a typing discipline, then so are
-  $sctx(ms("X"))$, $slctx(ms("X"))$, and $sdnf(ms("X"))$
-  when equipped with the weakening relations defined by the rules in @ctx-grammar-wk.
+  $sctx(ms("X"))$, $slctx(ms("X"))$, and $sdnf(ms("X"))$.
 
   Moreover,
   $sctx(ms("X"))$, $slctx(ms("X"))$, and $sdnf(ms("X"))$ are affine/idempotent/cartesian
   iff $ms("X")$ is.
 ]
 
-#let field2ctx(T) = $ms("coe")(#T)$
-#let var2lctx(L) = $ms("coe")(#L)$
-
-#let ctx2field(Γ) = $ms("coe")(#Γ)$
-#let lctx2var(L) = $ms("coe")(#L)$
-
-Given $Γ ∈ sctx(ms("X"))$ and $ms("L") ∈ slctx(ms("X"))$, we may define their
-_distributed product_ $Γ csplat ms("L") ∈ sdnf(ms("X"))$
-by induction as follows:
-#eqn-set(
-  $Γ csplat · := ·$,
-  $Γ csplat (ms("L"), lb("l")(A)) := (Γ csplat ms("L")), clty(lb("l"), Γ, A)$,
-)
-
-*/
-
-= Expressions
+== Expressions
 
 #todo[Here we go again ; except, we can front-load the effect system]
 
-= Regions
+== Regions
 
 #todo[Here we go yet again; except, again, we can front-load the effect system]
+
+=  Refinement
+
+#todo[this...]
+
+#context if (thesis-state.get)().is-standalone [
+  #the-bibliography
+
+  #fig-r-cart-twk <cart-ty-wk>
+]
