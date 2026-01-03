@@ -426,8 +426,8 @@
 #let isfn(Γ, f, A, B) = $#Γ ⊢ #f : #A → #B$
 #let istup(Γ, E, T) = $#Γ ⊢ #E scripts(:)^* #T$
 
-#let hasty(Γ, a, A, annot: none) = $#Γ scripts(⊢)_#annot #a : #A$
-#let haslb(Γ, r, L, annot: none) = $#Γ scripts(⊢)_#annot #r triangle.stroked.small.r #L$
+#let hasty(Γ, a, A, annot: none) = $#Γ scripts(⊢)^#annot #a : #A$
+#let haslb(Γ, r, L, annot: none) = $#Γ scripts(⊢)^#annot #r triangle.stroked.small.r #L$
 
 #let kebrs(K, B, A) = $#K ⊢ #B scripts(:) #A$
 #let ksbrs(K, B, L) = $#K ⊢ #B triangle.stroked.small.r #L$
@@ -442,21 +442,29 @@
 #let dtrn = $scripts(⊢)^•$
 
 #let eisfn(Γ, e, f, A, B) = $#Γ scripts(⊢) #f : #A →_#e #B$
-#let dehasty(Γ, e, a, A) = $#Γ dtrn_#e #a : #A$
+#let dehasty(Γ, e, a, A, annot: none) = $#Γ dtrn_#e^#annot #a : #A$
 #let deistup(Γ, e, E, T) = $#Γ dtrn_#e #E scripts(:)^* #T$
-#let deisebrs(Γ, L, e, B, A) = $#Γ csplat #L dtrn_#e #B scripts(:)^* #A$
+#let dekebrs(Γ, e, B, A) = $#Γ dtrn_#e #B scripts(:) #A$
+#let dehaslb(Γ, e, r, L) = $#Γ dtrn_#e #r triangle.stroked.small.r #L$
+#let deklbrs(K, e, B, L) = $#K dtrn_#e #B triangle.stroked.small.r #L$
 #let eisinf(e) = $∞(#e) = #e$
 
-#let ehasty(Γ, e, a, A) = $#Γ scripts(⊢)^#e #a : #A$
-#let eistup(Γ, e, E, T) = $#Γ scripts(⊢)^#e #E scripts(:)^* #T$
-#let eisebrs(Γ, L, e, B, A) = $#Γ csplat #L scripts(⊢)^#e #B scripts(:)^* #A$
-#let ehaslb(Γ, e, r, L) = $#Γ scripts(⊢)^#e #r triangle.stroked.small.r #L$
+#let ev1 = $mb(ϵ)$
 
-#let tyeq(Γ, Eq, a, b, A) = $#Γ scripts(⊢)_#Eq #a ≈ #b : #A$
-#let tupeq(Γ, Eq, E, F, T) = $#Γ scripts(⊢)_#Eq #E ≈ #F scripts(:)^* #T$
-#let ebrseq(Γ, L, Eq, B, B2, A) = $#Γ csplat #L scripts(⊢)_#Eq #B ≈ #B2 scripts(:)^* #A$
-#let lbeq(Γ, Eq, s, t, L) = $#Γ scripts(⊢)_#Eq #s ≈ #t triangle.stroked.small.r #L$
+#let ehasty(Γ, R, e, a, A) = $#Γ scripts(⊢)_#e^#R #a : #A$
+#let eistup(Γ, R, e, E, T) = $#Γ scripts(⊢)_#e^#R #E scripts(:)^* #T$
+#let ekebrs(K, R, e, B, A) = $#K scripts(⊢)_#e^#R #B scripts(:) #A$
+#let ehaslb(Γ, R, e, r, L) = $#Γ scripts(⊢)_#e^#R #r triangle.stroked.small.r #L$
 
+#let tyeq(Γ, Eq, a, b, A) = $#Γ scripts(⊢)^#Eq #a ≈ #b : #A$
+#let tupeq(Γ, Eq, E, F, T) = $#Γ scripts(⊢)^#Eq #E ≈ #F scripts(:)^* #T$
+#let ebrseq(Γ, L, Eq, B, B2, A) = $#Γ csplat #L scripts(⊢)^#Eq #B ≈ #B2 scripts(:)^* #A$
+#let lbeq(Γ, Eq, s, t, L) = $#Γ scripts(⊢)^#Eq #s ≈ #t triangle.stroked.small.r #L$
+
+#let tyref(Γ, R, a, b, A) = $#Γ scripts(⊢)^#R #a ->> #b : #A$
+#let tupref(Γ, R, E, F, T) = $#Γ scripts(⊢)^#R #E ->> #F scripts(:)^* #T$
+#let kebrsref(K, R, B, B2, A) = $#K scripts(⊢)^#R #B ->> #B2 scripts(:)^* #A$
+#let lbref(Γ, R, s, t, L) = $#Γ scripts(⊢)^#R #s ->> #t triangle.stroked.small.r #L$
 
 #let tyquant(U, A, q) = $#U ⊢ #A^#q$
 #let lquant(U, L, q) = $#U ⊢ #L^#q$
@@ -472,16 +480,6 @@
 #let tqaff = $(op(?))$
 #let tqint = $(*)$
 
-#let isaff(U, A) = $tyquant(#U, #A, qaff)$
-#let isrel(U, A) = $tyquant(#U, #A, qrel)$
-
-#let utywk(U, A, B) = $#A scripts(≤)_#U #B$
-#let ulbwk(U, L, M) = $#L scripts(≤)_#U #M$
-
-#let uctxwk(U, Γ, Δ) = $#Γ scripts(≤)_#U #Δ$
-#let ulbcwk(U, L, M) = $#L scripts(≤)_#U #M$
-#let uclbwk(U, K, M) = $#K scripts(≤)_#U #M$
-
 #let useobg = $ms("use")$
 #let useset = $ms("Q")$
 
@@ -492,23 +490,6 @@
 #let splitr = $scripts(=>)$
 
 #let tysplits(A, B, C) = $#A splitr #B ⊗ #C$
-
-#let utysplits(U, A, B, C) = $#A splitr(=>)_#U #B ⊗ #C$
-#let usplits(U, Γ, Δ, Ξ) = $#Γ splitr(=>)_#U #Δ ⊗ #Ξ$
-
-#let uisfn(Γ, U, f, A, B) = $#Γ scripts(⊢)_#U #f : #A → #B$
-#let uhasty(Γ, U, a, A) = $#Γ scripts(⊢)_#U #a : #A$
-#let uhaslb(Γ, U, r, L) = $#Γ scripts(⊢)_#U #r triangle.stroked.small.r #L$
-#let uistup(Γ, U, E, T) = $#Γ scripts(⊢)_#U #E scripts(:)^* #T$
-#let uisebrs(Γ, U, L, B, A) = $#Γ csplat #L scripts(⊢)_#U #B scripts(:)^* #A$
-
-#let tyref(Γ, R, a, b, A) = $#Γ scripts(⊢)_#R #a ->> #b : #A$
-#let tupref(Γ, R, E, F, T) = $#Γ scripts(⊢)_#R #E ->> #F scripts(:)^* #T$
-#let ebrsref(Γ, L, R, B, B2, A) = $#Γ csplat #L scripts(⊢)_#R #B ->> #B2 scripts(:)^* #A$
-#let lbref(Γ, R, s, t, L) = $#Γ scripts(⊢)_#R #s ->> #t triangle.stroked.small.r #L$
-
-#let lupg(γ) = $upright(↑)#γ$
-#let rupg(γ) = $#γ upright(↑)$
 
 #let print-rule(..xs) = {
   prooftree.with(vertical-spacing: 0.2em)(..xs)

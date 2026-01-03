@@ -8,30 +8,32 @@
   title()
 }
 
+= Type System
+
+#todo[In this section, we start by explaining...]
+
+#judgement-meaning(
+  $haslb(Γ, r, ms("L"))$,
+  ["Given live variables $Γ$ on input, region $r$ targets labels $ms("L")$ on exit"],
+  $hasty(Γ, e, A)$,
+  ["Expression $e$ has type $A$ in context $Γ$."],
+)
+
 #todo[
-  Potential intro layout:
-  - High level goals:
-    - Judgements $hasty(Γ, e, A)$ for expressions, $haslb(Γ, r, ms("L"))$ for regions
-    - _Equational theory_ $tyeq(Γ, #none, e, e', A)$, $lbeq(Γ, #none, r, r', ms("L"))$;
-    - _Refinement theory_ $tyref(Γ, #none, e, e', A)$, $lbref(Γ, #none, r, r', ms("L"))$
-  - Specifically,
+  We'll need some types and contexts first; then we can give rules
 ]
 
 #todo[
-  In this chapter we:
-  1. Give a type-and-effect system for #iter-calc() and
-    SSA parametrized by a set of base types $ms("X")$
-    - First we define a type system over types $ms("Ty")[ms("X")]$
-    - Then we give typing rules for expressions and programs, _and_...
-    - State some basic metatheory
-  2. Give an _effect system_ for #iter-calc() and SSA
-  2. Give a _refinement theory_ for #iter-calc() and SSA using our equational theory
-    - Metatheory of refinement: weakening
+  Then we'll prove some basic metatheory:
+  - _Weakening_
+  - _Substitution_
 ]
 
-= Types and Contexts
+== Types and Contexts
 
 #import "../rules/types.typ": *
+
+#todo[Work on intro: we start with the types]
 
 Both our expression calculus #iter-calc() and our SSA region calculus #gssa-calc() use a
 system of _simple types_ $A ∈ sty(ms("X"))$ parametrized by a set of _base types_ $X ∈ ms("X")$,
@@ -98,7 +100,7 @@ We give a grammar for these in @simple-ty-grammar. This system is intentionally 
 
 Our type system supports _subtyping_ $A sle() B$,
 where a term of type $A$ can be used in place of a term of type $B$.
-We give the rules for subtyping in @ty-wk;
+We give the rules for subtyping in @cart-ty-wk;
 these state that we're allowed to:
 
 - Permute the fields of a product or the variants of a coproduct.
@@ -113,142 +115,54 @@ these state that we're allowed to:
   $
 
 - Coerce the empty type $tzero = Π (·)$ to any type $A$
-  (using @twk-zero)
+  (using @cart-twk-zero)
 
-- Drop any _affine_ type $A$ to the unit type $tunit = Π (·)$
-  (using @twk-unit)
+- Drop any type $A$ to the unit type $tunit = Π (·)$
+  (using @cart-twk-unit)
 
 Combined with congruence, this allows us to repeatedly:
 
-- _Add_ variants to a coproduct:
-  "either $A$ or $B$" is a subtype of "either $A$, $B$, or $C$"
+- _Add_ variants to a coproduct: "either $A$ or $B$" is a subtype of "either $A$, $B$, or $C$"
 
-- _Remove_ fields from a product:
-  _if_ $B$ is _affine_, "both $A$ and $B$" is a subtype of "just $A$"
+- _Remove_ fields from a product: "both $A$ and $B$" is a subtype of "just $A$"
 
-An _affine_ type is precisely a type which can be freely discarded.
-A type which is not affine is called _relevant_;
-values of such types must be used at least once when introduced.
+In particular, this is a _cartesian_ typing discipline:
+we can freely _copy_ and _discard_ values of any type.
+// In later chapters, we'll generalize our type theory to support _substructural_
+// typing disciplines.
 
-In general, a typing discipline which restricts how often a type can be used is called
-_substructural_. We can classify substructural types $A$ based on two orthogonal axes:
-- Whether they can be _copied_ (are _idempotent_), or must be used _at most_ once (are _unique_).
+#fig-r-cart-twk <cart-ty-wk>
 
-  We might forbid copying a type when it represents a resource which can only be used once:
-  for example,
-  a unique pointer to an owned block of memory
-  (in a language with pointer equality, cloning the memory yields a _different_ object,
-  while copying the pointer violates uniqueness).
+More formally, we define a _cartesian typing discipline_ as follows,
+where _weakening_, in the case of types, corresponds to subtyping:
 
-- Whether they can be _discarded_ (are _affine_),
-  or must be used _at least_ once (are _relevant_).
-
-  We might forbid discarding a type when it represents a resource that must be cleaned up:
-  for example, a file handle which must be closed or a mutex guard which must be released.
-
-A type which is _relevant_ and _unique_ is called _linear_ ; such types must be used _exactly_ once.
-On the other hand, a type which is both _affine_ and _idempotent_ is called _cartesian_ ;
-such types can be used any number of times, including zero
--- this is the default behavior in most programming languages.
-
-This gives us a lattice of potential _usage obligations_ $u ∈ useset$ for types,
-which we may identify with sets $u ⊆ ℕ$ of allowed usage counts, generated as follows:
-
-#let fig-quant-lattice = figure(
-  [
-    #align(center + horizon, diagram(
-      node-inset: 0.7em,
-      // debug: 3,
-      $
-          & "cartesian:" tqint ≈ {0, 1, 2, ...} \
-        "affine:" tqaff ≈ {0, 1} edge("ur", <-) //
-          &                                           & "idem:" tqidm ≈ {1, 2, 3, ...} edge("ul", <-) \
-          & tqlin ≈ {1} edge("ul", <-) edge("ur", <-)
-        /*
-        \
-        dem(0) edge("uu", "--", stroke: cdem) //
-        & dem(1) edge("u", "=", stroke: cdem) //
-        & dem(2) edge("uu", "--", stroke: cdem) //
-        & dem(3) edge("uul", "--", stroke: cdem) //
-        & ... edge("uull", "--", stroke: cdem)
-        */
-      $,
-    ))
-    \
-  ],
-  caption: [
-    Meet-semilattice of usage obligations under $kqwk$,
-    going from "less defined/less restricted" to "more defined/more restricted"
-    -- i.e. $u ⊑ u' <==> u' ⊆ u$ as sets.
-  ],
-)
-
-#fig-quant-lattice
-
-We assign each type $A$ _usage obligation_ $useobg(A) ∈ useset$, defined to be the meet of the
-usage obligations of its constituent base types:
-#eqn-set(
-  $useobg(tybase(X)) := useobg(X)$,
-  $useobg(Σ (lb("L"), lty(lb("l"), A))) := useobg(Σ lb("L")) ⊓ useobg(A)$,
-  $useobg(tzero) = tqint$,
-  $useobg(Π (lb("T"), fty(lb("f"), A))) := useobg(Π lb("T")) ⊓ useobg(A)$,
-  $useobg(tunit) = tqint$,
-)
-
-#fig-r-twk <ty-wk>
-
-We say that:
-- $A$ is _affine_, written $urel(saff, A)$, if $useobg(A) ⊑ tqaff$
-- $A$ is _idempotent_, written $urel(sidm, A)$, if $useobg(A) ⊑ tqidm$
-- $A$ is _cartesian_, written $urel(scart, A)$, if it is both affine and idempotent
-  -- i.e. $useobg(A) ⊑ tqint$
-
-More formally, we define a _typing discipline_ as follows, where _weakening_, in the case of types,
-corresponds to subtyping:
-
-#let def-ty-disc = definition(name: "Typing Discipline")[
-  We define a _typing discipline_ $ms("X")$ to consist of:
+#let def-ty-disc = definition(name: "Cartesian Typing Discipline")[
+  We define a _cartesian typing discipline_ $ms("X")$ to consist of:
   - A set of _types_ $|ms("X")|$.
     Where doing so is unambiguous, we identify $ms("X")$ with its set of types.
 
   - A preorder $X sle() Y$ on base types, _weakening_.
 
     We say two types $X, Y$ are _equivalent_, written $X ≈ Y$, if $X sle() Y$ and $Y sle() X$.
-
-  - For each type $X$, a _usage obligation_ $useobg(X)$, s.t. $X ≈ Y ==> useobg(X) = useobg(Y)$
-
-  We say a type is _affine_, written $urel(saff, X)$, if $useobg(X) ⊑ tqaff$,
-  _idempotent_, written $urel(sidm, X)$, if $useobg(X) ⊑ tqidm$,
-  and _cartesian_, written $urel(scart, X)$, if it is both affine and idempotent.
-
-  Likewise, we say a typing discipline is
-  _affine_ if all types are affine,
-  _idempotent_ if all types are idempotent,
-  and _cartesian_ if all types are cartesian.
 ]
 
 #def-ty-disc
 
 #lemma[
-  If $ms("X")$ is a typing discipline, then so is $sty(ms("X"))$ when equipped with:
-  - weakening the subtyping relation defined by the rules in @ty-wk.
-  - usage obligations defined inductively as above
-
-  Moreover, $sty(ms("X"))$ is affine/idempotent/cartesian iff $ms("X")$ is.
+  If $ms("X")$ is a cartesian typing discipline, then so is $sty(ms("X"))$
 ]
 
-Given a type system $ms("X")$, we define
+#todo[Segue to contexts]
+
+Given a typing discipline $ms("X")$, we define
 - A _context_ $Γ ∈ sctx(ms("X"))$ to be a list of variable-type pairs $x : A$ where
   $A ∈ ms("X")$.
 
   Roughly speaking, a context $Γ$ describes the set of variables live on entry to a program
   fragment; hence, weakening on contexts, $Γ sle() Δ$, allows us to:
-  - Permuting the variables in $Γ$
-  - Dropping variables $x : A$ where $A$ is affine
-  - Weakening variable types
-
-  We define the _usage_ obligation of a context $Γ$
-  as the meet of the usage obligations of its constituent types:
+  - Permute the variables in $Γ$
+  - Drop variables $x : A$
+  - Weaken variable types
 
   In general, we transparently identify contexts $Γ ∈ sctx(ms("X"))$
   and field lists $lb("T") ∈ sstruct(sty(ms("X")))$.
@@ -259,12 +173,9 @@ Given a type system $ms("X")$, we define
   A cocontext $ms("L")$ describes the set of _targets_ a program fragment may jump to on exit,
   each annotated with its parameter type; hence, weakening on cocontexts, $ms("L") sle() ms("M")$,
   allows us to:
-  - Permuting the labels in $ms("L")$
-  - Adding new, unreachable labels $lb("l")(A)$
-  - Weakening parameter types pointwise
-
-  We define the _usage_ obligation of a cocontext $ms("L")$
-  as the meet of the usage obligations of its constituent types:
+  - Permute the labels in $ms("L")$
+  - Add new, unreachable labels $lb("l")(A)$
+  - Weaken parameter types pointwise
 
   In general, we transparently identify cocontexts $ms("L") ∈ slctx(ms("X"))$
   and label lists $lb("L") ∈ sstruct(sty(ms("X")))$.
@@ -278,15 +189,30 @@ Given a type system $ms("X")$, we define
 
   Weakening on polycontexts, $cal("L") sle() cal("M")$ allows us to:
   - Permute the ports in $cal("L")$
-  - Adding new, unreachable ports $clty(lb("l"), Γ, A)$
+  - Add new, unreachable ports $clty(lb("l"), Γ, A)$
   - Weaken live variable contexts and parameters pointwise
 
-We give a grammar for contexts, cocontexts, and polycontexts, along with typing rules,
+  #todo[
+    _Explain_ why we need polycontexts and the distributed product $Γ csplat ms("L")$;
+    give a better name for $csplat$ too. 
+    Currently, $csplat$ becomes $*$ 
+    -- consider whether it works or whether we should change this to $⊗$.
+
+    We use polycontexts:
+    - So the judgement for case-branches has a polycontext $cal(K)$ as input rather than
+      a context $Γ$ + cocontext $ms("L")$ (then, we use $csplat$ to _get_ this polycontext)
+    - _Later_, when we add substructural types, a region will in fact target a _polycontext_
+      rather than a cocontext; hint at this...
+    - It also makes it easier to give a type system for:
+      - Label substitution
+      - Later, CFGs themselves
+  ]
+
+We give a grammar for contexts, cocontexts, and polycontexts, along with rules for weakening,
 in @ctx-grammar-wk.
 
 #let r-ctxwk-nil = rule(
   name: "Π-nil",
-  $urel(saff, Γ)$,
   $cwk(Γ, ·)$,
 )
 #let r-ctxwk-cons = rule(
@@ -375,29 +301,17 @@ in @ctx-grammar-wk.
       declare-rule(r-clwk-perm, label: <clwk-perm>),
     )
     \
-    $
-          useobg(·^⊗) & := tqint & #h(5em) //
-                                     &&                      useobg(Γ, x : A) & := useobg(Γ) ⊓ useobg(A) \
-          useobg(·^⊕) & := tqint &   &&      useobg(ms("L"), lty(lb("l"), A)) & := useobg(ms("L")) ⊓ useobg(A) \
-      useobg(·^(⊕ ⊗)) & := tqint &   && useobg(cal("L"), clty(lb("l"), Γ, A)) & := useobg(cal("L")) ⊓ useobg(Γ) ⊓ useobg(A) \
-    $
-    \
   ],
   kind: image,
   caption: [
-    Grammar, typing rules, and usage obligations for contexts, cocontexts, and polynomials.
-    When unambiguous, we drop the superscript from the empty list.
+    Grammar and typing rules for contexts, cocontexts, and polycontexts.
+    When unambiguous, we drop the superscript from the empty list $·$.
   ],
 ) <ctx-grammar-wk>
 
 #lemma[
-  If $ms("X")$ is a typing discipline, then so are
+  If $ms("X")$ is a cartesian typing discipline, then so are
   $sctx(ms("X"))$, $slctx(ms("X"))$, and $sdnf(ms("X"))$
-  when equipped with the weakening relations defined by the rules in @ctx-grammar-wk.
-
-  Moreover,
-  $sctx(ms("X"))$, $slctx(ms("X"))$, and $sdnf(ms("X"))$ are affine/idempotent/cartesian
-  iff $ms("X")$ is.
 ]
 
 #let field2ctx(T) = $ms("coe")(#T)$
@@ -414,7 +328,7 @@ by induction as follows:
   $Γ csplat (ms("L"), lb("l")(A)) := (Γ csplat ms("L")), clty(lb("l"), Γ, A)$,
 )
 
-= Expressions
+== Expressions
 
 #import "../rules/hasty.typ": *
 
@@ -511,7 +425,7 @@ in @cart-iter-calc-rules.
 
 #fig-r-hasty <cart-iter-calc-rules>
 
-= Regions
+== Regions
 
 #todo[introduce concept of an _expression space_]
 
@@ -541,19 +455,106 @@ in @cart-iter-calc-rules.
 
 = Effects
 
-#todo[want to build an equational theory]
+#todo[
+  Alternative ordering: study _refinement_ first; _then_ start studying effects,
+  since we need an effect system for _expressions_ to give a sound + complete refinement system.
 
-#todo[substitution is not good equationally]
+  Note we _don't_ need a refinement system for _terms_
+]
 
-#todo[want a notion of _effects_]
+#todo[We want to build up an equational theory...]
 
-#todo[introduce _effect systems_]
+#judgement-meaning(
+  $lbeq(Γ, ms("R"), r, r', ms("L"))$,
+  ["Under $ms("R")$, regions $r, r'$ are equivalent when interpreted as taking $Γ$ to $ms("L")$"],
+  $tyeq(Γ, ms("R"), e, e', A)$,
+  ["Under $ms("R")$, expressions $e, e'$ are equivalent at type $A$ in context $Γ$"],
+)
+
+#todo[(and a _refinement theory_)]
+
+#judgement-meaning(
+  $lbref(Γ, ms("R"), r, r', ms("L"))$,
+  ["Under $ms("R")$, regions $r$ is refined by $r'$ when interpreted as taking $Γ$ to $ms("L")$"],
+  $tyref(Γ, ms("R"), e, e', A)$,
+  ["Under $ms("R")$, expression $e$ is refined by $e'$ at type $A$ in context $Γ$"],
+)
+
+#todo[
+  But some equations are only valid depending on effect:
+  - $elet(x, a + b, elet(y, c + d, e)) ≈ elet(y, c + d, elet(x, a + b, e))$, _but_
+  - $elet(x, ms("input")(), elet(y, ms("input")(), e))
+    ≉ elet(y, ms("input")(), elet(x, ms("input")(), e))$
+]
+
+#todo[
+  So we need a way to track the _effect_ of regions and expressions
+]
+
+#judgement-meaning(
+  $ehaslb(Γ, ms("R"), ε, r, ms("L"))$,
+  ["Under $ms("R")$, 
+    given live variables $Γ$ on input, region $r$ targets labels $ms("L")$ on exit with effect $ε$"],
+  $ehasty(Γ, ms("R"), ε, e, A)$,
+  ["Expression $e$ has type $A$ and effect $ε$ in context $Γ$."],
+)
+
+#todo[
+  Actual judgement for regions is $ehaslb(Γ, ms("R"), ε, r, ms("L")^ev1)$, 
+  where $ev1$ is a map from labels $lb("l")$ to the effect $ε_lb("l")$ of jumping to that label.
+]
+
+#todo[
+  In fact, we start with _syntactic_ effects 
+  $dehasty(Γ, ε, e, A)$,
+  $dehaslb(Γ, ε, r, ms("L")^ev1)$
+  which don't depend on the equational theory induced by $ms("R")$;
+  then actual effect judgements $ehasty(Γ, ms("R"), ε, e, A)$,
+  $ehaslb(Γ, ms("R"), ε, r, ms("L")^ev1)$ means there exists some equivalent $e'$, $r'$
+  (according to $ms("R")$)
+  with the syntactic effect $ε$
+]
+
+#todo[
+  How to explain refinement?
+  - Stick in intro to SSA section, which currently hardly describes equations
+  - Equations, then refinement
+  - Just refinement
+  - Use effects to motivate refinement: $elet(x, ms("maybe-ub"), ()) ->> ()$ but _not_ vice versa...
+  - Or, in introduction, talk about how IRs want refinement to deal with UB and friends, then
+    use example above to go with effect-dependent refinements...
+]
+
+#todo[
+  How to explain/motivate effects?
+]
 
 == Expressions
 
-#todo[introduce _direct_ effects (versus indirect, up to equivalence)]
+#todo[
+  We introduce a judgement $dehasty(Γ, ε, e, A)$: the _syntactic_ effect of $e$ 
+  in @cart-iter-eff.
 
-#fig-r-eff-hasty
+  Parametrized by (we assume $ms("F")$ and $ms("A")$ carry these as data...):
+]
+
+#judgement-meaning(
+  $ehasty(Γ, ms("A"), ε, α, A)$, 
+  ["The atomic expression $α$ has effect $ε$ in context $Γ$ at type $A$ in theory $ms("A")$"],
+  $eisfn(Γ, ε, f, A, B)$,
+  ["The function $f$ has effect $ε$ in context $Γ$ from type $A$ to type $B$"],
+)
+
+#todo[
+  The rules are mostly the obvious ones; 
+  just make sure when we iterate our effect is _actually_ iterative
+]
+
+#fig-r-eff-hasty <cart-iter-eff>
+
+#todo[
+  Then, we say $ehasty(Γ, ms("R"), ε, e, A)$ if _some_ $tyeq(Γ, ms("R"), e, e', A)$ has
+]
 
 == Regions
 

@@ -229,6 +229,11 @@
   $Γ med x = A$,
   $dehasty(Γ, ε, x, A)$,
 )
+#let r-eff-atom = rule(
+  name: "atom",
+  $ehasty(Γ, ms("A"), ε, α, A)$,
+  $dehasty(Γ, ε, α, A)$
+);
 #let r-eff-coe = rule(
   name: "coe",
   $dehasty(Γ, ε, a, A)$,
@@ -276,18 +281,18 @@
 #let r-eff-cases = rule(
   name: "cases",
   $dehasty(Γ, ε, e, Σ lb("L"))$,
-  $deisebrs(Γ, lb("L"), ε, M, A)$,
+  $dekebrs(Γ csplat lb("L"), ε, M, A)$,
   $hasty(Γ, ecase(e, M), A)$,
 )
 #let r-eff-sigma-nil = rule(
   name: "Σ-nil",
-  $deisebrs(Γ, ·, ε, ·, A)$,
+  $dekebrs(·, ε, ·, A)$,
 )
 #let r-eff-sigma-cons = rule(
   name: "Σ-cons",
-  $deisebrs(Γ, lb("L"), ε, M, A)$,
-  $dehasty(#$Γ, x : A$, ε, a, A)$,
-  $deisebrs(Γ, #$lb("L"), lty(lb("l"), A)$, ε, #$M, ebr(lb("l"), x, a)$, A)$,
+  $dekebrs(cal(K), ε, M, A)$,
+  $dehasty(#$Γ, x : B$, ε, a, A)$,
+  $dekebrs(#$cal(K), clty(lb("l"), Γ, B)$, ε, #$M, ebr(lb("l"), x, a)$, A)$,
 )
 #let r-eff-iter = rule(
   name: "iter",
@@ -301,6 +306,7 @@
   [
     #rule-set(
       declare-rule(r-eff-var),
+      declare-rule(r-eff-atom),
       declare-rule(r-eff-coe),
       declare-rule(r-eff-app),
       declare-rule(r-eff-inj),
@@ -316,7 +322,7 @@
     )
     \
   ],
-  caption: [Direct effect rules for #iter-calc()],
+  caption: [Direct effect rules for #iter-calc(ms("F"), ms("A"))],
 )
 
 #fig-r-eff-hasty

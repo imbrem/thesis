@@ -44,7 +44,7 @@
 ]
 
 #lemma(name: "Soundness (Effect)")[
-  If $ehaslb(Γ, ε, a, ms("L"))$, then $⟦haslb(Γ, a, ms("L"))⟧ : cal(C)_ε (Π ⟦Γ⟧, Σ ⟦ms("L")⟧)$
+  If $dehaslb(Γ, ε, a, ms("L")^ev1)$, then $⟦haslb(Γ, a, ms("L"))⟧ : cal(C)_ε (Π ⟦Γ⟧, Σ ⟦ms("L")⟧)$
 ]
 
 #lemma(name: "Soundness (Substitution)")[

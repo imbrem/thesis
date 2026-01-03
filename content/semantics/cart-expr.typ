@@ -173,7 +173,7 @@ $
 ]
 
 #lemma(name: "Soundness (Effect)")[
-  If $ehasty(Γ, ε, a, A)$, then $⟦hasty(Γ, a, A)⟧ : cal(C)_ε (Π ⟦Γ⟧, ⟦A⟧)$
+  If $dehasty(Γ, ε, a, A)$, then $⟦hasty(Γ, a, A)⟧ : cal(C)_ε (Π ⟦Γ⟧, ⟦A⟧)$
 ]
 
 #lemma(name: "Soundness (Substitution)")[

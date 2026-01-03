@@ -140,6 +140,30 @@
 
 #fig-r-twk
 
+#let r-cart-twk-unit = rule(
+  name: $tunit$,
+  $urel(saff, A)$,
+  $tywk(A, tunit)$,
+);
+
+#let fig-r-cart-twk = figure(
+  [
+    #rule-set(
+      declare-rule(r-twk-base, label: <cart-twk-base>),
+      declare-rule(r-twk-sigma, label: <cart-twk-sigma>),
+      declare-rule(r-twk-pi, label: <cart-twk-pi>),
+      declare-rule(r-twk-sigma-perm, label: <cart-twk-sigma-perm>),
+      declare-rule(r-twk-pi-perm, label: <cart-twk-pi-perm>),
+      declare-rule(r-twk-zero, label: <cart-twk-zero>),
+      declare-rule(r-cart-twk-unit, label: <cart-twk-unit>),
+    )
+    \
+  ],
+  caption: [Weakening for cartesian simple types $sty(ms("X"))$],
+)
+
+#fig-r-cart-twk
+
 /*
 #let fig-ty-lattice = figure(
   [
