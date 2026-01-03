@@ -494,30 +494,14 @@ parametrized by:
 
 #iter-calc-grammar <iter-calc-grammar>
 
-#todo[add a macro for judgement / meaning tables]
-
 Given typing judgements:
 
-#align(center, table(
-  columns: 2,
-  gutter: (1em, 1em),
-  stroke: none,
-  [Judgement], [Meaning],
-
+#judgement-meaning(
   $isfn(Γ, f, A, B)$,
-
-  align(
-    left,
-    ["In context $Γ$, $f ∈ ms("F")$ takes an input of type $A$ to an output of type $B$"],
-  ),
-
+  ["In context $Γ$, $f ∈ ms("F")$ takes an input of type $A$ to an output of type $B$"],
   $hasty(Γ, α, A)$,
-
-  align(
-    left,
-    ["In context $Γ$, atomic expression $α ∈ ms("A")$ has type $A$"],
-  ),
-))
+  ["In context $Γ$, atomic expression $α ∈ ms("A")$ has type $A$"],
+)
 
 #todo[we give meaning to $hasty(Γ, e, A)$ in @cart-iter-calc-rules]
 
@@ -531,7 +515,7 @@ Given typing judgements:
   Now, we formally introduce:
   - _function systems_ $ms("F")$ over a typing discipline $ms("X")$
   - _expression systems_ $ms("E")$ over a typing discipline $ms("X")$
-  - Lemma: 
+  - Lemma:
     for a typing discipline $ms("X")$,
     if $ms("F")$ is a function system and $ms("A")$ is an expression system,
     then #iter-calc(ms("F"), ms("A")) is an expression system

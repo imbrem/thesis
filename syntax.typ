@@ -573,6 +573,15 @@
   #body
 ]
 
+#let judgement-meaning(..xs) = align(center, table(
+  columns: 2,
+  gutter: (1em, 1em),
+  stroke: none,
+  align: (center, left),
+  align(center, [Judgement]), align(center, [Meaning]),
+  ..xs,
+))
+
 #let the-bibliography = bibliography("refs.bib", style: "acm-edited.csl")
 
 #let standalone-state = (
