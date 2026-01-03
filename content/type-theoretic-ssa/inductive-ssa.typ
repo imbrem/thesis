@@ -14,9 +14,9 @@
 
 #judgement-meaning(
   $haslb(Γ, r, ms("L"))$,
-  ["Given live variables $Γ$ on input, region $r$ targets labels $ms("L")$ on exit"],
+  ["Region $r$ maps inputs $Γ$ to exits $ms("L")$"],
   $hasty(Γ, e, A)$,
-  ["Expression $e$ has type $A$ in context $Γ$."],
+  ["Expression $e$ has type $A$ in $Γ$"],
 )
 
 #todo[
@@ -154,62 +154,58 @@ where _weakening_, in the case of types, corresponds to subtyping:
 
 #todo[Segue to contexts]
 
-Given a typing discipline $ms("X")$, we define
-- A _context_ $Γ ∈ sctx(ms("X"))$ to be a list of variable-type pairs $x : A$ where
-  $A ∈ ms("X")$.
+In @ctx-grammar-wk, we give grammars and weakening rules for:
 
-  Roughly speaking, a context $Γ$ describes the set of variables live on entry to a program
-  fragment; hence, weakening on contexts, $Γ sle() Δ$, allows us to:
-  - Permute the variables in $Γ$
-  - Drop variables $x : A$
-  - Weaken variable types
+- _Contexts_ $Γ ∈ sctx(ms("X"))$ to be a list of variable-type pairs $x : A$ where
+  $A ∈ ms("X")$, where no variable $x$ is repeated.
+
+  A context $Γ$ can be viewed as the set of variables live on entry to a program fragment.
+
+  We may _weaken_ a context by _dropping_ unused variables, 
+  as well as weakening variable types pointwise.
+  As $Γ$ is conceptually a _set_, we treat permutations as equivalent under weakening.
 
   In general, we transparently identify contexts $Γ ∈ sctx(ms("X"))$
   and field lists $lb("T") ∈ sstruct(sty(ms("X")))$.
 
-- A _cocontext_ $ms("L") ∈ slctx(ms("X"))$ to be a list of label-type pairs $lb("l")(A)$
-  where $A ∈ ms("X")$.
+- _Cocontexts_ $ms("L") ∈ slctx(ms("X"))$ to be a list of label-type pairs $lb("l")(A)$
+  where $A ∈ ms("X")$, where no label $ms("l")$ is repeated.
 
-  A cocontext $ms("L")$ describes the set of _targets_ a program fragment may jump to on exit,
-  each annotated with its parameter type; hence, weakening on cocontexts, $ms("L") sle() ms("M")$,
-  allows us to:
-  - Permute the labels in $ms("L")$
-  - Add new, unreachable labels $lb("l")(A)$
-  - Weaken parameter types pointwise
+  A cocontext $ms("L")$ records how control may leave a region: 
+  it is a finite set of exit labels, each annotated with the type of the value passed to that exit.
+
+  We may _weaken_ a cocontext by _adding_ unreachable labels,
+  as well as weakening label types pointwise.
+  As $ms("L")$ is conceptually a _set_, we treat permutations as equivalent under weakening.
+
+  As usual, 
+  we represent exits with multiple parameters by providing a single parameter of product type;
+  likewise, exits with no parameters simply accept the empty product $tunit$.
 
   In general, we transparently identify cocontexts $ms("L") ∈ slctx(ms("X"))$
   and label lists $lb("L") ∈ sstruct(sty(ms("X")))$.
 
-- A _polycontext_ $cal("L") ∈ sdnf(ms("X"))$ to be a list of tuples $clty(lb("l"), Γ, A)$
-  where $Γ ∈ sctx(ms("X"))$ and $A ∈ ms("X")$.
+- A _polycontext_ $cal("L") ∈ sdnf(ms("X"))$ to be a list of _ports_ of the form 
+  $clty(lb("l"), Γ, A)$ where $Γ ∈ sctx(ms("X"))$ and $A ∈ ms("X")$,
+  where no label $ms("l")$ is repeated.
 
-  A polycontext $cal("L")$ describes
-  the set of _entry points_ or _exit points_ -- _ports_ -- of a control-flow graph,
-  with each port $lb("l")$ associated with a context of live variables $Γ$ and a parameter $A$.
+  When a program fragment has _multiple_ entry points, // (or, dually, exit points),
+  we can type it with a _polycontext_ associating each port $lb("l")$ with
+  a context of live variables $Γ$ and a parameter type $A$.
 
-  Weakening on polycontexts, $cal("L") sle() cal("M")$ allows us to:
-  - Permute the ports in $cal("L")$
-  - Add new, unreachable ports $clty(lb("l"), Γ, A)$
-  - Weaken live variable contexts and parameters pointwise
+  In particular, we may weaken a polycontext by _adding_ unreachable ports,
+  as well as weakening port contexts and types pointwise.
+  Like for contexts and cocontexts, we treat permutations as equivalent under weakening.
 
-  #todo[
-    _Explain_ why we need polycontexts and the distributed product $Γ csplat ms("L")$;
-    give a better name for $csplat$ too. 
-    Currently, $csplat$ becomes $*$ 
-    -- consider whether it works or whether we should change this to $⊗$.
-
-    We use polycontexts:
-    - So the judgement for case-branches has a polycontext $cal(K)$ as input rather than
-      a context $Γ$ + cocontext $ms("L")$ (then, we use $csplat$ to _get_ this polycontext)
-    - _Later_, when we add substructural types, a region will in fact target a _polycontext_
-      rather than a cocontext; hint at this...
-    - It also makes it easier to give a type system for:
-      - Label substitution
-      - Later, CFGs themselves
-  ]
-
-We give a grammar for contexts, cocontexts, and polycontexts, along with rules for weakening,
-in @ctx-grammar-wk.
+  This construction is used to type case branches, which are entered according
+  to a label in $ms("L")$ but share a common incoming context $Γ$;
+  to support this common case, 
+  we define the _lifting_ $Γ csplat ms("L") ∈ sdnf(ms("X"))$ 
+  of a context $Γ$ along a cocontext $ms("L")$ by induction as follows:
+  #eqn-set(
+    $Γ csplat · := ·$,
+    $Γ csplat (ms("L"), lb("l")(A)) := (Γ csplat ms("L")), clty(lb("l"), Γ, A)$,
+  )
 
 #let r-ctxwk-nil = rule(
   name: "Π-nil",
@@ -272,19 +268,19 @@ in @ctx-grammar-wk.
       bnf(
         Prod($Γ$, {
           Or[$·^⊗$][]
-          Or[$Γ, x : A$][]
+          Or[$Γ, x : A$][$x ∉ Γ$]
         }),
       ),
       bnf(
         Prod($ms("L")$, {
           Or[$·^⊕$][]
-          Or[$ms("L"), lty(lb("l"), A)$][]
+          Or[$ms("L"), lty(lb("l"), A)$][$lb("l") ∉ ms("L")$]
         }),
       ),
       bnf(
         Prod($cal("L")$, {
           Or[$·^(⊕ ⊗)$][]
-          Or[$cal("L"), clty(lb("l"), Γ, A)$][]
+          Or[$cal("L"), clty(lb("l"), Γ, A)$][$lb("l") ∉ ms("L")$]
         }),
       ),
     )
@@ -309,24 +305,13 @@ in @ctx-grammar-wk.
   ],
 ) <ctx-grammar-wk>
 
+Just like for types $sty(ms("X"))$, a typing discipline on $ms("X")$ lists to a typing discipline
+on contexts $sctx(ms("X"))$, cocontexts $slctx(ms("X"))$, and polycontexts $sdnf(ms("X"))$:
+
 #lemma[
   If $ms("X")$ is a cartesian typing discipline, then so are
   $sctx(ms("X"))$, $slctx(ms("X"))$, and $sdnf(ms("X"))$
 ]
-
-#let field2ctx(T) = $ms("coe")(#T)$
-#let var2lctx(L) = $ms("coe")(#L)$
-
-#let ctx2field(Γ) = $ms("coe")(#Γ)$
-#let lctx2var(L) = $ms("coe")(#L)$
-
-Given $Γ ∈ sctx(ms("X"))$ and $ms("L") ∈ slctx(ms("X"))$, we may define their
-_distributed product_ $Γ csplat ms("L") ∈ sdnf(ms("X"))$
-by induction as follows:
-#eqn-set(
-  $Γ csplat · := ·$,
-  $Γ csplat (ms("L"), lb("l")(A)) := (Γ csplat ms("L")), clty(lb("l"), Γ, A)$,
-)
 
 == Expressions
 
@@ -395,20 +380,20 @@ Given typing judgements:
 
 #judgement-meaning(
   $isfn(Γ, f, A, B)$,
-  ["In context $Γ$, $f ∈ ms("F")$ takes an input of type $A$ to an output of type $B$"],
+  ["$f ∈ ms("F")$ takes inputs $A$ to outputs $B$ in $Γ$"],
   $hasty(Γ, α, A, annot: ms("A"))$,
-  ["In context $Γ$, atomic expression $α ∈ ms("A")$ has type $A$"],
+  ["Atomic expression $α ∈ ms("A")$ has type $A$ in $Γ$"],
 )
 
 we give typing rules for judgements
 
 #judgement-meaning(
   $hasty(Γ, e, A)$,
-  ["In context $Γ$, expression $e ∈ #iter-calc(ms("F"), ms("A"))$ has type $A$"],
+  ["Expression $e ∈ #iter-calc(ms("F"), ms("A"))$ has type $A$ in $Γ$"],
   $istup(Γ, E, lb("T"))$,
-  ["In context $Γ$, structure expression $(E)$ has product type $Π lb("T")$"],
+  ["The fields $(E)$ have product type $Π lb("T")$ in $Γ$"],
   $kebrs(cal(K), M, A)$,
-  ["In polycontext $cal(K)$, case branches $M$ yield type $A$"],
+  ["The case branches $M$ map inputs $cal(K)$ to output $A$"],
 )
 
 in @cart-iter-calc-rules.
@@ -466,18 +451,18 @@ in @cart-iter-calc-rules.
 
 #judgement-meaning(
   $lbeq(Γ, ms("R"), r, r', ms("L"))$,
-  ["Under $ms("R")$, regions $r, r'$ are equivalent when interpreted as taking $Γ$ to $ms("L")$"],
+  ["$r$ and $r'$ are equivalent from $Γ$ to $ms("L")$ under $ms("R")$"],
   $tyeq(Γ, ms("R"), e, e', A)$,
-  ["Under $ms("R")$, expressions $e, e'$ are equivalent at type $A$ in context $Γ$"],
+  ["$e, e'$ are equivalent at type $A$ in $Γ$ under $ms("R")$"],
 )
 
 #todo[(and a _refinement theory_)]
 
 #judgement-meaning(
   $lbref(Γ, ms("R"), r, r', ms("L"))$,
-  ["Under $ms("R")$, regions $r$ is refined by $r'$ when interpreted as taking $Γ$ to $ms("L")$"],
+  ["$r$ is refined by $r'$ from $Γ$ to $ms("L")$ under $ms("R")$"],
   $tyref(Γ, ms("R"), e, e', A)$,
-  ["Under $ms("R")$, expression $e$ is refined by $e'$ at type $A$ in context $Γ$"],
+  ["$e$ is refined by $e'$ at type $A$ in $Γ$ under $ms("R")$"],
 )
 
 #todo[
@@ -493,8 +478,7 @@ in @cart-iter-calc-rules.
 
 #judgement-meaning(
   $ehaslb(Γ, ms("R"), ε, r, ms("L"))$,
-  ["Under $ms("R")$, 
-    given live variables $Γ$ on input, region $r$ targets labels $ms("L")$ on exit with effect $ε$"],
+  [""Under $ms("R")$, region $r$ maps $Γ$ to $ms("L")$ with effect $ε$""],
   $ehasty(Γ, ms("R"), ε, e, A)$,
   ["Expression $e$ has type $A$ and effect $ε$ in context $Γ$."],
 )
