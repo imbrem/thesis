@@ -5,54 +5,6 @@
 
 //TODO: construct rule lists?
 
-#let iter-calc-grammar = figure(
-  [
-    #grid(
-      align: left,
-      columns: 3,
-      gutter: (4em, 0em),
-      bnf(
-        Prod(
-          $e$,
-          {
-            Or[$x$][_variable_]
-            Or[$a$][_atom_ ($a ∈ ms("E")$)]
-            Or[$f med e$][_application_ ($f ∈ ms("F")$)]
-            Or[$lb("l") med e$][_label_]
-            Or[$(E)$][_structure_]
-            Or[$elet(x, e_1, e_2)$][_let-binding_]
-            Or[$elet((V), e_1, e_2)$][_destructure_]
-            Or[$ecase(e, M)$][_cases_]
-            Or[$eiter(e_1, x, e_2)$][_iteration_]
-          },
-        ),
-      ),
-      bnf(
-        Prod(
-          $E$,
-          {
-            Or[$·$][_nil_]
-            Or[$E, fexpr(lb("f"), e)$][_cons_]
-          },
-        ),
-        Prod(
-          $K$,
-          {
-            Or[$·$][_nil_]
-            Or[$M seq ebr(lb("l"), x, a)$][_cons_]
-          },
-        ),
-      ),
-    )
-  ],
-  caption: [
-    Grammar for #iter-calc(ms("F"), ms("E"))
-  ],
-  kind: image,
-)
-
-#iter-calc-grammar
-
 // Rules for Γ ⊢ a : A
 
 #let r-var = rule(

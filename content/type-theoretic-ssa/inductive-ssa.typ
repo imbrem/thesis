@@ -426,7 +426,61 @@ Note that the latter two conditions are trivial when $ms("Y")$ is cartesian.
 
 #import "../rules/hasty.typ": *
 
-#todo[We now want to give a type system for expressions in a _cartesian_ type system]
+We've now got everything we need to give typing rules for our expression language, #iter-calc().
+In particular, we give a grammar for #iter-calc(ms("F"), ms("A")) in @iter-calc-grammar, 
+parametrized by a set of
+- _functions_ $ms("F")$: often, these are our _primitive instructions_ like `add` and `sub`
+- _atomic expressions_ $ms("A")$: often, these are our constants like `2` and `"hello"`
+
+
+#let iter-calc-grammar = figure(
+  [
+    #grid(
+      align: left,
+      columns: 3,
+      gutter: (4em, 0em),
+      bnf(
+        Prod(
+          $e$,
+          {
+            Or[$x$][_variable_]
+            Or[$a$][_atomic expression_ ($a ∈ ms("A")$)]
+            Or[$f med e$][_application_ ($f ∈ ms("F")$)]
+            Or[$lb("l") med e$][_label_]
+            Or[$(E)$][_structure_]
+            Or[$elet(x, e_1, e_2)$][_let-binding_]
+            Or[$elet((V), e_1, e_2)$][_destructure_]
+            Or[$ecase(e, M)$][_cases_]
+            Or[$eiter(e_1, x, e_2)$][_iteration_]
+          },
+        ),
+      ),
+      bnf(
+        Prod(
+          $E$,
+          {
+            Or[$·$][_nil_]
+            Or[$E, fexpr(lb("f"), e)$][_cons_]
+          },
+        ),
+        Prod(
+          $K$,
+          {
+            Or[$·$][_nil_]
+            Or[$M seq ebr(lb("l"), x, a)$][_cons_]
+          },
+        ),
+      ),
+    )
+  ],
+  caption: [
+    Grammar for #iter-calc(ms("F"), ms("A"))
+  ],
+  kind: image,
+)
+
+#iter-calc-grammar <iter-calc-grammar>
+
 
 #todo[introduce concept of a function space]
 

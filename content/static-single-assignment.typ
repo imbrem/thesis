@@ -545,7 +545,7 @@ by loosening our syntax slightly,
 we can _unconditionally_ replace jumps with regions,
 without worrying about jumps nested in case statements or fusing $ms("where")$-blocks.
 
-#ssa-expr-grammar <iter-calc-grammar>
+#ssa-expr-grammar <intro-iter-calc-grammar>
 
 #lex-ssa-grammar <lex-ssa-grammar>
 
