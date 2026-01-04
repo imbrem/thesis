@@ -438,7 +438,10 @@ in @cart-iter-calc-rules.
 
 #todo[label-substitution]
 
-= Effects
+= Refinement
+
+/*
+
 
 #todo[
   Alternative ordering: study _refinement_ first; _then_ start studying effects,
@@ -513,6 +516,35 @@ in @cart-iter-calc-rules.
   How to explain/motivate effects?
 ]
 
+*/
+
+== Effects
+
+#todo[
+  - Introduce _effect systems_
+  - This is where we introduce the _quantity lattice_
+]
+
+#todo[
+  In particular:
+  - Not only is substitution not sound in the usual sense sans effects...
+  - _But it's not even a congruence_:
+    $
+      elet(x, ms("load")(p), y + x) ≈ y + ms("load")(p)
+    $
+    _but_, substituting $(ms("store")(p, 0) ; 0)$ for $y$
+    $
+      elet(x, ms("load")(p), (ms("store")(p, 0) ; 0) + x)
+      ≈ elet(x, ms("load")(p), ms("store")(p, 0) seq x)
+    $
+    which is not the same as
+    $
+      (ms("store")(p, 0) ; 0) + ms("load")(p)
+      ≈ ms("store")(p, 0) ; ms("load")(p)
+      ≈ ms("store")(p, 0) ; 0
+    $
+]
+
 == Expressions
 
 #todo[
@@ -537,27 +569,49 @@ in @cart-iter-calc-rules.
 #fig-r-eff-hasty <cart-iter-eff>
 
 #todo[
-  Then, we say $ehasty(Γ, ms("R"), ε, e, A)$ if _some_ $tyeq(Γ, ms("R"), e, e', A)$ has
+  Now, we give rules for _refinement_ $->>$; 
+  discuss: 
+  - notion of a refinement theory $ms("R")$ on expressions
+  - polarity notation $scripts(->>)^p$ to avoid duplicating rules everywhere
+  - $(≈) <==> (->> ∧ <<-) <==> (∀ p . scripts(->>)^p)$
+]
+
+#todo[
+  We say $ehasty(Γ, ms("R"), ε, e, A)$ if _some_ $tyeq(Γ, ms("R"), e, e', A)$ has
+]
+
+#todo[
+  We want to do _soundness of substitution_ now:
+]
+
+#todo[
+  We need to give effects to substitutions
+]
+
+#todo[
+  We can now state _soundness of substitution_
+]
+
+#todo[
+  Namely, we get nice _$β$-rules_
+]
+
+#todo[
+  _But_, we can't simplify our equational theory _that_ much unless our effect system is _simple_.
+
+  Later, with substructural types, we can be a bit cleaner.
 ]
 
 == Regions
 
-#todo[introduce _effect labels_ for SSA]
+#todo[
+  Can just directly give a refinement theory for regions, 
+  _but_ substitution only works for pure stuff
+]
 
-#todo[rules...]
+#todo[
 
-= Refinement
-
-#todo[in fact, want a _refinement theory_]
-
-#todo[(expression) basis ; refinement system _over_ $ms("E")$ ; order]
-
-#todo[basic metatheory]
-
-#todo[(region) basis ; refinement system _over_ $ms("E") ; ms("T")$ ; order embedding]
-
-#todo[basic metatheory]
-
+]
 
 #context if (thesis-state.get)().is-standalone [
   #import "../rules/intro.typ": *
