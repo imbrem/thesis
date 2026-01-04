@@ -338,7 +338,7 @@ on contexts $sctx(ms("X"))$, cocontexts $slctx(ms("X"))$, and polycontexts $sdnf
 #import "../rules/hasty.typ": *
 
 We've now got everything we need to give typing rules for our expression language, #iter-calc().
-In particular, we give a grammar for #iter-calc(ms("I")) in @intro-iter-calc-grammar,
+In particular, we give a grammar for #iter-calc(ms("I")) in @cart-iter-calc-grammar,
 parametrized by an _instruction set_ $ms("I") = (ms("F"), ms("A"))$ specifying:
 
 - _functions_ $f ∈ ms("F")$: often, these are our _primitive instructions_ like `add` and `sub`
@@ -397,20 +397,9 @@ parametrized by an _instruction set_ $ms("I") = (ms("F"), ms("A"))$ specifying:
   kind: image,
 )
 
-#iter-calc-grammar <iter-calc-grammar>
+#iter-calc-grammar <cart-iter-calc-grammar>
 
-#todo[Segue this...]
-
-Given typing judgements:
-
-#judgement-meaning(
-  $isfn(Γ, f, A, B)$,
-  ["$f ∈ ms("F")$ takes inputs $A$ to outputs $B$ in $Γ$"],
-  $hasty(Γ, α, A, annot: ms("A"))$,
-  ["Atomic expression $α ∈ ms("A")$ has type $A$ in $Γ$"],
-)
-
-we give typing rules for judgements
+In @cart-iter-calc-rules, we give typing rules for the judgements
 
 #judgement-meaning(
   $hasty(Γ, e, A)$,
@@ -421,7 +410,14 @@ we give typing rules for judgements
   ["The case branches $M$ map inputs $cal(K)$ to output $A$"],
 )
 
-in @cart-iter-calc-rules.
+parametrized by typing relations:
+
+#judgement-meaning(
+  $isfn(Γ, f, A, B)$,
+  ["$f ∈ ms("F")$ takes inputs $A$ to outputs $B$ in $Γ$"],
+  $hasty(Γ, α, A, annot: ms("A"))$,
+  ["Atomic expression $α ∈ ms("A")$ has type $A$ in $Γ$"],
+)
 
 #let r-var = rule(
   name: "var",
@@ -529,29 +525,66 @@ in @cart-iter-calc-rules.
   ],
 )
 
-#todo[
-  Do the "more formally" thing ; order appropriately
-
-  - Note that we're actually defining $hasty(Γ, e, A, annot: #iter-calc(ms("I")))$
-  - In general, we drop the subscript when unambiguous ; same for functions
-  - Later, this will become syntax for the more general pattern of _indexed profunctors_
-    as type systems...
-    but don't say those words, 
-    as they strike fear into the hearts of not only opponents,
-    but also friends, much like the _berserkir_ of old.
-]
-
-#todo[
-  Now, we formally introduce:
-  - _function systems_ $ms("F")$ over a typing discipline $ms("X")$
-  - _expression systems_ $ms("E")$ over a typing discipline $ms("X")$
-  - Lemma:
-    for a typing discipline $ms("X")$,
-    if $ms("F")$ is a function system and $ms("A")$ is an expression system,
-    then #iter-calc(ms("F"), ms("A")) is an expression system
-]
-
 #fig-r-hasty <cart-iter-calc-rules>
+
+More formally, we define:
+
+#definition(name: "Function Signature")[
+  A _function signature_ $ms("F")$ over a typing discipline $ms("X")$ consists of:
+  - A set of _functions_ $f ∈ ms("F")$
+  - A typing relation $isfn(Γ, f, A, B, annot: ms("F"))$ 
+    where $Γ ∈ sctx(ms("X"))$ and $A, B ∈ ms("X")$
+
+  We say a function signature is _stable under weakening_, or just _stable_,
+  #todo[...]
+]
+
+#definition(name: "Expression Signature")[
+  An _expression signature_ $ms("E")$ over a typing discipline $ms("X")$ consists of:
+  - A set of _expressions_ $e ∈ E$
+  - A typing relation $hasty(Γ, e, A, annot: ms("E"))$ 
+    where $Γ ∈ sctx(ms("X"))$ and $A ∈ ms("X")$
+]
+
+#definition(name: "Instruction Signature")[
+  An _instruction signature_ $ms("I")$ over a typing discipline $ms("X")$ consists of:
+  - A function signature $ms("F")$ over $ms("X")$
+  - An expression signature $ms("A")$ over $ms("X")$; for typing _atomic expressions_
+]
+
+#lemma[
+  If $ms("I")$ is an instruction signature over $sty(ms("X"))$,
+  where $ms("X")$ is a cartesian typing discipline,
+  then #iter-calc(ms("I")) is an expression signature over $sty(ms("X"))$
+  with rules for $hasty(Γ, e, A, annot: #iter-calc(ms("I")))$
+  given in @cart-iter-calc-rules.
+]
+
+In general, we write
+- $hasty(Γ, e, A, annot: ms("E"))$ to indicate that $e ∈ ms("E")$ has type $A$ in context $Γ$
+- $isfn(Γ, f, A, B, annot: ms("F"))$ 
+  to indicate that $f ∈ ms("F")$ is a function from $A$ to $B$ in 
+  context $Γ$
+
+Where the signature is unambiguous, we drop the subscript.
+
+#todo[Name for function systems which respect weakening]
+
+#todo[Name for expression systems which respect weakening]
+
+#todo[Name for instruction sets which respect weakening]
+
+#todo[If $ms("I")$ respects weakening, then so does #iter-calc(ms("I"))]
+
+#todo[Introduce substitution $ms("X")$]
+
+#todo[Judgement for substitution]
+
+#todo[Name for function systems which respect substitution]
+
+#todo[Name for expression systems which respect substitution]
+
+#todo[If $ms("I")$ respects substitution, then so does #iter-calc(ms("I"))]
 
 == Regions
 
