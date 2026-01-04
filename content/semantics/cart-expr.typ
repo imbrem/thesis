@@ -103,6 +103,8 @@ $
 
 #dntty($hasty(Γ, a, A)$, $cal(C)(Π ⟦Γ⟧, ⟦A⟧)$)
 
+#import "../type-theoretic-ssa/inductive-ssa.typ": *
+
 #eqn-set(
   dntdef(r-var, $⟦cwk(Γ, #$x : A$)⟧$),
   dntdef(r-atom, $⟦hasty(Γ, α, A, annot: ms("A"))⟧$),

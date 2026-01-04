@@ -210,10 +210,10 @@
 #let fldlo(F, f) = $ms("lo")(#F, #f)$
 
 #let fty(f, A) = $#f : #A$
-#let lty(l, A) = $#l (#A)$
+#let lty(lab, A) = $lab(#A)$
 #let fexpr(f, e) = $#f : #e$
 
-#let clty(l, Γ, A) = $#l [#Γ] (#A)$
+#let clty(lab, Γ, A) = $lab[#Γ] (#A)$
 
 // Lists
 #let lnil = $[ med ]$
@@ -423,11 +423,11 @@
 
 #let qwk(ql, qr) = $#ql kqwk #qr$
 
-#let isfn(Γ, f, A, B) = $#Γ ⊢ #f : #A → #B$
+#let isfn(Γ, f, A, B, annot: none) = $#Γ scripts(⊢)_#annot #f : #A → #B$
 #let istup(Γ, E, T) = $#Γ ⊢ #E scripts(:)^* #T$
 
-#let hasty(Γ, a, A, annot: none) = $#Γ scripts(⊢)^#annot #a : #A$
-#let haslb(Γ, r, L, annot: none) = $#Γ scripts(⊢)^#annot #r triangle.stroked.small.r #L$
+#let hasty(Γ, a, A, annot: none) = $#Γ scripts(⊢)_#annot #a : #A$
+#let haslb(Γ, r, L, annot: none) = $#Γ scripts(⊢)_#annot #r triangle.stroked.small.r #L$
 
 #let kebrs(K, B, A) = $#K ⊢ #B scripts(:) #A$
 #let ksbrs(K, B, L) = $#K ⊢ #B triangle.stroked.small.r #L$
@@ -466,9 +466,8 @@
 #let kebrsref(K, R, B, B2, A) = $#K scripts(⊢)^#R #B ->> #B2 scripts(:)^* #A$
 #let lbref(Γ, R, s, t, L) = $#Γ scripts(⊢)^#R #s ->> #t triangle.stroked.small.r #L$
 
-#let tyquant(U, A, q) = $#U ⊢ #A^#q$
-#let lquant(U, L, q) = $#U ⊢ #L^#q$
-#let cquant(U, Γ, q) = $#U ⊢ #Γ^#q$
+#let issubst(Γ, γ, Δ) = $#Γ scripts(⊢) #γ : #Δ$
+#let lbsubst(L, κ, K) = $#L scripts(⊢) #κ triangle.stroked.small.r #K$
 
 #let qlin = $1$
 #let qrel = $+$

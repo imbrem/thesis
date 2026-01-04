@@ -8,32 +8,53 @@
   title()
 }
 
+The goal of this chapter is to give a formal type-theoretic account of SSA. In particular,
+- We begin by giving a type-and-effect system for #iter-calc(), #ssa-calc(), and #gssa-calc()
+  from the introduction.
+- We use this to build up a _refinement theory_ for #iter-calc(), #ssa-calc(), and #gssa-calc(),
+  allowing us to reason about program equivalence and optimization.
+- Finally, we formally state and prove the equivalence between the three languages.
+
+
 = Type System
 
-#todo[In this section, we start by explaining...]
+We want to give a type system for SSA programs, represented as _regions_ $r$. 
+Our primary judgements will be
+$
+  haslb(Γ, r, ms("L"))
+$
+meaning that $r$ is a well-typed SSA program such that: 
+- given the variables in the _context_ $Γ = x : A, y : B, z : C$ are live on entry, 
+- when control leaves $r$, it does so by jumping to some label in the _cocontext_ 
+  $ms("L") = lb("l")(A), lb("k")(B), lb("j")(C)$ with a parameter of the appropriate type.
 
-#judgement-meaning(
-  $haslb(Γ, r, ms("L"))$,
-  ["Region $r$ maps inputs $Γ$ to exits $ms("L")$"],
-  $hasty(Γ, e, A)$,
-  ["Expression $e$ has type $A$ in $Γ$"],
-)
+Likewise, we'll need to type _expressions_ $e$, which we'll do in the standard manner using a
+judgement of the form $hasty(Γ, e, A)$ -- meaning, "$e$ has type $A$ in context $Γ$".
 
-#todo[
-  We'll need some types and contexts first; then we can give rules
-]
+We'll hence need to define:
+- Valid types $A$
+- Contexts $Γ$ and cocontexts $ms("L")$
 
-#todo[
-  Then we'll prove some basic metatheory:
-  - _Weakening_
-  - _Substitution_
-]
+To effectively study _control-flow graphs_, which may have multiple entrypoints, 
+we will also introduce the notion of a _polycontext_ $cal("L")$, composed of _ports_
+$clty(lb("l"), Γ, A)$ 
+associating each entry label $lb("l")$ 
+with a set of live variables $Γ$
+and a parameter type $A$.
+
+Along the way, we'll introduce notions of:
+- _Subtyping_ $tywk(A, B)$
+- _Weakening_ $cwk(Γ, Δ)$ for contexts and $lbcwk(ms("L"), ms("K"))$ for cocontexts
+- _Substitutions_ $issubst(Γ, σ, Δ)$ for contexts and 
+  _label substitutions_ $lbsubst(cal("L"), κ, ms("K"))$ for cocontexts.
+
+  Note that label-substitutions in general take a _polycontext_ as input
+
+and prove some basic syntactic metatheorems.
 
 == Types and Contexts
 
 #import "../rules/types.typ": *
-
-#todo[Work on intro: we start with the types]
 
 Both our expression calculus #iter-calc() and our SSA region calculus #gssa-calc() use a
 system of _simple types_ $A ∈ sty(ms("X"))$ parametrized by a set of _base types_ $X ∈ ms("X")$,
@@ -43,9 +64,9 @@ consisting of:
   where it does not introduce ambiguity,
   we make the coercion $tybase((-)) : ms("X") -> sty(ms("X"))$ implicit.
 
-- $n$-ary coproducts /*(_$Σ$-types_)*/ $Σ lb("L")$ with named variants $lty(lb("l"), A)$ and
+- $n$-ary coproducts /*(_$Σ$-types_)*/ $Σ#lb("L")$ with named variants $lty(lb("l"), A)$ and
 
-- $n$-ary products /*(_$Π$-types_)*/ $Π lb("T")$ with named fields $lty(lb("f"), A)$,
+- $n$-ary products /*(_$Π$-types_)*/ $Π#lb("T")$ with named fields $lty(lb("f"), A)$,
 
 We give a grammar for these in @simple-ty-grammar. This system is intentionally minimalistic:
 
@@ -65,8 +86,8 @@ We give a grammar for these in @simple-ty-grammar. This system is intentionally 
       bnf(
         Prod($A ∈ sty(ms("X"))$, {
           Or[$tybase(X)$][_base type_ $X ∈ ms("X")$]
-          Or[$Σ lb("L")$][_Σ (coproduct)_]
-          Or[$Π lb("T")$][_Π (product)_]
+          Or[$Σ#lb("L")$][_Σ (coproduct)_]
+          Or[$Π#lb("T")$][_Π (product)_]
         }),
       ),
       bnf(
@@ -104,11 +125,11 @@ We give the rules for subtyping in @cart-ty-wk;
 these state that we're allowed to:
 
 - Permute the fields of a product or the variants of a coproduct.
-  In particular, this means that $Π lb("T")$ and $Π (ρ · lb("T"))$ are _interchangeable_, since
+  In particular, this means that $Π#lb("T")$ and $Π (ρ · lb("T"))$ are _interchangeable_, since
   $
-    Π lb("T") sle() Π (ρ · lb("T")) sle() Π (ρ^(-1) · ρ · lb("T")) = Π lb("T")
+    Π#lb("T") sle() Π (ρ · lb("T")) sle() Π (ρ^(-1) · ρ · lb("T")) = Π#lb("T")
   $
-  and likewise for coproducts $Σ lb("L")$.
+  and likewise for coproducts $Σ#lb("L")$.
   We call such interchangeable types $A ≈ B$ _equivalent_, defining
   $
     A ≈ B := A sle() B ⊓ B sle() A
@@ -152,9 +173,8 @@ where _weakening_, in the case of types, corresponds to subtyping:
   If $ms("X")$ is a cartesian typing discipline, then so is $sty(ms("X"))$
 ]
 
-#todo[Segue to contexts]
-
-In @ctx-grammar-wk, we give grammars and weakening rules for:
+We can now give grammars and weakening rules for contexts, cocontexts, and polycontexts 
+in @cart-ctx-grammar-wk. In particular, we define:
 
 - _Contexts_ $Γ ∈ sctx(ms("X"))$ to be a list of variable-type pairs $x : A$ where
   $A ∈ ms("X")$, where no variable $x$ is repeated.
@@ -303,7 +323,7 @@ In @ctx-grammar-wk, we give grammars and weakening rules for:
     Grammar and typing rules for contexts, cocontexts, and polycontexts.
     When unambiguous, we drop the superscript from the empty list $·$.
   ],
-) <ctx-grammar-wk>
+) <cart-ctx-grammar-wk>
 
 Just like for types $sty(ms("X"))$, a typing discipline on $ms("X")$ lists to a typing discipline
 on contexts $sctx(ms("X"))$, cocontexts $slctx(ms("X"))$, and polycontexts $sdnf(ms("X"))$:
@@ -318,8 +338,8 @@ on contexts $sctx(ms("X"))$, cocontexts $slctx(ms("X"))$, and polycontexts $sdnf
 #import "../rules/hasty.typ": *
 
 We've now got everything we need to give typing rules for our expression language, #iter-calc().
-In particular, we give a grammar for #iter-calc(ms("F"), ms("A")) in @intro-iter-calc-grammar,
-parametrized by:
+In particular, we give a grammar for #iter-calc(ms("I")) in @intro-iter-calc-grammar,
+parametrized by an _instruction set_ $ms("I") = (ms("F"), ms("A"))$ specifying:
 
 - _functions_ $f ∈ ms("F")$: often, these are our _primitive instructions_ like `add` and `sub`
 
@@ -369,12 +389,17 @@ parametrized by:
     )
   ],
   caption: [
-    Grammar for #iter-calc(ms("F"), ms("A"))
+    Grammar for #iter-calc(ms("I")) 
+    for an instruction set $ms("I")$ 
+    with functions $ms("F")$
+    and atomic expressions $ms("A")$.
   ],
   kind: image,
 )
 
 #iter-calc-grammar <iter-calc-grammar>
+
+#todo[Segue this...]
 
 Given typing judgements:
 
@@ -398,6 +423,124 @@ we give typing rules for judgements
 
 in @cart-iter-calc-rules.
 
+#let r-var = rule(
+  name: "var",
+  $Γ ⊑ x : A$,
+  $hasty(Γ, x, A)$,
+);
+#let r-coe = rule(
+  name: "coe",
+  $hasty(Γ, a, A)$,
+  $tywk(A, A')$,
+  $hasty(Γ, a, A')$,
+);
+#let r-atom = rule(
+  name: "atom",
+  $hasty(Γ, α, A, annot: ms("A"))$,
+  $hasty(Γ, α, A)$
+);
+#let r-app = rule(
+  name: "app",
+  $isfn(Γ, f, A, B, annot: ms("F"))$,
+  $hasty(Γ, a, A)$,
+  $hasty(Γ, f med a, B)$,
+);
+#let r-inj = rule(
+  name: "inj",
+  $hasty(Γ, a, A)$,
+  $hasty(Γ, lb("l") med a, Σ (lty(lb("l"), A)))$,
+);
+#let r-tuple = rule(
+  name: "tuple",
+  $istup(Γ, E, lb("T"))$,
+  $hasty(Γ, (E), Π lb("T"))$,
+);
+#let r-pi-nil = rule(
+  name: "Π-nil",
+  $istup(Γ, ·, ·)$,
+);
+#let r-pi-cons = rule(
+  name: "Π-cons",
+  $istup(Γ, E, lb("T"))$,
+  $hasty(Γ, e, A)$,
+  $istup(Γ, #$E, e$, #$lb("T"), fty(lb("f"), A)$)$,
+);
+#let r-let = rule(
+  name: "let",
+  $hasty(Γ, a, A)$,
+  $hasty(#$Γ, x : A$, b, B)$,
+  $hasty(Γ, elet(x, a, b), B)$,
+);
+#let r-destruct = rule(
+  name: [$"let"_n$],
+  $hasty(Γ, e_1, Π lb("T"))$,
+  $hasty(#$Γ, lb("T")^mb("x")$, e_2, A)$,
+  $hasty(Γ, elet((mb("x")), e_1, e_2), A)$,
+);
+#let r-cases = rule(
+  name: "cases",
+  $hasty(Γ, e, Σ lb("L"))$,
+  $isebrs(Γ, lb("L"), M, A)$,
+  $hasty(Γ, ecase(e, M), A)$,
+);
+#let r-sigma-nil = rule(
+  name: "Σ-nil",
+  $kebrs(·, ·, A)$,
+);
+#let r-sigma-cons = rule(
+  name: "Σ-cons",
+  $kebrs(cal(K), M, A)$,
+  $hasty(#$Γ, x : B$, a, A)$,
+  $kebrs(#$cal(K), clty(lb("l"), Γ, B)$, #$M, ebr(lb("l"), x, a)$, A)$,
+);
+#let r-iter = rule(
+  name: "iter",
+  $hasty(Γ, a, A)$,
+  $hasty(Γ, e, B + A)$,
+  $hasty(Γ, eiter(a, x, e), B)$,
+);
+
+#let fig-r-hasty = figure(
+  [
+    #rule-set(
+      declare-rule(r-var),
+      declare-rule(r-atom),
+      declare-rule(r-coe),
+      declare-rule(r-app),
+      declare-rule(r-inj),
+      declare-rule(r-tuple),
+      declare-rule(r-pi-nil),
+      declare-rule(r-pi-cons),
+      declare-rule(r-let),
+      declare-rule(r-destruct),
+      declare-rule(r-cases),
+      declare-rule(r-sigma-nil),
+      declare-rule(r-sigma-cons),
+      declare-rule(r-iter),
+    )
+    \
+  ],
+  caption: [
+    Typing rules for #iter-calc(ms("I")) 
+    for an instruction set
+    $ms("I")$
+    with functions $ms("F")$
+    and atomic expressions $ms("A")$
+  ],
+)
+
+#todo[
+  Do the "more formally" thing ; order appropriately
+
+  - Note that we're actually defining $hasty(Γ, e, A, annot: #iter-calc(ms("I")))$
+  - In general, we drop the subscript when unambiguous ; same for functions
+  - Later, this will become syntax for the more general pattern of _indexed profunctors_
+    as type systems...
+    but don't say those words, 
+    as they strike fear into the hearts of not only opponents,
+    but also friends, much like the _berserkir_ of old.
+]
+
 #todo[
   Now, we formally introduce:
   - _function systems_ $ms("F")$ over a typing discipline $ms("X")$
@@ -411,8 +554,6 @@ in @cart-iter-calc-rules.
 #fig-r-hasty <cart-iter-calc-rules>
 
 == Regions
-
-#todo[introduce concept of an _expression space_]
 
 #todo[fix notation for expression space judgement]
 

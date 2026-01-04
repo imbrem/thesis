@@ -90,13 +90,13 @@
 );
 #let r-twk-sigma = rule(
   name: $Σ$,
-  $tywk(Σ lb("L"), Σ lb("L"'))$,
+  $tywk(Σ#lb("L"), Σ#$lb("L"')$)$,
   $tywk(A, A')$,
   $tywk(Σ (lb("L"), lty(lb("l"), A)), Σ (lb("L")', lty(lb("l"), A')))$,
 );
 #let r-twk-pi = rule(
   name: $Π$,
-  $tywk(Π lb("T"), Π lb("T"'))$,
+  $tywk(Π#lb("T"), Π#$lb("T"')$)$,
   $tywk(A, A')$,
   $tywk(Π (lb("T"), fty(lb("f"), A)), Π (lb("T")', fty(lb("f"), A')))$,
 );
@@ -142,7 +142,6 @@
 
 #let r-cart-twk-unit = rule(
   name: $tunit$,
-  $urel(saff, A)$,
   $tywk(A, tunit)$,
 );
 
