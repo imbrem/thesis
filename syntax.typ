@@ -336,7 +336,7 @@
 // Syntax for expressions
 
 /// A branch in a case expression
-#let ebr(ℓ, x, b) = $#ℓ (#x) : #b$
+#let ebr(lab, var, b) = $lab(var) : #b$
 
 /// A let expression
 #let elet(x, a, e) = $klet #x = #a seq #e$
@@ -466,7 +466,14 @@
 #let kebrsref(K, R, B, B2, A) = $#K scripts(⊢)^#R #B ->> #B2 scripts(:)^* #A$
 #let lbref(Γ, R, s, t, L) = $#Γ scripts(⊢)^#R #s ->> #t triangle.stroked.small.r #L$
 
-#let issubst(Γ, γ, Δ) = $#Γ scripts(⊢) #γ : #Δ$
+#let adisc(X) = $ms("Arr")(#X)$
+
+#let vset = ms("Var")
+#let renames = $vset scripts(↪︎)_ms("fin") vset$
+#let substs(E) = $ms("FS")(#E)$
+#let ren2subst(ρ) = $ms("coe")(ρ)$
+
+#let issubst(Γ, γ, Δ, annot: none) = $#Γ scripts(⊢)_#annot #γ : #Δ$
 #let lbsubst(L, κ, K) = $#L scripts(⊢) #κ triangle.stroked.small.r #K$
 
 #let qlin = $1$
