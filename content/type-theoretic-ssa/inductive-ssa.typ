@@ -592,6 +592,24 @@ In general, we write
   to indicate that $f ∈ ms("F")$ is a function from $A$ to $B$ in
   context $Γ$
 
+Where the desired signature is unambiguous, we drop the annotation.
+
+#todo[
+  Somewhere:
+  - The empty signature $tzero : ms("X") sfn ms("Y")$ as _minimal_
+  - Coerce $ms("F")$, $ms("A")$ to $ms("I")$ by setting other component to $tzero$
+
+  Much later:
+  - The identity signature $ms("id") : ms("X") sfn ms("X")$
+  - Signatures compose 
+  - Signatures form a category up to _isomorphism_ -- not equality!
+    (profunctors are a bicategory, m8)
+  - TODO: rename signature $==>$ _typing relation_?
+    - Seems like the right approach... otherwise lattice lore seems complex...
+  - Signatures form a complete lattice
+    - This will be useful later for effect lore
+]
+
 A good type system for expressions should not depend on the names of variables used
 -- i.e., it should be _stable under renaming_.
 
@@ -729,10 +747,14 @@ Immediately, renaming emerges as a base case: $renames$ is a substitution signat
 _every_ cartesian typing discipline $ms("X")$, with coercion $ren2subst(ρ) := ρ$
 simply the identity.
 
-#todo[
-  Now, given expression signature $ms("E")$, 
-  we define $substs(ms("E"))$ via rules in @cart-subst-rules
-]
+Similarly, given an expression signature $ms("E")$ over $ms("X")$
+such that $ms("Var") ⊆ ms("E")$,
+we may define a substitution signature $substs(ms("E"))$ with
+- Terms $σ ∈ |substs(ms("E"))|$ given by finitely supported functions
+  $vset → ms("E")$
+- Typing relation $issubst(Γ, σ, Δ)$ given by the rules in @cart-subst-rules
+- Coercions $ren2subst(ρ) ∈ |substs(ms("E"))|$ given by $ren2subst(ρ)(x) := ι(ρ(x))$
+- Renaming action $(ρ · σ)(x) = ρ · σ(x)$
 
 #let r-subst-nil = rule(
   name: "subst-nil",
@@ -761,28 +783,10 @@ simply the identity.
   ],
 ) <cart-subst-rules>
 
+We may now state the _syntactic substitution lemma_ for $substs(#iter-calc(ms("I")))$ as follows:
+
 #lemma(name: "Substitution")[
   If $ms("I")$ is stable under $substs(#iter-calc(ms("I")))$, then so is #iter-calc(ms("I"))
-]
-
-#todo[
-  If a substitution $ms("S")$ acts on itself, it is _compositional_
-  - compositionally stable == action compatible with composition
-  - compositionally stable on self + has id == _monoidal_
-]
-
-#todo[
-  - If $ms("S")$ acts on $ms("E")$, then it acts on $substs(ms("E"))$
-  - If $ms("S")$ acts compositionally on $ms("E")$, 
-    then it acts compositionally on $substs(ms("E"))$
-    -- and hence $substs(ms("E"))$ is monoidal
-  - The below is a _corollary_ of this -- fix that!
-]
-
-#lemma(name: "Substitution")[
-  If $ms("I")$ is compositionally stable under $substs(#iter-calc(ms("I")))$, 
-  then so is #iter-calc(ms("I"))
-  -- in particualr, this implies $substs(#iter-calc(ms("I")))$ is monoidal.
 ]
 
 == Regions
@@ -791,7 +795,7 @@ simply the identity.
 
 #todo[recall: goal is a judgement for SSA]
 
-#todo[introduce notion of _region signature_]
+#todo[introduce notion of _region signature_ [typing relation]]
 
 #todo[give grammar for _region language_]
 
@@ -814,8 +818,6 @@ simply the identity.
 #todo[Extension to fix this:]
 
 #fig-haslb-gssa
-
-#todo[weakening]
 
 #todo[substitution]
 
