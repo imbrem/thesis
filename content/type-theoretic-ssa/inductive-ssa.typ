@@ -528,37 +528,66 @@ parametrized by typing relations:
 
 #fig-r-hasty <cart-iter-calc-rules>
 
-More formally, we define:
+So far, we have a proliferation of five inter-dependent type systems; to recap:
 
-#definition(name: "Signature")[
-  Given cartesian typing disciplines $ms("X")$, $ms("Y")$, a _signature_ 
-  $ms("S") : ms("X") sfn ms("Y")$ consists of:
-  - A set of _terms_ $t ∈ |ms("S")|$
-    -- where doing so is unambiguous, we identify $ms("S")$ with its set of terms
-  - A typing relation $hasty(X, t, Y, annot: ms("S"))$
+#judgement-meaning(
+  $hasty(Γ, e, A)$,
+  ["Expression $e ∈ #iter-calc(ms("F"), ms("A"))$ has type $A$ in $Γ$"],
+  $istup(Γ, E, lb("T"))$,
+  ["The fields $(E)$ have product type $Π lb("T")$ in $Γ$"],
+  $kebrs(cal(K), M, A)$,
+  ["The case branches $M$ map inputs $cal(K)$ to output $A$"],
+  $isfn(Γ, f, A, B)$,
+  ["$f ∈ ms("F")$ takes inputs $A$ to outputs $B$ in $Γ$"],
+  $hasty(Γ, α, A, annot: ms("A"))$,
+  ["Atomic expression $α ∈ ms("A")$ has type $A$ in $Γ$"],
+)
+
+Naïvely, this means that we need to re-state properties like _weakening_ and _substitution_
+for each such relation, leading to a combinatorial explosion.
+
+Instead, we attempt to deal with this by introducing a uniform framework for dealing with
+_typing relations_, based on the following core definition:
+
+#definition(name: "Typing Relation")[
+  Given cartesian typing disciplines $ms("X")$, $ms("Y")$, a _typing relation_ 
+  $ms("W") : ms("X") sfn ms("Y")$ consists of:
+  - A set of _terms_ $t ∈ |ms("W")|$
+    -- where doing so is unambiguous, we identify $ms("W")$ with its set of terms
+  - A typing relation $hasty(X, t, Y, annot: ms("W"))$
     where $X ∈ sctx(ms("X"))$ and $Y ∈ ms("Y")$
   which is _stable under weakening_:
-  - Given $hasty(X, t, Y, annot: ms("S"))$, for all $X' ⊑ X$ and $Y ⊑ Y'$,
-    we have $hasty(X', t, Y', annot: ms("S"))$
+  - Given $hasty(X, t, Y, annot: ms("W"))$, for all $X' ⊑ X$ and $Y ⊑ Y'$,
+    we have $hasty(X', t, Y', annot: ms("W"))$
 
+  When the desired typing relation is clear from context, we drop the annotation,
+  writing $hasty(X, t, Y)$ for $hasty(X, t, Y, annot: ms("W"))$.
 ]
 
-In particular, we define
+_Expressions_ and _atomic expressions_ then become instances of the following special case:
+
+#todo["Expression signature" or "expression type relation"]
+
 #definition(name: "Expression Signature")[
   An _expression signature_ $ms("E")$ over a cartesian typing discipline $ms("X")$ 
-  is a signature $ms("E") : sctx(ms("X")) sfn ms("X")$ -- i.e.
+  is a typing relation $ms("E") : sctx(ms("X")) sfn ms("X")$ -- i.e.
   - A set of _terms_ $t ∈ |ms("E")|$
   - A typing relation $hasty(Γ, e, A, annot: ms("E"))$
     where $Γ ∈ sctx(ms("X"))$ and $A ∈ ms("X")$
     which is _stable under weakening_.
 ]
 
-To formally define a signature for _functions_, 
+To deal with _functions_, however, we need to define weakening for arrows $A -> B$:
+we do so by, 
 given a cartesian typing discipline $ms("X")$, 
-we introduce the typing discipline of _arrows_
+introducing the typing discipline of _arrows_
 $adisc(ms("X"))$ with
-- Types $A → B$ for $A, B ∈ ms("X"))$
+- Types $A → B$ for $A, B ∈ ms("X")$
 - Weakening $(A -> B) ⊑ (A' -> B') := (A' ⊑ A) ∧ (B ⊑ B')$
+
+We may now define a closure signature as follows:
+
+#todo["Closure signature" or "closure type relation"]
 
 #definition(name: "Closure Signature")[
   A _closure signature_ $ms("F")$ over a cartesian typing discipline $ms("X")$ is
@@ -572,6 +601,8 @@ $adisc(ms("X"))$ with
     we have $isfn(Γ', f, A', B', annot: ms("F"))$
 ]
 
+#todo["Instruction signature" or "instruction type relation"]
+
 #definition(name: "Instruction Signature")[
   An _instruction signature_ $ms("I")$ over a typing discipline $ms("X")$ consists of:
   - A closure signature $ms("F")$ over $ms("X")$; for typing _functions_
@@ -584,30 +615,6 @@ $adisc(ms("X"))$ with
   then #iter-calc(ms("I")) is an expression signature over $sty(ms("X"))$
   with rules for $hasty(Γ, e, A, annot: #iter-calc(ms("I")))$
   given in @cart-iter-calc-rules.
-]
-
-In general, we write
-- $hasty(Γ, e, A, annot: ms("E"))$ to indicate that $e ∈ ms("E")$ has type $A$ in context $Γ$
-- $isfn(Γ, f, A, B, annot: ms("F"))$
-  to indicate that $f ∈ ms("F")$ is a function from $A$ to $B$ in
-  context $Γ$
-
-Where the desired signature is unambiguous, we drop the annotation.
-
-#todo[
-  Somewhere:
-  - The empty signature $tzero : ms("X") sfn ms("Y")$ as _minimal_
-  - Coerce $ms("F")$, $ms("A")$ to $ms("I")$ by setting other component to $tzero$
-
-  Much later:
-  - The identity signature $ms("id") : ms("X") sfn ms("X")$
-  - Signatures compose 
-  - Signatures form a category up to _isomorphism_ -- not equality!
-    (profunctors are a bicategory, m8)
-  - TODO: rename signature $==>$ _typing relation_?
-    - Seems like the right approach... otherwise lattice lore seems complex...
-  - Signatures form a complete lattice
-    - This will be useful later for effect lore
 ]
 
 A good type system for expressions should not depend on the names of variables used
@@ -795,25 +802,235 @@ We may now state the _syntactic substitution lemma_ for $substs(#iter-calc(ms("I
 
 #todo[recall: goal is a judgement for SSA]
 
-#todo[introduce notion of _region signature_ [typing relation]]
+#todo[introduce notion of _region signature_ / typing relation]
 
-#todo[give grammar for _region language_]
+#todo[stability under weakening ; _renaming_ of labels]
 
-#todo[stability under weakening ; renaming of labels]
+#todo[give grammar for _region language_ #reg-calc() parametrized by expressions and terminator:]
 
-#todo[adapt below rules for _region language_]
+#let fig-reg-grammar = figure(
+  [
+    #grid(
+      align: left,
+      columns: 3,
+      gutter: (2em, 1em),
+      bnf(Prod($r$, {
+        Or[$x = e seq r$][_assign_]
+        Or[$(V) = e seq r$][_destructure_]
+        Or[$τ$][_terminator_]
+        Or[${ r } seq L$][_braces_]
+      })),
+      bnf(
+        Prod($L$, {
+          Or[$·$][]
+          Or[$L seq gbr(lb("l"), x, {r})$][]
+        }),
+      ),
+    )
+    \
+  ],
+  caption: [
+    Grammar for $r ∈ #reg-calc(ms("E"), ms("T"))$
+    parametrized by _expressions_ $e ∈ ms("E")$ and _terminators_ $τ ∈ ms("T")$
+  ],
+  kind: image,
+)
+
+#fig-reg-grammar
+
+#todo[the rules are:]
+
+// Rules for ssa-calc(E, T)
+#let r-assign = rule(
+  name: "assign",
+  $hasty(Γ, e, A)$,
+  $haslb(#$Γ, x : A$, r, ms("L"))$,
+  $haslb(#$Γ$, slet(x, e, r), ms("L"))$,
+);
+#let r-destruct = rule(
+  name: [$"assign"_n$],
+  $hasty(Γ, e, Π lb("T"))$,
+  $haslb(#$Γ, lb("T")^V$, r, ms("L"))$,
+  $haslb(#$Γ$, slet((V), e, r), ms("L"))$,
+);
+#let r-tm = rule(
+  name: "tm",
+  $haslb(Γ, τ, #$ms("L"), ms("K")$)$,
+  $islbrs(Γ, ms("K"), L, #$ms("L"), ms("K")$)$,
+  $haslb(Γ, #$τ ; L$, ms("L"))$,
+);
+#let r-lb-nil = rule(
+  name: "lb-nil",
+  $islbrs(Γ, ·, ·, ·)$,
+);
+#let r-lb-cons = rule(
+  name: "lb-cons",
+  $issbrs(Γ, ms("K"), L, ms("L"))$,
+  $haslb(#$Γ, x : A$, r, ms("L"))$,
+  $islbrs(Γ, #$ms("K"), lty(lb("k"), A)$, #$K, sbr(lb("k"), x, r)$, ms("L"))$,
+);
+
+#let fig-haslb-reg = figure(
+  [
+    #rule-set(
+      declare-rule(r-assign),
+      declare-rule(r-destruct),
+      declare-rule(r-tm),
+      declare-rule(r-lb-nil),
+      declare-rule(r-lb-cons),
+    )
+    \
+  ],
+  caption: [Typing rules for #reg-calc(ms("E"), ms("T"))],
+)
+
+#fig-haslb-reg
+
+#todo[Substitution on regions -- good!]
+
+#todo[Label _renaming_ -- good!]
+
+#todo[SSA has _specific_ terminators: (conditional) branches, with]
+
+$
+  #ssa-calc(ms("E"), ms("T")) 
+  := #reg-calc(ms("E"), $#cond-calc(ms("E")) ∪ ms("T")$)
+$
+
+#todo[Grammar for conditional branches:]
+
+#let fig-br-grammar = figure(
+  [
+    #grid(
+      align: left,
+      columns: 3,
+      gutter: (2em, 2em),
+      bnf(Prod($u$, {
+        Or[$brb(lb("l"), e)$][_branch_]
+      })),
+      bnf(Prod($τ$, {
+        Or[$j$][_jump_]
+        Or[$scase(e, K)$][_cases_]
+      })),
+      bnf(
+        Prod($K$, {
+          Or[$·$][]
+          Or[$K seq gbr(lb("l"), x, j)$][]
+        }),
+      ),
+    )
+    \
+  ],
+  caption: [
+    Grammar 
+    for _unconditional branches_ $u ∈ #br-calc(ms("E"))$ 
+    and _conditional branches_ $τ ∈ #cond-calc(ms("E"), ms("T"))$ 
+    parametrized by _expressions_ $e ∈ ms("E")$ and _jumps_ $j ∈ ms("T")$.
+    //
+    We define $#cond-calc(ms("E")) := #cond-calc(ms("E"), br-calc(ms("E")))$.
+  ],
+  kind: image,
+)
+
+#fig-br-grammar
+
+#todo[And rules:]
+
+// Rules for br-calc(E)
+#let r-br = rule(
+  name: "br",
+  $lbcwk(lty(lb("l"), A), ms("L"))$,
+  $hasty(Γ, e, A)$,
+  $haslb(Γ, brb(lb("l"), e), ms("L"))$,
+);
+#let r-cond-tm = rule(
+  name: "tm",
+  $haslb(Γ, j, ms("L"), annot: ms("T"))$,
+  $haslb(Γ, j, ms("L"))$,
+);
+#let r-cond-case = rule(
+  name: "case",
+  $hasty(Γ, e, Σ lb("L"))$,
+  $issbrs(Γ, lb("L"), K, ms("K"))$,
+  $haslb(Γ, scase(e, K), ms("K"))$,
+);
+#let r-case-nil = rule(
+  name: "case-nil",
+  $issbrs(Γ, ·, ·, ·)$,
+);
+#let r-case-cons = rule(
+  name: "case-cons",
+  $issbrs(Γ, lb("L"), K, ms("K"))$,
+  $haslb(#$Γ, x : A$, brb(lb("k"), e), ms("K"))$,
+  $issbrs(Γ, #$lb("L"), lty(lb("l"), A)$, #$K, sbr(lb("l"), x, brb(lb("k"), e))$, ms("K"))$,
+);
+
+#let fig-haslb-br = figure(
+  [
+    #rule-set(
+      declare-rule(r-br),
+      declare-rule(r-cond-case),
+      declare-rule(r-cond-case),
+      declare-rule(r-case-nil),
+      declare-rule(r-case-cons),
+    )
+    \
+  ],
+  caption: [
+    Typing rules for #cond-calc(ms("E"), ms("T")) and #br-calc(ms("E")).
+    We define $#cond-calc(ms("E")) := #cond-calc(ms("E"), br-calc(ms("E")))$.
+  ],
+)
 
 #fig-haslb-br
 
-#fig-haslb-ssa
+#todo[Substitution on SSA -- follows from branches, so good!]
 
-#todo[SSA is the region language of branches]
+#todo[Label _renaming_ -- follows from branches, so good!]
 
-#todo[Substitution on SSA -- good!]
+#todo[Label substitution -- bad! (regions are _not_ a subgrammar of branches!)]
 
-#todo[Label renaming -- good!]
+#todo[
+  Idea: fuse grammar of _branches_ and _regions_ 
+  -- equivalent to allowing anonymous regions in branches
+]
 
-#todo[Label substitution -- bad!]
+#todo[Grammar]
+
+#let fig-gssa-grammar = figure(
+  [
+    #grid(
+      align: left,
+      columns: 3,
+      gutter: (2em, 1em),
+      bnf(Prod($r$, {
+        Or[$x = e seq r$][_assign_]
+        Or[$(V) = e seq r$][_destructure_]
+        Or[$brb(lb("l"), e)$][_branch_]
+        Or[$scase(e, L)$][_case_]
+        Or[$τ$][_terminator_]
+        Or[${ r } seq L$][_braces_]
+      })),
+      bnf(
+        Prod($L$, {
+          Or[$·$][]
+          Or[$gbr(lb("l"), x, {r}) seq L$][]
+        }),
+      ),
+    )
+    \
+  ],
+  caption: [Grammar for #gssa-calc(ms("E"), ms("T"))],
+  kind: image,
+)
+
+#fig-gssa-grammar
+
+#todo["Fixpoint like" because (we'll formalize equivalences later...):]
+
+$
+  #gssa-calc(ms("E"), ms("T")) ≈ #ssa-calc(ms("E"), gssa-calc(ms("E"), ms("T")))
+$
 
 #todo[Extension to fix this:]
 

@@ -62,11 +62,11 @@
 }
 
 #let glam-calc(name, ..xs) = if xs.pos().at(0, default: none) == none {
-  $λ_ms(#name)^*$
+  $λ_ms(#name)^μ$
 } else if xs.pos().at(1, default: none) == none {
-  $λ_ms(#name)^*[#xs.pos().at(0)]$
+  $λ_ms(#name)^μ[#xs.pos().at(0)]$
 } else {
-  $λ_ms(#name)^*[#xs.pos().at(0), #xs.pos().at(1)]$
+  $λ_ms(#name)^μ [#xs.pos().at(0), #xs.pos().at(1)]$
 }
 
 // λ
@@ -74,6 +74,7 @@
 #let grtl-calc(..xs) = glam-calc("rtl", ..xs)
 #let br-calc(..xs) = lam-calc("br", ..xs)
 #let cond-calc(..xs) = lam-calc("cond", ..xs)
+#let reg-calc(..xs) = lam-calc("reg", ..xs)
 #let ssa-calc(..xs) = lam-calc("ssa", ..xs)
 #let gssa-calc(..xs) = glam-calc("ssa", ..xs)
 #let op-calc(..xs) = lam-calc("op", ..xs)
