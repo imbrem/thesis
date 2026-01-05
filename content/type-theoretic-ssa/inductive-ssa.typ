@@ -18,14 +18,14 @@ The goal of this chapter is to give a formal type-theoretic account of SSA. In p
 
 = Type System
 
-We want to give a type system for SSA programs, represented as _regions_ $r$. 
+We want to give a type system for SSA programs, represented as _regions_ $r$.
 Our primary judgements will be
 $
   haslb(Γ, r, ms("L"))
 $
-meaning that $r$ is a well-typed SSA program such that: 
-- given the variables in the _context_ $Γ = x : A, y : B, z : C$ are live on entry, 
-- when control leaves $r$, it does so by jumping to some label in the _cocontext_ 
+meaning that $r$ is a well-typed SSA program such that:
+- given the variables in the _context_ $Γ = x : A, y : B, z : C$ are live on entry,
+- when control leaves $r$, it does so by jumping to some label in the _cocontext_
   $ms("L") = lb("l")(A), lb("k")(B), lb("j")(C)$ with a parameter of the appropriate type.
 
 Likewise, we'll need to type _expressions_ $e$, which we'll do in the standard manner using a
@@ -35,17 +35,17 @@ We'll hence need to define:
 - Valid types $A$
 - Contexts $Γ$ and cocontexts $ms("L")$
 
-To effectively study _control-flow graphs_, which may have multiple entrypoints, 
+To effectively study _control-flow graphs_, which may have multiple entrypoints,
 we will also introduce the notion of a _polycontext_ $cal("L")$, composed of _ports_
-$clty(lb("l"), Γ, A)$ 
-associating each entry label $lb("l")$ 
+$clty(lb("l"), Γ, A)$
+associating each entry label $lb("l")$
 with a set of live variables $Γ$
 and a parameter type $A$.
 
 Along the way, we'll introduce notions of:
 - _Subtyping_ $tywk(A, B)$
 - _Weakening_ $cwk(Γ, Δ)$ for contexts and $lbcwk(ms("L"), ms("K"))$ for cocontexts
-- _Substitutions_ $issubst(Γ, σ, Δ)$ for contexts and 
+- _Substitutions_ $issubst(Γ, σ, Δ)$ for contexts and
   _label substitutions_ $lbsubst(cal("L"), κ, ms("K"))$ for cocontexts.
 
   Note that label-substitutions in general take a _polycontext_ as input
@@ -173,7 +173,7 @@ where _weakening_, in the case of types, corresponds to subtyping:
   If $ms("X")$ is a cartesian typing discipline, then so is $sty(ms("X"))$
 ]
 
-We can now give grammars and weakening rules for contexts, cocontexts, and polycontexts 
+We can now give grammars and weakening rules for contexts, cocontexts, and polycontexts
 in @cart-ctx-grammar-wk. In particular, we define:
 
 - _Contexts_ $Γ ∈ sctx(ms("X"))$ to be a list of variable-type pairs $x : A$ where
@@ -181,7 +181,7 @@ in @cart-ctx-grammar-wk. In particular, we define:
 
   A context $Γ$ can be viewed as the set of variables live on entry to a program fragment.
 
-  We may _weaken_ a context by _dropping_ unused variables, 
+  We may _weaken_ a context by _dropping_ unused variables,
   as well as weakening variable types pointwise.
   As $Γ$ is conceptually a _set_, we treat permutations as equivalent under weakening.
 
@@ -191,21 +191,21 @@ in @cart-ctx-grammar-wk. In particular, we define:
 - _Cocontexts_ $ms("L") ∈ slctx(ms("X"))$ to be a list of label-type pairs $lb("l")(A)$
   where $A ∈ ms("X")$, where no label $ms("l")$ is repeated.
 
-  A cocontext $ms("L")$ records how control may leave a region: 
+  A cocontext $ms("L")$ records how control may leave a region:
   it is a finite set of exit labels, each annotated with the type of the value passed to that exit.
 
   We may _weaken_ a cocontext by _adding_ unreachable labels,
   as well as weakening label types pointwise.
   As $ms("L")$ is conceptually a _set_, we treat permutations as equivalent under weakening.
 
-  As usual, 
+  As usual,
   we represent exits with multiple parameters by providing a single parameter of product type;
   likewise, exits with no parameters simply accept the empty product $tunit$.
 
   In general, we transparently identify cocontexts $ms("L") ∈ slctx(ms("X"))$
   and label lists $lb("L") ∈ sstruct(sty(ms("X")))$.
 
-- A _polycontext_ $cal("L") ∈ sdnf(ms("X"))$ to be a list of _ports_ of the form 
+- A _polycontext_ $cal("L") ∈ sdnf(ms("X"))$ to be a list of _ports_ of the form
   $clty(lb("l"), Γ, A)$ where $Γ ∈ sctx(ms("X"))$ and $A ∈ ms("X")$,
   where no label $ms("l")$ is repeated.
 
@@ -219,8 +219,8 @@ in @cart-ctx-grammar-wk. In particular, we define:
 
   This construction is used to type case branches, which are entered according
   to a label in $ms("L")$ but share a common incoming context $Γ$;
-  to support this common case, 
-  we define the _lifting_ $Γ csplat ms("L") ∈ sdnf(ms("X"))$ 
+  to support this common case,
+  we define the _lifting_ $Γ csplat ms("L") ∈ sdnf(ms("X"))$
   of a context $Γ$ along a cocontext $ms("L")$ by induction as follows:
   #eqn-set(
     $Γ csplat · := ·$,
@@ -389,8 +389,8 @@ parametrized by an _instruction set_ $ms("I") = (ms("F"), ms("A"))$ specifying:
     )
   ],
   caption: [
-    Grammar for #iter-calc(ms("I")) 
-    for an instruction set $ms("I")$ 
+    Grammar for #iter-calc(ms("I"))
+    for an instruction set $ms("I")$
     with functions $ms("F")$
     and atomic expressions $ms("A")$.
   ],
@@ -433,7 +433,7 @@ parametrized by typing relations:
 #let r-atom = rule(
   name: "atom",
   $hasty(Γ, α, A, annot: ms("A"))$,
-  $hasty(Γ, α, A)$
+  $hasty(Γ, α, A)$,
 );
 #let r-app = rule(
   name: "app",
@@ -498,6 +498,7 @@ parametrized by typing relations:
 
 #let fig-r-hasty = figure(
   [
+    \
     #rule-set(
       declare-rule(r-var),
       declare-rule(r-atom),
@@ -517,7 +518,7 @@ parametrized by typing relations:
     \
   ],
   caption: [
-    Typing rules for #iter-calc(ms("I")) 
+    Typing rules for #iter-calc(ms("I"))
     for an instruction set
     $ms("I")$
     with functions $ms("F")$
@@ -532,24 +533,36 @@ More formally, we define:
 #definition(name: "Function Signature")[
   A _function signature_ $ms("F")$ over a typing discipline $ms("X")$ consists of:
   - A set of _functions_ $f ∈ ms("F")$
-  - A typing relation $isfn(Γ, f, A, B, annot: ms("F"))$ 
+  - A typing relation $isfn(Γ, f, A, B, annot: ms("F"))$
     where $Γ ∈ sctx(ms("X"))$ and $A, B ∈ ms("X")$
 
-  We say a function signature is _stable under weakening_, or just _stable_,
-  #todo[...]
+  We say a function signature is _stable under weakening_, or just _stable_, if, given
+  $cwk(Γ, Δ)$ and $tywk(A', A)$, and $tywk(B, B')$, we have
+  $
+    isfn(Δ, f, A, B, annot: ms("F")) ==> isfn(Γ, f, A', B', annot: ms("F"))
+  $
 ]
 
 #definition(name: "Expression Signature")[
   An _expression signature_ $ms("E")$ over a typing discipline $ms("X")$ consists of:
   - A set of _expressions_ $e ∈ E$
-  - A typing relation $hasty(Γ, e, A, annot: ms("E"))$ 
+  - A typing relation $hasty(Γ, e, A, annot: ms("E"))$
     where $Γ ∈ sctx(ms("X"))$ and $A ∈ ms("X")$
+
+  We say an expression signature is _stable under weakening_, or just _stable_, if, given
+  $cwk(Γ, Δ)$ and $tywk(A, A')$, we have
+  $
+    hasty(Δ, e, A, annot: ms("E")) ==> hasty(Γ, e, A', annot: ms("E"))
+  $
 ]
 
 #definition(name: "Instruction Signature")[
   An _instruction signature_ $ms("I")$ over a typing discipline $ms("X")$ consists of:
   - A function signature $ms("F")$ over $ms("X")$
   - An expression signature $ms("A")$ over $ms("X")$; for typing _atomic expressions_
+
+  We say an instruction signature is _stable under weakening_, or just _stable_, if both
+  its function signature and expression signature are stable.
 ]
 
 #lemma[
@@ -562,30 +575,122 @@ More formally, we define:
 
 In general, we write
 - $hasty(Γ, e, A, annot: ms("E"))$ to indicate that $e ∈ ms("E")$ has type $A$ in context $Γ$
-- $isfn(Γ, f, A, B, annot: ms("F"))$ 
-  to indicate that $f ∈ ms("F")$ is a function from $A$ to $B$ in 
+- $isfn(Γ, f, A, B, annot: ms("F"))$
+  to indicate that $f ∈ ms("F")$ is a function from $A$ to $B$ in
   context $Γ$
 
 Where the signature is unambiguous, we drop the subscript.
 
-#todo[Name for function systems which respect weakening]
+As a basic sanity check, we may confirm the following by induction on typing derivations:
+#lemma(name: "Weakening")[
+  If $ms("I")$ is an instruction signature over a cartesian typing discipline $sty(ms("X"))$,
+  stable under weakening, then so is #iter-calc(ms("I")).
+]
 
-#todo[Name for expression systems which respect weakening]
+We now want to define _substitutions_ for expressions.
 
-#todo[Name for instruction sets which respect weakening]
+#todo[Define notion of _substitution signature_ $issubst(Γ, σ, Δ)$]
 
-#todo[If $ms("I")$ respects weakening, then so does #iter-calc(ms("I"))]
+#todo[In general, want to consider stability _under a substitution signature_]
 
-#todo[Introduce substitution $ms("X")$]
+#todo[
+  Simplest substitution signature: _renaming_.
 
-#todo[Judgement for substitution]
+  _Stable under renaming_ is a basic property of language systems.
 
-#todo[Name for function systems which respect substitution]
+  A substitution signature itself should be both:
+  - stable under renaming
+  - _contain_ renaming $=>$ contains the identity
+  - more generally: might _compose_; if we have the identity and compose we're _categorical_
+]
 
-#todo[Name for expression systems which respect substitution]
+#todo[
+  If $ms("E")$ is an expression language, $ms("Var") → ms("E")$ has a substitution signature
+  as given by @cart-subst-rules --
+  moreover, it is stable under weakening if $ms("E")$ is.
+]
 
-#todo[If $ms("I")$ respects substitution, then so does #iter-calc(ms("I"))]
+#todo[
+  Better notation for language of substitutions: $σ : ms("Var") → ms("E")$?
 
+  Define finitely supported substitutions as a _sublanguage_?
+  -- only finite support needs variables, after all!
+
+  Renaming is a _subset_ of these, and should _agree_
+]
+
+#let r-subst-nil = rule(
+  name: "subst-nil",
+  $issubst(Γ, σ, ·)$,
+);
+
+#let r-subst-cons = rule(
+  name: "subst-cons",
+  $issubst(Γ, σ, Δ)$,
+  $hasty(Γ, σ(x), A)$,
+  $issubst(Γ, σ, #$Δ, x : A$)$,
+)
+
+#figure(
+  [
+    \
+    #rule-set(
+      declare-rule(r-subst-nil),
+      declare-rule(r-subst-cons),
+    )
+    \
+  ],
+  caption: [Rules for substitutions],
+) <cart-subst-rules>
+
+/*
+OLD ATTEMPT:
+
+#definition[
+  We say an expression signature $ms("E")$ over a typing discipline $ms("X")$ _has variables_
+  if it is equipped with a canonical mapping from variables $x$ to expressions $e ∈ ms("E")$.
+
+  If $ms("E")$ has variables, we define a _substitution_ in $ms("E")$ 
+  to be a _finitely supported_ function $σ : ms("Var") → ms("E")$,
+  where the _support_ of $σ$ is defined to be
+  $
+    fsup(σ) := { x ∈ ms("Var") | σ(x) ≠ x }
+  $
+
+  We say $ms("E")$ is _stable under substitution_ if it is equipped with:
+  - A judgement $issubst(Γ, σ, Δ)$
+    meaning that substitution $σ$ maps context $Γ$ to context $Δ$
+  - A substitution operation $[σ]e ∈ ms("E")$ for $e ∈ ms("E")$
+    ... 
+]
+
+Defining a notion of stability under substitution for a language $ms("E")$ requires some care:
+
+- We need to define what 
+
+We now define a _substitution_ in an expression system $ms("E")$ to be a finitely supported function
+$
+  
+$
+
+*/
+
+#todo[
+  The below: stable _under the substitution system_ 
+  for finitely supported $ms("Var") → #iter-calc(ms("I"))$ -- need good notation for this
+]
+
+#todo[
+  Or actually; 
+]
+
+#lemma(name: "Substitution")[
+  If $ms("I")$ is stable under substitution, then so is #iter-calc(ms("I")).
+  /*
+  If $issubst(Γ, σ, Δ)$ and $hasty(Δ, e, A)$,
+  then $hasty(Γ, [σ]e, A)$.
+  */
+]
 == Regions
 
 #todo[fix notation for expression space judgement]
@@ -661,12 +766,12 @@ Where the signature is unambiguous, we drop the subscript.
 )
 
 #todo[
-  Actual judgement for regions is $ehaslb(Γ, ms("R"), ε, r, ms("L")^ev1)$, 
+  Actual judgement for regions is $ehaslb(Γ, ms("R"), ε, r, ms("L")^ev1)$,
   where $ev1$ is a map from labels $lb("l")$ to the effect $ε_lb("l")$ of jumping to that label.
 ]
 
 #todo[
-  In fact, we start with _syntactic_ effects 
+  In fact, we start with _syntactic_ effects
   $dehasty(Γ, ε, e, A)$,
   $dehaslb(Γ, ε, r, ms("L")^ev1)$
   which don't depend on the equational theory induced by $ms("R")$;
@@ -722,29 +827,29 @@ Where the signature is unambiguous, we drop the subscript.
 == Expressions
 
 #todo[
-  We introduce a judgement $dehasty(Γ, ε, e, A)$: the _syntactic_ effect of $e$ 
+  We introduce a judgement $dehasty(Γ, ε, e, A)$: the _syntactic_ effect of $e$
   in @cart-iter-eff.
 
   Parametrized by (we assume $ms("F")$ and $ms("A")$ carry these as data...):
 ]
 
 #judgement-meaning(
-  $ehasty(Γ, ms("A"), ε, α, A)$, 
+  $ehasty(Γ, ms("A"), ε, α, A)$,
   ["The atomic expression $α$ has effect $ε$ in context $Γ$ at type $A$ in theory $ms("A")$"],
   $eisfn(Γ, ε, f, A, B)$,
   ["The function $f$ has effect $ε$ in context $Γ$ from type $A$ to type $B$"],
 )
 
 #todo[
-  The rules are mostly the obvious ones; 
+  The rules are mostly the obvious ones;
   just make sure when we iterate our effect is _actually_ iterative
 ]
 
 #fig-r-eff-hasty <cart-iter-eff>
 
 #todo[
-  Now, we give rules for _refinement_ $->>$; 
-  discuss: 
+  Now, we give rules for _refinement_ $->>$;
+  discuss:
   - notion of a refinement theory $ms("R")$ on expressions
   - polarity notation $scripts(->>)^p$ to avoid duplicating rules everywhere
   - $(≈) <==> (->> ∧ <<-) <==> (∀ p . scripts(->>)^p)$
@@ -779,7 +884,7 @@ Where the signature is unambiguous, we drop the subscript.
 == Regions
 
 #todo[
-  Can just directly give a refinement theory for regions, 
+  Can just directly give a refinement theory for regions,
   _but_ substitution only works for pure stuff
 ]
 
