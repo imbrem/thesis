@@ -530,33 +530,52 @@ parametrized by typing relations:
 
 More formally, we define:
 
-#definition(name: "Expression Signature")[
-  An _expression signature_ $ms("E")$ over a typing discipline $ms("X")$ consists of:
-  - A set of _expressions_ $e ∈ E$
-  - A typing relation $hasty(Γ, e, A, annot: ms("E"))$
-    where $Γ ∈ sctx(ms("X"))$ and $A ∈ ms("X")$
+#definition(name: "Signature")[
+  Given cartesian typing disciplines $ms("X")$, $ms("Y")$, a _signature_ 
+  $ms("S") : ms("X") sfn ms("Y")$ consists of:
+  - A set of _terms_ $t ∈ |ms("S")|$
+    -- where doing so is unambiguous, we identify $ms("S")$ with its set of terms
+  - A typing relation $hasty(X, t, Y, annot: ms("S"))$
+    where $X ∈ sctx(ms("X"))$ and $Y ∈ ms("Y")$
+  which is _stable under weakening_:
+  - Given $hasty(X, t, Y, annot: ms("S"))$, for all $X' ⊑ X$ and $Y ⊑ Y'$,
+    we have $hasty(X', t, Y', annot: ms("S"))$
+
 ]
 
-Given a cartesian typing discipline $ms("X")$, 
-we introduce the cartesian typing discipline of _arrows_
+In particular, we define
+#definition(name: "Expression Signature")[
+  An _expression signature_ $ms("E")$ over a cartesian typing discipline $ms("X")$ 
+  is a signature $ms("E") : sctx(ms("X")) sfn ms("X")$ -- i.e.
+  - A set of _terms_ $t ∈ |ms("E")|$
+  - A typing relation $hasty(Γ, e, A, annot: ms("E"))$
+    where $Γ ∈ sctx(ms("X"))$ and $A ∈ ms("X")$
+    which is _stable under weakening_.
+]
+
+To formally define a signature for _functions_, 
+given a cartesian typing discipline $ms("X")$, 
+we introduce the typing discipline of _arrows_
 $adisc(ms("X"))$ with
 - Types $A → B$ for $A, B ∈ ms("X"))$
 - Weakening $(A -> B) ⊑ (A' -> B') := (A' ⊑ A) ∧ (B ⊑ B')$
 
 #definition(name: "Closure Signature")[
   A _closure signature_ $ms("F")$ over a cartesian typing discipline $ms("X")$ is
-  defined to be an expression signature over $adisc(ms("X"))$.
-
-  We call elements $f ∈ ms("F")$ _closures_ or _functions_.
+  defined to be an expression signature over $adisc(ms("X"))$ -- i.e.
+  - A set of _closures_ or _functions_ $f ∈ |ms("F")|$
+  - A typing relation $isfn(Γ, f, A, B, annot: ms("F"))$
+    where $Γ ∈ sctx(ms("X"))$ and $A, B ∈ ms("X")$
+  which is _stable under weakening_:
+  - Given $isfn(Γ, f, A, B, annot: ms("F"))$, 
+    for all $Γ' ⊑ Γ$, $A' ⊑ A$, and $B ⊑ B'$,
+    we have $isfn(Γ', f, A', B', annot: ms("F"))$
 ]
 
 #definition(name: "Instruction Signature")[
   An _instruction signature_ $ms("I")$ over a typing discipline $ms("X")$ consists of:
   - A closure signature $ms("F")$ over $ms("X")$; for typing _functions_
   - An expression signature $ms("A")$ over $ms("X")$; for typing _atomic expressions_
-
-  We say an instruction signature is _stable under weakening_, or just _stable_, if both
-  its closure signature and expression signature are stable.
 ]
 
 #lemma[
@@ -573,37 +592,7 @@ In general, we write
   to indicate that $f ∈ ms("F")$ is a function from $A$ to $B$ in
   context $Γ$
 
-Where the signature is unambiguous, we drop the subscript.
-
-A good type system should be well-behaved with respect to:
-- _Weakening_: if $cwk(Γ, Δ)$, then anything typing under $Δ$ should also type under $Γ$
-- _Subtyping_: if $tywk(A, B)$, then anything typechecking as $A$ should also typecheck as $B$
-
-In particular,
-
-- We say a closure signature is _stable under weakening_, or just _stable_, if, given
-  $cwk(Γ, Δ)$ and $tywk(A', A)$, and $tywk(B, B')$, we have
-  $
-    isfn(Δ, f, A, B, annot: ms("F")) ==> isfn(Γ, f, A', B', annot: ms("F"))
-  $
-
-- We say an expression signature is _stable under weakening_, or just _stable_, if, given
-  $cwk(Γ, Δ)$ and $tywk(A, A')$, we have
-  $
-    hasty(Δ, e, A, annot: ms("E")) ==> hasty(Γ, e, A', annot: ms("E"))
-  $
-
-- We say an instruction signature is _stable under weakening_, or just _stable_, if both
-  its closure signature and expression signature are stable.
-
-As a basic sanity check, we may confirm the following by induction on typing derivations:
-
-#lemma(name: "Weakening")[
-  If $ms("I")$ is an instruction signature over a cartesian typing discipline $sty(ms("X"))$ 
-  is stable under weakening, then so is #iter-calc(ms("I")).
-]
-
-More generally, a good type system should not depend on the names of variables used
+A good type system for expressions should not depend on the names of variables used
 -- i.e., it should be _stable under renaming_.
 
 In particular, given a _renaming_ $ρ : renames$ 
@@ -622,15 +611,7 @@ The monoid of renamings acts on contexts $Γ ∈ sctx(ms("X"))$ by pointwise app
 )
 Writing $issubst(Γ, ρ, Δ) := cwk(ρ · Γ, Δ)$, we say that:
 
-- We say a closure signature $ms("F")$
-  is _stable under renaming_ if:
-  - It is equipped with a monoid action $ρ · f$ of renamings $ρ$ on closures $f ∈ ms("F")$ 
-    such that
-  - Given a renaming $issubst(Γ, ρ, Δ)$, 
-    $isfn(Δ, f, A, B, annot: ms("F"))$ implies
-    $isfn(Γ, ρ · f, A, B, annot: ms("F"))$
-- Likewise, we say an expression signature $ms("E")$
-  is _stable under renaming_ if:
+- We say an expression signature $ms("E")$ is _stable under renaming_ if:
   - It is equipped with a monoid action $ρ · e$ of renamings $ρ$ on expressions $e ∈ ms("E")$ 
     such that
   - Given a renaming $issubst(Γ, ρ, Δ)$, 
@@ -641,7 +622,7 @@ Writing $issubst(Γ, ρ, Δ) := cwk(ρ · Γ, Δ)$, we say that:
     an monoid action on its closure signature and a monoid action on its expression signature
   - We say an instruction signature
     is _stable under renaming_ if both
-    its closure signature and expression signature are stable under renaming.
+    its closure signature and atomic expression signature are stable under renaming.
 
 Given a monoid action of renamings on an instruction signature $ms("I")$, 
 we may define a monoid action of renamings on #iter-calc(ms("I")) by structural recursion,
@@ -655,25 +636,22 @@ renaming bound variables to fresh names not appearing in the support of $ρ$.
   that is stable under renaming, then so is #iter-calc(ms("I")).
 ]
 
-In general, we will assume closure signatures, expression signatures, 
-and hence instruction signatures are stable under renaming (and therefore, weakening) by default.
-We will call signatures which are _not_ stable under renaming _raw_ signatures.
+In general, we will assume expression signatures, 
+and hence instruction signatures, 
+are stable under renaming and weakening by default.
+To emphasize this,
+we will call expression signatures where this is _not_ the case _raw_ signatures.
 
-While we allow atomic expressions and closures to capture variables in general, we can use renamings
-to single out the special case where they are in fact constant:
+While we allow atomic expressions and closures to capture variables in general, 
+we can use renamings to single out the special case where they are in fact constant:
 
-#definition(name: "Function Signature, Constant Signature")[
-  A closure signature $ms("F")$ over a cartesian typing discipline $ms("X")$
-  is _constant_ if:
-  - For all renamings $ρ$, $∀ f ∈ ms("F") . ρ · f = f$
-  - For all contexts $Γ$, $hasty(Γ, f, A) <==> hasty(·, f, A)$
-
-  We call a constant closure signature a _function signature_.
-
-  Likewise, an expression signature $ms("A")$ over a cartesian typing discipline $ms("X")$
+#definition(name: "Constant Signature")[
+  An expression signature $ms("A")$ over a cartesian typing discipline $ms("X")$
   is _constant_ if:
   - For all renamings $ρ$, $∀ α ∈ ms("A") . ρ · α = α$
   - For all contexts $Γ$, $hasty(Γ, α, A) <==> hasty(·, α, A)$
+
+  In particular, we call a constant closure signature a _function signature_.
 ]
 
 We would now like to generalize renaming to _substitution_, 
@@ -713,46 +691,28 @@ It turns out we can fit this into a general framework, along with renaming, as f
 
 #definition(name: "Substitution Signature")[
   A _substitution signature_ $ms("S")$ 
-  over a cartesian typing discipline $ms("X")$ consists of:
-  - A set of _substitutions_ $σ ∈ ms("S")$
-  - A typing relation $issubst(Γ, σ, Δ)$
-    where $Γ, Δ ∈ sctx(ms("X"))$
-  - A partial function from renamings $ρ$ to substitutions $ren2subst(ρ)$
-    such that, if $issubst(Γ, ρ, Δ)$ and $ren2subst(ρ)$ is defined,
-    then $issubst(Γ, ren2subst(ρ), Δ)$
-    --
-    when unambiguous, we drop the explicit coercion and simply write $ρ$ for $ren2subst(ρ)$.
+  over a cartesian typing discipline $ms("X")$
+  consists of a signature $ms("S") : sctx(ms("X")) sfn sctx(ms("X"))$ equipped with
+
+  - An action of renamings on substitutions $σ ∈ |ms("S")|$
   
+  - A partial function from renamings $ρ$ to substitutions $ren2subst(ρ) ∈ |ms("S")|$
+
+  such that:
+  
+  - Whenever $ren2subst(ρ)$ is defined, $ρ' · ren2subst(ρ) = ren2subst(ρ' · ρ)$ is defined. 
+  
+  - If $issubst(Γ, ρ, Δ)$ and $ren2subst(ρ)$ is defined, then $issubst(Γ, ren2subst(ρ), Δ)$, and
+
+  - For all renamings $issubst(Γ', ρ, Γ)$, $issubst(Γ, σ, Δ)$ implies $issubst(Γ', ρ · σ, Δ)$
+
   We define an _action_ of a substitution signature $ms("S")$ on a set $L$
   to be a mapping from substitutions $σ ∈ ms("S")$ and terms $t ∈ L$
   to their _substitutions_ $σ · t ∈ L$.
 
-  In general, we assume that $ms("S")$ is stable under:
-  - _Weakening_: if $cwk(Γ', Γ)$ and $cwk(Δ, Δ')$, then 
-    $issubst(Γ, σ, Δ)$ implies $issubst(Γ', σ, Δ')$
-  - _Renaming_: 
-    $ms("S")$ is equipped with a monoid action 
-    of renamings $ρ$ on substitutions $σ ∈ ms("S")$, 
-    such that,
-    for all renamings $issubst(Γ', ρ, Γ)$, 
-    $issubst(Γ, σ, Δ)$ implies $issubst(Γ', ρ · σ, Δ)$
-
-    Moreover, we assume that,
-    if $ren2subst(ρ)$ is defined, then 
-    - $ρ' · ren2subst(ρ) = ren2subst(ρ' · ρ)$ is defined. 
-    - $issubst(Γ, ren2subst(ρ), Δ)$ whenever $issubst(Γ, ρ, Δ)$ 
-
-  If _not_, we say that $ms("S")$ is a _raw substitution signature_.
+  When unambiguous, we drop the explicit coercion and simply write $ρ$ for $ren2subst(ρ)$.
 
   We say that:
-  - A closure signature $ms("F")$ is _stable under $ms("S")$_ if
-    - It is equipped with an action of $ms("S")$ on functions $f ∈ ms("F")$
-    - Given a substitution $issubst(Γ, σ, Δ)$,
-      $isfn(Δ, f, A, B, annot: ms("F"))$ implies
-      $isfn(Γ, σ · f, A, B, annot: ms("F"))$
-    - Whenever $ren2subst(ρ)$ is defined, we have $ren2subst(ρ) · f = ρ · f$
-    - If $ms("F")$ is in fact constant, then the action of $ms("S")$ is trivial:
-      $σ · f = f$ for all $σ ∈ ms("S")$ and $f ∈ ms("F")$
   - An expression signature $ms("E")$ is _stable under $ms("S")$_ if
     - It is equipped with an action of $ms("S")$ on expressions $e ∈ ms("E")$
     - Given a substitution $issubst(Γ, σ, Δ)$,
@@ -762,7 +722,7 @@ It turns out we can fit this into a general framework, along with renaming, as f
     - If $ms("E")$ is in fact constant, then the action of $ms("S")$ is trivial:
       $σ · e = e$ for all $σ ∈ ms("S")$ and $e ∈ ms("E")$
   - An instruction signature $ms("I")$ is _stable under $ms("S")$_ if both
-    its closure signature and expression signature are stable under $ms("S")$.
+    its closure signature and atomic expression signature are stable under $ms("S")$.
 ]
 
 Immediately, renaming emerges as a base case: $renames$ is a substitution signature over 
