@@ -849,7 +849,7 @@ We give a grammar for #reg-calc(ms("E"), ms("T")) below in @reg-grammar:
 #fig-reg-grammar <reg-grammar>
 
 
-Our typing rules for #reg-calc(ms("E"), ms("T")) judgements
+We give typing rules for #reg-calc(ms("E"), ms("T"))-judgements
 #judgement-meaning(
   $haslb(Γ, r, ms("L"))$,
   ["Region $r ∈ ms("T")$ has takes context $Γ$ to cocontext $ms("L")$"],
@@ -873,14 +873,19 @@ in @cart-reg-rules below:
 #let r-destruct = rule(
   name: [$"assign"_n$],
   $hasty(Γ, e, Π lb("T"))$,
-  $haslb(#$Γ, lb("T")^V$, r, ms("L"))$,
-  $haslb(#$Γ$, slet((V), e, r), ms("L"))$,
+  $haslb(#$Γ, lb("T")^mb("x")$, r, ms("L"))$,
+  $haslb(#$Γ$, slet((mb("x")), e, r), ms("L"))$,
 );
+#let r-scope = rule(
+  name: "scope",
+  $haslb(Γ, r, #$ms("L"), ms("K")$)$,
+  $klbrs(Γ csplat ms("K"), L, #$ms("L"), ms("K")$)$,
+  $haslb(Γ, #${r} ; L$, ms("L"))$,
+)
 #let r-tm = rule(
   name: "tm",
-  $haslb(Γ, τ, #$ms("L"), ms("K")$, annot: ms("T"))$,
-  $klbrs(Γ csplat ms("K"), L, #$ms("L"), ms("K")$)$,
-  $haslb(Γ, #$τ ; L$, ms("L"))$,
+  $haslb(Γ, τ, ms("L"), annot: ms("T"))$,
+  $haslb(Γ, τ, ms("L"))$,
 );
 #let r-lb-nil = rule(
   name: "lb-nil",
@@ -896,9 +901,10 @@ in @cart-reg-rules below:
 #let fig-haslb-reg = figure(
   [
     #rule-set(
-      declare-rule(r-assign),
-      declare-rule(r-destruct),
-      declare-rule(r-tm),
+      declare-rule(r-assign, label: <r-cart-assign>),
+      declare-rule(r-destruct, label: <r-cart-reg-destruct>),
+      declare-rule(r-scope, label: <r-cart-reg-scope>),
+      declare-rule(r-tm, label: <r-cart-tm>),
       declare-rule(r-lb-nil),
       declare-rule(r-lb-cons),
     )
@@ -909,9 +915,50 @@ in @cart-reg-rules below:
 
 #fig-haslb-reg <cart-reg-rules>
 
-#todo[Weakening: good!]
+In particular,
 
-#todo[Label weakening: good!]
+- We type assignments using @r-cart-assign.
+  As for expressions, we require $x ∉ Γ$ to be fresh.
+
+- We type destructurings using @r-cart-reg-destruct.
+  As for expressions, we require each variable in $mb("x")$ to be fresh.
+
+- We inherit typing for terminators from $ms("T")$ using @r-cart-tm
+
+- We type braces using @r-cart-reg-scope,
+  where the polycontext $Γ csplat ms("K")$ broadcasts $Γ$ along the cocontext $ms("K")$.
+
+As for expressions, we can verify that our type system respects _weakening_ by induction:
+
+#lemma(name: "Weakening")[
+  If $ms("E")$ and $ms("T")$ are stable under weakening,
+  then so is #reg-calc(ms("E"), ms("T"))
+  -- i.e. for all $Γ ⊑ Δ$,
+  $
+    haslb(Δ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, r, ms("L"))
+  $
+  where we say that $ms("E")$ and $ms("T")$ are stable under weakening when
+  - For all $Γ ⊑ Δ$, $hasty(Δ, e, A)$ implies $hasty(Γ, e, A)$.
+  - For all $Γ ⊑ Δ$, $haslb(Δ, τ, ms("L"), annot: ms("T"))$ implies
+    $haslb(Γ, τ, ms("L"), annot: ms("T"))$.
+]
+
+#lemma(name: "Label Weakening")[
+  If $ms("E")$ is stable under subtyping and $ms("T")$ is stable under label weakening,
+  then so is #reg-calc(ms("E"), ms("T"))
+  -- i.e. for all $ms("L") sle() ms("K")$,
+  $
+    haslb(Γ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, r, ms("K"))
+  $
+  where we say that $ms("E")$ is stable under subtyping when
+  - For all $A sle() B$, $hasty(Γ, e, A)$ implies $hasty(Γ, e, B)$.
+  and that $ms("T")$ is stable under label weakening when
+  - For all $ms("L") sle() ms("K")$,
+    $haslb(Γ, τ, ms("L"), annot: ms("T"))$ implies
+    $haslb(Γ, τ, ms("K"), annot: ms("T"))$.
+]
+
+Likewise, we can generalize capture-avoiding substitution to regions straightforwardly:
 
 #todo[Substitution on regions -- good!]
 
