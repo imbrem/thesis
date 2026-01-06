@@ -1240,6 +1240,112 @@ We may now state the _syntactic substitution lemma_ for $substs(#iter-calc(ms("I
   - So let's start with that!
 ]
 
+#definition(name: "Typed relation")[
+  Given a signature $ms("S") : ms("X") sfn ms("Y")$, we want to define a
+  - _typed predicate_ on $ms("S")$ is a signature 
+    $ms("P") : ms("X") stfn(|ms("S")|) ms("Y")$ sat. congruence with $ms("P") ⊆ ms("S")$
+  - _typed relation_ on $ms("S")$ is a signature
+    $ms("R") : ms("X") stfn(|ms("S")| × |ms("S")|) ms("Y")$
+    sat. congruence s.t. $ms("R") ⊆ ms("S") × ms("S")$
+]
+
+#let r-congr-var = rule(
+  name: "var",
+  $Γ ⊑ x : A$,
+  $hasty(Γ, x, A, annot: "P")$,
+);
+#let r-congr-coe = rule(
+  name: "coe",
+  $hasty(Γ, a, A, annot: "P")$,
+  $tywk(A, A')$,
+  $hasty(Γ, a, A', annot: "P")$,
+);
+#let r-congr-atom = rule(
+  name: "atom",
+  $hasty(Γ, α, A, annot: ms("P")_ms("A"))$,
+  $hasty(Γ, α, A, annot: "P")$,
+);
+#let r-congr-app = rule(
+  name: "app",
+  $isfn(Γ, f, A, B, annot: ms("P")_ms("F"))$,
+  $hasty(Γ, a, A, annot: ms("P"))$,
+  $hasty(Γ, f med a, B, annot: ms("P"))$,
+);
+
+#let fig-r-hasty = figure(
+  [
+    \
+    #rule-set(
+      declare-rule(r-congr-var),
+      declare-rule(r-congr-coe),
+      declare-rule(r-congr-atom),
+      declare-rule(r-congr-app),
+    )
+    #todo[rest]
+    \
+  ],
+  caption: [
+    Congruence rules for a predicate
+    #todo[this]
+  ],
+)
+
+#fig-r-hasty <cart-iter-congr>
+
+#let r-congr2-var = rule(
+  name: "var",
+  $Γ ⊑ x : A$,
+  $hasty(Γ, (x, x), A, annot: "R")$,
+);
+#let r-congr2-coe = rule(
+  name: "coe",
+  $hasty(Γ, (a, a'), A, annot: "R")$,
+  $tywk(A, A')$,
+  $hasty(Γ, (a, a'), A', annot: "R")$,
+);
+#let r-congr2-atom = rule(
+  name: "atom",
+  $hasty(Γ, (α, α'), A, annot: ms("R")_ms("A"))$,
+  $hasty(Γ, (α, α'), A, annot: "R")$,
+);
+#let r-congr2-app = rule(
+  name: "app",
+  $isfn(Γ, (f, f'), A, B, annot: ms("R")_ms("F"))$,
+  $hasty(Γ, (a, a'), A, annot: ms("R"))$,
+  $hasty(Γ, (f med a, f' med a'), B, annot: ms("R"))$,
+);
+
+#let fig-r-hasty = figure(
+  [
+    \
+    #rule-set(
+      declare-rule(r-congr2-var),
+      declare-rule(r-congr2-coe),
+      declare-rule(r-congr2-atom),
+      declare-rule(r-congr2-app),
+    )
+    #todo[rest]
+    \
+  ],
+  caption: [
+    Congruence rules for a relation
+    #todo[this]
+  ],
+)
+
+#fig-r-hasty <cart-iter-congr2>
+
+#definition(name: "Refinement basis")[
+  A _refinement basis_ $ms("B")$ over $#iter-calc(ms("I"))$ consists of:
+  - A monotone $cal(E)$-family of typed predicates $ms("B")(ε)$ ("has effect $ε$") with $ms("B")(⊤) = #iter-calc(ms("I"))$
+  - A typed relation, _refinement_, $ms("B")_2$ on $#iter-calc(ms("I"))$
+]
+
+#definition(name: "Refinement System")[
+  A _refinement system_ $ms("R")$ is a refinement basis $ms("B")$ closed under the rules
+  in Figure ... + congruence
+]
+
 == Effects
 
 #todo[
