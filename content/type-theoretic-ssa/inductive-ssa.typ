@@ -1128,7 +1128,7 @@ $
 
 #todo[segue...]
 
-So far, we have a proliferation of five inter-dependent type systems; to recap:
+So far, we've defined at least five different typing judgements; to recap:
 
 #judgement-meaning(
   $hasty(Γ, e, A)$,
@@ -1137,10 +1137,19 @@ So far, we have a proliferation of five inter-dependent type systems; to recap:
   ["The fields $(E)$ have product type $Π lb("T")$ in $Γ$"],
   $kebrs(cal(K), M, A)$,
   ["The case branches $M$ map inputs $cal(K)$ to output $A$"],
+  $haslb(Γ, r, ms("L"))$,
+  ["Region $r ∈ #ssa-calc(ms("E"))$ takes context $Γ$ to cocontext $ms("L")$"],
+)
+
+dependent on user-provided judgements
+
+#judgement-meaning(
   $isfn(Γ, f, A, B, annot: ms("F"))$,
   ["$f ∈ ms("F")$ takes inputs $A$ to outputs $B$ in $Γ$"],
   $hasty(Γ, α, A, annot: ms("A"))$,
   ["Atomic expression $α ∈ ms("A")$ has type $A$ in $Γ$"],
+  $haslb(Γ, τ, ms("L"), annot: ms("T"))$,
+  ["Terminator $τ ∈ ms("T")$ takes context $Γ$ to cocontext $ms("L")$"],
 )
 
 Naïvely, this means that we need to re-state properties like _weakening_ and _substitution_
@@ -1168,7 +1177,9 @@ _typing relations_, based on the following core definition:
 ]
 
 Probably the simplest example of a typing relation is the (unique) _empty relation_
-$mb(0) = ms("X") sfn ms("Y")$ with no terms $|mb(0)| = ∅$. We also define:
+$mb(0) = ms("X") sfn ms("Y")$ with no terms $|mb(0)| = ∅$. 
+
+We also define:
 
 - The _union_ of typing relations $⋃_i ms("W")_i$, with
   - Terms $|⋃_i ms("W")_i| := ⋃_i |ms("W")_i|$
@@ -1201,6 +1212,10 @@ For example, if $ms("X") := sctx(sty(ms("D")))$...
 #todo[Context example]
 
 #todo[Action-under-renaming...]
+
+#todo[What do we call stable relations?]
+
+#todo[expression relation...]
 
 #definition(name: "Expression Signature")[
   An _expression signature_ $ms("E")$ over a cartesian typing discipline $ms("X")$
