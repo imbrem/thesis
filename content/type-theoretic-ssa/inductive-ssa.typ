@@ -482,7 +482,7 @@ parametrized by typing relations:
 #let r-cases = rule(
   name: "cases",
   $hasty(Γ, e, Σ lb("L"))$,
-  $isebrs(Γ, lb("L"), M, A)$,
+  $kebrs(Γ csplat lb("L"), M, A)$,
   $hasty(Γ, ecase(e, M), A)$,
 );
 #let r-sigma-nil = rule(
@@ -684,17 +684,88 @@ We can then give our _substitution lemma_ for $#iter-calc(ms("I"))$ as follows:
 
 #import "../rules/haslb.typ": *
 
-#todo[recall: goal is a judgement for SSA]
+We now want to give a type theory for regions $r$. In particular, we will
+- Give a type theory for _lexical SSA_ (#ssa-calc())
+- Extend this to a type theory for _type-theoretic SSA_ (#gssa-calc())
+- Noting that, syntactically, $#ssa-calc() ⊆ #gssa-calc()$,
+  prove that 
+  $haslb(Γ, r, ms("L"), annot: #ssa-calc()) <==> haslb(Γ, r, ms("L"), annot: #gssa-calc())$
+  for all (gramatically) well-formed #ssa-calc() regions $r$.
 
-#todo[introduce notion of _region signature_ / typing relation]
+Our judgement in both cases will be of the form $haslb(Γ, r, ms("L"))$,
+meaning that the region $r$ 
+maps the context $Γ$ (corresponding to live variables on entry) 
+to the cocontext $ms("L")$ (corresponding to exit labels with parameter types).
 
-#todo[stability under weakening ; _renaming_ of labels -- corenaming]
+Recall that our grammar
+for lexical SSA (#ssa-calc()), repeated below in @lex-ssa-full, 
+defines the following four syntactic categories,
+which we can roughly divide into two groups:
 
-#todo[need a signature for polycontexts => labels as well]
+- _Regions_ $r$, and _lists of named regions_ $L$ -- we call such lists _control-flow graphs (CFGs)_
+- _Terminators_ $τ$, and _lists of branch targets_ $B$
 
-#todo[label substituion -- cosubstitution]
+#let lex-ssa-full = figure(
+  [
+    #grid(
+      align: left,
+      columns: 3,
+      gutter: (2em, 2em),
+      bnf(
+        Prod($r$, {
+          Or[$x = e seq r$][_assign_]
+          Or[$τ$][_terminator_]
+          Or[${ r } seq L$][_braces_]
+        }),
+        Prod($L$, {
+          Or[$·$][]
+          Or[$L seq gbr(lb("l"), x, {r})$][]
+        }),
+      ),
 
-#todo[give grammar for _region language_ #reg-calc() parametrized by expressions and terminator:]
+      bnf(
+        Prod($τ$, {
+          Or[$brb(lb("l"), e)$][_branch_]
+          Or[$scase(e, B)$][_case_]
+        }),
+        Prod($B$, {
+          Or[$·$][]
+          Or[$B, sbr(lb("l₁"), x, brb(lb("l₂"), e))$][]
+        }),
+      ),
+    )
+  ],
+  caption: [
+    Grammar for lexical SSA with expressions and braces (#ssa-calc(iter-calc()))
+  ],
+  kind: image,
+)
+
+#lex-ssa-full <lex-ssa-full>
+
+Our approach will be to:
+
+- Give a grammar and type theory for a language of _regions_, #reg-calc(ms("E"), ms("T")),
+  parametrized by _expressions_ $e ∈ ms("E")$ and _terminators_ $τ ∈ ms("T")$.
+
+- Give a grammar and type theory for _terminators_ $#cond-calc(ms("E"))$: 
+  (potentially) conditional branches parametrized by expressions $e ∈ ms("E")$.
+
+We will then define
+$
+  #ssa-calc(ms("E")) := #reg-calc(ms("E"), $#cond-calc(ms("E"))$)
+$
+while at the same time having a uniform framework for reasoning about different SSA variants.
+
+In particular, our construction of #gssa-calc() by fusing the syntactic categories of terminators
+and regions will be evidenced by the fact that
+$
+  #cond-calc(ms("E")) 
+  #h(2em) ⊆ #h(2em) #gssa-calc(ms("E")) 
+  #h(2em) = #h(2em) #reg-calc(ms("E"), gssa-calc(ms("E")))
+$
+
+We give a grammar for #reg-calc(ms("E"), ms("T")) below in @reg-grammar:
 
 #let fig-reg-grammar = figure(
   [
@@ -724,9 +795,22 @@ We can then give our _substitution lemma_ for $#iter-calc(ms("I"))$ as follows:
   kind: image,
 )
 
-#fig-reg-grammar
+#fig-reg-grammar <reg-grammar>
 
-#todo[the rules are:]
+
+Our typing rules for #reg-calc(ms("E"), ms("T")) judgements
+#judgement-meaning(
+  $haslb(Γ, r, ms("L"))$,
+  ["Region $r ∈ ms("T")$ has takes context $Γ$ to cocontext $ms("L")$"],
+  $klbrs(cal(K), L, ms("L"))$,
+  ["The CFG $L$ maps polycontext $cal(K)$ to cocontext $ms("L")$"],
+)
+parametrized by a judgement
+#judgement-meaning(
+  $haslb(Γ, τ, ms("L"), annot: ms("T"))$,
+  ["Terminator $τ ∈ ms("T")$ has takes context $Γ$ to cocontext $ms("L")$"],
+)
+in @cart-reg-rules below:
 
 // Rules for ssa-calc(E, T)
 #let r-assign = rule(
@@ -743,19 +827,19 @@ We can then give our _substitution lemma_ for $#iter-calc(ms("I"))$ as follows:
 );
 #let r-tm = rule(
   name: "tm",
-  $haslb(Γ, τ, #$ms("L"), ms("K")$)$,
-  $islbrs(Γ, ms("K"), L, #$ms("L"), ms("K")$)$,
+  $haslb(Γ, τ, #$ms("L"), ms("K")$, annot: ms("T"))$,
+  $klbrs(Γ csplat ms("K"), L, #$ms("L"), ms("K")$)$,
   $haslb(Γ, #$τ ; L$, ms("L"))$,
 );
 #let r-lb-nil = rule(
   name: "lb-nil",
-  $islbrs(Γ, ·, ·, ·)$,
+  $klbrs(cal(K), ·, ·)$,
 );
 #let r-lb-cons = rule(
   name: "lb-cons",
-  $issbrs(Γ, ms("K"), L, ms("L"))$,
+  $ksbrs(cal("K"), L, ms("L"))$,
   $haslb(#$Γ, x : A$, r, ms("L"))$,
-  $islbrs(Γ, #$ms("K"), lty(lb("k"), A)$, #$K, sbr(lb("k"), x, r)$, ms("L"))$,
+  $klbrs(#$cal("K"), clty(lb("k"), Γ, A)$, #$K, sbr(lb("k"), x, r)$, ms("L"))$,
 );
 
 #let fig-haslb-reg = figure(
@@ -772,11 +856,17 @@ We can then give our _substitution lemma_ for $#iter-calc(ms("I"))$ as follows:
   caption: [Typing rules for #reg-calc(ms("E"), ms("T"))],
 )
 
-#fig-haslb-reg
+#fig-haslb-reg <cart-reg-rules>
+
+#todo[Weakening: good!]
+
+#todo[Label weakening: good!]
 
 #todo[Substitution on regions -- good!]
 
 #todo[Label _renaming_ -- good!]
+
+#todo[Label substitution -- _surprisingly_, also good! But see later...]
 
 #todo[SSA has _specific_ terminators: (conditional) branches, with]
 
@@ -839,18 +929,18 @@ $
 #let r-cond-case = rule(
   name: "case",
   $hasty(Γ, e, Σ lb("L"))$,
-  $issbrs(Γ, lb("L"), K, ms("K"))$,
+  $ksbrs(Γ csplat lb("L"), K, ms("K"))$,
   $haslb(Γ, scase(e, K), ms("K"))$,
 );
 #let r-case-nil = rule(
   name: "case-nil",
-  $issbrs(Γ, ·, ·, ·)$,
+  $ksbrs(cal(L), ·, ·)$,
 );
 #let r-case-cons = rule(
   name: "case-cons",
-  $issbrs(Γ, lb("L"), K, ms("K"))$,
+  $ksbrs(cal(L), K, ms("K"))$,
   $haslb(#$Γ, x : A$, brb(lb("k"), e), ms("K"))$,
-  $issbrs(Γ, #$lb("L"), lty(lb("l"), A)$, #$K, sbr(lb("l"), x, brb(lb("k"), e))$, ms("K"))$,
+  $ksbrs(#$cal("L"), clty(lb("l"), Γ, A)$, #$K, sbr(lb("l"), x, brb(lb("k"), e))$, ms("K"))$,
 );
 
 #let fig-haslb-br = figure(
@@ -872,6 +962,14 @@ $
 
 #fig-haslb-br
 
+#todo[Weakening: good!]
+
+#todo[Label weakening: good!]
+
+#todo[Substitution on regions -- good!]
+
+#todo[Label _renaming_ -- good!]
+
 #todo[Substitution on SSA -- follows from branches, so good!]
 
 #todo[Label _renaming_ -- follows from branches, so good!]
@@ -883,7 +981,7 @@ $
   -- equivalent to allowing anonymous regions in branches
 ]
 
-#todo[Grammar]
+#todo[We give the grammar in @gssa-grammar]
 
 #let fig-gssa-grammar = figure(
   [
@@ -912,12 +1010,12 @@ $
   kind: image,
 )
 
-#fig-gssa-grammar
+#fig-gssa-grammar <gssa-grammar>
 
-#todo["Fixpoint like" because (we'll formalize equivalences later...):]
+#todo[Fixpoint equation]
 
 $
-  #gssa-calc(ms("E"), ms("T")) ≈ #ssa-calc(ms("E"), $#gssa-calc(ms("E"), ms("T")) ∪ ms("T")$)
+  #gssa-calc(ms("E"), ms("T")) = #ssa-calc(ms("E"), $#gssa-calc(ms("E"), ms("T")) ∪ ms("T")$)
 $
 
 #todo[Extension to fix this:]
@@ -927,7 +1025,6 @@ $
 #todo[substitution]
 
 #todo[label-substitution]
-
 
 == Typing Relations
 

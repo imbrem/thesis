@@ -64,7 +64,7 @@
 #let glam-calc(name, ..xs) = if xs.pos().at(0, default: none) == none {
   $λ_ms(#name)^μ$
 } else if xs.pos().at(1, default: none) == none {
-  $λ_ms(#name)^μ[#xs.pos().at(0)]$
+  $λ_ms(#name)^μ [#xs.pos().at(0)]$
 } else {
   $λ_ms(#name)^μ [#xs.pos().at(0), #xs.pos().at(1)]$
 }
@@ -435,10 +435,6 @@
 #let klbrs(K, B, L) = $#K ⊢ #B triangle.stroked.small.r #L$
 
 #let csplat = $*$
-
-#let isebrs(Γ, L, B, A) = kebrs($#Γ csplat #L$, B, A)
-#let issbrs(Γ, K, B, L) = ksbrs($#Γ csplat #K$, B, L)
-#let islbrs(Γ, K, B, L) = klbrs($#Γ csplat #K$, B, L)
 
 #let dtrn = $scripts(⊢)^•$
 

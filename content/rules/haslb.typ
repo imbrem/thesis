@@ -23,7 +23,7 @@
 #let r-g-case = rule(
   name: "case",
   $hasty(Γ, e, Σ lb("L"))$,
-  $issbrs(Γ, lb("L"), L, ms("K"))$,
+  $ksbrs(Γ csplat lb("L"), L, ms("K"))$,
   $haslb(Γ, scase(e, L), ms("K"))$,
 )
 #let r-g-tm = rule(
@@ -34,18 +34,18 @@
 #let r-g-scope = rule(
   name: "scope",
   $haslb(Γ, r, #$ms("L"), ms("K")$)$,
-  $islbrs(Γ, ms("K"), L, #$ms("L"), ms("K")$)$,
+  $klbrs(Γ csplat ms("K"), L, #$ms("L"), ms("K")$)$,
   $haslb(Γ, #${r} ; L$, ms("L"))$,
 )
 #let r-g-lb-nil = rule(
   name: "lb-nil",
-  $islbrs(Γ, ·, ·, ·)$,
+  $klbrs(cal(K), ·, ·)$,
 )
 #let r-g-lb-cons = rule(
   name: "lb-cons",
-  $issbrs(Γ, ms("K"), L, ms("L"))$,
+  $ksbrs(cal("K"), L, ms("L"))$,
   $haslb(#$Γ, x : A$, r, ms("L"))$,
-  $islbrs(Γ, #$ms("K"), lty(lb("k"), A)$, #$L, sbr(lb("k"), x, r)$, ms("L"))$,
+  $klbrs(#$cal("K"), clty(lb("k"), Γ, A)$, #$L, sbr(lb("k"), x, r)$, ms("L"))$,
 )
 
 #let fig-haslb-gssa = figure(
