@@ -44,7 +44,9 @@ and a parameter type $A$.
 
 Along the way, we'll introduce notions of:
 - _Subtyping_ $tywk(A, B)$
-- _Weakening_ $cwk(Γ, Δ)$ for contexts and $lbcwk(ms("L"), ms("K"))$ for cocontexts
+- _Weakening_ $cwk(Γ, Δ)$ for contexts, 
+  $lbcwk(ms("L"), ms("K"))$ for cocontexts,
+  and $cal("L") ⊑ cal("K")$ for polycontexts
 - _Substitutions_ $issubst(Γ, σ, Δ)$ for contexts and
   _label substitutions_ $lbsubst(cal("L"), κ, ms("K"))$ for cocontexts.
 
@@ -226,6 +228,10 @@ in @cart-ctx-grammar-wk. In particular, we define:
     $Γ csplat · := ·$,
     $Γ csplat (ms("L"), lb("l")(A)) := (Γ csplat ms("L")), clty(lb("l"), Γ, A)$,
   )
+
+  We will, where it does not introduce ambiguity, transparently identify a cocontext $ms("L")$
+  with the polycontext $(·^⊗) csplat ms("L")$ 
+  associating every label with the empty variable context.
 
 #let r-ctxwk-nil = rule(
   name: "Π-nil",
@@ -413,7 +419,7 @@ In @cart-iter-calc-rules, we give typing rules for the judgements
 parametrized by typing relations:
 
 #judgement-meaning(
-  $isfn(Γ, f, A, B)$,
+  $isfn(Γ, f, A, B, annot: ms("F"))$,
   ["$f ∈ ms("F")$ takes inputs $A$ to outputs $B$ in $Γ$"],
   $hasty(Γ, α, A, annot: ms("A"))$,
   ["Atomic expression $α ∈ ms("A")$ has type $A$ in $Γ$"],
@@ -487,7 +493,7 @@ parametrized by typing relations:
   name: "Σ-cons",
   $kebrs(cal(K), M, A)$,
   $hasty(#$Γ, x : B$, a, A)$,
-  $kebrs(#$cal(K), clty(lb("l"), Γ, B)$, #$M, ebr(lb("l"), x, a)$, A)$,
+  $kebrs(#$cal(K), clty(lb("l"), Γ, B)$, #$(M, ebr(lb("l"), x, a))$, A)$,
 );
 #let r-iter = rule(
   name: "iter",
@@ -537,7 +543,7 @@ So far, we have a proliferation of five inter-dependent type systems; to recap:
   ["The fields $(E)$ have product type $Π lb("T")$ in $Γ$"],
   $kebrs(cal(K), M, A)$,
   ["The case branches $M$ map inputs $cal(K)$ to output $A$"],
-  $isfn(Γ, f, A, B)$,
+  $isfn(Γ, f, A, B, annot: ms("F"))$,
   ["$f ∈ ms("F")$ takes inputs $A$ to outputs $B$ in $Γ$"],
   $hasty(Γ, α, A, annot: ms("A"))$,
   ["Atomic expression $α ∈ ms("A")$ has type $A$ in $Γ$"],
@@ -555,7 +561,7 @@ _typing relations_, based on the following core definition:
   - A set of _terms_ $t ∈ |ms("W")|$
     -- where doing so is unambiguous, we identify $ms("W")$ with its set of terms
   - A typing relation $hasty(X, t, Y, annot: ms("W"))$
-    where $X ∈ sctx(ms("X"))$ and $Y ∈ ms("Y")$
+    where $X ∈ ms("X")$ and $Y ∈ ms("Y")$
   which is _stable under weakening_:
   - Given $hasty(X, t, Y, annot: ms("W"))$, for all $X' ⊑ X$ and $Y ⊑ Y'$,
     we have $hasty(X', t, Y', annot: ms("W"))$
@@ -564,9 +570,23 @@ _typing relations_, based on the following core definition:
   writing $hasty(X, t, Y)$ for $hasty(X, t, Y, annot: ms("W"))$.
 ]
 
+#todo[
+  Note in particular the _empty relation_ -- likewise, the _union_ of relations
+]
+
 _Expressions_ and _atomic expressions_ then become instances of the following special case:
 
 #todo["Expression signature" or "expression type relation"]
+
+#todo[Neel says: _signature_; not relation]
+
+#todo[Fix this to target $ms("Y")$; name the specific case where it targets $ms("X")$]
+
+#todo[Expression typing relations always respect renaming]
+
+#todo[Relation is targets Y, signature is targets X, closure signature is targets arrows over X]
+
+#todo[the empty relation is always a signature!]
 
 #definition(name: "Expression Signature")[
   An _expression signature_ $ms("E")$ over a cartesian typing discipline $ms("X")$ 
@@ -625,6 +645,8 @@ In particular, given a _renaming_ $ρ : renames$
 $
   fsup(ρ) := { x ∈ vset | ρ(x) ≠ x }
 $
+#todo[grammar]
+
 These form a monoid under composition, with the identity $id$ as unit.
 
 #todo[Make sure renamings are the right way around]
@@ -648,6 +670,11 @@ Writing $issubst(Γ, ρ, Δ) := cwk(ρ · Γ, Δ)$, we say that:
   - We say an instruction signature
     is _stable under renaming_ if both
     its closure signature and atomic expression signature are stable under renaming.
+
+#todo[
+  Pull up to right after expression definition -- then statement that #iter-calc(ms("I"))
+  is an expression signature _includes_ both weakening and renaming.
+]
 
 Given a monoid action of renamings on an instruction signature $ms("I")$, 
 we may define a monoid action of renamings on #iter-calc(ms("I")) by structural recursion,
@@ -794,6 +821,8 @@ We may now state the _syntactic substitution lemma_ for $substs(#iter-calc(ms("I
 
 #lemma(name: "Substitution")[
   If $ms("I")$ is stable under $substs(#iter-calc(ms("I")))$, then so is #iter-calc(ms("I"))
+
+  #todo[Unfolding things, this becomes (ye olde usual statement)]
 ]
 
 == Regions
@@ -804,7 +833,11 @@ We may now state the _syntactic substitution lemma_ for $substs(#iter-calc(ms("I
 
 #todo[introduce notion of _region signature_ / typing relation]
 
-#todo[stability under weakening ; _renaming_ of labels]
+#todo[stability under weakening ; _renaming_ of labels -- corenaming]
+
+#todo[need a signature for polycontexts => labels as well]
+
+#todo[label substituion -- cosubstitution]
 
 #todo[give grammar for _region language_ #reg-calc() parametrized by expressions and terminator:]
 
@@ -1029,7 +1062,7 @@ $
 #todo["Fixpoint like" because (we'll formalize equivalences later...):]
 
 $
-  #gssa-calc(ms("E"), ms("T")) ≈ #ssa-calc(ms("E"), gssa-calc(ms("E"), ms("T")))
+  #gssa-calc(ms("E"), ms("T")) ≈ #ssa-calc(ms("E"),$#gssa-calc(ms("E"), ms("T")) ∪ ms("T")$)
 $
 
 #todo[Extension to fix this:]
@@ -1042,83 +1075,11 @@ $
 
 = Refinement
 
-/*
-
-
 #todo[
-  Alternative ordering: study _refinement_ first; _then_ start studying effects,
-  since we need an effect system for _expressions_ to give a sound + complete refinement system.
-
-  Note we _don't_ need a refinement system for _terms_
+  - We want to study refinement and equivalence (state relation _between_ refinement and equivalence)
+  - _To_ give rules for this, we need to track the effect of programs
+  - So let's start with that!
 ]
-
-#todo[We want to build up an equational theory...]
-
-#judgement-meaning(
-  $lbeq(Γ, ms("R"), r, r', ms("L"))$,
-  ["$r$ and $r'$ are equivalent from $Γ$ to $ms("L")$ under $ms("R")$"],
-  $tyeq(Γ, ms("R"), e, e', A)$,
-  ["$e, e'$ are equivalent at type $A$ in $Γ$ under $ms("R")$"],
-)
-
-#todo[(and a _refinement theory_)]
-
-#judgement-meaning(
-  $lbref(Γ, ms("R"), r, r', ms("L"))$,
-  ["$r$ is refined by $r'$ from $Γ$ to $ms("L")$ under $ms("R")$"],
-  $tyref(Γ, ms("R"), e, e', A)$,
-  ["$e$ is refined by $e'$ at type $A$ in $Γ$ under $ms("R")$"],
-)
-
-#todo[
-  But some equations are only valid depending on effect:
-  - $elet(x, a + b, elet(y, c + d, e)) ≈ elet(y, c + d, elet(x, a + b, e))$, _but_
-  - $elet(x, ms("input")(), elet(y, ms("input")(), e))
-    ≉ elet(y, ms("input")(), elet(x, ms("input")(), e))$
-]
-
-#todo[
-  So we need a way to track the _effect_ of regions and expressions
-]
-
-#judgement-meaning(
-  $ehaslb(Γ, ms("R"), ε, r, ms("L"))$,
-  [""Under $ms("R")$, region $r$ maps $Γ$ to $ms("L")$ with effect $ε$""],
-  $ehasty(Γ, ms("R"), ε, e, A)$,
-  ["Expression $e$ has type $A$ and effect $ε$ in context $Γ$."],
-)
-
-#todo[
-  Actual judgement for regions is $ehaslb(Γ, ms("R"), ε, r, ms("L")^ev1)$,
-  where $ev1$ is a map from labels $lb("l")$ to the effect $ε_lb("l")$ of jumping to that label.
-]
-
-#todo[
-  In fact, we start with _syntactic_ effects
-  $dehasty(Γ, ε, e, A)$,
-  $dehaslb(Γ, ε, r, ms("L")^ev1)$
-  which don't depend on the equational theory induced by $ms("R")$;
-  then actual effect judgements $ehasty(Γ, ms("R"), ε, e, A)$,
-  $ehaslb(Γ, ms("R"), ε, r, ms("L")^ev1)$ means there exists some equivalent $e'$, $r'$
-  (according to $ms("R")$)
-  with the syntactic effect $ε$
-]
-
-#todo[
-  How to explain refinement?
-  - Stick in intro to SSA section, which currently hardly describes equations
-  - Equations, then refinement
-  - Just refinement
-  - Use effects to motivate refinement: $elet(x, ms("maybe-ub"), ()) ->> ()$ but _not_ vice versa...
-  - Or, in introduction, talk about how IRs want refinement to deal with UB and friends, then
-    use example above to go with effect-dependent refinements...
-]
-
-#todo[
-  How to explain/motivate effects?
-]
-
-*/
 
 == Effects
 
