@@ -468,6 +468,7 @@
 #let lbref(Γ, R, s, t, L) = $#Γ scripts(⊢)^#R #s ->> #t triangle.stroked.small.r #L$
 
 #let sfn = $↛$
+#let stfn(W) = $scripts(↛)_#W$
 #let adisc(X) = $ms("Arr")(#X)$
 
 #let vset = ms("Var")

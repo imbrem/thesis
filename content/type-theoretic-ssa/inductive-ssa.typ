@@ -534,6 +534,111 @@ parametrized by typing relations:
 
 #fig-r-hasty <cart-iter-calc-rules>
 
+As a quick sanity check, we can verify that our type system(s) respect _weakening_ and _subtyping_:
+
+#lemma(name: "Weakening")[
+  If $ms("I")$ is stable under weakening, then so is #iter-calc(ms("I")) 
+  -- i.e. for all $Γ ⊑ Δ$, 
+  $
+  hasty(Δ, e, A) #h(3em) ==> #h(3em) hasty(Γ, e, A)
+  $
+  where we say that $ms("I")$ is stable under weakening when
+  - For all $Γ ⊑ Δ$, $isfn(Δ, f, A, B, annot: ms("F"))$ implies
+    $isfn(Γ, f, A, B, annot: ms("F"))$
+  - For all $Γ ⊑ Δ$, $hasty(Δ, α, A, annot: ms("A"))$ implies
+    $hasty(Γ, α, A, annot: ms("A"))$
+]
+
+#lemma(name: "Subtyping")[
+  If $ms("I")$ is stable under subtyping, then so is #iter-calc(ms("I")) 
+  -- i.e. for all $A sle() B$,
+  $
+  hasty(Γ, e, A) #h(3em) ==> #h(3em) hasty(Γ, e, B)
+  $
+  where we say that $ms("I")$ is stable under subtyping when
+  - For all $A' sle() A$, $B sle() B'$, 
+    $isfn(Γ, f, A, B, annot: ms("F"))$ implies
+    $isfn(Γ, f, A', B', annot: ms("F"))$.
+
+    That is, arrow types $A -> B$ are 
+    _covariant_ in the output $B$ and 
+    _contravariant_ in the input $A$.
+
+  - For all $A sle() A'$,
+    $hasty(Γ, α, A, annot: ms("A"))$ implies
+    $hasty(Γ, α, A', annot: ms("A"))$
+]
+
+#todo[Jump straight to regions -- concrete before abstract...]
+
+#todo[Or: do we do substitution first... this illustrates the problem statement later...]
+
+To state _substitution_, we begin by defining:
+
+- A _substitution_ for a language $ms("E")$ is a finitely supported function $σ : vset → ms("E")$, 
+  where we define the _support_ of a substitution to be given by
+  $
+    fsup(σ) := { x ∈ vset | σ(x) ≠ x }
+  $
+
+  We write the set of such substitutions as $substs(#ms("E"))$.
+
+- We _apply_ a substitution $σ ∈ substs(#iter-calc(ms("I")))$ 
+  to an expression $e ∈ #iter-calc(ms("I"))$;
+  written $[σ]e$.
+
+  For _expressions_, this is done by structural recursion on $e$,
+  replacing each variable $x$ in $e$ with $σ(x)$.
+
+
+  In particular, $α$-renaming 
+  allows us to choose fresh variable names for all bound variables 
+  to avoid variable capture.
+
+  #todo[Handle functions/closures and atomic expressions...]
+
+- We say that $σ$ is a _substitution_ from context $Δ$ to context $Γ$,
+  written $issubst(Γ, σ, Δ)$, 
+  if, for each $x : A$ s.t. $cwk(Δ, x : A)$, 
+  we have that $hasty(Γ, σ(x), A)$.
+
+  More formally, we give typing rules for  $issubst(Γ, σ, Δ)$ in @cart-subst-rules.
+
+#let r-subst-nil = rule(
+  name: "subst-nil",
+  $issubst(Γ, σ, (·^⊗), annot: substs(ms("E")))$,
+);
+
+#let r-subst-cons = rule(
+  name: "subst-cons",
+  $issubst(Γ, σ, Δ, annot: substs(ms("E")))$,
+  $hasty(Γ, σ(x), A, annot: ms("E"))$,
+  $issubst(Γ, σ, #$Δ, x : A$, annot: substs(ms("E")))$,
+)
+
+#figure(
+  [
+    \
+    #rule-set(
+      declare-rule(r-subst-nil),
+      declare-rule(r-subst-cons),
+    )
+    \
+  ],
+  caption: [
+    Rules for typing substitutions $σ ∈ substs(ms("E"))$
+    in a cartesian typing discipline $ms("X")$.
+  ],
+) <cart-subst-rules>
+
+We can then give our _substitution lemma_ for $#iter-calc(ms("I"))$ as follows:
+
+#todo[substitution lemma]
+
+== Typing Relations
+
+#todo[segue...]
+
 So far, we have a proliferation of five inter-dependent type systems; to recap:
 
 #judgement-meaning(
@@ -557,6 +662,7 @@ _typing relations_, based on the following core definition:
 
 #definition(name: "Typing Relation")[
   Given cartesian typing disciplines $ms("X")$, $ms("Y")$, a _typing relation_ 
+  
   $ms("W") : ms("X") sfn ms("Y")$ consists of:
   - A set of _terms_ $t ∈ |ms("W")|$
     -- where doing so is unambiguous, we identify $ms("W")$ with its set of terms
@@ -568,25 +674,44 @@ _typing relations_, based on the following core definition:
 
   When the desired typing relation is clear from context, we drop the annotation,
   writing $hasty(X, t, Y)$ for $hasty(X, t, Y, annot: ms("W"))$.
+
+  We write the set of typing relations with terms $|ms("W")| = W$ as $ms("X") stfn(W) ms("Y")$. 
 ]
 
-#todo[
-  Note in particular the _empty relation_ -- likewise, the _union_ of relations
-]
+Probably the simplest example of a typing relation is the (unique) _empty relation_ 
+$mb(0) = ms("X") sfn ms("Y")$ with no terms $|mb(0)| = ∅$. We also define:
 
-_Expressions_ and _atomic expressions_ then become instances of the following special case:
+- The _union_ of typing relations $⋃_i ms("W")_i$, with
+  - Terms $|⋃_i ms("W")_i| := ⋃_i |ms("W")_i|$
+  - Typing relation $hasty(X, t, Y, annot: ⋃_i ms("W")_i) := ∃ i. hasty(X, t, Y, annot: ms("W")_i)$
 
-#todo["Expression signature" or "expression type relation"]
+- The _intersection_ of typing relations $⋂_i ms("W")_i$, with
+  - Terms $|⋂_i ms("W")_i| := ⋂_i |ms("W")_i|$
+  - Typing relation $hasty(X, t, Y, annot: ⋂_i ms("W")_i) := ∀ i. hasty(X, t, Y, annot: ms("W")_i)$
 
-#todo[Neel says: _signature_; not relation]
+- A preorder on typing relations $ms("W") ⊑ ms("W")'$, which holds if and only if
+  - For all $t ∈ |ms("W")|$, $X ∈ ms("X")$, and $Y ∈ ms("Y")$,
+    if $hasty(X, t, Y, annot: ms("W"))$ then $hasty(X, t, Y, annot: ms("W")')$.
 
-#todo[Fix this to target $ms("Y")$; name the specific case where it targets $ms("X")$]
+  This gives the set of typing relations the structure of a _complete prelattice_.
 
-#todo[Expression typing relations always respect renaming]
+In general, for $W ⊆ W'$, 
+we implicitly coerce $ms("W") : ms("X") stfn(W) ms("Y")$
+to $ms("W") : ms("X") stfn(W') ms("Y")$;
+hence in particular: 
+- We have $mb(0) : ms("X") stfn(W) ms("Y")$ for all $W$.
+- Unions and intersections lift to $ms("X") stfn(W) ms("Y")$
+- Giving $ms("X") stfn(W) ms("Y")$ the structure of a _complete lattice_
 
-#todo[Relation is targets Y, signature is targets X, closure signature is targets arrows over X]
+While typing relations automatically respect weakening (and hence _subtyping_)
+a good type system for expressions should not depend on the names of variables used
+-- i.e., it should be _stable under renaming_.
 
-#todo[the empty relation is always a signature!]
+For example, if $ms("X") := sctx(sty(ms("D")))$...
+
+#todo[Context example]
+
+#todo[Action-under-renaming...]
 
 #definition(name: "Expression Signature")[
   An _expression signature_ $ms("E")$ over a cartesian typing discipline $ms("X")$ 
@@ -789,33 +914,6 @@ we may define a substitution signature $substs(ms("E"))$ with
 - Typing relation $issubst(Γ, σ, Δ)$ given by the rules in @cart-subst-rules
 - Coercions $ren2subst(ρ) ∈ |substs(ms("E"))|$ given by $ren2subst(ρ)(x) := ι(ρ(x))$
 - Renaming action $(ρ · σ)(x) = ρ · σ(x)$
-
-#let r-subst-nil = rule(
-  name: "subst-nil",
-  $issubst(Γ, σ, (·^⊗), annot: substs(ms("E")))$,
-);
-
-#let r-subst-cons = rule(
-  name: "subst-cons",
-  $issubst(Γ, σ, Δ, annot: substs(ms("E")))$,
-  $hasty(Γ, σ(x), A, annot: ms("E"))$,
-  $issubst(Γ, σ, #$Δ, x : A$, annot: substs(ms("E")))$,
-)
-
-#figure(
-  [
-    \
-    #rule-set(
-      declare-rule(r-subst-nil),
-      declare-rule(r-subst-cons),
-    )
-    \
-  ],
-  caption: [
-    Rules for typing substitutions $σ ∈ substs(ms("E"))$
-    in a cartesian typing discipline $ms("X")$.
-  ],
-) <cart-subst-rules>
 
 We may now state the _syntactic substitution lemma_ for $substs(#iter-calc(ms("I")))$ as follows:
 
