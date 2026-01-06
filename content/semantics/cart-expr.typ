@@ -129,7 +129,7 @@ $
     r-cases,
     $
       ccase(⟦hasty(Γ, e, Σ lb("L"))⟧)
-      cc ⟦isebrs(Γ, lb("L"), M, A)⟧
+      cc kebrs(Γ csplat lb("L"), M, A)⟧
     $,
   ),
   dntdef(
