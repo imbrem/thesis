@@ -506,20 +506,20 @@ parametrized by typing relations:
   [
     \
     #rule-set(
-      declare-rule(r-var),
-      declare-rule(r-atom),
-      declare-rule(r-coe),
-      declare-rule(r-app),
-      declare-rule(r-inj),
-      declare-rule(r-tuple),
+      declare-rule(r-var, label: <r-cart-var>),
+      declare-rule(r-atom, label: <r-cart-atom>),
+      declare-rule(r-app, label: <r-cart-app>),
+      declare-rule(r-inj, label: <r-cart-inj>),
+      declare-rule(r-tuple, label: <r-cart-tuple>),
       declare-rule(r-pi-nil),
       declare-rule(r-pi-cons),
-      declare-rule(r-let),
-      declare-rule(r-destruct),
-      declare-rule(r-cases),
+      declare-rule(r-let, label: <r-cart-let>),
+      declare-rule(r-destruct, label: <r-cart-destruct>),
+      declare-rule(r-cases, label: <r-cases>),
       declare-rule(r-sigma-nil),
       declare-rule(r-sigma-cons),
-      declare-rule(r-iter),
+      declare-rule(r-iter, label: <r-cart-iter>),
+      declare-rule(r-coe, label: <r-cart-coe>),
     )
     \
   ],
@@ -533,6 +533,53 @@ parametrized by typing relations:
 )
 
 #fig-r-hasty <cart-iter-calc-rules>
+
+In particular:
+- Variables are typed as usual using @r-cart-var
+
+- We inherit typing atomic expressions from $ms("A")$ using @r-cart-atom;
+  likewise, we type function applications $f med e$ in the usual manner inheriting
+  function typing from $ms("F")$ using @r-cart-app.
+
+- We type injections into coproducts using @r-cart-inj -- the output type is a singleton coproduct
+  containing just the injected variant,
+  which can then be weakened to any compatible coproduct type using subtyping.
+
+- We type tuples using @r-cart-tuple,
+  where the type of a tuple $(E)$ is given by the product type $Π#lb("T")$
+  where each field $fty(lb("f"), A)$ in $lb("T")$ corresponds to a field $fexpr(lb("f"), e)$ in $E$.
+
+- Let-bindings are typed as usual using @r-cart-let -- note we require $x ∉ Γ$ to be fresh.
+
+- Let-destructurings are typed using @r-cart-destruct.
+
+  Destructurings bind each variable in $mb("x")$ to the corresponding field
+  in the product type of $e_1$, with
+  - $lb("T")^mb("x")$ defined by induction to be the context given by:
+    #eqn-set(
+      $lb("T")^(·) := ·$,
+      $lb("T")^(mb("x"), fty(lb("f"), x)) := (lb("T")^mb("x"), A)
+      "where" (fty(lb("f"), A)) ∈ lb("T")$,
+    )
+
+  We require each variable in $mb("x")$ to be fresh.
+
+- We type case expressions using @r-cases, where the branches $M$ are typed
+  according to the polycontext $Γ csplat lb("L")$ broadcasting $Γ$ along the cocontext $lb("L")$.
+
+- Finally, we type iterations using @r-cart-iter,
+  where $e_1$ provides the initial value of type $A$ to iterate with,
+  and the body $e_2$, given $x : A$, returns either a new value to iterate with
+  (of type $A$) or a final result (of type $B$).
+
+- We state that $#iter-calc(ms("I"))$ is stable under subtyping
+  -- i.e. that if $A sle() B$ and $e$ has type $A$, then $e$ also has type $B$
+  -- as the _axiom_ @r-cart-coe.
+
+  Alternatively, we could have introduced weakening conditions in the rules
+  @r-cart-inj and @r-cart-tuple
+  (as well as requiring $ms("A")$ and $ms("F")$ to be stable under subtyping),
+  but this would have been more cumbersome.
 
 As a quick sanity check, we can verify that our type system(s) respect _weakening_ and _subtyping_:
 
@@ -548,6 +595,9 @@ As a quick sanity check, we can verify that our type system(s) respect _weakenin
   - For all $Γ ⊑ Δ$, $hasty(Δ, α, A, annot: ms("A"))$ implies
     $hasty(Γ, α, A, annot: ms("A"))$
 ]
+
+/*
+Trivial
 
 #lemma(name: "Subtyping")[
   If $ms("I")$ is stable under subtyping, then so is #iter-calc(ms("I"))
@@ -568,6 +618,7 @@ As a quick sanity check, we can verify that our type system(s) respect _weakenin
     $hasty(Γ, α, A, annot: ms("A"))$ implies
     $hasty(Γ, α, A', annot: ms("A"))$
 ]
+*/
 
 To state _substitution_, we begin by defining:
 
@@ -622,7 +673,7 @@ To state _substitution_, we begin by defining:
     ],
   ) <cap-avoid-iter-subst-rules>
 
-  In particular, 
+  In particular,
   - Our substitution is _capture-avoiding_:
     $α$-renaming allows us to choose fresh names $x ∉ fsup(σ)$ for all bound variables.
   - We need to provide definitions for
@@ -688,17 +739,17 @@ We now want to give a type theory for regions $r$. In particular, we will
 - Give a type theory for _lexical SSA_ (#ssa-calc())
 - Extend this to a type theory for _type-theoretic SSA_ (#gssa-calc())
 - Noting that, syntactically, $#ssa-calc() ⊆ #gssa-calc()$,
-  prove that 
+  prove that
   $haslb(Γ, r, ms("L"), annot: #ssa-calc()) <==> haslb(Γ, r, ms("L"), annot: #gssa-calc())$
   for all (gramatically) well-formed #ssa-calc() regions $r$.
 
 Our judgement in both cases will be of the form $haslb(Γ, r, ms("L"))$,
-meaning that the region $r$ 
-maps the context $Γ$ (corresponding to live variables on entry) 
+meaning that the region $r$
+maps the context $Γ$ (corresponding to live variables on entry)
 to the cocontext $ms("L")$ (corresponding to exit labels with parameter types).
 
 Recall that our grammar
-for lexical SSA (#ssa-calc()), repeated below in @lex-ssa-full, 
+for lexical SSA (#ssa-calc()), repeated below in @lex-ssa-full,
 defines the following four syntactic categories,
 which we can roughly divide into two groups:
 
@@ -748,7 +799,7 @@ Our approach will be to:
 - Give a grammar and type theory for a language of _regions_, #reg-calc(ms("E"), ms("T")),
   parametrized by _expressions_ $e ∈ ms("E")$ and _terminators_ $τ ∈ ms("T")$.
 
-- Give a grammar and type theory for _terminators_ $#cond-calc(ms("E"))$: 
+- Give a grammar and type theory for _terminators_ $#cond-calc(ms("E"))$:
   (potentially) conditional branches parametrized by expressions $e ∈ ms("E")$.
 
 We will then define
@@ -760,8 +811,8 @@ while at the same time having a uniform framework for reasoning about different 
 In particular, our construction of #gssa-calc() by fusing the syntactic categories of terminators
 and regions will be evidenced by the fact that
 $
-  #cond-calc(ms("E")) 
-  #h(2em) ⊆ #h(2em) #gssa-calc(ms("E")) 
+  #cond-calc(ms("E"))
+  #h(2em) ⊆ #h(2em) #gssa-calc(ms("E"))
   #h(2em) = #h(2em) #reg-calc(ms("E"), gssa-calc(ms("E")))
 $
 
@@ -1339,7 +1390,7 @@ We may now state the _syntactic substitution lemma_ for $substs(#iter-calc(ms("I
 
 #definition(name: "Typed relation")[
   Given a signature $ms("S") : ms("X") sfn ms("Y")$, we want to define a
-  - _typed predicate_ on $ms("S")$ is a signature 
+  - _typed predicate_ on $ms("S")$ is a signature
     $ms("P") : ms("X") stfn(|ms("S")|) ms("Y")$ sat. congruence with $ms("P") ⊆ ms("S")$
   - _typed relation_ on $ms("S")$ is a signature
     $ms("R") : ms("X") stfn(|ms("S")| × |ms("S")|) ms("Y")$

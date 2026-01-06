@@ -210,7 +210,7 @@
 #let fldhi(F, f) = $ms("hi")(#F, #f)$
 #let fldlo(F, f) = $ms("lo")(#F, #f)$
 
-#let fty(f, A) = $#f : #A$
+#let fty(f, A) = $#f : med #A$
 #let lty(lab, A) = $lab(#A)$
 #let fexpr(f, e) = $#f : #e$
 
