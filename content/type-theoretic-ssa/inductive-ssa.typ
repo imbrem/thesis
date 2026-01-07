@@ -47,7 +47,7 @@ Along the way, we'll introduce notions of:
 - _Weakening_ $cwk(Γ, Δ)$ for contexts,
   $lbcwk(ms("L"), ms("K"))$ for cocontexts,
   and $cal("L") ⊑ cal("K")$ for polycontexts
-- _Substitutions_ $issubst(Γ, σ, Δ)$ for contexts and
+- _Substitutions_ $issubst(Γ, γ, Δ)$ for contexts and
   _label substitutions_ $lbsubst(cal("L"), κ, ms("K"))$ for cocontexts.
 
   Note that label-substitutions in general take a _polycontext_ as input
@@ -622,49 +622,48 @@ Trivial
 
 To state _substitution_, we begin by defining:
 
-- A _substitution_ is a finitely supported function $σ : vset → ms(#iter-calc(ms("I")))$,
-  where we define the _support_ of a substitution to be given by
+- A _substitution_ is a finitely supported function $γ : vset → ms(#iter-calc(ms("I")))$,
+  where we define the _support_ of a function $γ : vset → ms("E")$ to be given by
   $
-    fsup(σ) := { x ∈ vset | σ(x) ≠ x }
+    fsup(γ) := { x ∈ vset | γ(x) ≠ x }
   $
+  for $vset ⊆ ms("E")$. We write the set of such functions as $substs(#ms("E"))$.
 
-  We write the set of such substitutions as $substs(#ms("E"))$.
-
-- We _apply_ a substitution $σ ∈ substs(#iter-calc(ms("I")))$
+- We _apply_ a substitution $γ ∈ substs(#iter-calc(ms("I")))$
   to an expression $e ∈ #iter-calc(ms("I"))$;
-  written $σ · e$.
+  written $γ · e$.
 
   For _expressions_, this is done by structural recursion on $e$,
-  replacing each variable $x$ in $e$ with $σ(x)$: we give the full definition in
+  replacing each variable $x$ in $e$ with $γ(x)$: we give the full definition in
   @cap-avoid-iter-subst-rules.
 
   #figure(
     [
       #eqn-set(
-        $σ · x := σ(x)$,
-        $σ · α := σ ·_ms("A") α$,
-        $σ · (f med e) := (σ ·_ms("F") f) med (σ · e)$,
-        $σ · (lb("l") med e) := lb("l") med (σ · e)$,
+        $γ · x := γ(x)$,
+        $γ · α := γ ·_ms("A") α$,
+        $γ · (f med e) := (γ ·_ms("F") f) med (γ · e)$,
+        $γ · (lb("l") med e) := lb("l") med (γ · e)$,
       )
       $
-        σ · (E) := (σ · E)
+        γ · (E) := (γ · E)
         " where "
-        σ · (·_E) := ·_E, #h(1em)
-        σ · (E, fty(lb("f"), a)) := (σ · E, fty(lb("f"), σ · a))
+        γ · (·_E) := ·_E, #h(1em)
+        γ · (E, fty(lb("f"), a)) := (γ · E, fty(lb("f"), γ · a))
       $
       $
-                σ · (elet(x, e_1, e_2)) & := (elet(x, σ · e_1, σ · e_2)) //
-                                            & #h(1em) & "(choosing " x ∉ fsup(σ)")" \
-        σ · (elet((mb("x")), e_1, e_2)) & := (elet((mb("x")), σ · e_1, σ · e_2)) //
-                                            &         & "(choosing " mb("x") ∩ fsup(σ) = ∅")" \
-                 σ · eiter(e_1, x, e_2) & := eiter(σ · e_1, x, σ · e_2) //
-                                            &         & "(choosing " x ∉ fsup(σ)")"
+                γ · (elet(x, e_1, e_2)) & := (elet(x, γ · e_1, γ · e_2)) //
+                                            & #h(1em) & "(choosing " x ∉ fsup(γ)")" \
+        γ · (elet((mb("x")), e_1, e_2)) & := (elet((mb("x")), γ · e_1, γ · e_2)) //
+                                            &         & "(choosing " mb("x") ∩ fsup(γ) = ∅")" \
+                 γ · eiter(e_1, x, e_2) & := eiter(γ · e_1, x, γ · e_2) //
+                                            &         & "(choosing " x ∉ fsup(γ)")"
       $
       $
-        & σ · ecase(e, M) := ecase(σ · e, σ · M) "where" \
-        & #h(2em) σ · (·_M) := (·_M), \
-        & #h(2em) σ · (M, ebr(lb("l"), x, a)) := (σ · M, ebr(lb("l"), x, σ · a))
-          #h(2em) "(choosing " x ∉ fsup(σ)")"
+        & γ · ecase(e, M) := ecase(γ · e, γ · M) "where" \
+        & #h(2em) γ · (·_M) := (·_M), \
+        & #h(2em) γ · (M, ebr(lb("l"), x, a)) := (γ · M, ebr(lb("l"), x, γ · a))
+          #h(2em) "(choosing " x ∉ fsup(γ)")"
       $
       \
       where we are given
@@ -685,30 +684,47 @@ To state _substitution_, we begin by defining:
 
   In particular,
   - Our substitution is _capture-avoiding_:
-    $α$-renaming allows us to choose fresh names $x ∉ fsup(σ)$ for all bound variables.
+    $α$-renaming allows us to choose fresh names $x ∉ fsup(γ)$ for all bound variables.
   - We need to provide definitions for
-    - Substitutions on _closures_ $σ ·_ms("F") f$
-    - Substitutions on _atomic expressions_ $σ ·_ms("A") α$
+    - Substitutions on _closures_ $γ ·_ms("F") f$
+    - Substitutions on _atomic expressions_ $γ ·_ms("A") α$
     In the case of constant closures (functions) and constant atomic expressions (constants),
     these are simply the identity.
 
-- We say that $σ$ is a _substitution_ from context $Δ$ to context $Γ$,
-  written $issubst(Γ, σ, Δ)$,
-  if, for each $x : A$ s.t. $cwk(Δ, x : A)$,
-  we have that $hasty(Γ, σ(x), A)$.
+  Substitutions $γ ∈ substs(#iter-calc(ms("I")))$ in fact form a _monoid_, with
+  - Unit the identity substitution $id(x) = x$
+  - Multiplication given by composition: $(γ_1γ_2)(x) := γ_1 · (γ_2(x))$
+  making $γ · e$ into a _monoid action_ of
+  $substs(#iter-calc(ms("I")))$ on $#iter-calc(ms("I"))$,
+  whenever substitution on closures and atomic expressions
+  also form monoid actions -- i.e., whenever we have
+  #eqn-set(
+    $id ·_ms("A") α = α$,
+    $(γ_1γ_2) ·_ms("A") α = γ_1 ·_ms("A") (γ_2 ·_ms("A") α)$,
+  )
+  #eqn-set(
+    $id ·_ms("F") f = f$,
+    $(γ_1γ_2) ·_ms("F") f = γ_1 ·_ms("F") (γ_2 ·_ms("F") f)$,
+  )
+  (otherwise, multiplication of substitutions is still _well-defined_, but may not form a monoid).
 
-  More formally, we give typing rules for  $issubst(Γ, σ, Δ)$ in @cart-iter-subst-rules.
+- We say that $γ$ is a _substitution_ from context $Δ$ to context $Γ$,
+  written $issubst(Γ, γ, Δ)$,
+  if, for each $x : A$ s.t. $cwk(Δ, x : A)$,
+  we have that $hasty(Γ, γ(x), A)$.
+
+  More formally, we give typing rules for $issubst(Γ, γ, Δ)$ in @cart-iter-subst-rules.
 
 #let r-iter-subst-nil = rule(
   name: "subst-nil",
-  $issubst(Γ, σ, (·^⊗), annot: substs(#iter-calc(ms("I"))))$,
+  $issubst(Γ, γ, (·^⊗), annot: substs(ms("E")))$,
 );
 
 #let r-iter-subst-cons = rule(
   name: "subst-cons",
-  $issubst(Γ, σ, Δ, annot: substs(#iter-calc(ms("I"))))$,
-  $hasty(Γ, σ(x), A, annot: ms("E"))$,
-  $issubst(Γ, σ, #$Δ, x : A$, annot: substs(#iter-calc(ms("I"))))$,
+  $issubst(Γ, γ, Δ, annot: substs(ms("E")))$,
+  $hasty(Γ, γ(x), A, annot: ms("E"))$,
+  $issubst(Γ, γ, #$Δ, x : A$, annot: substs(ms("E")))$,
 )
 
 #figure(
@@ -721,7 +737,7 @@ To state _substitution_, we begin by defining:
     \
   ],
   caption: [
-    Rules for typing substitutions $σ ∈ substs(#iter-calc(ms("I")))$
+    Rules for typing substitutions $γ ∈ substs(ms("E"))$
   ],
 ) <cart-iter-subst-rules>
 
@@ -730,15 +746,15 @@ We can then give our _substitution lemma_ for $#iter-calc(ms("I"))$ as follows:
 #lemma(name: "Substitution")[
   If $ms("I")$ is stable under substitution,
   then so is #iter-calc(ms("I")) --
-  i.e. for all $issubst(Γ, σ, Δ)$ and $hasty(Δ, e, A)$,
+  i.e. for all $issubst(Γ, γ, Δ)$ and $hasty(Δ, e, A)$,
   $
-    hasty(Γ, σ · e, A)
+    hasty(Γ, γ · e, A)
   $
   where we say that $ms("I")$ is stable under substitution when
-  - For all $issubst(Γ, σ, Δ)$ and $isfn(Δ, f, A, B, annot: ms("F"))$,
-    we have $isfn(Γ, σ ·_ms("F") f, A, B, annot: ms("F"))$.
-  - For all $issubst(Γ, σ, Δ)$ and $hasty(Δ, α, A, annot: ms("A"))$,
-    we have $hasty(Γ, σ ·_ms("A") α, A, annot: ms("A"))$.
+  - For all $issubst(Γ, γ, Δ)$ and $isfn(Δ, f, A, B, annot: ms("F"))$,
+    we have $isfn(Γ, γ ·_ms("F") f, A, B, annot: ms("F"))$.
+  - For all $issubst(Γ, γ, Δ)$ and $hasty(Δ, α, A, annot: ms("A"))$,
+    we have $hasty(Γ, γ ·_ms("A") α, A, annot: ms("A"))$.
 ]
 
 == Regions
@@ -980,18 +996,18 @@ in @cap-avoid-reg-subst-rules below:
 #figure(
   [
     $
-              σ · (slet(x, e, r)) & := (slet(x, σ ·_ms("E") e, σ · r)) //
-                                                     & #h(1em) & "(choosing " x ∉ fsup(σ)")" \
-      σ · (slet((mb("x")), e, r)) & := (slet((mb("x")), σ ·_ms("E") e, σ · r)) //
-                                                     &         & "(choosing " mb("x") ∩ fsup(σ) = ∅")" \
-                            σ · τ & := σ ·_ms("T") τ \
+              γ · (slet(x, e, r)) & := (slet(x, γ ·_ms("E") e, γ · r)) //
+                                                     & #h(1em) & "(choosing " x ∉ fsup(γ)")" \
+      γ · (slet((mb("x")), e, r)) & := (slet((mb("x")), γ ·_ms("E") e, γ · r)) //
+                                                     &         & "(choosing " mb("x") ∩ fsup(γ) = ∅")" \
+                            γ · τ & := γ ·_ms("T") τ \
     $
     $
-      & σ · ({r} seq L) := {σ · r} seq (σ · L) "where" \
-      & #h(2em) σ · (·_L) := (·_L), \
-      & #h(2em) σ · (L seq sbr(lb("l"), x, r)) := (σ · L, sbr(lb("l"), x, σ · r))
+      & γ · ({r} seq L) := {γ · r} seq (γ · L) "where" \
+      & #h(2em) γ · (·_L) := (·_L), \
+      & #h(2em) γ · (L seq sbr(lb("l"), x, r)) := (γ · L, sbr(lb("l"), x, γ · r))
         #h(2em)
-        "(choosing " x ∉ fsup(σ)")"
+        "(choosing " x ∉ fsup(γ)")"
     $
     \
     where we are given
@@ -1000,7 +1016,7 @@ in @cap-avoid-reg-subst-rules below:
       (·_ms("E")) & : substs(ms("E")') → ms("E") → ms("E") & #h(3em) & "(substitution on expressions)" \
       (·_ms("T")) & : substs(ms("E")') → ms("T") → ms("T") &         & "(substitution on terminators)"
     $
-    for some expression grammar $ms("E")'$.
+    for some expression grammar $vset ⊆ ms("E")'$.
     \
     \
   ],
@@ -1009,11 +1025,43 @@ in @cap-avoid-reg-subst-rules below:
   ],
 ) <cap-avoid-reg-subst-rules>
 
-#todo[Substitution on regions -- good!]
+We can then state substitution for #reg-calc(ms("E"), ms("T")) as follows:
+#lemma(name: "Substitution")[
+  If $ms("E")$ and $ms("T")$ are stable under substitution,
+  then so is #reg-calc(ms("E"), ms("T"))
+  -- i.e. for all $issubst(Γ, γ, Δ)$ and $haslb(Δ, r, ms("L"))$,
+  $
+    haslb(Γ, γ · r, ms("L"))
+  $
+  where we say that $ms("E")$ and $ms("T")$ are stable under substitution when
+  - For all $issubst(Γ, γ, Δ)$ and $hasty(Δ, e, A)$,
+    we have $hasty(Γ, γ ·_ms("E") e, A)$.
+  - For all $issubst(Γ, γ, Δ)$ and $haslb(Δ, τ, ms("L"), annot: ms("T"))$,
+    we have $haslb(Γ, γ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
+]
 
-#todo[Label _renaming_ -- good!]
+Note that we've snuck in a little additional generality here:
+- We never actually assumed that $ms("E") = #iter-calc(ms("I"))$ for some $ms("I")$
+  -- $#ms("A")$, for example, would also be a perfectly valid choice
+- Our substitutions are of type $γ ∈ substs(ms("E")')$ -- again, we never assumed that
+  $ms("E")' = ms("E")$ _or_ that $ms("E")' = #iter-calc(ms("I"))$,
+  only that $vset ⊆ ms("E"')$.
 
-#todo[Label substitution -- _surprisingly_, also good! But see later...]
+  In particular, this means that our substitution lemma is parametric not only on
+  typing rules for expressions $ms("E")$ and terminators $ms("T")$,
+  but also on typing rules for a potentially different expression grammar $ms("E")'$
+  (which, via the rules in @cart-iter-subst-rules, give us typing rules for substitutions
+  $γ ∈ substs(ms("E")')$).
+
+While substitution helps us to rewrite _data-flow_, to rewrite _control-flow_, it helps to be able
+to perform _label-substitution_ -- i.e., to replace _jumps_ to a label $lb("l")$ 
+with the body of that label.
+
+Our grammar for regions #reg-calc(ms("E"), ms("T")) is compatible with replacing entire
+_terminators_ $τ ∈ ms("T")$ with a region $r ∈ #reg-calc(ms("E"), ms("T"))$
+(this is, in fact, the real motivation for introducing braces in the first place).
+So whether we can perform label-substitution 
+depends on what our grammar of terminators looks like.
 
 #todo[SSA has _specific_ terminators: (conditional) branches, with]
 
@@ -1389,24 +1437,24 @@ in which we replace variables $x$ with _arbitrary_ expressions $e$.
 
 In particular, we'd like to recover the "usual" notion of substitution:
 
-- A _substitution_ is a finitely supported function $σ : vset → #iter-calc(ms("I"))$,
+- A _substitution_ is a finitely supported function $γ : vset → #iter-calc(ms("I"))$,
   where we define the _support_ of a substitution to be given by
   $
-    fsup(σ) := { x ∈ vset | σ(x) ≠ x }
+    fsup(γ) := { x ∈ vset | γ(x) ≠ x }
   $
 
   We write the set of such substitutions as $substs(#iter-calc(ms("I")))$.
 
-- We _apply_ a substitution $σ ∈ substs(#iter-calc(ms("I")))$
+- We _apply_ a substitution $γ ∈ substs(#iter-calc(ms("I")))$
   to an expression $e ∈ #iter-calc(ms("I"))$;
-  written $[σ]e$;
-  by recursively replacing each variable $x$ in $e$ with $σ(x)$
+  written $γ · e$;
+  by recursively replacing each variable $x$ in $e$ with $γ(x)$
   -- in particular, as for renamings,
   $α$-renaming allows us to choose fresh variable names for all bound variables
   to avoid variable capture.
 
-- If $issubst(Γ, σ, Δ)$, defined as, for all $cwk(Δ, x : A)$, $hasty(Γ, σ(x), A)$,
-  then $hasty(Δ, e, A)$ implies $hasty(Γ, [σ]e, A)$.
+- If $issubst(Γ, γ, Δ)$, defined as, for all $cwk(Δ, x : A)$, $hasty(Γ, γ(x), A)$,
+  then $hasty(Δ, e, A)$ implies $hasty(Γ, γ · e, A)$.
 
   In this case, we say that the expression signature #iter-calc(ms("I"))
   is _stable under substitution_.
@@ -1424,7 +1472,7 @@ It turns out we can fit this into a general framework, along with renaming, as f
   over a cartesian typing discipline $ms("X")$
   consists of a signature $ms("S") : sctx(ms("X")) sfn sctx(ms("X"))$ equipped with
 
-  - An action of renamings on substitutions $σ ∈ |ms("S")|$
+  - An action of renamings on substitutions $γ ∈ |ms("S")|$
 
   - A partial function from renamings $ρ$ to substitutions $ren2subst(ρ) ∈ |ms("S")|$
 
@@ -1434,23 +1482,23 @@ It turns out we can fit this into a general framework, along with renaming, as f
 
   - If $issubst(Γ, ρ, Δ)$ and $ren2subst(ρ)$ is defined, then $issubst(Γ, ren2subst(ρ), Δ)$, and
 
-  - For all renamings $issubst(Γ', ρ, Γ)$, $issubst(Γ, σ, Δ)$ implies $issubst(Γ', ρ · σ, Δ)$
+  - For all renamings $issubst(Γ', ρ, Γ)$, $issubst(Γ, γ, Δ)$ implies $issubst(Γ', ρ · γ, Δ)$
 
   We define an _action_ of a substitution signature $ms("S")$ on a set $L$
-  to be a mapping from substitutions $σ ∈ ms("S")$ and terms $t ∈ L$
-  to their _substitutions_ $σ · t ∈ L$.
+  to be a mapping from substitutions $γ ∈ ms("S")$ and terms $t ∈ L$
+  to their _substitutions_ $γ · t ∈ L$.
 
   When unambiguous, we drop the explicit coercion and simply write $ρ$ for $ren2subst(ρ)$.
 
   We say that:
   - An expression signature $ms("E")$ is _stable under $ms("S")$_ if
     - It is equipped with an action of $ms("S")$ on expressions $e ∈ ms("E")$
-    - Given a substitution $issubst(Γ, σ, Δ)$,
+    - Given a substitution $issubst(Γ, γ, Δ)$,
       $hasty(Δ, e, A, annot: ms("E"))$ implies
-      $hasty(Γ, σ · e, A, annot: ms("E"))$
+      $hasty(Γ, γ · e, A, annot: ms("E"))$
     - Whenever $ren2subst(ρ)$ is defined, we have $ren2subst(ρ) · e = ρ · e$
     - If $ms("E")$ is in fact constant, then the action of $ms("S")$ is trivial:
-      $σ · e = e$ for all $σ ∈ ms("S")$ and $e ∈ ms("E")$
+      $γ · e = e$ for all $γ ∈ ms("S")$ and $e ∈ ms("E")$
   - An instruction signature $ms("I")$ is _stable under $ms("S")$_ if both
     its closure signature and atomic expression signature are stable under $ms("S")$.
 ]
@@ -1469,7 +1517,7 @@ simply the identity.
     \
   ],
   caption: [
-    Rules for typing substitutions $σ ∈ substs(ms("E"))$
+    Rules for typing substitutions $γ ∈ substs(ms("E"))$
     in a cartesian typing discipline $ms("X")$.
   ],
 ) <cart-subst-rules>
@@ -1477,11 +1525,11 @@ simply the identity.
 Similarly, given an expression signature $ms("E")$ over $ms("X")$
 such that $ms("Var") ⊆ ms("E")$,
 we may define a substitution signature $substs(ms("E"))$ with
-- Terms $σ ∈ |substs(ms("E"))|$ given by finitely supported functions
+- Terms $γ ∈ |substs(ms("E"))|$ given by finitely supported functions
   $vset → ms("E")$
-- Typing relation $issubst(Γ, σ, Δ)$ given by the rules in @cart-subst-rules
+- Typing relation $issubst(Γ, γ, Δ)$ given by the rules in @cart-subst-rules
 - Coercions $ren2subst(ρ) ∈ |substs(ms("E"))|$ given by $ren2subst(ρ)(x) := ι(ρ(x))$
-- Renaming action $(ρ · σ)(x) = ρ · σ(x)$
+- Renaming action $(ρ · γ)(x) = ρ · γ(x)$
 
 We may now state the _syntactic substitution lemma_ for $substs(#iter-calc(ms("I")))$ as follows:
 
