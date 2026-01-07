@@ -1483,11 +1483,89 @@ are given in @cart-gssa-rules.
 
 #fig-haslb-gssa <cart-gssa-rules>
 
-#todo[Weakening: works]
+Weakening and label-weakening generalize straightforwardly to #gssa-calc(ms("E"), ms("T")):
 
-#todo[Label weakening: works]
+#lemma(name: "Weakening")[
+  If $ms("E")$ and $ms("T")$ are stable under weakening,
+  then so is #gssa-calc(ms("E"), ms("T"))
+  -- i.e. for all $Γ ⊑ Δ$,
+  $
+    haslb(Δ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, r, ms("L"))
+  $
+  where we say that $ms("E")$ and $ms("T")$ are stable under weakening when
+  - For all $Γ ⊑ Δ$, $hasty(Δ, e, A)$ implies $hasty(Γ, e, A)$.
+  - For all $Γ ⊑ Δ$, $haslb(Δ, τ, ms("L"), annot: ms("T"))$ implies
+    $haslb(Γ, τ, ms("L"), annot: ms("T"))$.
+]
 
-#todo[Substitution: generalizes appropriately, works]
+#lemma(name: "Label Weakening")[
+  If $ms("T")$ is stable under label weakening,
+  then so is #gssa-calc(ms("E"), ms("T"))
+  -- i.e. for all $ms("L") sle() ms("K")$,
+  $
+    haslb(Γ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, r, ms("K"))
+  $
+  where we say that $ms("T")$ is stable under label weakening when
+  - For all $ms("L") sle() ms("K")$,
+    $haslb(Γ, τ, ms("L"), annot: ms("T"))$ implies
+    $haslb(Γ, τ, ms("K"), annot: ms("T"))$.
+]
+
+Likewise, we may define capture-avoiding substitution for #gssa-calc(ms("E"), ms("T"))
+to respect the equation $#gssa-calc(ms("E"), ms("T")) 
+  = #ssa-calc(ms("E"), $#gssa-calc(ms("E"), ms("T"))$)$ as follows:
+
+#figure(
+  [
+    $
+      γ · (slet(x, e, r)) &:= slet(x, (γ ·_ms("E") e), (γ · r)) 
+        "choosing" x ∉ fsup(γ) \
+      γ · (slet((mb("x")), e, r)) &:= slet((mb("x")), (γ ·_ms("E") e), (γ · r))
+        "choosing" mb("x") ∉ fsup(γ) \
+      γ · (brb(lb("l"), e)) &:= brb(lb("l"), (γ ·_ms("E") e)) \
+      γ · (scase(e, L)) &:= scase(γ ·_ms("E") e, γ · L) \
+      γ · τ &:= γ ·_ms("T") τ \
+      γ · ({ r } seq L) &:= { γ · r } seq (γ · L)
+    $
+    \
+    where
+    $
+      γ · (·_L) &:= (·_L), \
+      γ · (L seq gbr(lb("l"), x, {r})) &:= (γ · L, gbr(lb("l"), x, γ · {r}))
+        #h(2em)
+        "(choosing " x ∉ fsup(γ)")"
+    $
+    \
+    where we are given
+    \
+    $
+      (·_ms("E")) & : substs(ms("E")') → ms("E") → ms("E") & #h(3em) & "(substitution on expressions)" \
+      (·_ms("T")) & : substs(ms("E")') → ms("T") → ms("T") &         & "(substitution on terminators)"
+    $
+    for some expression grammar $vset ⊆ ms("E")'$.
+    \
+    \
+  ],
+  caption: [
+    Capture-avoiding substitution on regions $r ∈ #gssa-calc(ms("E"), ms("T"))$
+  ],
+)
+
+allowing us to state _the substitution lemma_ for #gssa-calc(ms("E"), ms("T")) as follows:
+
+#lemma(name: "Substitution")[
+  If $ms("E")$ and $ms("T")$ are stable under substitution,
+  then so is #gssa-calc(ms("E"), ms("T"))
+  -- i.e. for all $issubst(Γ, γ, Δ)$,
+  $
+    haslb(Δ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, γ · r, ms("L"))
+  $
+  where we say that $ms("E")$ and $ms("T")$ are stable under substitution when
+  - For all $issubst(Γ, γ, Δ)$ and $hasty(Δ, e, A)$,
+    we have $hasty(Γ, γ ·_ms("E") e, A)$.
+  - For all $issubst(Γ, γ, Δ)$ and $haslb(Δ, τ, ms("L"), annot: ms("T"))$,
+    we have $haslb(Γ, γ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
+]
 
 #todo[Give definition for label-substitution -- label-renaming is a special case]
 
