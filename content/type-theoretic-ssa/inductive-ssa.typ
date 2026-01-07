@@ -1030,9 +1030,9 @@ We can then state substitution for #reg-calc(ms("E"), ms("T")) as follows:
 #lemma(name: "Substitution")[
   If $ms("E")$ and $ms("T")$ are stable under substitution,
   then so is #reg-calc(ms("E"), ms("T"))
-  -- i.e. for all $issubst(Γ, γ, Δ)$ and $haslb(Δ, r, ms("L"))$,
+  -- i.e. for all $issubst(Γ, γ, Δ)$,
   $
-    haslb(Γ, γ · r, ms("L"))
+    haslb(Δ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, γ ·_ms("E") r, ms("L"))
   $
   where we say that $ms("E")$ and $ms("T")$ are stable under substitution when
   - For all $issubst(Γ, γ, Δ)$ and $hasty(Δ, e, A)$,
@@ -1255,9 +1255,9 @@ we satisfy
 #lemma(name: "Substitution")[
   If $ms("E")$ is stable under substitution,
   then so is #br-calc(ms("E"))
-  -- i.e. for all $issubst(Γ, γ, Δ)$ and $haslb(Δ, u, ms("L"))$,
+  -- i.e. for all $issubst(Γ, γ, Δ)$,
   $
-    haslb(Γ, γ · u, ms("L"))
+    haslb(Δ, u, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, γ · u, ms("L"))
   $
   where we say that $ms("E")$ is stable under substitution when
   - For all $issubst(Γ, γ, Δ)$ and $hasty(Δ, e, A, annot: ms("E"))$,
@@ -1270,11 +1270,48 @@ $
   #ssa-calc(ms("E"), ms("T")) := #reg-calc(ms("E"), $#cond-calc(ms("E")) ∪ ms("T")$)
 $
 
-#todo[Weakening on #cond-calc() w/ #br-calc(): good! ==> SSA weakening good]
 
-#todo[Label weakening on #cond-calc() w/ #br-calc(): good! ==> SSA label weakening good]
+In particular, we have:
 
-#todo[Substitution on #cond-calc() w/ #br-calc(): good! ==> SSA substitution good]
+#lemma(name: "Weakening")[
+  If $ms("E")$ and $ms("T")$ are stable under weakening,
+  then so is #ssa-calc(ms("E"), ms("T"))
+  -- i.e. for all $Γ ⊑ Δ$,
+  $
+    haslb(Δ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, r, ms("L"))
+  $
+  where we say that $ms("E")$ and $ms("T")$ are stable under weakening when
+  - For all $Γ ⊑ Δ$, $hasty(Δ, e, A)$ implies $hasty(Γ, e, A)$.
+  - For all $Γ ⊑ Δ$, $haslb(Δ, τ, ms("L"), annot: ms("T"))$ implies
+    $haslb(Γ, τ, ms("L"), annot: ms("T"))$.
+]
+
+#lemma(name: "Label Weakening")[
+  If $ms("T")$ is stable under label weakening,
+  then so is #ssa-calc(ms("E"), ms("T"))
+  -- i.e. for all $ms("L") sle() ms("K")$,
+  $
+    haslb(Γ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, r, ms("K"))
+  $
+  where we say that $ms("T")$ is stable under label weakening when
+  - For all $ms("L") sle() ms("K")$,
+    $haslb(Γ, τ, ms("L"), annot: ms("T"))$ implies
+    $haslb(Γ, τ, ms("K"), annot: ms("T"))$.
+]
+
+#lemma(name: "Substitution")[
+  If $ms("E")$ and $ms("T")$ are stable under substitution,
+  then so is #ssa-calc(ms("E"), ms("T"))
+  -- i.e. for all $issubst(Γ, γ, Δ)$,
+  $
+    haslb(Δ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, γ · r, ms("L"))
+  $
+  where we say that $ms("E")$ and $ms("T")$ are stable under substitution when
+  - For all $issubst(Γ, γ, Δ)$ and $hasty(Δ, e, A)$,
+    we have $hasty(Γ, γ ·_ms("E") e, A)$.
+  - For all $issubst(Γ, γ, Δ)$ and $haslb(Δ, τ, ms("L"), annot: ms("T"))$,
+    we have $haslb(Γ, γ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
+]
 
 While substitution helps us to rewrite _data-flow_, to rewrite _control-flow_, it helps to be able
 to perform _label-substitution_ -- i.e., to replace _jumps_ to a label $lb("l")$ 
@@ -1286,9 +1323,15 @@ _terminators_ $τ ∈ ms("T")$ with a region $r ∈ #reg-calc(ms("E"), ms("T"))$
 So whether we can perform label-substitution 
 depends on what our grammar of terminators looks like.
 
-#todo[Label substitution on #cond-calc(): bad! (regions are _not_ a subgrammar of branches!)]
+#ssa-calc(ms("E")), however, does _not_ allow us to perform label-substitution, since in particular
+the branches of a case-statement $scase(e, B)$ can only be unconditional branches $brb(lb("l"), e)$,
+rather than arbitrary regions.
 
-#todo[Note: we _can_ do label _renaming_]
+Note that we can perform label _renaming_ in #ssa-calc(ms("E")):
+
+#todo[
+  Define label renaming
+]
 
 #todo[
   Idea: fuse grammar of _branches_ and _regions_
@@ -1341,6 +1384,8 @@ $
 #todo[Label weakening: works]
 
 #todo[Substitution: generalizes appropriately, works]
+
+#todo[Give definition for label-substitution -- label-renaming is a special case]
 
 #todo[Label-substitution: now, works too!]
 
