@@ -473,8 +473,12 @@
 #let lset = ms("Lb")
 #let lrens = $lset scripts(↪︎)_ms("fin") lset$
 
-#let substs(E) = $ms("FS")(#E)$
+#let holed(L) = $δ[#L]$
+
+#let substs(E) = $ms("VS")(#E)$
 #let ren2subst(ρ) = $ms("coe")(#ρ)$
+
+#let lsubsts(E) = $ms("LS")(#E)$
 
 #let issubst(Γ, γ, Δ, annot: none) = $#Γ scripts(⊢)_#annot #γ : #Δ$
 #let lbsubst(L, κ, K) = $#L scripts(⊢) #κ triangle.stroked.small.r #K$

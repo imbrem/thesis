@@ -1054,7 +1054,7 @@ Note that we've snuck in a little additional generality here:
   (which, via the rules in @cart-iter-subst-rules, give us typing rules for substitutions
   $γ ∈ substs(ms("E")')$).
 
-We can recover our lexical SSA language $#ssa-calc()$ from the introduction, 
+We can recover our lexical SSA language $#ssa-calc()$ from the introduction,
 extended with additional terminators $τ ∈ ms("T")$, by taking
 $
   #ssa-calc(ms("E"), ms("T"))
@@ -1205,8 +1205,7 @@ We can then state the substitution lemma as follows:
   If $ms("E")$ and $ms("U")$ are stable under substitution,
   then so is #cond-calc(ms("E"), ms("U"))
   -- i.e. for all $issubst(Γ, γ, Δ)$ and $haslb(Δ, τ, ms("L"))$,
-  $    haslb(Γ, γ · τ, ms("L"))
-  $
+  $ haslb(Γ, γ · τ, ms("L")) $
   where we say that $ms("E")$ and $ms("U")$ are stable under substitution when
   - For all $issubst(Γ, γ, Δ)$ and $hasty(Δ, e, A, annot: ms("E"))$,
     we have $hasty(Γ, γ ·_ms("E") e, A, annot: ms("E"))$.
@@ -1226,7 +1225,7 @@ $
   #declare-rule(r-br)
 $
 
-We can view #br-calc(ms("E")) as the minimal "lifting" an of expression language $ms("E")$ into a 
+We can view #br-calc(ms("E")) as the minimal "lifting" an of expression language $ms("E")$ into a
 region language. In particular, defining
 $
   γ · (brb(lb("l"), e)) := brb(lb("l"), γ ·_ms("E") e)
@@ -1313,7 +1312,7 @@ In particular, we have:
     we have $haslb(Γ, γ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
 ]
 
-We can also perform label _renaming_ in #ssa-calc(ms("E")). 
+We can also perform label _renaming_ in #ssa-calc(ms("E")).
 In particular,
 
 - We define a label-renaming $ρ ∈ lrens$ to be a finitely-supported injection from labels to labels,
@@ -1325,16 +1324,16 @@ In particular,
 - We define the action of a label-renaming $ρ ∈ lrens$ on regions $r ∈ #reg-calc(ms("E"), ms("T"))$
   by structural recursion as follows:
   $
-    ρ · (slet(x, e, r)) & := slet(x, e, ρ · r) \
+            ρ · (slet(x, e, r)) & := slet(x, e, ρ · r) \
     ρ · (slet((mb("x")), e, r)) & := slet((mb("x")), e, ρ · r) \
-    ρ · τ & := ρ ·_ms("T") τ \
+                          ρ · τ & := ρ ·_ms("T") τ \
   $
   $
     & ρ · ({r} seq L) := {ρ · r} seq (ρ · L) "where" \
     & #h(2em) ρ · (·_L) := (·_L), \
     & #h(2em) ρ · (L seq gbr(lb("l"), x, {r})) := (ρ · L, gbr(lb("l"), x, ρ · r))
-        #h(2em)
-        "(choosing " lb("l") ∉ fsup(ρ)")"
+      #h(2em)
+      "(choosing " lb("l") ∉ fsup(ρ)")"
   $
   where we are given
   $
@@ -1352,8 +1351,8 @@ In particular,
     & ρ · (scase(e, K)) := scase(e, ρ · K) "where" \
     & #h(2em) ρ · (·_K) := (·_K), \
     & #h(2em) ρ · (K seq sbr(lb("l"), x, j)) := (ρ · K, sbr(lb("l"), x, ρ ·_ms("U") j))
-        #h(2em)
-        "(choosing " lb("l") ∉ fsup(ρ)")"
+      #h(2em)
+      "(choosing " lb("l") ∉ fsup(ρ)")"
   $
   where we are given
   $
@@ -1367,70 +1366,70 @@ In particular,
     ρ · (brb(lb("l"), e)) := brb(ρ(lb("l")), e)
   $
 
-- We may then state _label-renaming_ for 
+- We may then state _label-renaming_ for
 #reg-calc(ms("E"), ms("T")), #cond-calc(ms("E"), ms("U")), #br-calc(ms("E")) as follows:
-  #lemma(name: [Label Renaming (#reg-calc(ms("E"), ms("T"))])[
-    If $ms("T")$ is stable under label-renaming,
-    then so is #reg-calc(ms("E"), ms("T"))
-    -- i.e. for all $ρ ∈ lrens$,
-    $
-      haslb(Γ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ρ · r, ms("L"))
-    $
-    where we say that $ms("T")$ is stable under label-renaming when
-    - For all $ρ ∈ lrens$ and $haslb(Γ, τ, ms("L"), annot: ms("T"))$,
-      we have $haslb(Γ, ρ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
-  ]
+#lemma(name: [Label Renaming (#reg-calc(ms("E"), ms("T"))])[
+  If $ms("T")$ is stable under label-renaming,
+  then so is #reg-calc(ms("E"), ms("T"))
+  -- i.e. for all $ρ ∈ lrens$,
+  $
+    haslb(Γ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ρ · r, ms("L"))
+  $
+  where we say that $ms("T")$ is stable under label-renaming when
+  - For all $ρ ∈ lrens$ and $haslb(Γ, τ, ms("L"), annot: ms("T"))$,
+    we have $haslb(Γ, ρ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
+]
 
-  #lemma(name: [Label Renaming (#cond-calc(ms("E"), ms("U"))])[
-    If $ms("U")$ is stable under label-renaming,
-    then so is #cond-calc(ms("E"), ms("U"))
-    -- i.e. for all $ρ ∈ lrens$,
-    $
-      haslb(Γ, τ, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ρ · τ, ms("L"))
-    $
-    where we say that $ms("U")$ is stable under label-renaming when
-    - For all $ρ ∈ lrens$ and $haslb(Γ, j, ms("L"), annot: ms("U"))$,
-      we have $haslb(Γ, ρ ·_ms("U") j, ms("L"), annot: ms("U"))$.
-  ]
+#lemma(name: [Label Renaming (#cond-calc(ms("E"), ms("U"))])[
+  If $ms("U")$ is stable under label-renaming,
+  then so is #cond-calc(ms("E"), ms("U"))
+  -- i.e. for all $ρ ∈ lrens$,
+  $
+    haslb(Γ, τ, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ρ · τ, ms("L"))
+  $
+  where we say that $ms("U")$ is stable under label-renaming when
+  - For all $ρ ∈ lrens$ and $haslb(Γ, j, ms("L"), annot: ms("U"))$,
+    we have $haslb(Γ, ρ ·_ms("U") j, ms("L"), annot: ms("U"))$.
+]
 
-  #lemma(name: [Label Renaming (#br-calc(ms("E"))])[
-    #br-calc(ms("E")) is stable under label-renaming
-    -- i.e. for all $ρ ∈ lrens$,
-    $
-      haslb(Γ, u, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ρ · u, ms("L"))
-    $
-  ]
+#lemma(name: [Label Renaming (#br-calc(ms("E"))])[
+  #br-calc(ms("E")) is stable under label-renaming
+  -- i.e. for all $ρ ∈ lrens$,
+  $
+    haslb(Γ, u, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ρ · u, ms("L"))
+  $
+]
 
-  It follows that we have:
-  #lemma(name: [Label Renaming (#ssa-calc(ms("E"), ms("T"))])[
-    If $ms("T")$ is stable under label-renaming,
-    then so is #ssa-calc(ms("E"), ms("T"))
-    -- i.e. for all $ρ ∈ lrens$,
-    $
-      haslb(Γ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ρ · r, ms("L"))
-    $
-    where we say that $ms("T")$ is stable under label-renaming when
-    - For all $ρ ∈ lrens$ and $haslb(Γ, τ, ms("L"), annot: ms("T"))$,
-      we have $haslb(Γ, ρ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
-  ]
+It follows that we have:
+#lemma(name: [Label Renaming (#ssa-calc(ms("E"), ms("T"))])[
+  If $ms("T")$ is stable under label-renaming,
+  then so is #ssa-calc(ms("E"), ms("T"))
+  -- i.e. for all $ρ ∈ lrens$,
+  $
+    haslb(Γ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ρ · r, ms("L"))
+  $
+  where we say that $ms("T")$ is stable under label-renaming when
+  - For all $ρ ∈ lrens$ and $haslb(Γ, τ, ms("L"), annot: ms("T"))$,
+    we have $haslb(Γ, ρ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
+]
 
-On the other hand, just as substitution allows us to rewrite _data-flow_, 
+On the other hand, just as substitution allows us to rewrite _data-flow_,
 to rewrite _control-flow_, it helps to be able
-to perform _label-substitution_ -- i.e., to replace _jumps_ to a label $lb("l")$ 
-with the body of that label 
+to perform _label-substitution_ -- i.e., to replace _jumps_ to a label $lb("l")$
+with the body of that label
 (rather than simply with a jump to another label).
 
 Our grammar for regions #reg-calc(ms("E"), ms("T")) is compatible with replacing entire
 _terminators_ $τ ∈ ms("T")$ with a region $r ∈ #reg-calc(ms("E"), ms("T"))$
 (this is, in fact, the real motivation for introducing braces in the first place).
-So whether we can perform label-substitution 
+So whether we can perform label-substitution
 depends on what our grammar of terminators looks like.
 
 #ssa-calc(ms("E")), however, does _not_ allow us to perform label-substitution, since in particular
 the branches of a case-statement $scase(e, B)$ can only be unconditional branches $brb(lb("l"), e)$,
 rather than arbitrary regions.
 
-One way to remedy this is to fuse the syntactic categories of 
+One way to remedy this is to fuse the syntactic categories of
 _terminators_ $τ$, _regions_ $r$, and unconditional branches $u$ together.
 
 In terms of syntax, what we're doing is allowing the branches of a case-statment to
@@ -1470,13 +1469,13 @@ We give a grammar for #gssa-calc(ms("E"), ms("T")) in @gssa-grammar below.
 
 #fig-gssa-grammar <gssa-grammar>
 
-We note in particular that we may have 
+We note in particular that we may have
 (identifying a language with its set of syntactically-well formed terms)
 $
-  ms("T") ⊆ #gssa-calc(ms("E"), ms("T")) 
+  ms("T") ⊆ #gssa-calc(ms("E"), ms("T"))
   = #ssa-calc(ms("E"), $#gssa-calc(ms("E"), ms("T"))$)
 $
-As we would expect from this equation, 
+As we would expect from this equation,
 we inherit typing rules from #reg-calc() and #cond-calc() directly
 -- in particular, the typing rules for #gssa-calc(ms("E"), ms("T"))
 are given in @cart-gssa-rules.
@@ -1512,28 +1511,28 @@ Weakening and label-weakening generalize straightforwardly to #gssa-calc(ms("E")
 ]
 
 Likewise, we may define capture-avoiding substitution for #gssa-calc(ms("E"), ms("T"))
-to respect the equation $#gssa-calc(ms("E"), ms("T")) 
-  = #ssa-calc(ms("E"), $#gssa-calc(ms("E"), ms("T"))$)$ as follows:
+to respect the equation $#gssa-calc(ms("E"), ms("T"))
+= #ssa-calc(ms("E"), $#gssa-calc(ms("E"), ms("T"))$)$ as follows:
 
 #figure(
   [
     $
-      γ · (slet(x, e, r)) &:= slet(x, (γ ·_ms("E") e), (γ · r)) 
-        "choosing" x ∉ fsup(γ) \
-      γ · (slet((mb("x")), e, r)) &:= slet((mb("x")), (γ ·_ms("E") e), (γ · r))
-        "choosing" mb("x") ∉ fsup(γ) \
-      γ · (brb(lb("l"), e)) &:= brb(lb("l"), (γ ·_ms("E") e)) \
-      γ · (scase(e, L)) &:= scase(γ ·_ms("E") e, γ · L) \
-      γ · τ &:= γ ·_ms("T") τ \
-      γ · ({ r } seq L) &:= { γ · r } seq (γ · L)
+              γ · (slet(x, e, r)) & := slet(x, (γ ·_ms("E") e), (γ · r))
+                                    "choosing" x ∉ fsup(γ) \
+      γ · (slet((mb("x")), e, r)) & := slet((mb("x")), (γ ·_ms("E") e), (γ · r))
+                                    "choosing" mb("x") ∉ fsup(γ) \
+            γ · (brb(lb("l"), e)) & := brb(lb("l"), (γ ·_ms("E") e)) \
+                γ · (scase(e, L)) & := scase(γ ·_ms("E") e, γ · L) \
+                            γ · τ & := γ ·_ms("T") τ \
+                γ · ({ r } seq L) & := { γ · r } seq (γ · L)
     $
     \
     where
     $
-      γ · (·_L) &:= (·_L), \
-      γ · (L seq gbr(lb("l"), x, {r})) &:= (γ · L, gbr(lb("l"), x, γ · {r}))
-        #h(2em)
-        "(choosing " x ∉ fsup(γ)")"
+                             γ · (·_L) & := (·_L), \
+      γ · (L seq gbr(lb("l"), x, {r})) & := (γ · L, gbr(lb("l"), x, γ · {r}))
+                                         #h(2em)
+                                         "(choosing " x ∉ fsup(γ)")"
     $
     \
     where we are given
@@ -1567,9 +1566,95 @@ allowing us to state _the substitution lemma_ for #gssa-calc(ms("E"), ms("T")) a
     we have $haslb(Γ, γ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
 ]
 
-#todo[Give definition for label-substitution -- label-renaming is a special case]
+We can now define _label-substitution_ as follows:
 
-#todo[Label-substitution: now, works too!]
+- A _region-with-hole_ $holed(#gssa-calc(ms("E"), ms("T")))$
+  is a pair $(x, r) ∈$ of a variable $x ∈ vset$ and a
+  region $r ∈ #gssa-calc(ms("E"), ms("T"))$ quotiented up to α-equivalence:
+  $
+    (x, r) ∼ (y, [y slash x]r)
+  $
+
+  Given a region-with-hole $frak(r)$, we define $frak(r)(e)$ to be given by
+  $
+    (x, r)(e) := (elet(x, e, r))
+  $
+
+- A _label-substitution_ $ℓ ∈ lsubsts(#gssa-calc(ms("E"), ms("T")))$ is a finitely-supported map from labels to
+  regions-with-holes, where we define the support $fsup(ℓ)$ of a function
+  $ℓ : lset → holed(#gssa-calc(ms("E"), ms("T")))$
+  as follows:
+  $
+    fsup(ℓ) := { lb("l") ∈ lset | ℓ(lb("l")) ≠ (x, brb(lb("l"), x)) }
+  $
+
+- We define the action of a label-substitution $ℓ ∈ lsubsts(#gssa-calc(ms("E"), ms("T")))$
+  on regions $r ∈ #gssa-calc(ms("E"), ms("T"))$ by structural recursion as follows:
+
+  #figure(
+    [
+      $
+                ℓ · (slet(x, e, r)) & := slet(x, e, ℓ · r) \
+        ℓ · (slet((mb("x")), e, r)) & := slet((mb("x")), e, ℓ · r) \
+              ℓ · (brb(lb("l"), e)) & := ℓ(lb("l"))(e) \
+                  ℓ · (scase(e, L)) & := scase(e, ℓ · L) \
+                              ℓ · τ & := ℓ ·_ms("T") τ \
+                  ℓ · ({ r } seq L) & := { ℓ · r } seq (ℓ · L)
+      $
+      where
+      $
+                               ℓ · (·_L) & := (·_L), \
+        ℓ · (L seq gbr(lb("l"), x, {r})) & := (ℓ · L, gbr(lb("l"), x, ℓ · {r}))
+                                           #h(2em)
+                                           "(choosing " lb("l") ∉ fsup(ℓ)")"
+      $
+      where we are given
+      $
+        ℓ ·_ms("T") & : lsubsts(#gssa-calc(ms("E"), ms("T"))) → ms("T") → ms("T")
+      $
+      defining the action of label-substitutions on terminators $τ ∈ ms("T")$.
+      \
+    ],
+  )
+
+- We give a typing rule for label-substitution in @gssa-label-subst-rule below:
+
+  #let r-lsubst-nil = rule(
+    name: "lsubst-nil",
+    $lbsubst(·, ℓ, ms("K"))$,
+  );
+
+  #let r-lsubst-cons = rule(
+    name: "lsubst-cons",
+    $lbsubst(cal("L"), ℓ, ms("K"))$,
+    $haslb(#$Γ, x : A$, ℓ(lb("l"))(x), ms("L"))$,
+    $x ∉ ms("fv")(ℓ(lb("l")))$,
+    $haslb(#$cal("L"), clty(ℓ, Γ, A)$, ℓ, ms("K"))$
+  );
+
+  #figure(
+    [
+      #rule-set(
+        declare-rule(r-lsubst-nil),
+        declare-rule(r-lsubst-cons),
+      )
+    ],
+    caption: [Typing Rule for Label-Substitution in #gssa-calc(ms("E"), ms("T"))],
+  ) <gssa-label-subst-rule>
+
+We can now state the _label-substitution lemma_ for #gssa-calc(ms("E"), ms("T")) as follows:
+
+#lemma(name: "Label Substitution")[
+  If $ms("T")$ is stable under label-substitution,
+  then so is #gssa-calc(ms("E"), ms("T"))
+  -- i.e. for all $lbsubst(cal("L"), ℓ, ms("K"))$,
+  $
+    haslb(Γ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ℓ · r, ms("K"))
+  $
+  where we say that $ms("T")$ is stable under label-substitution when
+  - For all $lbsubst(cal("L"), ℓ, ms("K"))$ and $haslb(Γ, τ, ms("L"), annot: ms("T"))$,
+    we have $haslb(Γ, ℓ ·_ms("T") τ, ms("K"), annot: ms("T"))$.
+]
 
 == Typing Relations
 
