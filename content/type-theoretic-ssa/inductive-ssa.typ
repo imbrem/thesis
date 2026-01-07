@@ -1313,9 +1313,112 @@ In particular, we have:
     we have $haslb(Γ, γ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
 ]
 
-While substitution helps us to rewrite _data-flow_, to rewrite _control-flow_, it helps to be able
+We can also perform label _renaming_ in #ssa-calc(ms("E")). 
+In particular,
+
+- We define a label-renaming $ρ ∈ lrens$ to be a finitely-supported injection from labels to labels,
+  where we define the support $fsup(ρ)$ of a function $ρ : lset → lset$ as follows:
+  $
+    fsup(ρ) := { lb("l") ∈ lset | ρ(lb("l")) ≠ lb("l") }
+  $
+
+- We define the action of a label-renaming $ρ ∈ lrens$ on regions $r ∈ #reg-calc(ms("E"), ms("T"))$
+  by structural recursion as follows:
+  $
+    ρ · (slet(x, e, r)) & := slet(x, e, ρ · r) \
+    ρ · (slet((mb("x")), e, r)) & := slet((mb("x")), e, ρ · r) \
+    ρ · τ & := ρ ·_ms("T") τ \
+  $
+  $
+    & ρ · ({r} seq L) := {ρ · r} seq (ρ · L) "where" \
+    & #h(2em) ρ · (·_L) := (·_L), \
+    & #h(2em) ρ · (L seq gbr(lb("l"), x, {r})) := (ρ · L, gbr(lb("l"), x, ρ · r))
+        #h(2em)
+        "(choosing " lb("l") ∉ fsup(ρ)")"
+  $
+  where we are given
+  $
+    ρ ·_ms("T") & : lrens → ms("T") → ms("T")
+  $
+  defining the action of label-renamings on terminators $τ ∈ ms("T")$.
+
+  Note that we can always choose $lb("l") ∉ fsup(ρ)$ since $fsup(ρ)$ is finite and names of
+  bound labels are quotiented up to α-equivalence.
+
+  Likewise, we define the action of a label-renaming $ρ ∈ lrens$ on terminators
+  $τ ∈ #cond-calc(ms("E"), ms("U"))$ by structural recursion as follows:
+  $
+    & ρ · j := ρ ·_ms("U") j \
+    & ρ · (scase(e, K)) := scase(e, ρ · K) "where" \
+    & #h(2em) ρ · (·_K) := (·_K), \
+    & #h(2em) ρ · (K seq sbr(lb("l"), x, j)) := (ρ · K, sbr(lb("l"), x, ρ ·_ms("U") j))
+        #h(2em)
+        "(choosing " lb("l") ∉ fsup(ρ)")"
+  $
+  where we are given
+  $
+    ρ ·_ms("U") & : lrens → ms("U") → ms("U")
+  $
+  defining the action of label-renamings on jumps $j ∈ ms("U")$.
+
+  Finally, we define the action of a label-renaming $ρ ∈ lrens$ on unconditional branches
+  $u ∈ #br-calc(ms("E"))$ pointwise:
+  $
+    ρ · (brb(lb("l"), e)) := brb(ρ(lb("l")), e)
+  $
+
+- We may then state _label-renaming_ for 
+#reg-calc(ms("E"), ms("T")), #cond-calc(ms("E"), ms("U")), #br-calc(ms("E")) as follows:
+  #lemma(name: [Label Renaming (#reg-calc(ms("E"), ms("T"))])[
+    If $ms("T")$ is stable under label-renaming,
+    then so is #reg-calc(ms("E"), ms("T"))
+    -- i.e. for all $ρ ∈ lrens$,
+    $
+      haslb(Γ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ρ · r, ms("L"))
+    $
+    where we say that $ms("T")$ is stable under label-renaming when
+    - For all $ρ ∈ lrens$ and $haslb(Γ, τ, ms("L"), annot: ms("T"))$,
+      we have $haslb(Γ, ρ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
+  ]
+
+  #lemma(name: [Label Renaming (#cond-calc(ms("E"), ms("U"))])[
+    If $ms("U")$ is stable under label-renaming,
+    then so is #cond-calc(ms("E"), ms("U"))
+    -- i.e. for all $ρ ∈ lrens$,
+    $
+      haslb(Γ, τ, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ρ · τ, ms("L"))
+    $
+    where we say that $ms("U")$ is stable under label-renaming when
+    - For all $ρ ∈ lrens$ and $haslb(Γ, j, ms("L"), annot: ms("U"))$,
+      we have $haslb(Γ, ρ ·_ms("U") j, ms("L"), annot: ms("U"))$.
+  ]
+
+  #lemma(name: [Label Renaming (#br-calc(ms("E"))])[
+    #br-calc(ms("E")) is stable under label-renaming
+    -- i.e. for all $ρ ∈ lrens$,
+    $
+      haslb(Γ, u, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ρ · u, ms("L"))
+    $
+  ]
+
+  It follows that we have:
+  #lemma(name: [Label Renaming (#ssa-calc(ms("E"), ms("T"))])[
+    If $ms("T")$ is stable under label-renaming,
+    then so is #ssa-calc(ms("E"), ms("T"))
+    -- i.e. for all $ρ ∈ lrens$,
+    $
+      haslb(Γ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ρ · r, ms("L"))
+    $
+    where we say that $ms("T")$ is stable under label-renaming when
+    - For all $ρ ∈ lrens$ and $haslb(Γ, τ, ms("L"), annot: ms("T"))$,
+      we have $haslb(Γ, ρ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
+  ]
+
+On the other hand, just as substitution allows us to rewrite _data-flow_, 
+to rewrite _control-flow_, it helps to be able
 to perform _label-substitution_ -- i.e., to replace _jumps_ to a label $lb("l")$ 
-with the body of that label.
+with the body of that label 
+(rather than simply with a jump to another label).
 
 Our grammar for regions #reg-calc(ms("E"), ms("T")) is compatible with replacing entire
 _terminators_ $τ ∈ ms("T")$ with a region $r ∈ #reg-calc(ms("E"), ms("T"))$
@@ -1327,18 +1430,16 @@ depends on what our grammar of terminators looks like.
 the branches of a case-statement $scase(e, B)$ can only be unconditional branches $brb(lb("l"), e)$,
 rather than arbitrary regions.
 
-Note that we can perform label _renaming_ in #ssa-calc(ms("E")):
+One way to remedy this is to fuse the syntactic categories of 
+_terminators_ $τ$, _regions_ $r$, and unconditional branches $u$ together.
 
-#todo[
-  Define label renaming
-]
-
-#todo[
-  Idea: fuse grammar of _branches_ and _regions_
-  -- equivalent to allowing anonymous regions in branches
-]
-
-#todo[We give the grammar in @gssa-grammar]
+In terms of syntax, what we're doing is allowing the branches of a case-statment to
+be arbitrary, anonymous regions, rather than just unconditional branches, yielding an
+extended language $#ssa-calc(ms("E"), ms("T")) ⊆ #gssa-calc(ms("E"), ms("T"))$.
+Phrased in this way, it's easy to see that we add no additional expressive power:
+we can always name such anonymous regions with a label and jump to them instead,
+recovering an ordinary #ssa-calc(ms("E"), ms("T")) program
+We give a grammar for #gssa-calc(ms("E"), ms("T")) in @gssa-grammar below.
 
 #let fig-gssa-grammar = figure(
   [
@@ -1369,15 +1470,18 @@ Note that we can perform label _renaming_ in #ssa-calc(ms("E")):
 
 #fig-gssa-grammar <gssa-grammar>
 
-#fig-haslb-gssa
-
-#todo[Generic fixpoint equation]
-
+We note in particular that we may have 
+(identifying a language with its set of syntactically-well formed terms)
 $
-  #gssa-calc(ms("E"), ms("T")) = #ssa-calc(ms("E"), $#gssa-calc(ms("E"), ms("T")) ∪ ms("T")$)
+  ms("T") ⊆ #gssa-calc(ms("E"), ms("T")) 
+  = #ssa-calc(ms("E"), $#gssa-calc(ms("E"), ms("T"))$)
 $
+As we would expect from this equation, 
+we inherit typing rules from #reg-calc() and #cond-calc() directly
+-- in particular, the typing rules for #gssa-calc(ms("E"), ms("T"))
+are given in @cart-gssa-rules.
 
-#todo[In particular, this includes the typing relation too!]
+#fig-haslb-gssa <cart-gssa-rules>
 
 #todo[Weakening: works]
 
@@ -1538,7 +1642,7 @@ We may now define a closure signature as follows:
 A good type system for expressions should not depend on the names of variables used
 -- i.e., it should be _stable under renaming_.
 
-In particular, given a _renaming_ $ρ : renames$
+In particular, given a _renaming_ $ρ : vrens$
 -- i.e., a finitely supported injection from variables to variables, where
 $
   fsup(ρ) := { x ∈ vset | ρ(x) ≠ x }
@@ -1675,7 +1779,7 @@ It turns out we can fit this into a general framework, along with renaming, as f
     its closure signature and atomic expression signature are stable under $ms("S")$.
 ]
 
-Immediately, renaming emerges as a base case: $renames$ is a substitution signature over
+Immediately, renaming emerges as a base case: $vrens$ is a substitution signature over
 _every_ cartesian typing discipline $ms("X")$, with coercion $ren2subst(ρ) := ρ$
 simply the identity.
 

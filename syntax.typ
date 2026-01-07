@@ -364,12 +364,12 @@
 #let scase(e, B) = $kcase #e thick { #B }$
 
 /// A branch in a case statement
-#let sbr(ℓ, x, b) = $#ℓ (#x) : #b$
+#let sbr(lab, x, b) = $lab(#x) : #b$
 
-#let gbr(ℓ, x, b) = $#ℓ (#x) : #b$
+#let gbr(lab, x, b) = $lab(#x) : #b$
 
 /// A labelled basic block
-#let lbb(ℓ, x, t) = $#ℓ (#x) : #t$
+#let lbb(lab, x, t) = $lab(#x) : #t$
 
 // Syntax sugar
 
@@ -468,7 +468,11 @@
 #let adisc(X) = $ms("Arr")(#X)$
 
 #let vset = ms("Var")
-#let renames = $vset scripts(↪︎)_ms("fin") vset$
+#let vrens = $vset scripts(↪︎)_ms("fin") vset$
+
+#let lset = ms("Lb")
+#let lrens = $lset scripts(↪︎)_ms("fin") lset$
+
 #let substs(E) = $ms("FS")(#E)$
 #let ren2subst(ρ) = $ms("coe")(#ρ)$
 
