@@ -664,7 +664,17 @@ To state _substitution_, we begin by defining:
         & σ · ecase(e, M) := ecase(σ · e, σ · M) "where" \
         & #h(2em) σ · (·_M) := (·_M), \
         & #h(2em) σ · (M, ebr(lb("l"), x, a)) := (σ · M, ebr(lb("l"), x, σ · a))
-          "(choosing " x ∉ fsup(σ)")"
+          #h(2em) "(choosing " x ∉ fsup(σ)")"
+      $
+      \
+      where we are given
+      \
+      $
+        (·_ms("A")) &: substs(#iter-calc(ms("I"))) → ms("A") → #iter-calc(ms("I"))
+        & #h(3em) & "(substitution on atomic expressions)"
+        \
+        (·_ms("F")) &: substs(#iter-calc(ms("I"))) → ms("F") → ms("F")
+        && "(substitution on closures)"
       $
       \
     ],
@@ -928,7 +938,8 @@ In particular,
 - We type braces using @r-cart-reg-scope,
   where the polycontext $Γ csplat ms("K")$ broadcasts $Γ$ along the cocontext $ms("K")$.
 
-As for expressions, we can verify that our type system respects _weakening_ by induction:
+As for expressions, we can verify that our type system respects both (variable) _weakening_
+and _label weakening_ by induction:
 
 #lemma(name: "Weakening")[
   If $ms("E")$ and $ms("T")$ are stable under weakening,
@@ -958,7 +969,45 @@ As for expressions, we can verify that our type system respects _weakening_ by i
     $haslb(Γ, τ, ms("K"), annot: ms("T"))$.
 ]
 
-Likewise, we can generalize capture-avoiding substitution to regions straightforwardly:
+To state _substitution_, intuitively,
+we need both our grammar of _expressions_ $ms("E")$
+and our grammar of _terminators_ $ms("T")$ to be appropriately closed under substitution
+-- just like how defining capture-avoiding substitution on expressions $e ∈ #iter-calc(ms("I"))$
+requires defining substitution for atomic expressions $ms("A")$ and functions $ms("F")$.
+In particular, we give a definition of capture-avoiding substitution on regions
+in @cap-avoid-reg-subst-rules below:
+
+#figure(
+  [
+    $
+              σ · (slet(x, e, r)) & := (slet(x, σ ·_ms("E") e, σ · r)) //
+                                                     & #h(1em) & "(choosing " x ∉ fsup(σ)")" \
+      σ · (slet((mb("x")), e, r)) & := (slet((mb("x")), σ ·_ms("E") e, σ · r)) //
+                                                     &         & "(choosing " mb("x") ∩ fsup(σ) = ∅")" \
+                            σ · τ & := σ ·_ms("T") τ \
+    $
+    $
+      & σ · ({r} seq L) := {σ · r} seq (σ · L) "where" \
+      & #h(2em) σ · (·_L) := (·_L), \
+      & #h(2em) σ · (L seq sbr(lb("l"), x, r)) := (σ · L, sbr(lb("l"), x, σ · r))
+        #h(2em)
+        "(choosing " x ∉ fsup(σ)")"
+    $
+    \
+    where we are given
+    \
+    $
+      (·_ms("E")) & : substs(ms("E")') → ms("E") → ms("E") & #h(3em) & "(substitution on expressions)" \
+      (·_ms("T")) & : substs(ms("E")') → ms("T") → ms("T") &         & "(substitution on terminators)"
+    $
+    for some expression grammar $ms("E")'$.
+    \
+    \
+  ],
+  caption: [
+    Capture-avoiding substitution on regions $r ∈ #reg-calc(ms("E"), ms("T"))$
+  ],
+) <cap-avoid-reg-subst-rules>
 
 #todo[Substitution on regions -- good!]
 
@@ -1177,7 +1226,7 @@ _typing relations_, based on the following core definition:
 ]
 
 Probably the simplest example of a typing relation is the (unique) _empty relation_
-$mb(0) = ms("X") sfn ms("Y")$ with no terms $|mb(0)| = ∅$. 
+$mb(0) = ms("X") sfn ms("Y")$ with no terms $|mb(0)| = ∅$.
 
 We also define:
 
