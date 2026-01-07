@@ -777,7 +777,7 @@ to the cocontext $ms("L")$ (corresponding to exit labels with parameter types).
 Recall that our grammar
 for lexical SSA (#ssa-calc()), repeated below in @lex-ssa-full,
 defines the following four syntactic categories,
-which we can roughly divide into two groups:
+which we can roughly divide into two mutually-recursive groups:
 
 - _Regions_ $r$, and _lists of named regions_ $L$ -- we call such lists _control-flow graphs (CFGs)_
 - _Terminators_ $τ$, and _lists of branch targets_ $B$
@@ -791,6 +791,7 @@ which we can roughly divide into two groups:
       bnf(
         Prod($r$, {
           Or[$x = e seq r$][_assign_]
+          Or[$(mb("x")) = e seq r$][_destructure_]
           Or[$τ$][_terminator_]
           Or[${ r } seq L$][_braces_]
         }),
@@ -842,7 +843,9 @@ $
   #h(2em) = #h(2em) #reg-calc(ms("E"), gssa-calc(ms("E")))
 $
 
-We give a grammar for #reg-calc(ms("E"), ms("T")) below in @reg-grammar:
+We give a grammar for #reg-calc(ms("E"), ms("T")) below in @reg-grammar
+-- this is precisely just the productions $r$ and $L$ from
+the #ssa-calc() grammar in @lex-ssa-full:
 
 #let fig-reg-grammar = figure(
   [
@@ -852,7 +855,7 @@ We give a grammar for #reg-calc(ms("E"), ms("T")) below in @reg-grammar:
       gutter: (2em, 1em),
       bnf(Prod($r$, {
         Or[$x = e seq r$][_assign_]
-        Or[$(V) = e seq r$][_destructure_]
+        Or[$(mb("x")) = e seq r$][_destructure_]
         Or[$τ$][_terminator_]
         Or[${ r } seq L$][_braces_]
       })),
@@ -971,15 +974,13 @@ and _label weakening_ by induction:
 ]
 
 #lemma(name: "Label Weakening")[
-  If $ms("E")$ is stable under subtyping and $ms("T")$ is stable under label weakening,
+  If $ms("T")$ is stable under label weakening,
   then so is #reg-calc(ms("E"), ms("T"))
   -- i.e. for all $ms("L") sle() ms("K")$,
   $
     haslb(Γ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, r, ms("K"))
   $
-  where we say that $ms("E")$ is stable under subtyping when
-  - For all $A sle() B$, $hasty(Γ, e, A)$ implies $hasty(Γ, e, B)$.
-  and that $ms("T")$ is stable under label weakening when
+  where we say that $ms("T")$ is stable under label weakening when
   - For all $ms("L") sle() ms("K")$,
     $haslb(Γ, τ, ms("L"), annot: ms("T"))$ implies
     $haslb(Γ, τ, ms("K"), annot: ms("T"))$.
@@ -989,7 +990,7 @@ To state _substitution_, intuitively,
 we need both our grammar of _expressions_ $ms("E")$
 and our grammar of _terminators_ $ms("T")$ to be appropriately closed under substitution
 -- just like how defining capture-avoiding substitution on expressions $e ∈ #iter-calc(ms("I"))$
-requires defining substitution for atomic expressions $ms("A")$ and functions $ms("F")$.
+requires defining substitution for atomic expressions $α ∈ ms("A")$ and functions $f ∈ ms("F")$.
 In particular, we give a definition of capture-avoiding substitution on regions
 in @cap-avoid-reg-subst-rules below:
 
@@ -1053,25 +1054,14 @@ Note that we've snuck in a little additional generality here:
   (which, via the rules in @cart-iter-subst-rules, give us typing rules for substitutions
   $γ ∈ substs(ms("E")')$).
 
-While substitution helps us to rewrite _data-flow_, to rewrite _control-flow_, it helps to be able
-to perform _label-substitution_ -- i.e., to replace _jumps_ to a label $lb("l")$ 
-with the body of that label.
-
-Our grammar for regions #reg-calc(ms("E"), ms("T")) is compatible with replacing entire
-_terminators_ $τ ∈ ms("T")$ with a region $r ∈ #reg-calc(ms("E"), ms("T"))$
-(this is, in fact, the real motivation for introducing braces in the first place).
-So whether we can perform label-substitution 
-depends on what our grammar of terminators looks like.
-
-#todo[SSA has _specific_ terminators: (conditional) branches, with]
-
+We can recover our lexical SSA language $#ssa-calc()$ from the introduction, 
+extended with additional terminators $τ ∈ ms("T")$, by taking
 $
   #ssa-calc(ms("E"), ms("T"))
   := #reg-calc(ms("E"), $#cond-calc(ms("E")) ∪ ms("T")$)
 $
-
-#todo[Grammar for conditional branches:]
-
+Here, we define $#cond-calc(ms("E"))$ to be the language of _(potentially) conditional branches_,
+given in @br-grammar below:
 #let fig-br-grammar = figure(
   [
     #grid(
@@ -1097,28 +1087,22 @@ $
   caption: [
     Grammar
     for _unconditional branches_ $u ∈ #br-calc(ms("E"))$
-    and _conditional branches_ $τ ∈ #cond-calc(ms("E"), ms("T"))$
-    parametrized by _expressions_ $e ∈ ms("E")$ and _jumps_ $j ∈ ms("T")$.
+    and _conditional branches_ $τ ∈ #cond-calc(ms("E"), ms("U"))$
+    parametrized by _expressions_ $e ∈ ms("E")$ and _jumps_ $j ∈ ms("U")$.
     //
     We define $#cond-calc(ms("E")) := #cond-calc(ms("E"), br-calc(ms("E")))$.
   ],
   kind: image,
 )
 
-#fig-br-grammar
+#fig-br-grammar <br-grammar>
 
-#todo[And rules:]
+We may give typing rules for #cond-calc(ms("E"), ms("U")) in @cart-br-rules below:
 
 // Rules for br-calc(E)
-#let r-br = rule(
-  name: "br",
-  $lbcwk(lty(lb("l"), A), ms("L"))$,
-  $hasty(Γ, e, A)$,
-  $haslb(Γ, brb(lb("l"), e), ms("L"))$,
-);
 #let r-cond-tm = rule(
   name: "tm",
-  $haslb(Γ, j, ms("L"), annot: ms("T"))$,
+  $haslb(Γ, j, ms("L"), annot: ms("U"))$,
   $haslb(Γ, j, ms("L"))$,
 );
 #let r-cond-case = rule(
@@ -1141,7 +1125,7 @@ $
 #let fig-haslb-br = figure(
   [
     #rule-set(
-      declare-rule(r-br),
+      declare-rule(r-cond-tm),
       declare-rule(r-cond-case),
       declare-rule(r-cond-case),
       declare-rule(r-case-nil),
@@ -1150,26 +1134,161 @@ $
     \
   ],
   caption: [
-    Typing rules for #cond-calc(ms("E"), ms("T")) and #br-calc(ms("E")).
+    Typing rules for #cond-calc(ms("E"), ms("U")) and #br-calc(ms("E")).
     We define $#cond-calc(ms("E")) := #cond-calc(ms("E"), br-calc(ms("E")))$.
   ],
 )
 
-#fig-haslb-br
+#fig-haslb-br <cart-br-rules>
 
-#todo[Weakening: good!]
+Weakening and label-weakening can be stated as follows:
+#lemma(name: "Weakening")[
+  If $ms("E")$ and $ms("U")$ are stable under weakening,
+  then so is #cond-calc(ms("E"), ms("U"))
+  -- i.e. for all $Γ ⊑ Δ$,
+  $
+    haslb(Δ, τ, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, τ, ms("L"))
+  $
+  where we say that $ms("E")$ and $ms("U")$ are stable under weakening when
+  - For all $Γ ⊑ Δ$, $hasty(Δ, e, A, annot: ms("E"))$ implies $hasty(Γ, e, A, annot: ms("E"))$.
+  - For all $Γ ⊑ Δ$, $haslb(Δ, j, ms("L"), annot: ms("U"))$ implies
+    $haslb(Γ, j, ms("L"), annot: ms("U"))$.
+]
 
-#todo[Label weakening: good!]
+#lemma(name: "Label Weakening")[
+  If $ms("T")$ is stable under label weakening,
+  then so is #cond-calc(ms("E"), ms("U"))
+  -- i.e. for all $ms("L") sle() ms("K")$,
+  $
+    haslb(Γ, τ, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, τ, ms("K"))
+  $
+  where we say that $ms("U")$ is stable under label weakening when
+  - For all $ms("L") sle() ms("K")$,
+    $haslb(Γ, j, ms("L"), annot: ms("U"))$ implies
+    $haslb(Γ, j, ms("K"), annot: ms("U"))$.
+]
 
-#todo[Substitution on regions -- good!]
+Likewise, we define capture-avoiding substitution for #cond-calc(ms("E"), ms("U")) by
+structural recursion in @cap-avoid-cond-subst-rules below:
 
-#todo[Label _renaming_ -- good!]
+#figure(
+  [
+    #eqn-set(
+      $γ · j = γ ·_ms("U") j$,
+      $$,
+    )
+    $
+      & γ · (scase(e, K)) := scase(γ ·_ms("E") e, γ · K) "where" \
+      & #h(2em) γ · (·_K) := (·_K), \
+      & #h(2em) γ · (K seq sbr(lb("l"), x, j)) := (γ · K, sbr(lb("l"), x, γ ·_ms("U") j))
+        #h(2em)
+        "(choosing " x ∉ fsup(γ)")"
+    $
+    \
+    where we are given
+    \
+    $
+      (·_ms("E")) & : substs(ms("E")') → ms("E") → ms("E") & #h(3em) & "(substitution on expressions)" \
+      (·_ms("U")) & : substs(ms("E")') → ms("U") → ms("U") &         & "(substitution on jumps)"
+    $
+    for some expression grammar $vset ⊆ ms("E")'$.
+    \
+    \
+  ],
+  caption: [
+    Capture-avoiding substitution on regions $r ∈ #reg-calc(ms("E"), ms("U"))$
+  ],
+) <cap-avoid-cond-subst-rules>
 
-#todo[Substitution on SSA -- follows from branches, so good!]
+We can then state the substitution lemma as follows:
+#lemma(name: "Substitution")[
+  If $ms("E")$ and $ms("U")$ are stable under substitution,
+  then so is #cond-calc(ms("E"), ms("U"))
+  -- i.e. for all $issubst(Γ, γ, Δ)$ and $haslb(Δ, τ, ms("L"))$,
+  $    haslb(Γ, γ · τ, ms("L"))
+  $
+  where we say that $ms("E")$ and $ms("U")$ are stable under substitution when
+  - For all $issubst(Γ, γ, Δ)$ and $hasty(Δ, e, A, annot: ms("E"))$,
+    we have $hasty(Γ, γ ·_ms("E") e, A, annot: ms("E"))$.
+  - For all $issubst(Γ, γ, Δ)$ and $haslb(Δ, j, ms("L"), annot: ms("U"))$,
+    we have $haslb(Γ, γ ·_ms("U") j, ms("L"), annot: ms("U"))$.
+]
 
-#todo[Label _renaming_ -- follows from branches, so good!]
+On the other hand, #br-calc(ms("E")) requires only a single typing rule for unconditional jumps:
 
-#todo[Label substitution -- bad! (regions are _not_ a subgrammar of branches!)]
+#let r-br = rule(
+  name: "br",
+  $lbcwk(lty(lb("l"), A), ms("L"))$,
+  $hasty(Γ, e, A, annot: ms("E"))$,
+  $haslb(Γ, brb(lb("l"), e), ms("L"), annot: #br-calc(ms("E")))$,
+);
+$
+  #declare-rule(r-br)
+$
+
+We can view #br-calc(ms("E")) as the minimal "lifting" an of expression language $ms("E")$ into a 
+region language. In particular, defining
+$
+  γ · (brb(lb("l"), e)) := brb(lb("l"), γ ·_ms("E") e)
+$
+we satisfy
+
+#lemma(name: "Weakening")[
+  If $ms("E")$ is stable under weakening,
+  then so is #br-calc(ms("E"))
+  -- i.e. for all $Γ ⊑ Δ$,
+  $
+    haslb(Δ, u, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, u, ms("L"))
+  $
+  where we say that $ms("E")$ is stable under weakening when
+  - For all $Γ ⊑ Δ$, $hasty(Δ, e, A, annot: ms("E"))$ implies $hasty(Γ, e, A, annot: ms("E"))$.
+]
+
+#lemma(name: "Label Weakening")[
+  #br-calc(ms("E")) is stable under label weakening
+  -- i.e. for all $ms("L") sle() ms("K")$,
+  $
+    haslb(Γ, u, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, u, ms("K"))
+  $
+]
+
+#lemma(name: "Substitution")[
+  If $ms("E")$ is stable under substitution,
+  then so is #br-calc(ms("E"))
+  -- i.e. for all $issubst(Γ, γ, Δ)$ and $haslb(Δ, u, ms("L"))$,
+  $
+    haslb(Γ, γ · u, ms("L"))
+  $
+  where we say that $ms("E")$ is stable under substitution when
+  - For all $issubst(Γ, γ, Δ)$ and $hasty(Δ, e, A, annot: ms("E"))$,
+    we have $hasty(Γ, γ ·_ms("E") e, A, annot: ms("E"))$.
+]
+
+It follows that we can combine our results for #reg-calc() and #cond-calc() to derive results for
+#ssa-calc(), where we define
+$
+  #ssa-calc(ms("E"), ms("T")) := #reg-calc(ms("E"), $#cond-calc(ms("E")) ∪ ms("T")$)
+$
+
+#todo[Weakening on #cond-calc() w/ #br-calc(): good! ==> SSA weakening good]
+
+#todo[Label weakening on #cond-calc() w/ #br-calc(): good! ==> SSA label weakening good]
+
+#todo[Substitution on #cond-calc() w/ #br-calc(): good! ==> SSA substitution good]
+
+While substitution helps us to rewrite _data-flow_, to rewrite _control-flow_, it helps to be able
+to perform _label-substitution_ -- i.e., to replace _jumps_ to a label $lb("l")$ 
+with the body of that label.
+
+Our grammar for regions #reg-calc(ms("E"), ms("T")) is compatible with replacing entire
+_terminators_ $τ ∈ ms("T")$ with a region $r ∈ #reg-calc(ms("E"), ms("T"))$
+(this is, in fact, the real motivation for introducing braces in the first place).
+So whether we can perform label-substitution 
+depends on what our grammar of terminators looks like.
+
+#todo[Label substitution on #cond-calc(): bad! (regions are _not_ a subgrammar of branches!)]
+
+#todo[Note: we _can_ do label _renaming_]
 
 #todo[
   Idea: fuse grammar of _branches_ and _regions_
@@ -1186,7 +1305,7 @@ $
       gutter: (2em, 1em),
       bnf(Prod($r$, {
         Or[$x = e seq r$][_assign_]
-        Or[$(V) = e seq r$][_destructure_]
+        Or[$(mb("x")) = e seq r$][_destructure_]
         Or[$brb(lb("l"), e)$][_branch_]
         Or[$scase(e, L)$][_case_]
         Or[$τ$][_terminator_]
@@ -1207,21 +1326,29 @@ $
 
 #fig-gssa-grammar <gssa-grammar>
 
-#todo[Fixpoint equation]
+#fig-haslb-gssa
+
+#todo[Generic fixpoint equation]
 
 $
   #gssa-calc(ms("E"), ms("T")) = #ssa-calc(ms("E"), $#gssa-calc(ms("E"), ms("T")) ∪ ms("T")$)
 $
 
-#todo[Extension to fix this:]
+#todo[In particular, this includes the typing relation too!]
 
-#fig-haslb-gssa
+#todo[Weakening: works]
 
-#todo[substitution]
+#todo[Label weakening: works]
 
-#todo[label-substitution]
+#todo[Substitution: generalizes appropriately, works]
+
+#todo[Label-substitution: now, works too!]
 
 == Typing Relations
+
+#todo[We've actually _used_ unions and friends above. So... makes sense to actually define them...]
+
+#todo[We should probably also actually _define_ labels and friends]
 
 #todo[segue...]
 
