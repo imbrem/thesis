@@ -477,7 +477,29 @@
 #let lset = ms("Lb")
 #let lrens = $lset scripts(↪︎)_ms("fin") lset$
 
-#let holed(L) = $δ[#L]$
+#let bigbs = $▪$
+
+#let holed(L) = $#L^bigbs$
+
+#let holescript(r) = math.frak(r)
+
+#let hlam-calc(name, ..xs) = if xs.pos().at(0, default: none) == none {
+  $λ_ms(#name)^bigbs$
+} else if xs.pos().at(1, default: none) == none {
+  $λ_ms(#name)^bigbs[#xs.pos().at(0)]$
+} else {
+  $λ_ms(#name)^bigbs[#xs.pos().at(0), #xs.pos().at(1)]$
+}
+
+#let hglam-calc(name, ..xs) = if xs.pos().at(0, default: none) == none {
+  $λ_ms(#name)^(μ bigbs)$
+} else if xs.pos().at(1, default: none) == none {
+  $λ_ms(#name)^(μ bigbs)[#xs.pos().at(0)]$
+} else {
+  $λ_ms(#name)^(μ bigbs)[#xs.pos().at(0), #xs.pos().at(1)]$
+}
+
+#let hgssa-calc(..xs) = hglam-calc("ssa", ..xs)
 
 #let substs(E) = $ms("VS")(#E)$
 #let ren2subst(ρ) = $ms("coe")(#ρ)$
