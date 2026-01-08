@@ -1269,7 +1269,6 @@ $
   #ssa-calc(ms("E"), ms("T")) := #reg-calc(ms("E"), $#cond-calc(ms("E")) ∪ ms("T")$)
 $
 
-
 In particular, we have:
 
 #lemma(name: "Weakening")[
@@ -1312,7 +1311,79 @@ In particular, we have:
     we have $haslb(Γ, γ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
 ]
 
-We can also perform label _renaming_ in #ssa-calc(ms("E")).
+#todo[Segue a bit here]
+
+We can recover standard lexical SSA -- i.e., where each assignment must only perform a single
+primitive instruction, by introducing _subgrammars_
+#val-calc(ms("A")) for values and $#inst-calc(ms("I"))$ for single instructions, with
+
+#let val-calc-grammar = figure(
+  [
+    #grid(
+      align: left,
+      columns: 3,
+      gutter: (4em, 0em),
+      bnf(
+        Prod(
+          $o ∈ #inst-calc(ms("I"))$,
+          {
+            Or[$v$][_value_]
+            Or[$f med v$][_instruction_]
+            Or[$lb("l") med v$][_label_]
+          },
+        ),
+        Prod(
+          $v ∈ #val-calc(ms("A"))$,
+          {
+            Or[$x$][_variable_]
+            Or[$α$][_atomic expression_ ($α ∈ ms("A")$)]
+            Or[$(V)$][_tuple_]
+          },
+        ),
+      ),
+      bnf(
+        Prod(
+          $V$,
+          {
+            Or[$·$][_nil_]
+            Or[$V, fexpr(lb("f"), v)$][_cons_]
+          },
+        ),
+      ),
+    )
+    \
+    $
+      #val-calc(ms("A")) ⊆ #inst-calc(ms("I")) ⊆ #iter-calc(ms("I"))
+      #h(3em) "for" #h(3em)
+      ms("I") = (ms("F"), ms("A"))
+    $
+    \
+  ],
+  caption: [
+    Grammar for #iter-calc(ms("I"))
+    for an instruction set $ms("I")$
+    with functions $ms("F")$
+    and atomic expressions $ms("A")$.
+  ],
+  kind: image,
+)
+
+#val-calc-grammar <val-calc-grammar>
+
+We inherit typing from #iter-calc(ms("I")) for both values $v ∈ #val-calc(ms("A"))$
+and instructions $o ∈ #inst-calc(ms("I"))$ -- implying that we also inherit _weakening_ 
+and _subtyping_.
+
+We can then define standard lexical SSA as 
+$#standard-ssa(ms("I")) := #ssa-calc(inst-calc(ms("I")))$.
+While the resulting language supports weakening and label-weakening via the above lemmas,
+we do _not_ support substitution, as #inst-calc(ms("I")) is not generally stable under substitution.
+
+#todo[We _do_, however, support _renaming_: define below]
+
+#todo[Segue to label-renaming]
+
+We can also perform _label renaming_ in #ssa-calc(ms("E")).
 In particular,
 
 - We define a label-renaming $ρ ∈ lrens$ to be a finitely-supported injection from labels to labels,
@@ -1412,6 +1483,10 @@ It follows that we have:
   - For all $ρ ∈ lrens$ and $haslb(Γ, τ, ms("L"), annot: ms("T"))$,
     we have $haslb(Γ, ρ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
 ]
+
+#todo[Modified segue: we're embedded in a bigger language which lets us do substitution]
+
+#todo[What's the bigger language which lets us do _label-substitution_?]
 
 On the other hand, just as substitution allows us to rewrite _data-flow_,
 to rewrite _control-flow_, it helps to be able
@@ -1656,7 +1731,56 @@ We can now state the _label-substitution lemma_ for #gssa-calc(ms("E"), ms("T"))
     we have $haslb(Γ, ℓ ·_ms("T") τ, ms("K"), annot: ms("T"))$.
 ]
 
-== Typing Relations
+== Typing 
+
+So far, we've defined numerous languages and associated typing judgements -- to recap:
+#judgement-meaning(
+  $hasty(Γ, e, A, annot: #iter-calc(ms("I")))$,
+  ["Expression $e ∈ #iter-calc(ms("I"))$ has type $A$ in $Γ$"],
+  $haslb(Γ, r, ms("L"), annot: #gssa-calc(ms("E"), ms("T")))$,
+  ["Region $r ∈ #gssa-calc(ms("E"), ms("T"))$ takes context $Γ$ to cocontext $ms("L")$"],
+  $haslb(Γ, r, ms("L"), annot: #reg-calc(ms("E"), ms("T")))$,
+  ["Region $r ∈ #reg-calc(ms("E"), ms("T"))$ takes context $Γ$ to cocontext $ms("L")$"],
+  $haslb(Γ, τ, ms("L"), annot: #cond-calc(ms("E"), ms("T")))$,
+  ["Terminator $τ ∈ #cond-calc(ms("E"), ms("T"))$ takes context $Γ$ to cocontext $ms("L")$"],
+)
+We also defined auxiliary judgements:
+#judgement-meaning(
+  $istup(Γ, E, lb("T"), annot: #iter-calc(ms("I")))$,
+  ["The fields $(E)$ have product type $Π lb("T")$ in $Γ$"],
+  $kebrs(cal(K), M, A, annot: #iter-calc(ms("I")))$,
+  ["The case-expression branches $M$ map inputs $cal(K)$ to output $A$"],
+  $klbrs(cal(K), L, A, annot: #gssa-calc(ms("E"), ms("T")))$,
+  ["The CFG $L$ (with branches in #gssa-calc()) maps inputs $cal(K)$ to output $ms("L")$"],
+  $klbrs(cal(K), L, A, annot: #reg-calc(ms("E"), ms("T")))$,
+  ["The CFG $L$ (with branches in #reg-calc()) maps inputs $cal(K)$ to output $ms("L")$"],
+  $ksbrs(cal(K), M, A, annot: #br-calc(ms("T"), ms("E")))$,
+  ["The case-statement branches $M$ (in $#br-calc(ms("T"), ms("E"))$) 
+    map inputs $cal(K)$ to output $ms("L")$"],
+)
+and parametrized over judgements
+#judgement-meaning(
+  $hasty(Γ, e, A, annot: ms("E"))$,
+  ["Expression $e ∈ ms("E")$ has type $A$ in $Γ$"],
+  $haslb(Γ, τ, ms("L"), annot: ms("T"))$,
+  ["Terminator $τ ∈ ms("T")$ takes context $Γ$ to cocontext $ms("L")$"],
+  $isfn(Γ, f, A, B, annot: ms("F"))$,
+  ["$f ∈ ms("F")$ takes inputs $A$ to outputs $B$ in $Γ$"],
+  $hasty(Γ, α, A, annot: ms("A"))$,
+  ["Atomic expression $α ∈ ms("A")$ has type $A$ in $Γ$"],
+  $haslb(Γ, j, ms("L"), annot: ms("U"))$,
+  ["Jump $j ∈ ms("U")$ takes context $Γ$ to cocontext $ms("L")$"],
+)
+
+We also introduced _metatheoretic_ judgements
+#judgement-meaning(
+  $issubst(Γ, γ, Δ)$,
+  ["$γ$ is a substitution taking context $Δ$ to context $Γ$"],
+  $lbsubst(cal("L"), ℓ, ms("K"))$,
+  ["$ℓ$ is a label-substitution taking polycontext $cal("L")$ to cocontext $ms("K")$"],
+)
+as well as the notion of _renaming_ and _label-renaming_
+
 
 #todo[We've actually _used_ unions and friends above. So... makes sense to actually define them...]
 

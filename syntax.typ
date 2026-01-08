@@ -77,12 +77,16 @@
 #let reg-calc(..xs) = lam-calc("reg", ..xs)
 #let ssa-calc(..xs) = lam-calc("ssa", ..xs)
 #let gssa-calc(..xs) = glam-calc("ssa", ..xs)
+#let val-calc(..xs) = lam-calc("val", ..xs)
 #let op-calc(..xs) = lam-calc("op", ..xs)
+#let inst-calc(..xs) = lam-calc("inst", ..xs)
 #let iter-calc(..xs) = lam-calc("iter", ..xs)
 #let seq-calc(..xs) = lam-calc("seq", ..xs)
 #let case-calc(..xs) = lam-calc("case", ..xs)
 #let dssa-calc(..xs) = lam-calc("dssa", ..xs)
 #let dgssa-calc(..xs) = glam-calc("dssa", ..xs)
+
+#let standard-ssa(I) = $λ_ms("ssa")^1[#I]$
 
 #let expr2fun(E) = $ms("LN")(#E)$
 
@@ -425,14 +429,14 @@
 #let qwk(ql, qr) = $#ql kqwk #qr$
 
 #let isfn(Γ, f, A, B, annot: none) = $#Γ scripts(⊢)_#annot #f : #A → #B$
-#let istup(Γ, E, T) = $#Γ ⊢ #E scripts(:)^* #T$
+#let istup(Γ, E, T, annot: none) = $#Γ scripts(⊢)_#annot #E scripts(:)^* #T$
 
 #let hasty(Γ, a, A, annot: none) = $#Γ scripts(⊢)_#annot #a : #A$
 #let haslb(Γ, r, L, annot: none) = $#Γ scripts(⊢)_#annot #r triangle.stroked.small.r #L$
 
-#let kebrs(K, B, A) = $#K ⊢ #B scripts(:) #A$
-#let ksbrs(K, B, L) = $#K ⊢ #B triangle.stroked.small.r #L$
-#let klbrs(K, B, L) = $#K ⊢ #B triangle.stroked.small.r #L$
+#let kebrs(K, B, A, annot: none) = $#K scripts(⊢)_#annot^* #B : #A$
+#let ksbrs(K, B, L, annot: none) = $#K scripts(⊢)_#annot^* #B triangle.stroked.small.r #L$
+#let klbrs(K, B, L, annot: none) = $#K scripts(⊢)_#annot^* #B triangle.stroked.small.r #L$
 
 #let csplat = $*$
 
