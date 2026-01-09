@@ -467,6 +467,12 @@
 #let kebrsref(K, R, B, B2, A) = $#K scripts(⊢)^#R #B ->> #B2 scripts(:)^* #A$
 #let lbref(Γ, R, s, t, L) = $#Γ scripts(⊢)^#R #s ->> #t triangle.stroked.small.r #L$
 
+#let srel(syn) = $scripts(⊢)_#syn$
+#let hpop(X, Y) = $ms("Op")_ms("pre")(#X, #Y)$
+#let spop(X) = $ms("Op")_ms("pre")(#X)$
+#let instfun(I) = $ms("fun")(#I)$
+#let instatom(I) = $ms("atom")(#I)$
+
 #let sfn = $↛$
 #let stfn(W) = $scripts(↛)_#W$
 
@@ -475,11 +481,17 @@
 
 #let adisc(X) = $ms("Arr")(#X)$
 
+#let fset = ms("Fld")
+#let tset = ms("Tag")
+
 #let vset = ms("Var")
 #let vrens = $vset scripts(↪︎)_ms("fin") vset$
 
 #let lset = ms("Lb")
 #let lrens = $lset scripts(↪︎)_ms("fin") lset$
+
+#let var2fld = $ms("fld")$
+#let lab2tag = $ms("tag")$
 
 #let bigbs = $▪$
 
@@ -576,6 +588,8 @@
 $
 
 #let space-imp(lhs, rhs) = space-eqn(lhs, $==>$, rhs)
+
+#let space-iff(lhs, rhs) = space-eqn(lhs, $<==>$, rhs)
 
 #let eqn-set(column-gutter: 3em, row-gutter: 2em, ..eqns) = align(center, block(
   // stroke: black,

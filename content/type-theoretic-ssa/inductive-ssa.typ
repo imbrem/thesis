@@ -66,9 +66,11 @@ consisting of:
   where it does not introduce ambiguity,
   we make the coercion $tybase((-)) : ms("X") -> sty(ms("X"))$ implicit.
 
-- $n$-ary coproducts /*(_$Σ$-types_)*/ $Σ#lb("L")$ with named variants $lty(lb("l"), A)$ and
+- $n$-ary coproducts /*(_$Σ$-types_)*/ $Σ#lb("L")$ with named variants $lty(lb("l"), A)$ 
+  -- we assume variant tags are drawn from some fixed, infinite set $tset$
 
 - $n$-ary products /*(_$Π$-types_)*/ $Π#lb("T")$ with named fields $lty(lb("f"), A)$,
+  -- we assume field names are drawn from some fixed, infinite set $fset$
 
 We give a grammar for these in @simple-ty-grammar. This system is intentionally minimalistic:
 
@@ -179,7 +181,8 @@ We can now give grammars and weakening rules for contexts, cocontexts, and polyc
 in @cart-ctx-grammar-wk. In particular, we define:
 
 - _Contexts_ $Γ ∈ sctx(ms("X"))$ to be a list of variable-type pairs $x : A$ where
-  $A ∈ ms("X")$, where no variable $x$ is repeated.
+  $A ∈ ms("X")$, where no variable $x$ is repeated
+  -- we assume a fixed, infinite set of variables $vset$ to draw from.
 
   A context $Γ$ can be viewed as the set of variables live on entry to a program fragment.
 
@@ -188,10 +191,12 @@ in @cart-ctx-grammar-wk. In particular, we define:
   As $Γ$ is conceptually a _set_, we treat permutations as equivalent under weakening.
 
   In general, we transparently identify contexts $Γ ∈ sctx(ms("X"))$
-  and field lists $lb("T") ∈ sstruct(sty(ms("X")))$.
+  and field lists $lb("T") ∈ sstruct(sty(ms("X")))$,
+  transporting variables along a distinguished isomorphism $var2fld : vset ≈ fset$.
 
 - _Cocontexts_ $ms("L") ∈ slctx(ms("X"))$ to be a list of label-type pairs $lb("l")(A)$
-  where $A ∈ ms("X")$, where no label $ms("l")$ is repeated.
+  where $A ∈ ms("X")$, where no label $ms("l")$ is repeated
+  -- we assume a fixed, infinite set of labels $lset$ to draw from.
 
   A cocontext $ms("L")$ records how control may leave a region:
   it is a finite set of exit labels, each annotated with the type of the value passed to that exit.
@@ -205,7 +210,8 @@ in @cart-ctx-grammar-wk. In particular, we define:
   likewise, exits with no parameters simply accept the empty product $tunit$.
 
   In general, we transparently identify cocontexts $ms("L") ∈ slctx(ms("X"))$
-  and label lists $lb("L") ∈ sstruct(sty(ms("X")))$.
+  and label lists $lb("L") ∈ sstruct(sty(ms("X")))$, 
+  transporting labels along a distinguished isomorphism $lab2tag : lset ≈ tset$.
 
 - A _polycontext_ $cal("L") ∈ sdnf(ms("X"))$ to be a list of _ports_ of the form
   $clty(lb("l"), Γ, A)$ where $Γ ∈ sctx(ms("X"))$ and $A ∈ ms("X")$,
@@ -343,7 +349,7 @@ on contexts $sctx(ms("X"))$, cocontexts $slctx(ms("X"))$, and polycontexts $sdnf
 
 #import "../rules/hasty.typ": *
 
-#let dis = ms("I")
+#let dis = ms("O")
 #let dfnl = ms("F")
 #let dael = ms("A")
 #let dic = iter-calc(dis)
@@ -351,15 +357,22 @@ on contexts $sctx(ms("X"))$, cocontexts $slctx(ms("X"))$, and polycontexts $sdnf
 #let dfic = iter-calc(dfnl)
 
 We've now got everything we need to give typing rules for our expression language, #iter-calc().
-In particular, we give a grammar for #dic in @cart-iter-calc-grammar,
-parametrized by an _instruction set_ $#dis = (dfnl, dael)$ specifying:
 
-- _functions_ $f ∈ dfnl$: often, these are our _primitive instructions_ like `add` and `sub`
+We give a grammar for #dic in @cart-iter-calc-grammar,
+parametrized by an _operator family_ $#dis = (dfnl, dael)$ specifying:
+
+- _functions_ $f ∈ dfnl$: 
+  in the introduction, these are our _primitive instructions_ like `add` and `sub`,
+  but in general these can be drawn from an arbitrary language $dfnl$
+  -- in particular, they may be allowed to capture variables, which case we call $f$ a _closure_.
 
 - _atomic expressions_ $α ∈ dael$:
   in the original grammar from @intro-iter-calc-grammar
-  these correspond to _constants_, like `2` and `"hello"`,
-  but can be drawn from an arbitrary language $dael$.
+  these correspond to _constants_ $c$, like `2` and `"hello"`,
+  but in general these can be drawn from an arbitrary language $dael$.
+
+We'll call $dis$ an _instruction set_ when $dfnl$ and $dael$ are in 
+fact restricted to _closed_ functions and constants respectively.
 
 #let iter-calc-grammar = figure(
   [
@@ -412,7 +425,7 @@ parametrized by an _instruction set_ $#dis = (dfnl, dael)$ specifying:
 
 #iter-calc-grammar <cart-iter-calc-grammar>
 
-In @cart-iter-calc-rules below, we give typing rules for the judgements
+In @cart-iter-calc-rules below, we proceed to give typing rules for the judgements
 
 #judgement-meaning(
   $hasty(Γ, e, A, annot: dic)$,
@@ -541,8 +554,143 @@ Where clear from context, we drop the subscript on the turnstile specifying the 
 
 #fig-r-hasty <cart-iter-calc-rules>
 
-#todo[Try a "more formally" segue _here_ -- for _pretyped syntax_?]
+More formally, 
+#definition(name: [Typing relation, typed syntax])[
+  Given cartesian typing disciplines $ms("X")$ and $ms("Y")$,
+  we define a _pretyping relation_ $srel(ms("S")) : ms("X") stfn(S) ms("Y")$ over a _syntax_ $S$ 
+  to consist of a ternary relation $hasty(X, s, Y, annot: ms("S"))$
+  over _inputs_ $X ∈ |ms("X")|$, _terms_ $s ∈ S$, and _outputs_ $Y ∈ |ms("Y")|$.
 
+  We say $srel(ms("S"))$ is:
+  - _stable under input weakening_ if, for all inputs $X' ⊑ X$, 
+    $hasty(X, s, Y, annot: ms("S"))$ implies $hasty(X', s, Y, annot: ms("S"))$.
+
+    That is, if $srel(ms("S"))$ is _contravariant_ in its input (w.r.t. the weakening order).
+
+  - _stable under output weakening_ if, for all outputs $Y ⊑ Y'$, 
+    $hasty(X, s, Y, annot: ms("S"))$ implies $hasty(X, s, Y', annot: ms("S"))$.
+
+    That is, if $srel(ms("S"))$ is _covariant_ in its output (w.r.t. the weakening order).
+
+  - _stable under weakening_ if it is stable under both input and output weakening
+    -- i.e., it is a _profunctor_ w.r.t. the weakening order.
+
+    In this case, we call $srel(ms("S"))$ a _typing relation_.
+
+  - _closed_ if it does not depend on its input -- i.e., for all inputs $X ⊑ X' ∈ |ms("X")|$,
+    #space-iff(
+      $hasty(X, s, Y, annot: ms("S"))$,
+      $hasty(X', s, Y, annot: ms("S"))$,
+    )
+
+  We define a _pretyped syntax_ $ms("S")$ to consist of:
+  - A set of _terms_ $|ms("S")|$
+  - A pretyping relation $srel(ms("S")) : ms("X") stfn(|ms("S")|) ms("Y")$
+
+  Where there is no risk of confusion, we identify $ms("S")$ with its set of terms.
+
+  We say $ms("S")$ is a _stable under (input/output) weakening_ if $srel(ms("S"))$ is
+  -- if $ms("S")$ is stable under weakening, we call $ms("S")$ a _typed syntax_.
+]
+
+#definition(name: [Operator family])[
+  Given cartesian typing disciplines $ms("X")$ and $ms("Y")$,
+  a _pre-operator family_ $dis = (dfnl, dael) : hpop(ms("X"), ms("Y"))$ 
+  from $ms("X")$ to $ms("Y")$ consists of:
+  - A pretyped syntax $instfun(dis) := dfnl : ms("X") → adisc(ms("Y"))$ of _functions_
+  - A pretyped syntax $instatom(dis) := dael : ms("X") → ms("Y")$ of _atomic expressions_
+  where $adisc(ms("Y"))$ is the cartesian typing discipline of _$ms("Y")$-arrows_ with
+  - Types $A -> B$ for $A, B ∈ |ms("Y")|$
+  - Weakening $(A -> B) sle() (A' -> B') := tywk(A', A) ⊓ tywk(B, B')$
+    -- that is, $->$ is _contravariant_ in its input and _covariant_ in its output.
+
+  We say $dis$ is _stable under (input/output) weakening_ 
+  if both $dfnl$ and $dael$ are stable under (input/output) weakening.
+  -- if $dis$ is stable under weakening, we say $dis$ is a _(typed) operator family_.
+
+  Likewise, if $dfnl$ and $dael$ are closed, we say $dis$ is closed.
+
+  We define the _pre-operator families over $ms("X")$_, written $spop(ms("X"))$, to be given by
+  $
+    spop(ms("X")) := hpop(sctx(ms("X")), ms("X"))
+  $
+]
+
+We may now define 
+#definition(name: [Iteration expressions])[
+  Given a pretyped instruction set $ms("I") : spop(sty(ms("X")))$, 
+  we define the pretyped syntax of _iteration expressions_ $dic$ to consist of:
+  - Terms $|dic|$ given by the grammar in @cart-iter-calc-grammar
+  - Typing relation $hasty(Γ, e, A, annot: dic)$ given by the rules in @cart-iter-calc-rules
+]
+
+#todo[Segue to atomic coercion]
+
+- Given a typing relation on atomic expressions $hasty(Γ, α, A, annot: dael)$,
+  we write #daic for #iter-calc($(tzero, dael)$),
+  where $tzero$ is the _empty_ language of functions
+  in which every function _vacuously_ has every type.
+
+  In particular, this means that $hasty(Γ, e, A, annot: daic)$
+  if and only if $hasty(Γ, e, A, annot: #iter-calc($(dfnl, dael)$))$
+  _for all_ choices of function language $dfnl$.
+
+- Likewise, given a typing relation on functions $isfn(Γ, f, A, B, annot: dfnl)$,
+  we write #dfic for #iter-calc($(dfnl, tunit)$),
+  where $tunit$ is the _empty_ language of atomic expressions
+  in which every atomic expression _vacuously_ has every type.
+
+  In particular, this means that $hasty(Γ, e, A, annot: #dfic)$
+  if and only if $hasty(Γ, e, A, annot: #iter-calc($(dfnl, dael)$))$
+  _for all_ choices of atomic expression language $dael$.
+
+
+#todo[
+  Use atomics to formally introduce $⊆$-for-typed-syntax -- compare and contrast with looser $⊑$
+]
+
+As a quick sanity check, we can verify that our type system(s) respect _weakening_
+by a straightforward induction:
+
+#lemma(name: [(Input) Weakening (#dic)])[
+  If #dis is stable under input weakening, then so is #dic
+  -- i.e. for all $Γ ⊑ Δ$,
+  #space-imp(
+    $hasty(Δ, e, A, annot: dic)$,
+    $hasty(Γ, e, A, annot: dic)$,
+  )
+]
+
+Due to the axiom @r-cart-coe, we also satisfy _subtyping_
+#footnote[
+  Alternatively, we could have proved this by induction 
+  if we introduced weakening conditions in the rules
+  @r-cart-inj and @r-cart-tuple
+  (as well as requiring $dael$ and $dfnl$ to be stable under subtyping),
+  but this would have been more cumbersome.
+]
+
+#lemma(name: [(Output) Subtyping (#dic)])[
+  If #dic is stable under subtyping
+  -- i.e. for all $tywk(A, B)$,
+  #space-imp(
+    $hasty(Γ, e, A, annot: dic)$,
+    $hasty(Γ, e, B, annot: dic)$
+  )
+]
+
+That is,
+
+#lemma(name: [Weakening (#dic)])[
+  If #dis is stable under input weakening, then #dic is stable under weakening
+  -- i.e. for all $Γ ⊑ Δ$ and $tywk(A, B)$,
+  #space-imp(
+    $hasty(Δ, e, A, annot: dic)$,
+    $hasty(Γ, e, B, annot: dic)$,
+  )
+]
+
+/*
 In particular:
 - Variables are typed as usual using @r-cart-var
 
@@ -584,42 +732,7 @@ In particular:
 - We state that #dic is stable under subtyping
   -- i.e. that if $A sle() B$ and $e$ has type $A$, then $e$ also has type $B$
   -- as the _axiom_ @r-cart-coe.
-
-
-As a quick sanity check, we can verify that our type system(s) respect _weakening_
-by a straightforward induction:
-
-#lemma(name: [Weakening (#dic)])[
-  If #dis is stable under weakening, then so is #dic
-  -- i.e. for all $Γ ⊑ Δ$,
-  #space-imp(
-    $hasty(Δ, e, A, annot: dic)$,
-    $hasty(Γ, e, A, annot: dic)$,
-  )
-  where we say that #dis is stable under weakening when
-  - For all $Γ ⊑ Δ$, $isfn(Δ, f, A, B, annot: dfnl)$ implies
-    $isfn(Γ, f, A, B, annot: dfnl)$
-  - For all $Γ ⊑ Δ$, $hasty(Δ, α, A, annot: dael)$ implies
-    $hasty(Γ, α, A, annot: dael)$
-]
-
-Due to the axiom @r-cart-coe, we also satisfy _subtyping_
-#footnote[
-  Alternatively, we could have proved this by induction 
-  if we introduced weakening conditions in the rules
-  @r-cart-inj and @r-cart-tuple
-  (as well as requiring $dael$ and $dfnl$ to be stable under subtyping),
-  but this would have been more cumbersome.
-]
-
-#lemma(name: [Subtyping (#dic)])[
-  If #dic is stable under subtyping
-  -- i.e. for all $tywk(A, B)$,
-  #space-imp(
-    $hasty(Γ, e, A, annot: dic)$,
-    $hasty(Γ, e, B, annot: dic)$
-  )
-]
+*/
 
 #todo[Segue to substitution]
 
@@ -759,66 +872,6 @@ We can then give our _substitution lemma_ for $#dic$ as follows:
   - For all $issubst(Γ, γ, Δ)$ and $hasty(Δ, α, A, annot: dael)$,
     we have $hasty(Γ, γ ·_dael α, A, annot: dael)$.
 ]
-
-So far, we've already worked with numerous type systems -- to recap:
-
-#judgement-meaning(
-  $hasty(Γ, e, A, annot: #dic)$,
-  ["Expression $e ∈ #dic$ has type $A$ in $Γ$"],
-  $istup(Γ, E, lb("T"), annot: #dic)$,
-  ["The fields $(E)$ have product type $Π lb("T")$ in $Γ$"],
-  $kebrs(cal(K), M, A, annot: #dic)$,
-  ["The case-expression branches $M$ map inputs $cal(K)$ to output $A$"],
-  $isfn(Γ, f, A, B, annot: dfnl)$,
-  ["$f ∈ dfnl$ takes inputs $A$ to outputs $B$ in $Γ$"],
-  $hasty(Γ, α, A, annot: dael)$,
-  ["Atomic expression $α ∈ dael$ has type $A$ in $Γ$"],
-  $issubst(Γ, γ, Δ, annot: substs(#dic))$,
-  ["$γ ∈ substs(#dic)$ is a $dic$-substitution from $Δ$ to $Γ$"],
-  $hasty(Γ, e, A, annot: ms("E"))$,
-  ["Expression $e ∈ ms("E")$ has type $A$ in $Γ$"],
-)
-
-There are numerous metatheoretic properties 
--- such as weakening, subtyping, and substitution --
-which hold for all of these.
-To avoid extensive repetition,
-it will help to have a unified framework for reasoning about both type systems and their properties.
-
-#todo[
-  - Typing _basis_ over untyped syntax $S$ : relation $ms("X") rstfn(S) ms("Y")$
-    $hasty(X, s, Y, annot: ms("S"))$
-  - _Pretyped_ syntax $ms("S") : ms("X") rsfn ms("Y")$:  
-    pair $(S, ms("S")|_S : ms("X") rstfn(S) ms("Y"))$
-    -- has _untyped syntax_ $|ms("S")| := S$
-  - Typing relation: _profunctor_ $ms("X") stfn(S) ms("Y")$
-    -- i.e. respects weakening on LHS (contravariant) and RHS (covariant)
-  - Typed syntax $ms("X") sfn ms("Y")$: pair $(S, ms("S")|_S : ms("X") stfn(S) ms("Y"))$
-]
-
-#todo[Definition of _instruction set_ here]
-
-#todo[Segue to atomic coercion]
-
-- Given a typing relation on atomic expressions $hasty(Γ, α, A, annot: dael)$,
-  we write #daic for #iter-calc($(tzero, dael)$),
-  where $tzero$ is the _empty_ language of functions
-  in which every function _vacuously_ has every type.
-
-  In particular, this means that $hasty(Γ, e, A, annot: daic)$
-  if and only if $hasty(Γ, e, A, annot: #iter-calc($(dfnl, dael)$))$
-  _for all_ choices of function language $dfnl$.
-
-- Likewise, given a typing relation on functions $isfn(Γ, f, A, B, annot: dfnl)$,
-  we write #dfic for #iter-calc($(dfnl, tunit)$),
-  where $tunit$ is the _empty_ language of atomic expressions
-  in which every atomic expression _vacuously_ has every type.
-
-  In particular, this means that $hasty(Γ, e, A, annot: #dfic)$
-  if and only if $hasty(Γ, e, A, annot: #iter-calc($(dfnl, dael)$))$
-  _for all_ choices of atomic expression language $dael$.
-
-#todo[Formally introduce $⊆$-for-typed-syntax -- compare and contrast with looser $⊑$]
 
 #todo[
   Introduce calculus of _values_ and _operations_ here 
