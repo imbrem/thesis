@@ -1744,18 +1744,12 @@ we do _not_ support substitution, as #inst-calc(dof) is not generally stable und
 
 #todo[We _do_, however, support _renaming_: define below]
 
-#todo[Segue to label-renaming]
+#todo[Segue to relabeling]
 
-We can also perform _label renaming_ in #ssa-calc(ms("E")).
+We can also perform _relabeling_ in #ssa-calc(ms("E")).
 In particular,
 
-- We define a label-renaming $ρ ∈ lrens$ to be a finitely-supported injection from labels to labels,
-  where we define the support $fsup(ρ)$ of a function $ρ : lset → lset$ as follows:
-  $
-    fsup(ρ) := { lb("l") ∈ lset | ρ(lb("l")) ≠ lb("l") }
-  $
-
-- We define the action of a label-renaming $ρ ∈ lrens$ on regions $r ∈ #reg-calc(ms("E"), ms("T"))$
+- We define the action of a relabeling $ρ ∈ lrens$ on regions $r ∈ #reg-calc(ms("E"), ms("T"))$
   by structural recursion as follows:
   $
             ρ · (slet(x, e, r)) & := slet(x, e, ρ · r) \
@@ -1773,12 +1767,12 @@ In particular,
   $
     ρ ·_ms("T") & : lrens → ms("T") → ms("T")
   $
-  defining the action of label-renamings on terminators $τ ∈ ms("T")$.
+  defining the action of relabelings on terminators $τ ∈ ms("T")$.
 
   Note that we can always choose $lb("l") ∉ fsup(ρ)$ since $fsup(ρ)$ is finite and names of
   bound labels are quotiented up to α-equivalence.
 
-  Likewise, we define the action of a label-renaming $ρ ∈ lrens$ on terminators
+  Likewise, we define the action of a relabeling $ρ ∈ lrens$ on terminators
   $τ ∈ #cond-calc(ms("E"), ms("U"))$ by structural recursion as follows:
   $
     & ρ · j := ρ ·_ms("U") j \
@@ -1792,42 +1786,44 @@ In particular,
   $
     ρ ·_ms("U") & : lrens → ms("U") → ms("U")
   $
-  defining the action of label-renamings on jumps $j ∈ ms("U")$.
+  defining the action of relabelings on jumps $j ∈ ms("U")$.
 
-  Finally, we define the action of a label-renaming $ρ ∈ lrens$ on unconditional branches
+  Finally, we define the action of a relabeling $ρ ∈ lrens$ on unconditional branches
   $u ∈ #br-calc(ms("E"))$ pointwise:
   $
     ρ · (brb(lb("l"), e)) := brb(ρ(lb("l")), e)
   $
 
-- We may then state _label-renaming_ for
+#todo[Standardized relabeling]
+
+- We may then state _relabeling_ for
   #reg-calc(ms("E"), ms("T")), #cond-calc(ms("E"), ms("U")), #br-calc(ms("E")) as follows:
-  #lemma(name: [Label Renaming (#reg-calc(ms("E"), ms("T"))])[
-    If $ms("T")$ is stable under label-renaming,
+  #lemma(name: [Relabeling (#reg-calc(ms("E"), ms("T"))])[
+    If $ms("T")$ is stable under relabeling,
     then so is #reg-calc(ms("E"), ms("T"))
     -- i.e. for all $ρ ∈ lrens$,
     $
       haslb(Γ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ρ · r, ms("L"))
     $
-    where we say that $ms("T")$ is stable under label-renaming when
+    where we say that $ms("T")$ is stable under relabeling when
     - For all $ρ ∈ lrens$ and $haslb(Γ, τ, ms("L"), annot: ms("T"))$,
       we have $haslb(Γ, ρ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
   ]
 
-  #lemma(name: [Label Renaming (#cond-calc(ms("E"), ms("U"))])[
-    If $ms("U")$ is stable under label-renaming,
+  #lemma(name: [Relabeling (#cond-calc(ms("E"), ms("U"))])[
+    If $ms("U")$ is stable under relabeling,
     then so is #cond-calc(ms("E"), ms("U"))
     -- i.e. for all $ρ ∈ lrens$,
     $
       haslb(Γ, τ, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ρ · τ, ms("L"))
     $
-    where we say that $ms("U")$ is stable under label-renaming when
+    where we say that $ms("U")$ is stable under relabeling when
     - For all $ρ ∈ lrens$ and $haslb(Γ, j, ms("L"), annot: ms("U"))$,
       we have $haslb(Γ, ρ ·_ms("U") j, ms("L"), annot: ms("U"))$.
   ]
 
-  #lemma(name: [Label Renaming (#br-calc(ms("E"))])[
-    #br-calc(ms("E")) is stable under label-renaming
+  #lemma(name: [Relabeling (#br-calc(ms("E"))])[
+    #br-calc(ms("E")) is stable under relabeling
     -- i.e. for all $ρ ∈ lrens$,
     $
       haslb(Γ, u, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ρ · u, ms("L"))
@@ -1835,14 +1831,14 @@ In particular,
   ]
 
 It follows that we have:
-#lemma(name: [Label Renaming (#ssa-calc(ms("E"), ms("T"))])[
-  If $ms("T")$ is stable under label-renaming,
+#lemma(name: [Relabeling (#ssa-calc(ms("E"), ms("T"))])[
+  If $ms("T")$ is stable under relabeling,
   then so is #ssa-calc(ms("E"), ms("T"))
   -- i.e. for all $ρ ∈ lrens$,
   $
     haslb(Γ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ρ · r, ms("L"))
   $
-  where we say that $ms("T")$ is stable under label-renaming when
+  where we say that $ms("T")$ is stable under relabeling when
   - For all $ρ ∈ lrens$ and $haslb(Γ, τ, ms("L"), annot: ms("T"))$,
     we have $haslb(Γ, ρ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
 ]
@@ -2111,8 +2107,8 @@ We can now state the _label-substitution lemma_ for #gssa-calc(ms("E"), ms("T"))
     - Typing compatible with _renaming_: 
       $hasty(X, s, Y, annot: ms("S")) <==> hasty(ρ · X, ρ · s, ρ · Y, annot: ms("S"))$
       -- note we rename outputs as well!
-    - $ms("Y")$ equipped with (distinguished) _label renaming (right) action_ of 
-      (distinguished) _label renaming monoid_ on outputs $|ms("Y")|$
+    - $ms("Y")$ equipped with (distinguished) _Relabeling (right) action_ of 
+      (distinguished) _Relabeling monoid_ on outputs $|ms("Y")|$
       -- respects weakening
     - $|S|$ equipped with (distinguished) renaming (right) action by same monoid
     - Typing compatible with output renaming: 
@@ -2123,12 +2119,12 @@ We can now state the _label-substitution lemma_ for #gssa-calc(ms("E"), ms("T"))
       (THIS IS US)
       - renaming action by $vset ↪_ms("fin") vset$ finitely supported injections
         -- note this is the identity on RHS since no variables $x ∈ vset$ in cocontexts
-      - label renaming action by $lset ↪_ms("fin") lset$ finitely supported injections
+      - Relabeling action by $lset ↪_ms("fin") lset$ finitely supported injections
         on labels
     - $ms("S") : sctx(ms("X")) sfn sdnf(ms("Y"))$ (context as LHS, polycontext as RHS)
       - renaming action by $vset ↪_ms("fin") vset$ finitely supported injections
         -- _not_ the identity on the RHS since polycontexts have variables $x ∈ vset$!
-      - label renaming action by $lset ↪_ms("fin") lset$ finitely supported injections
+      - Relabeling action by $lset ↪_ms("fin") lset$ finitely supported injections
         on labels
 ]
 
