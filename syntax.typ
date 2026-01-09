@@ -470,8 +470,17 @@
 #let srel(syn) = $scripts(⊢)_#syn$
 #let hpop(X, Y) = $ms("Op")_ms("pre")(#X, #Y)$
 #let spop(X) = $ms("Op")_ms("pre")(#X)$
-#let instfun(I) = $ms("fun")(#I)$
-#let instatom(I) = $ms("atom")(#I)$
+#let opfn(I) = $ms("fun")(#I)$
+#let opatom(I) = $ms("atom")(#I)$
+
+#let hop(X, Y) = $ms("Op")(#X, #Y)$
+#let sop(X) = $ms("Op")(#X)$
+
+#let hexpr(X, Y) = $ms("Expr")(#X, #Y)$
+#let sexpr(X) = $ms("Expr")(#X)$
+
+#let hinst(X, Y) = $ms("Inst")(#X, #Y)$
+#let sinst(X) = $ms("Inst")(#X)$
 
 #let sfn = $↛$
 #let stfn(W) = $scripts(↛)_#W$

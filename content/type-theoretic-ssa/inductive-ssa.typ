@@ -634,8 +634,8 @@ More formally,
   Given cartesian typing disciplines $ms("X")$ and $ms("Y")$,
   a _pre-operator family_ $dof = (dfnl, dael) : hpop(ms("X"), ms("Y"))$ 
   from $ms("X")$ to $ms("Y")$ consists of:
-  - A pretyped syntax $instfun(dof) := dfnl : ms("X") → adisc(ms("Y"))$ of _functions_
-  - A pretyped syntax $instatom(dof) := dael : ms("X") → ms("Y")$ of _atomic expressions_
+  - A pretyped syntax $opfn(dof) := dfnl : ms("X") → adisc(ms("Y"))$ of _functions_
+  - A pretyped syntax $opatom(dof) := dael : ms("X") → ms("Y")$ of _atomic expressions_
   where $adisc(ms("Y"))$ is the cartesian typing discipline of _$ms("Y")$-arrows_ with
   - Types $A -> B$ for $A, B ∈ |ms("Y")|$
   - Weakening $(A -> B) sle() (A' -> B') := tywk(A', A) ⊓ tywk(B, B')$
@@ -687,6 +687,17 @@ and joins and meets given by union and intersection respectively as follows:
   $⋃_i ms("S")_i := (⋃_i |ms("S")_i|, (λ Γ, s, a qd ⋁_i hasty(Γ, s, A, annot: ms("S")_i)))$,
   $⋂_i ms("S")_i := (⋂_i |ms("S")_i|, (λ Γ, s, a qd ⋀_i hasty(Γ, s, A, annot: ms("S")_i)))$
 )
+
+In general, #iter-calc() preserves subsets:
+#space-imp(
+  $dof ⊆ dof'$,
+  $#iter-calc(dof) ⊆ #iter-calc($dof'$)$
+)
+where we define
+$
+  (dof ⊆ dof') := 
+    (opfn(dof) ⊆ opfn(dof')) ∧ (opatom(dof) ⊆ opatom(dof'))
+$
 
 As a quick sanity check, we want to verify that our type system(s) respect _weakening_
 by a straightforward induction:
@@ -889,7 +900,7 @@ In particular, we define:
   ],
 ) <cart-iter-subst-rules>
 
-#definition(name: "Renaming")[
+#definition(name: "Renaming, Operation Family")[
   We say a pretyping relation $ms("E") : ms("X") stfn(S) ms("Y")$ is _stable under renaming_ if
   - $ms("X")$ and $ms("Y")$ support renaming
   - $S$ is equipped with a distinguished monoid action
@@ -899,15 +910,24 @@ In particular, we define:
     $hasty(X, s, Y, annot: ms("E"))$,
     $hasty(ρ X, ρ s, ρ Y, annot: ms("E"))$,
   )
+
+  We define an _operation family_ $dof = (dfnl, dael)$ to be a preoperation family 
+  such tha $dfnl$ and $dael$ are both stable under renaming and weakening --
+  we write
+  - The set of operation families from $ms("X")$ to $ms("Y")$ as 
+    $hop(ms("X"), ms("Y")) ⊆ hpop(ms("X"), ms("Y"))$
+  - The set of operation families over $ms("X")$ as 
+    $sop(ms("X")) := hop(sctx(ms("X")), ms("X")) ⊆ spop(ms("X"))$
 ]
 
-#definition(name: "Substitutive")[
-  Given a pretyped syntax $ms("V") : sctx(ms("X")) sfn ms("X")$ with $vset ⊆ ms("V")$,
-  we say that a pretyped syntax $ms("E") : sctx(ms("X")) sfn ms("Y")$ is $ms("V")$-substitutive if
+#definition(name: [Substitutive])[
+  We say that a pretyped syntax $ms("E") : sctx(ms("X")) sfn ms("X")$ is _substitutive_ if
+  - $ms("Var") ⊆ ms("E")$
   - $ms("E")$ is stable under renaming
-  - $|ms("E")|$ is equipped with a monoid action
-    $γ · e ∈ ms("E")$ of substitutions $γ ∈ substs(ms("V"))$ on terms $e ∈ ms("E")$
+  - $|ms("E")|$ is equipped with an action
+    $γ · e ∈ ms("E")$ of substitutions $γ ∈ substs(ms("E"))$ on terms $e ∈ ms("E")$
   such that:
+  - $(γ_1γ_2) · e = γ_1 · (γ_2 · e)$, where $(γ_1γ_2)(x) = γ_1 · (γ_2(x))$
   - For all substitutions $issubst(Γ, γ, Δ)$ and $hasty(Δ, e, A)$,
     we have $hasty(Γ, γ · e, A)$ -- moreover
   - Given $∀ x ∈ Δ qd γ'(x) = γ(x)$, $γ' · e = γ · e$, and, in particular,
@@ -916,11 +936,81 @@ In particular, we define:
     where the right-hand side is the renaming action on $ms("E")$
     -- i.e., substitution extends renaming.
 
-  We say a pretyped syntax $ms("E") : sctx(ms("X")) sfn ms("X")$ is _substitutive_ if
-  it is $ms("E")$-substitutive, and in particular $vset ⊆ ms("E")$.
+    Therefore, in particular, $id · e = e$.
+
+  We call a substitutive typed syntax $ms("E") : sctx(ms("X")) sfn ms("X")$ 
+  an _expression syntax (over $ms("X")$)_
+  -- we write the set of such syntaxes as $sexpr(ms("X"))$.
 ]
 
-We can then give our _substitution lemma_ for $#dic$ as follows:
+To show that $dic$ is in fact substitutive 
+-- and therefore an expression syntax over $sty(ms("X"))$ --
+we need to be able to substitute functions in $dfnl$
+and atomic expressions in $dael$ as well -- i.e., we need to show that $dof$ is compatible with
+$dic$-substitutions. The definition of substitutive, 
+however, doesn't generalize directly to operator families, 
+since it doesn't even make sense to consider substitutions $substs(dof)$.
+Instead, we proceed as follows:
+
+#definition(name: [$ms("V")$-Substitutive])[ 
+  Given an expression syntax $ms("V") : sexpr(ms("X"))$,
+  we say that a pretyped syntax $ms("E") : sctx(ms("X")) sfn ms("Y")$ 
+  is _$ms("V")$-substitutive_ if
+  - $ms("E")$ is stable under renaming
+  - $|ms("E")|$ is equipped with an action
+    $γ · e ∈ ms("E")$ of substitutions $γ ∈ substs(ms("V"))$ on terms $e ∈ ms("E")$
+  such that:
+  - $(γ_1γ_2) · e = γ_1 · (γ_2 · e)$, where $(γ_1γ_2)(x) = γ_1 · (γ_2(x))$
+  - For all substitutions $issubst(Γ, γ, Δ)$ and $hasty(Δ, e, A)$,
+    we have $hasty(Γ, γ · e, A)$ -- moreover
+  - Given $∀ x ∈ Δ qd γ'(x) = γ(x)$, $γ' · e = γ · e$, and, in particular,
+  - If, given a renaming $ρ$, $∀ x ∈ Δ qd ρ(x) = γ(x)$,
+    then $γ · e = ρ · e$
+    where the right-hand side is the renaming action on $ms("E")$
+    -- i.e., substitution extends renaming.
+
+    Therefore, in particular, $id · e = e$.
+]
+
+We say that a pre-operator family $dof = (dfnl, dael)$ is _$ms("V")$-substitutive_ if
+both $dfnl$ and $dael$ are both $ms("V")$-substitutive.
+
+In general, we then note that:
+- $ms("E")$ is an expression syntax iff it is $ms("E")$-substitutive
+- $mb("0")$ is $ms("V")$-substitutive for all substitutive $ms("V")$
+
+In general, we want that, if $ms("E")$ is _closed_, i.e. does not depend on variables,
+then $ms("E")$ should be $ms("V")$-substitutive for all substitutive $ms("V")$.
+
+#definition(name: [Closed])[
+  We say that a pretyped syntax $ms("E") : ms("X") sfn ms("Y")$ is _closed_ if:
+  - For all inputs $X ⊑ X' ∈ |ms("X")|$, 
+    $hasty(X, e, Y, annot: ms("E")) <==> hasty(X', e, Y, annot: ms("E"))$
+  - $ms("X")$ and $ms("Y")$ support renaming
+  - The action of renamings $ρ : vrens$ on terms $e ∈ ms("E")$ is the identity 
+    -- $∀ ρ, e qd ρ · e = e$
+]
+
+In this case, for any $ms("E") : sctx(ms("X")) sfn ms("Y")$ closed, 
+given $ms("V") : sexpr(ms("X"))$,
+we may equip $ms("E")$ with the structure of a $ms("V")$-substitutive syntax by
+defining $γ · e := e$ for all substitutions $γ ∈ substs(ms("V"))$.
+
+#definition(name: [Instruction Set])[
+  We say an operator family $dof = (dfnl, dael)$ is an _instruction set_ if
+  $dfnl$ and $dael$ are both closed.
+
+  We write: 
+  - the set of instruction sets from $ms("X")$ to $ms("Y")$ as
+    $hinst(ms("X"), ms("Y")) ⊆ hop(ms("X"), ms("Y"))$
+  - the set of instruction sets over $ms("X")$ as
+    $sinst(ms("X")) := hinst(sctx(ms("X")), ms("X")) ⊆ sop(ms("X"))$
+]
+
+In particular, it follows that every instruction set over $ms("X")$ is $ms("V")$-substitutive for
+all substitutive $ms("V") : sexpr(ms("X"))$.
+
+We can now give our _substitution lemma_ for $#dic$ as follows:
 
 #lemma(name: "Substitution")[
   If $dof$ is $dic$-substitutive,
@@ -931,9 +1021,7 @@ We can then give our _substitution lemma_ for $#dic$ as follows:
   $
 ]
 
-#todo[Handle chicken and egg: when is $dof$ substitutive]
-
-#todo[Segue to values + operations]
+#todo[Segue to values]
 
 We define a grammar for _values_
 $#val-calc(dael)$ (parametrized by atomic expressions $α ∈ dael$)
@@ -997,28 +1085,69 @@ below:
 
 We type values and operations as a subset of expressions in #dic -- that is, 
 $
-  #val-calc(dael) #h(2em) ⊆ #h(2em) #inst-calc(dof) #h(2em) ⊆ #h(2em) #dic
+  #val-calc(dael) #h(2em) ⊆ #h(2em) #inst-calc(dael) #h(2em) ⊆ #h(2em) #iter-calc(dael)
+$
+and
+$
+  #inst-calc(dof) #h(2em) ⊆ #h(2em) #iter-calc(dof)
 $
 and hence
 $
   ∀ v ∈ #val-calc(dael) qd &
-    hasty(Γ, v, A, annot: #val-calc(dael)) <==> hasty(Γ, v, A, annot: #iter-calc(dael))
+    hasty(Γ, v, A, annot: #val-calc(dael)) 
+    &&<==> hasty(Γ, v, A, annot: #inst-calc(dael))
+    &&<==> hasty(Γ, v, A, annot: #iter-calc(dael))
     \
   ∀ o ∈ #inst-calc(dof) qd &
-    hasty(Γ, o, A, annot: #inst-calc(dof)) <==> hasty(Γ, o, A, annot: #iter-calc(dof))
+    hasty(Γ, o, A, annot: #inst-calc(dof)) 
+    &&<==> hasty(Γ, o, A, annot: #iter-calc(dof))
+    &&
 $
 
 We note in particular that:
 
+- #val-calc() inherits weakening and renaming from #dic:
+  - If $ms("A")$ is stable under (input/output) weakening,
+    then so is #val-calc(dael)
+    -- in particular, if $ms("A")$ is a typed syntax,
+    then so is #val-calc(dael)
+  - If $ms("A")$ supports renaming,
+    then so does #val-calc(dael)
+
 - #val-calc(dael) 
-  is substitutive whenever $dael$ is $#val-calc(dael)$-substitutive
+  is in fact an expression syntax 
+  (that is, #val-calc(dael)-substitutive, _not_ #iter-calc(dael)-substitutive!)
+  whenever $dael$ is $#val-calc(dael)$-substitutive
 
-- #inst-calc(dof) 
-  is $#val-calc(dael)$-substitutive whenever $dof$ is $#val-calc(dael)$-substitutive.
+- #inst-calc() inherits weakening and renaming from #dic:
+  - If $dof$ is stable under (input/output) weakening,
+    then so is #inst-calc(dof)
+    -- in particular, if $dof$ is an operation family,
+    then so is #inst-calc(dof)
+  - If $dof$ supports renaming,
+    then so does #inst-calc(dof)
 
-- In general, if $ms("S")$ is $ms("E")$-substitutive and $ms("E")' ⊆ ms("E")$,
-  then $ms("S")$ is also $ms("E")'$-substitutive --
-  in particular, this means $#dic$ is $#val-calc(dael)$-substitutive.
+- #inst-calc(dof) is not generally an expression syntax, but
+  _is_ $#val-calc(dael)$-substitutive whenever $dof$ is $#val-calc(dael)$-substitutive.
+
+- #val-calc() preserves subsets: 
+  #space-imp(
+    $dael ⊆ dael'$,
+    $#val-calc(dael) ⊆ #val-calc($dael'$)$,
+  )
+
+- #inst-calc() preserves subsets:
+  #space-imp(
+    $dof ⊆ dof'$,
+    $#inst-calc(dof) ⊆ #inst-calc($dof'$)$,
+  )
+
+- $#dic$ is $#val-calc(dael)$-substitutive, since $#val-calc(dael) ⊆ #iter-calc(dael)$
+
+- $#iter-calc(dic) = dic$ and hence
+  $#val-calc(dic) = dic$
+
+- $#inst-calc($(ms("F"), #val-calc(ms("A")))$) = #inst-calc($(ms("F"), ms("A"))$)$
 
 == Regions
 
