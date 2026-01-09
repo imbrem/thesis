@@ -541,6 +541,8 @@ Where clear from context, we drop the subscript on the turnstile specifying the 
 
 #fig-r-hasty <cart-iter-calc-rules>
 
+#todo[Try a "more formally" segue _here_ -- for _pretyped syntax_?]
+
 In particular:
 - Variables are typed as usual using @r-cart-var
 
@@ -583,12 +585,9 @@ In particular:
   -- i.e. that if $A sle() B$ and $e$ has type $A$, then $e$ also has type $B$
   -- as the _axiom_ @r-cart-coe.
 
-  Alternatively, we could have introduced weakening conditions in the rules
-  @r-cart-inj and @r-cart-tuple
-  (as well as requiring $dael$ and $dfnl$ to be stable under subtyping),
-  but this would have been more cumbersome.
 
-As a quick sanity check, we can verify that our type system(s) respect _weakening_:
+As a quick sanity check, we can verify that our type system(s) respect _weakening_
+by a straightforward induction:
 
 #lemma(name: [Weakening (#dic)])[
   If #dis is stable under weakening, then so is #dic
@@ -604,49 +603,22 @@ As a quick sanity check, we can verify that our type system(s) respect _weakenin
     $hasty(Γ, α, A, annot: dael)$
 ]
 
-#todo[Pull note about subtyping and coe rule here...]
-
-#todo[Segue about typing relations here -- give lore on _typed syntax_]
-
-#todo[
-  - Typing _basis_ over untyped syntax $S$ : relation $ms("X") rstfn(S) ms("Y")$
-    $hasty(X, s, Y, annot: ms("S"))$
-  - _Pretyped_ syntax $ms("S") : ms("X") rsfn ms("Y")$:  
-    pair $(S, ms("S")|_S : ms("X") rstfn(S) ms("Y"))$
-    -- has _untyped syntax_ $|ms("S")| := S$
-  - Typing relation: _profunctor_ $ms("X") stfn(S) ms("Y")$
-    -- i.e. respects weakening on LHS (contravariant) and RHS (covariant)
-  - Typed syntax $ms("X") sfn ms("Y")$: pair $(S, ms("S")|_S : ms("X") stfn(S) ms("Y"))$
+Due to the axiom @r-cart-coe, we also satisfy _subtyping_
+#footnote[
+  Alternatively, we could have proved this by induction 
+  if we introduced weakening conditions in the rules
+  @r-cart-inj and @r-cart-tuple
+  (as well as requiring $dael$ and $dfnl$ to be stable under subtyping),
+  but this would have been more cumbersome.
 ]
 
-#todo[Definition of _instruction set_ here]
-
-#todo[Segue to atomic coercion]
-
-- Given a typing relation on atomic expressions $hasty(Γ, α, A, annot: dael)$,
-  we write #daic for #iter-calc($(tzero, dael)$),
-  where $tzero$ is the _empty_ language of functions
-  in which every function _vacuously_ has every type.
-
-  In particular, this means that $hasty(Γ, e, A, annot: daic)$
-  if and only if $hasty(Γ, e, A, annot: #iter-calc($(dfnl, dael)$))$
-  _for all_ choices of function language $dfnl$.
-
-- Likewise, given a typing relation on functions $isfn(Γ, f, A, B, annot: dfnl)$,
-  we write #dfic for #iter-calc($(dfnl, tunit)$),
-  where $tunit$ is the _empty_ language of atomic expressions
-  in which every atomic expression _vacuously_ has every type.
-
-  In particular, this means that $hasty(Γ, e, A, annot: #dfic)$
-  if and only if $hasty(Γ, e, A, annot: #iter-calc($(dfnl, dael)$))$
-  _for all_ choices of atomic expression language $dael$.
-
-#todo[Formally introduce $⊆$-for-typed-syntax -- compare and contrast with looser $⊑$]
-
-#todo[
-  Introduce calculus of _values_ and _operations_ here 
-  -- 
-  type system _by_ $⊆$, _implied by_ rule $⊆$
+#lemma(name: [Subtyping (#dic)])[
+  If #dic is stable under subtyping
+  -- i.e. for all $tywk(A, B)$,
+  #space-imp(
+    $hasty(Γ, e, A, annot: dic)$,
+    $hasty(Γ, e, B, annot: dic)$
+  )
 ]
 
 #todo[Segue to substitution]
@@ -787,6 +759,75 @@ We can then give our _substitution lemma_ for $#dic$ as follows:
   - For all $issubst(Γ, γ, Δ)$ and $hasty(Δ, α, A, annot: dael)$,
     we have $hasty(Γ, γ ·_dael α, A, annot: dael)$.
 ]
+
+So far, we've already worked with numerous type systems -- to recap:
+
+#judgement-meaning(
+  $hasty(Γ, e, A, annot: #dic)$,
+  ["Expression $e ∈ #dic$ has type $A$ in $Γ$"],
+  $istup(Γ, E, lb("T"), annot: #dic)$,
+  ["The fields $(E)$ have product type $Π lb("T")$ in $Γ$"],
+  $kebrs(cal(K), M, A, annot: #dic)$,
+  ["The case-expression branches $M$ map inputs $cal(K)$ to output $A$"],
+  $isfn(Γ, f, A, B, annot: dfnl)$,
+  ["$f ∈ dfnl$ takes inputs $A$ to outputs $B$ in $Γ$"],
+  $hasty(Γ, α, A, annot: dael)$,
+  ["Atomic expression $α ∈ dael$ has type $A$ in $Γ$"],
+  $issubst(Γ, γ, Δ, annot: substs(#dic))$,
+  ["$γ ∈ substs(#dic)$ is a $dic$-substitution from $Δ$ to $Γ$"],
+  $hasty(Γ, e, A, annot: ms("E"))$,
+  ["Expression $e ∈ ms("E")$ has type $A$ in $Γ$"],
+)
+
+There are numerous metatheoretic properties 
+-- such as weakening, subtyping, and substitution --
+which hold for all of these.
+To avoid extensive repetition,
+it will help to have a unified framework for reasoning about both type systems and their properties.
+
+#todo[
+  - Typing _basis_ over untyped syntax $S$ : relation $ms("X") rstfn(S) ms("Y")$
+    $hasty(X, s, Y, annot: ms("S"))$
+  - _Pretyped_ syntax $ms("S") : ms("X") rsfn ms("Y")$:  
+    pair $(S, ms("S")|_S : ms("X") rstfn(S) ms("Y"))$
+    -- has _untyped syntax_ $|ms("S")| := S$
+  - Typing relation: _profunctor_ $ms("X") stfn(S) ms("Y")$
+    -- i.e. respects weakening on LHS (contravariant) and RHS (covariant)
+  - Typed syntax $ms("X") sfn ms("Y")$: pair $(S, ms("S")|_S : ms("X") stfn(S) ms("Y"))$
+]
+
+#todo[Definition of _instruction set_ here]
+
+#todo[Segue to atomic coercion]
+
+- Given a typing relation on atomic expressions $hasty(Γ, α, A, annot: dael)$,
+  we write #daic for #iter-calc($(tzero, dael)$),
+  where $tzero$ is the _empty_ language of functions
+  in which every function _vacuously_ has every type.
+
+  In particular, this means that $hasty(Γ, e, A, annot: daic)$
+  if and only if $hasty(Γ, e, A, annot: #iter-calc($(dfnl, dael)$))$
+  _for all_ choices of function language $dfnl$.
+
+- Likewise, given a typing relation on functions $isfn(Γ, f, A, B, annot: dfnl)$,
+  we write #dfic for #iter-calc($(dfnl, tunit)$),
+  where $tunit$ is the _empty_ language of atomic expressions
+  in which every atomic expression _vacuously_ has every type.
+
+  In particular, this means that $hasty(Γ, e, A, annot: #dfic)$
+  if and only if $hasty(Γ, e, A, annot: #iter-calc($(dfnl, dael)$))$
+  _for all_ choices of atomic expression language $dael$.
+
+#todo[Formally introduce $⊆$-for-typed-syntax -- compare and contrast with looser $⊑$]
+
+#todo[
+  Introduce calculus of _values_ and _operations_ here 
+  -- 
+  type system _by_ $⊆$, _implied by_ rule $⊆$
+]
+
+#todo[Segue to substitution]
+
 
 #todo[
   Values / operations _don't_ substitute -- but they _do_ rename
