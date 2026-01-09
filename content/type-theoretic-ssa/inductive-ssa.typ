@@ -66,7 +66,7 @@ consisting of:
   where it does not introduce ambiguity,
   we make the coercion $tybase((-)) : ms("X") -> sty(ms("X"))$ implicit.
 
-- $n$-ary coproducts /*(_$Σ$-types_)*/ $Σ#lb("L")$ with named variants $lty(lb("l"), A)$ 
+- $n$-ary coproducts /*(_$Σ$-types_)*/ $Σ#lb("L")$ with named variants $lty(lb("l"), A)$
   -- we assume variant tags are drawn from some fixed, infinite set $tset$
 
 - $n$-ary products /*(_$Π$-types_)*/ $Π#lb("T")$ with named fields $lty(lb("f"), A)$,
@@ -210,7 +210,7 @@ in @cart-ctx-grammar-wk. In particular, we define:
   likewise, exits with no parameters simply accept the empty product $tunit$.
 
   In general, we transparently identify cocontexts $ms("L") ∈ slctx(ms("X"))$
-  and label lists $lb("L") ∈ sstruct(sty(ms("X")))$, 
+  and label lists $lb("L") ∈ sstruct(sty(ms("X")))$,
   transporting labels along a distinguished isomorphism $lab2tag : lset ≈ tset$.
 
 - A _polycontext_ $cal("L") ∈ sdnf(ms("X"))$ to be a list of _ports_ of the form
@@ -356,33 +356,33 @@ This in particular forms a monoid, with multiplication $ρ_1 ρ_2 = ρ_1 ∘ ρ_
 and identity $id : vrens$.
 
 #definition(name: "Renaming")[
-  A cartesian typing discipline $ms("X")$ supports _renaming_ 
+  A cartesian typing discipline $ms("X")$ supports _renaming_
   if it is equipped with a left monoid action
-  of renamings $ρ : vrens$ on types $X ∈ ms("X")$ such that, 
-  for all $ρ$, $λ X qd ρ X$ is an order automorphism on $ms("X")$ 
+  of renamings $ρ : vrens$ on types $X ∈ ms("X")$ such that,
+  for all $ρ$, $λ X qd ρ X$ is an order automorphism on $ms("X")$
   -- i.e. it preserves and reflects weakening.
 ]
 
 In particular,
 - Renaming for contexts is pointwise: $ρ (Γ, x : A) := (ρ Γ), ρ(x) : A$, and $ρ (·^⊗) := (·^⊗)$
 - Renaming for cocontexts is the identity: $ρ (ms("L")) := ms("L")$
-- Renaming for polycontexts is pointwise: 
-  $ρ (cal("L"), clty(lb("l"), Γ, A)) 
+- Renaming for polycontexts is pointwise:
+  $ρ (cal("L"), clty(lb("l"), Γ, A))
   := (#$ρ$cal("L")), clty(lb("l"), ρ Γ, A)$, and $ρ (·^(⊕ ⊗)) := (·^(⊕ ⊗))$
 
 Dually, we define a _relabeling_ $ρ : lrens$ to be a finitely supported injection on labels,
 where the _support_ of a function $ρ : lset → lset$ is defined as
-$  
-fsup(ρ) := { l ∈ lset | ρ(l) ≠ l } 
+$
+  fsup(ρ) := { l ∈ lset | ρ(l) ≠ l }
 $
 This in particular forms a monoid, with multiplication $ρ_1 ρ_2 = ρ_1 ∘ ρ_2$
 and identity $id : lrens$.
 
 #definition(name: "Relabeling")[
-  A cartesian typing discipline $ms("X")$ supports _relabeling_ 
+  A cartesian typing discipline $ms("X")$ supports _relabeling_
   if it is equipped with a right monoid action
-  of relabelings $ρ : lrens$ on types $X ∈ ms("X")$ such that, 
-  for all $ρ$, $λ X qd X ρ$ is an order automorphism on $ms("X")$ 
+  of relabelings $ρ : lrens$ on types $X ∈ ms("X")$ such that,
+  for all $ρ$, $λ X qd X ρ$ is an order automorphism on $ms("X")$
   -- i.e. it preserves and reflects weakening.
 ]
 
@@ -409,12 +409,16 @@ We note in particular that:
 #let daic = iter-calc(dael)
 #let dfic = iter-calc(dfnl)
 
+#let des = ms("E")
+#let dts = ms("T")
+#let drc = reg-calc(des, dts)
+
 We've now got everything we need to give typing rules for our expression language, #iter-calc().
 
 We give a grammar for #dic in @cart-iter-calc-grammar,
 parametrized by an _operator family_ $#dof = (dfnl, dael)$ specifying:
 
-- _functions_ $f ∈ dfnl$: 
+- _functions_ $f ∈ dfnl$:
   in the introduction, these are our _primitive instructions_ like `add` and `sub`,
   but in general these can be drawn from an arbitrary language $dfnl$
   -- in particular, they may be allowed to capture variables, which case we call $f$ a _closure_.
@@ -424,7 +428,7 @@ parametrized by an _operator family_ $#dof = (dfnl, dael)$ specifying:
   these correspond to _constants_ $c$, like `2` and `"hello"`,
   but in general these can be drawn from an arbitrary language $dael$.
 
-We'll call $dof$ an _instruction set_ when $dfnl$ and $dael$ are in 
+We'll call $dof$ an _instruction set_ when $dfnl$ and $dael$ are in
 fact restricted to _closed_ functions and constants respectively.
 
 #let iter-calc-grammar = figure(
@@ -607,10 +611,10 @@ Where clear from context, we drop the subscript on the turnstile specifying the 
 
 #fig-r-hasty <cart-iter-calc-rules>
 
-More formally, 
+More formally,
 #definition(name: [Typing relation, typed syntax])[
   Given cartesian typing disciplines $ms("X")$ and $ms("Y")$,
-  we define a _pretyping relation_ $srel(ms("S")) : ms("X") stfn(S) ms("Y")$ over a _syntax_ $S$ 
+  we define a _pretyping relation_ $srel(ms("S")) : ms("X") stfn(S) ms("Y")$ over a _syntax_ $S$
   to consist of a ternary relation $hasty(X, s, Y, annot: ms("S"))$
   over _inputs_ $X ∈ |ms("X")|$, _terms_ $s ∈ S$, and _outputs_ $Y ∈ |ms("Y")|$.
 
@@ -632,7 +636,7 @@ More formally,
 
 #definition(name: [Operator family])[
   Given cartesian typing disciplines $ms("X")$ and $ms("Y")$,
-  a _pre-operator family_ $dof = (dfnl, dael) : hpop(ms("X"), ms("Y"))$ 
+  a _pre-operator family_ $dof = (dfnl, dael) : hpop(ms("X"), ms("Y"))$
   from $ms("X")$ to $ms("Y")$ consists of:
   - A pretyped syntax $opfn(dof) := dfnl : ms("X") → adisc(ms("Y"))$ of _functions_
   - A pretyped syntax $opatom(dof) := dael : ms("X") → ms("Y")$ of _atomic expressions_
@@ -649,9 +653,9 @@ More formally,
   $
 ]
 
-We may now define 
+We may now define
 #definition(name: [Iteration expressions])[
-  Given a pretyped instruction set $ms("I") : spop(sty(ms("X")))$, 
+  Given a pretyped instruction set $ms("I") : spop(sty(ms("X")))$,
   we define the pretyped syntax of _iteration expressions_ $dic$ to consist of:
   - Terms $|dic|$ given by the grammar in @cart-iter-calc-grammar
   - Typing relation $hasty(Γ, e, A, annot: dic)$ given by the rules in @cart-iter-calc-rules
@@ -677,49 +681,49 @@ _for all_ choices of atomic expression syntax $dael$.
 
 More generally, we define:
 $
-  ms("S")_1 ⊆ ms("S")_2 := 
-    |ms("S")_1| ⊆ |ms("S")_2| 
-    ∧ ∀ s ∈ ms("S")_1 qd hasty(Γ, s, A, annot: ms("S")_1) ==> hasty(Γ, s, A, annot: ms("S")_2)
+  ms("S")_1 ⊆ ms("S")_2 :=
+  |ms("S")_1| ⊆ |ms("S")_2|
+  ∧ ∀ s ∈ ms("S")_1 qd hasty(Γ, s, A, annot: ms("S")_1) ==> hasty(Γ, s, A, annot: ms("S")_2)
 $
 In particular, this is a partial order on pretyped syntax, with bottom element $mb(0) ⊆ ms("S")$,
 and joins and meets given by union and intersection respectively as follows:
 #eqn-set(
   $⋃_i ms("S")_i := (⋃_i |ms("S")_i|, (λ Γ, s, a qd ⋁_i hasty(Γ, s, A, annot: ms("S")_i)))$,
-  $⋂_i ms("S")_i := (⋂_i |ms("S")_i|, (λ Γ, s, a qd ⋀_i hasty(Γ, s, A, annot: ms("S")_i)))$
+  $⋂_i ms("S")_i := (⋂_i |ms("S")_i|, (λ Γ, s, a qd ⋀_i hasty(Γ, s, A, annot: ms("S")_i)))$,
 )
 
 In general, #iter-calc() preserves subsets:
 #space-imp(
   $dof ⊆ dof'$,
-  $#iter-calc(dof) ⊆ #iter-calc($dof'$)$
+  $#iter-calc(dof) ⊆ #iter-calc($dof'$)$,
 )
 where we define
 $
-  (dof ⊆ dof') := 
-    (opfn(dof) ⊆ opfn(dof')) ∧ (opatom(dof) ⊆ opatom(dof'))
+  (dof ⊆ dof') :=
+  (opfn(dof) ⊆ opfn(dof')) ∧ (opatom(dof) ⊆ opatom(dof'))
 $
 
 As a quick sanity check, we want to verify that our type system(s) respect _weakening_
 by a straightforward induction:
-- If $hasty(Δ, e, A, annot: dic)$, 
+- If $hasty(Δ, e, A, annot: dic)$,
   then adding unused variables to $Δ$ can't make $e$ ill-typed.
 - That is, if $Γ ⊑ Δ$ and $hasty(Δ, e, A, annot: dic)$,
   then $hasty(Γ, e, A, annot: dic)$.
 
 Since our weakening relation $Γ ⊑ Δ$ also includes permutations, this also subsumes _exchange_:
 for any permutation $σ$, $hasty(Γ, e, A, annot: dic) <==> hasty(σ · Γ, e, A, annot: dic)$.
-For this to be true, however, we need to ensure that the typing relations for 
+For this to be true, however, we need to ensure that the typing relations for
 $ms("F")$ and $ms("A")$ satisfy weakening as well.
 
 Formally,
 #definition(name: "Typing Relation")[
   We say $srel(ms("S"))$ is:
-  - _stable under input weakening_ if, for all inputs $X' ⊑ X$, 
+  - _stable under input weakening_ if, for all inputs $X' ⊑ X$,
     $hasty(X, s, Y, annot: ms("S"))$ implies $hasty(X', s, Y, annot: ms("S"))$.
 
     That is, if $srel(ms("S"))$ is _contravariant_ in its input (w.r.t. the weakening order).
 
-  - _stable under output weakening_ if, for all outputs $Y ⊑ Y'$, 
+  - _stable under output weakening_ if, for all outputs $Y ⊑ Y'$,
     $hasty(X, s, Y, annot: ms("S"))$ implies $hasty(X, s, Y', annot: ms("S"))$.
 
     That is, if $srel(ms("S"))$ is _covariant_ in its output (w.r.t. the weakening order).
@@ -730,7 +734,7 @@ Formally,
     In this case, we call $srel(ms("S"))$ a _typing relation_.
 ]
 
-We say $dof$ is _stable under (input/output) weakening_ 
+We say $dof$ is _stable under (input/output) weakening_
 if both $dfnl$ and $dael$ are stable under (input/output) weakening.
 -- if $dof$ is stable under weakening, we say $dof$ is a _(typed) operator family_.
 
@@ -747,9 +751,9 @@ We can then state our _weakening lemma_ as follows:
 
 A good type system should also not depend on the particular choice of variable names in our context,
 and hence in particular should be invariant under _renaming_
--- 
-  replacing every variable $x$ with $ρ x$ for some renaming 
-  $ρ : vrens$ should preserve well-typedness.
+--
+replacing every variable $x$ with $ρ x$ for some renaming
+$ρ : vrens$ should preserve well-typedness.
 
 Concretely, we expect that a term
 $hasty(Γ, e, A)$ typechecks if and only if $hasty(ρ Γ, ρ e, A)$ typechecks, whenever
@@ -758,18 +762,18 @@ $ρ : vrens$ is a renaming -- for this to hold, we need both that:
 - We have a well-defined notion of renaming on expressions $ρ e$
 
 It turns out that expressions in fact support a more general operation than renaming
--- namely, _substitution_ -- in which each variable $x : A$ in a context $Δ$ 
-is replaced with an arbitrary _term_ $hasty(Γ, e, A)$ 
+-- namely, _substitution_ -- in which each variable $x : A$ in a context $Δ$
+is replaced with an arbitrary _term_ $hasty(Γ, e, A)$
 (which can, but does not have to, be a variable $y$ in $Γ$).
 
 In particular, we define:
 
-- A _substitution_ is a finitely supported function $γ : vset → ms("E")$,
-  where we define the _support_ of a function $γ : vset → ms("E")$ to be given by
+- A _substitution_ is a finitely supported function $γ : vset → des$,
+  where we define the _support_ of a function $γ : vset → des$ to be given by
   $
     fsup(γ) := { x ∈ vset | γ(x) ≠ x }
   $
-  for $vset ⊆ ms("E")$. We write the set of such functions as $substs(#ms("E"))$.
+  for $vset ⊆ des$. We write the set of such functions as $substs(#des)$.
 
 - We _apply_ a substitution $γ ∈ substs(#dic)$
   to an expression $e ∈ #dic$;
@@ -811,11 +815,8 @@ In particular, we define:
       where we are given
       \
       $
-        (·_dael) &: substs(#dic) → dael → #dic
-        & #h(3em) & "(substitution on atomic expressions)"
-        \
-        (·_dfnl) &: substs(#dic) → dfnl → dfnl
-        && "(substitution on closures)"
+        (·_dael) & : substs(#dic) → dael → #dic & #h(3em) & "(substitution on atomic expressions)" \
+        (·_dfnl) & : substs(#dic) → dfnl → dfnl &         & "(substitution on closures)"
       $
       \
     ],
@@ -850,23 +851,23 @@ In particular, we define:
   )
   (otherwise, multiplication of substitutions is still _well-defined_, but may not form a monoid).
 
-  Where the desired meaning is clear from context, 
+  Where the desired meaning is clear from context,
   we write application $γ · e$ as juxtaposition $γ e$.
 
-- We say that $γ : substs(ms("E"))$ is a _substitution_ from context $Δ$ to context $Γ$,
-  written $issubst(Γ, γ, Δ, annot: substs(ms("E")))$,
+- We say that $γ : substs(des)$ is a _substitution_ from context $Δ$ to context $Γ$,
+  written $issubst(Γ, γ, Δ, annot: substs(des))$,
   if, for each $x : A$ s.t. $cwk(Δ, x : A)$,
-  we have that $hasty(Γ, γ(x), A, annot: ms("E"))$.
+  we have that $hasty(Γ, γ(x), A, annot: des)$.
 
   More formally, we give typing rules for $issubst(Γ, γ, Δ)$ in @cart-iter-subst-rules.
 
   We note that:
-  
-  - This equips $substs(ms("E"))$ with the structure of a pretyped syntax
-    whenever $ms("E")$ is a pretyped syntax 
-    -- morever, if $ms("E")$ is stable under (input/output) weakening, then so is $substs(ms("E"))$.
 
-    In particular, this means that if $ms("E")$ is a typed syntax, then so is $substs(ms("E"))$.
+  - This equips $substs(des)$ with the structure of a pretyped syntax
+    whenever $des$ is a pretyped syntax
+    -- morever, if $des$ is stable under (input/output) weakening, then so is $substs(des)$.
+
+    In particular, this means that if $des$ is a typed syntax, then so is $substs(des)$.
 
   - Every _renaming_ $ρ : vrens$ can be taken as a substitution $issubst(ρ Γ, ρ, Γ)$
 
@@ -876,14 +877,14 @@ In particular, we define:
 
 #let r-iter-subst-nil = rule(
   name: "subst-nil",
-  $issubst(Γ, γ, (·^⊗), annot: substs(ms("E")))$,
+  $issubst(Γ, γ, (·^⊗), annot: substs(des))$,
 );
 
 #let r-iter-subst-cons = rule(
   name: "subst-cons",
-  $issubst(Γ, γ, Δ, annot: substs(ms("E")))$,
-  $hasty(Γ, γ(x), A, annot: ms("E"))$,
-  $issubst(Γ, γ, #$Δ, x : A$, annot: substs(ms("E")))$,
+  $issubst(Γ, γ, Δ, annot: substs(des))$,
+  $hasty(Γ, γ(x), A, annot: des)$,
+  $issubst(Γ, γ, #$Δ, x : A$, annot: substs(des))$,
 )
 
 #figure(
@@ -896,36 +897,48 @@ In particular, we define:
     \
   ],
   caption: [
-    Rules for typing substitutions $γ ∈ substs(ms("E"))$
+    Rules for typing substitutions $γ ∈ substs(des)$
   ],
 ) <cart-iter-subst-rules>
 
 #definition(name: "Renaming, Operation Family")[
-  We say a pretyping relation $ms("E") : ms("X") stfn(S) ms("Y")$ is _stable under renaming_ if
+  We say a pretyping relation $des : ms("X") stfn(S) ms("Y")$ is _stable under renaming_ if
   - $ms("X")$ and $ms("Y")$ support renaming
   - $S$ is equipped with a distinguished monoid action
     $ρ · s ∈ S$ of renamings $ρ : vrens$ on terms $s ∈ S$
   such that, for all renamings $ρ : vrens$,
   #space-iff(
-    $hasty(X, s, Y, annot: ms("E"))$,
-    $hasty(ρ X, ρ s, ρ Y, annot: ms("E"))$,
+    $hasty(X, s, Y, annot: des)$,
+    $hasty(ρ X, ρ s, ρ Y, annot: des)$,
   )
 
-  We define an _operation family_ $dof = (dfnl, dael)$ to be a preoperation family 
+  We define an _operation family_ $dof = (dfnl, dael)$ to be a preoperation family
   such tha $dfnl$ and $dael$ are both stable under renaming and weakening --
   we write
-  - The set of operation families from $ms("X")$ to $ms("Y")$ as 
+  - The set of operation families from $ms("X")$ to $ms("Y")$ as
     $hop(ms("X"), ms("Y")) ⊆ hpop(ms("X"), ms("Y"))$
-  - The set of operation families over $ms("X")$ as 
+  - The set of operation families over $ms("X")$ as
     $sop(ms("X")) := hop(sctx(ms("X")), ms("X")) ⊆ spop(ms("X"))$
 ]
 
+In particular, we note that we have
+#lemma(name: [Renaming (#dic)])[
+  If #dof is an operation family, then #dic is stable under renaming
+  -- i.e. for all renamings $ρ : vrens$,
+  #space-iff(
+    $hasty(Γ, e, A, annot: dic)$,
+    $hasty(ρ Γ, ρ e, A, annot: dic)$,
+  )
+]
+
+Finally, we want to ensure that our type system supports _substitution_ as well.
+
 #definition(name: [Substitutive])[
-  We say that a pretyped syntax $ms("E") : sctx(ms("X")) sfn ms("X")$ is _substitutive_ if
-  - $ms("Var") ⊆ ms("E")$
-  - $ms("E")$ is stable under renaming
-  - $|ms("E")|$ is equipped with an action
-    $γ · e ∈ ms("E")$ of substitutions $γ ∈ substs(ms("E"))$ on terms $e ∈ ms("E")$
+  We say that a pretyped syntax $des : sctx(ms("X")) sfn ms("X")$ is _substitutive_ if
+  - $ms("Var") ⊆ des$
+  - $des$ is stable under renaming
+  - $|des|$ is equipped with an action
+    $γ · e ∈ des$ of substitutions $γ ∈ substs(des)$ on terms $e ∈ des$
   such that:
   - $(γ_1γ_2) · e = γ_1 · (γ_2 · e)$, where $(γ_1γ_2)(x) = γ_1 · (γ_2(x))$
   - For all substitutions $issubst(Γ, γ, Δ)$ and $hasty(Δ, e, A)$,
@@ -933,32 +946,32 @@ In particular, we define:
   - Given $∀ x ∈ Δ qd γ'(x) = γ(x)$, $γ' · e = γ · e$, and, in particular,
   - If, given a renaming $ρ$, $∀ x ∈ Δ qd ρ(x) = γ(x)$,
     then $γ · e = ρ · e$
-    where the right-hand side is the renaming action on $ms("E")$
+    where the right-hand side is the renaming action on $des$
     -- i.e., substitution extends renaming.
 
     Therefore, in particular, $id · e = e$.
 
-  We call a substitutive typed syntax $ms("E") : sctx(ms("X")) sfn ms("X")$ 
+  We call a substitutive typed syntax $des : sctx(ms("X")) sfn ms("X")$
   an _expression syntax (over $ms("X")$)_
   -- we write the set of such syntaxes as $sexpr(ms("X"))$.
 ]
 
-To show that $dic$ is in fact substitutive 
+To show that $dic$ is in fact substitutive
 -- and therefore an expression syntax over $sty(ms("X"))$ --
 we need to be able to substitute functions in $dfnl$
 and atomic expressions in $dael$ as well -- i.e., we need to show that $dof$ is compatible with
-$dic$-substitutions. The definition of substitutive, 
-however, doesn't generalize directly to operator families, 
+$dic$-substitutions. The definition of substitutive,
+however, doesn't generalize directly to operator families,
 since it doesn't even make sense to consider substitutions $substs(dof)$.
 Instead, we proceed as follows:
 
-#definition(name: [$ms("V")$-Substitutive])[ 
+#definition(name: [$ms("V")$-Substitutive])[
   Given an expression syntax $ms("V") : sexpr(ms("X"))$,
-  we say that a pretyped syntax $ms("E") : sctx(ms("X")) sfn ms("Y")$ 
+  we say that a pretyped syntax $des : sctx(ms("X")) sfn ms("Y")$
   is _$ms("V")$-substitutive_ if
-  - $ms("E")$ is stable under renaming
-  - $|ms("E")|$ is equipped with an action
-    $γ · e ∈ ms("E")$ of substitutions $γ ∈ substs(ms("V"))$ on terms $e ∈ ms("E")$
+  - $des$ is stable under renaming
+  - $|des|$ is equipped with an action
+    $γ · e ∈ des$ of substitutions $γ ∈ substs(ms("V"))$ on terms $e ∈ des$
   such that:
   - $(γ_1γ_2) · e = γ_1 · (γ_2 · e)$, where $(γ_1γ_2)(x) = γ_1 · (γ_2(x))$
   - For all substitutions $issubst(Γ, γ, Δ)$ and $hasty(Δ, e, A)$,
@@ -966,7 +979,7 @@ Instead, we proceed as follows:
   - Given $∀ x ∈ Δ qd γ'(x) = γ(x)$, $γ' · e = γ · e$, and, in particular,
   - If, given a renaming $ρ$, $∀ x ∈ Δ qd ρ(x) = γ(x)$,
     then $γ · e = ρ · e$
-    where the right-hand side is the renaming action on $ms("E")$
+    where the right-hand side is the renaming action on $des$
     -- i.e., substitution extends renaming.
 
     Therefore, in particular, $id · e = e$.
@@ -976,31 +989,31 @@ We say that a pre-operator family $dof = (dfnl, dael)$ is _$ms("V")$-substitutiv
 both $dfnl$ and $dael$ are both $ms("V")$-substitutive.
 
 In general, we then note that:
-- $ms("E")$ is an expression syntax iff it is $ms("E")$-substitutive
+- $des$ is an expression syntax iff it is $des$-substitutive
 - $mb("0")$ is $ms("V")$-substitutive for all substitutive $ms("V")$
 
-In general, we want that, if $ms("E")$ is _closed_, i.e. does not depend on variables,
-then $ms("E")$ should be $ms("V")$-substitutive for all substitutive $ms("V")$.
+In general, we want that, if $des$ is _closed_, i.e. does not depend on variables,
+then $des$ should be $ms("V")$-substitutive for all substitutive $ms("V")$.
 
 #definition(name: [Closed])[
-  We say that a pretyped syntax $ms("E") : ms("X") sfn ms("Y")$ is _closed_ if:
-  - For all inputs $X ⊑ X' ∈ |ms("X")|$, 
-    $hasty(X, e, Y, annot: ms("E")) <==> hasty(X', e, Y, annot: ms("E"))$
+  We say that a pretyped syntax $des : ms("X") sfn ms("Y")$ is _closed_ if:
+  - For all inputs $X ⊑ X' ∈ |ms("X")|$,
+    $hasty(X, e, Y, annot: des) <==> hasty(X', e, Y, annot: des)$
   - $ms("X")$ and $ms("Y")$ support renaming
-  - The action of renamings $ρ : vrens$ on terms $e ∈ ms("E")$ is the identity 
+  - The action of renamings $ρ : vrens$ on terms $e ∈ des$ is the identity
     -- $∀ ρ, e qd ρ · e = e$
 ]
 
-In this case, for any $ms("E") : sctx(ms("X")) sfn ms("Y")$ closed, 
+In this case, for any $des : sctx(ms("X")) sfn ms("Y")$ closed,
 given $ms("V") : sexpr(ms("X"))$,
-we may equip $ms("E")$ with the structure of a $ms("V")$-substitutive syntax by
+we may equip $des$ with the structure of a $ms("V")$-substitutive syntax by
 defining $γ · e := e$ for all substitutions $γ ∈ substs(ms("V"))$.
 
 #definition(name: [Instruction Set])[
   We say an operator family $dof = (dfnl, dael)$ is an _instruction set_ if
   $dfnl$ and $dael$ are both closed.
 
-  We write: 
+  We write:
   - the set of instruction sets from $ms("X")$ to $ms("Y")$ as
     $hinst(ms("X"), ms("Y")) ⊆ hop(ms("X"), ms("Y"))$
   - the set of instruction sets over $ms("X")$ as
@@ -1012,7 +1025,7 @@ all substitutive $ms("V") : sexpr(ms("X"))$.
 
 We can now give our _substitution lemma_ for $#dic$ as follows:
 
-#lemma(name: "Substitution")[
+#lemma(name: [Substitution (#dic)])[
   If $dof$ is $dic$-substitutive,
   then so is #dic --
   i.e. for all $issubst(Γ, γ, Δ)$ and $hasty(Δ, e, A)$,
@@ -1083,7 +1096,7 @@ below:
 
 #val-calc-grammar <val-calc-grammar>
 
-We type values and operations as a subset of expressions in #dic -- that is, 
+We type values and operations as a subset of expressions in #dic -- that is,
 $
   #val-calc(dael) #h(2em) ⊆ #h(2em) #inst-calc(dael) #h(2em) ⊆ #h(2em) #iter-calc(dael)
 $
@@ -1094,14 +1107,14 @@ $
 and hence
 $
   ∀ v ∈ #val-calc(dael) qd &
-    hasty(Γ, v, A, annot: #val-calc(dael)) 
-    &&<==> hasty(Γ, v, A, annot: #inst-calc(dael))
-    &&<==> hasty(Γ, v, A, annot: #iter-calc(dael))
-    \
+  hasty(Γ, v, A, annot: #val-calc(dael))
+  &&<==> hasty(Γ, v, A, annot: #inst-calc(dael))
+  &&<==> hasty(Γ, v, A, annot: #iter-calc(dael))
+  \
   ∀ o ∈ #inst-calc(dof) qd &
-    hasty(Γ, o, A, annot: #inst-calc(dof)) 
-    &&<==> hasty(Γ, o, A, annot: #iter-calc(dof))
-    &&
+  hasty(Γ, o, A, annot: #inst-calc(dof))
+  &&<==> hasty(Γ, o, A, annot: #iter-calc(dof))
+  &&
 $
 
 We note in particular that:
@@ -1114,8 +1127,8 @@ We note in particular that:
   - If $ms("A")$ supports renaming,
     then so does #val-calc(dael)
 
-- #val-calc(dael) 
-  is in fact an expression syntax 
+- #val-calc(dael)
+  is in fact an expression syntax
   (that is, #val-calc(dael)-substitutive, _not_ #iter-calc(dael)-substitutive!)
   whenever $dael$ is $#val-calc(dael)$-substitutive
 
@@ -1130,7 +1143,7 @@ We note in particular that:
 - #inst-calc(dof) is not generally an expression syntax, but
   _is_ $#val-calc(dael)$-substitutive whenever $dof$ is $#val-calc(dael)$-substitutive.
 
-- #val-calc() preserves subsets: 
+- #val-calc() preserves subsets:
   #space-imp(
     $dael ⊆ dael'$,
     $#val-calc(dael) ⊆ #val-calc($dael'$)$,
@@ -1217,27 +1230,27 @@ which we can roughly divide into two mutually-recursive groups:
 
 Our approach will be to:
 
-- Give a grammar and type theory for a language of _regions_, #reg-calc(ms("E"), ms("T")),
-  parametrized by _expressions_ $e ∈ ms("E")$ and _terminators_ $τ ∈ ms("T")$.
+- Give a grammar and type theory for a language of _regions_, #drc,
+  parametrized by _expressions_ $e ∈ des$ and _terminators_ $τ ∈ dts$.
 
-- Give a grammar and type theory for _terminators_ $#cond-calc(ms("E"))$:
-  (potentially) conditional branches parametrized by expressions $e ∈ ms("E")$.
+- Give a grammar and type theory for _terminators_ $#cond-calc(des)$:
+  (potentially) conditional branches parametrized by expressions $e ∈ des$.
 
 We will then define
 $
-  #ssa-calc(ms("E")) := #reg-calc(ms("E"), $#cond-calc(ms("E"))$)
+  #ssa-calc(des) := #reg-calc(des, $#cond-calc(des)$)
 $
 while at the same time having a uniform framework for reasoning about different SSA variants.
 
 In particular, our construction of #gssa-calc() by fusing the syntactic categories of terminators
 and regions will be evidenced by the fact that
 $
-  #cond-calc(ms("E"))
-  #h(2em) ⊆ #h(2em) #gssa-calc(ms("E"))
-  #h(2em) = #h(2em) #reg-calc(ms("E"), gssa-calc(ms("E")))
+  #cond-calc(des)
+  #h(2em) ⊆ #h(2em) #gssa-calc(des)
+  #h(2em) = #h(2em) #reg-calc(des, gssa-calc(des))
 $
 
-We give a grammar for #reg-calc(ms("E"), ms("T")) below in @reg-grammar
+We give a grammar for #drc below in @reg-grammar
 -- this is precisely just the productions $r$ and $L$ from
 the #ssa-calc() grammar in @lex-ssa-full:
 
@@ -1263,8 +1276,8 @@ the #ssa-calc() grammar in @lex-ssa-full:
     \
   ],
   caption: [
-    Grammar for $r ∈ #reg-calc(ms("E"), ms("T"))$
-    parametrized by _expressions_ $e ∈ ms("E")$ and _terminators_ $τ ∈ ms("T")$
+    Grammar for $r ∈ #drc$
+    parametrized by _expressions_ $e ∈ des$ and _terminators_ $τ ∈ dts$
   ],
   kind: image,
 )
@@ -1272,17 +1285,17 @@ the #ssa-calc() grammar in @lex-ssa-full:
 #fig-reg-grammar <reg-grammar>
 
 
-We give typing rules for #reg-calc(ms("E"), ms("T"))-judgements
+We give typing rules for $drc$-judgements
 #judgement-meaning(
   $haslb(Γ, r, ms("L"))$,
-  ["Region $r ∈ ms("T")$ has takes context $Γ$ to cocontext $ms("L")$"],
+  ["Region $r ∈ dts$ has takes context $Γ$ to cocontext $ms("L")$"],
   $klbrs(cal(K), L, ms("L"))$,
   ["The CFG $L$ maps polycontext $cal(K)$ to cocontext $ms("L")$"],
 )
 parametrized by a judgement
 #judgement-meaning(
-  $haslb(Γ, τ, ms("L"), annot: ms("T"))$,
-  ["Terminator $τ ∈ ms("T")$ has takes context $Γ$ to cocontext $ms("L")$"],
+  $haslb(Γ, τ, ms("L"), annot: dts)$,
+  ["Terminator $τ ∈ dts$ has takes context $Γ$ to cocontext $ms("L")$"],
 )
 in @cart-reg-rules below:
 
@@ -1307,7 +1320,7 @@ in @cart-reg-rules below:
 )
 #let r-tm = rule(
   name: "tm",
-  $haslb(Γ, τ, ms("L"), annot: ms("T"))$,
+  $haslb(Γ, τ, ms("L"), annot: dts)$,
   $haslb(Γ, τ, ms("L"))$,
 );
 #let r-lb-nil = rule(
@@ -1333,7 +1346,7 @@ in @cart-reg-rules below:
     )
     \
   ],
-  caption: [Typing rules for #reg-calc(ms("E"), ms("T"))],
+  caption: [Typing rules for #drc],
 )
 
 #fig-haslb-reg <cart-reg-rules>
@@ -1346,43 +1359,29 @@ In particular,
 - We type destructurings using @r-cart-reg-destruct.
   As for expressions, we require each variable in $mb("x")$ to be fresh.
 
-- We inherit typing for terminators from $ms("T")$ using @r-cart-tm
+- We inherit typing for terminators from $dts$ using @r-cart-tm
 
 - We type braces using @r-cart-reg-scope,
   where the polycontext $Γ csplat ms("K")$ broadcasts $Γ$ along the cocontext $ms("K")$.
 
-As for expressions, we can verify that our type system respects both (variable) _weakening_
-and _label weakening_ by induction:
+As for expressions, we can verify that our type system respects _weakening_ by induction:
 
-#lemma(name: "Weakening")[
-  If $ms("E")$ and $ms("T")$ are stable under weakening,
-  then so is #reg-calc(ms("E"), ms("T"))
-  -- i.e. for all $Γ ⊑ Δ$,
-  $
-    haslb(Δ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, r, ms("L"))
-  $
-  where we say that $ms("E")$ and $ms("T")$ are stable under weakening when
-  - For all $Γ ⊑ Δ$, $hasty(Δ, e, A)$ implies $hasty(Γ, e, A)$.
-  - For all $Γ ⊑ Δ$, $haslb(Δ, τ, ms("L"), annot: ms("T"))$ implies
-    $haslb(Γ, τ, ms("L"), annot: ms("T"))$.
-]
+#lemma(name: [Weakening (#drc)])[
+  If $des$ and $dts$ are stable under weakening,
+  then so is #drc
+  -- i.e. for all $Γ ⊑ Δ$ and $ms("L") ⊏ ms("K")$,
+  #space-imp(
+    $haslb(Δ, r, ms("K"))$,
+    $haslb(Γ, r, ms("L"))$,
+  )
 
-#lemma(name: "Label Weakening")[
-  If $ms("T")$ is stable under label weakening,
-  then so is #reg-calc(ms("E"), ms("T"))
-  -- i.e. for all $ms("L") sle() ms("K")$,
-  $
-    haslb(Γ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, r, ms("K"))
-  $
-  where we say that $ms("T")$ is stable under label weakening when
-  - For all $ms("L") sle() ms("K")$,
-    $haslb(Γ, τ, ms("L"), annot: ms("T"))$ implies
-    $haslb(Γ, τ, ms("K"), annot: ms("T"))$.
+  In particular, this implies that if $des$ and $dts$ are typed syntaxes,
+  then so is #drc.
 ]
 
 To state _substitution_, intuitively,
-we need both our grammar of _expressions_ $ms("E")$
-and our grammar of _terminators_ $ms("T")$ to be appropriately closed under substitution
+we need both our grammar of _expressions_ $des$
+and our grammar of _terminators_ $dts$ to be appropriately closed under substitution
 -- just like how defining capture-avoiding substitution on expressions $e ∈ #dic$
 requires defining substitution for atomic expressions $α ∈ dael$ and functions $f ∈ dfnl$.
 In particular, we give a definition of capture-avoiding substitution on regions
@@ -1391,11 +1390,11 @@ in @cap-avoid-reg-subst-rules below:
 #figure(
   [
     $
-              γ · (slet(x, e, r)) & := (slet(x, γ ·_ms("E") e, γ · r)) //
-                                                     & #h(1em) & "(choosing " x ∉ fsup(γ)")" \
-      γ · (slet((mb("x")), e, r)) & := (slet((mb("x")), γ ·_ms("E") e, γ · r)) //
-                                                     &         & "(choosing " mb("x") ∩ fsup(γ) = ∅")" \
-                            γ · τ & := γ ·_ms("T") τ \
+              γ · (slet(x, e, r)) & := (slet(x, γ ·_des e, γ · r)) //
+                                                 & #h(1em) & "(choosing " x ∉ fsup(γ)")" \
+      γ · (slet((mb("x")), e, r)) & := (slet((mb("x")), γ ·_des e, γ · r)) //
+                                                 &         & "(choosing " mb("x") ∩ fsup(γ) = ∅")" \
+                            γ · τ & := γ ·_dts τ \
     $
     $
       & γ · ({r} seq L) := {γ · r} seq (γ · L) "where" \
@@ -1408,53 +1407,36 @@ in @cap-avoid-reg-subst-rules below:
     where we are given
     \
     $
-      (·_ms("E")) & : substs(ms("E")') → ms("E") → ms("E") & #h(3em) & "(substitution on expressions)" \
-      (·_ms("T")) & : substs(ms("E")') → ms("T") → ms("T") &         & "(substitution on terminators)"
+      (·_des) & : substs(des') → des → des & #h(3em) & "(substitution on expressions)" \
+      (·_dts) & : substs(des') → dts → dts &         & "(substitution on terminators)"
     $
-    for some expression grammar $vset ⊆ ms("E")'$.
+    for some expression grammar $vset ⊆ des'$.
     \
     \
   ],
   caption: [
-    Capture-avoiding substitution on regions $r ∈ #reg-calc(ms("E"), ms("T"))$
+    Capture-avoiding substitution on regions $r ∈ #drc$
   ],
 ) <cap-avoid-reg-subst-rules>
 
-We can then state substitution for #reg-calc(ms("E"), ms("T")) as follows:
-#lemma(name: "Substitution")[
-  If $ms("E")$ and $ms("T")$ are stable under substitution,
-  then so is #reg-calc(ms("E"), ms("T"))
-  -- i.e. for all $issubst(Γ, γ, Δ)$,
-  $
-    haslb(Δ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, γ ·_ms("E") r, ms("L"))
-  $
-  where we say that $ms("E")$ and $ms("T")$ are stable under substitution when
-  - For all $issubst(Γ, γ, Δ)$ and $hasty(Δ, e, A)$,
-    we have $hasty(Γ, γ ·_ms("E") e, A)$.
-  - For all $issubst(Γ, γ, Δ)$ and $haslb(Δ, τ, ms("L"), annot: ms("T"))$,
-    we have $haslb(Γ, γ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
+We can then state substitution for #drc as follows:
+#lemma(name: [Substitution (#drc)])[
+  If $des$ and $dts$ are $ms("V")$-substitutive,
+  then so is #drc
+  -- i.e. for all $issubst(Γ, γ, Δ, annot: substs(ms("V")))$,
+  #space-imp(
+    $haslb(Δ, r, ms("L"))$,
+    $haslb(Γ, γ · r, ms("L"))$,
+  )
 ]
 
-Note that we've snuck in a little additional generality here:
-- We never actually assumed that $ms("E") = #dic$ for some $dof$
-  -- $#dael$, for example, would also be a perfectly valid choice
-- Our substitutions are of type $γ ∈ substs(ms("E")')$ -- again, we never assumed that
-  $ms("E")' = ms("E")$ _or_ that $ms("E")' = #dic$,
-  only that $vset ⊆ ms("E"')$.
-
-  In particular, this means that our substitution lemma is parametric not only on
-  typing rules for expressions $ms("E")$ and terminators $ms("T")$,
-  but also on typing rules for a potentially different expression grammar $ms("E")'$
-  (which, via the rules in @cart-iter-subst-rules, give us typing rules for substitutions
-  $γ ∈ substs(ms("E")')$).
-
-We can recover our lexical SSA language $#ssa-calc()$ from the introduction,
-extended with additional terminators $τ ∈ ms("T")$, by taking
+We can recover our lexical-SSA-with-expressions language $#ssa-calc()$ from the introduction,
+extended with additional terminators $τ ∈ dts$, by taking
 $
-  #ssa-calc(ms("E"), ms("T"))
-  := #reg-calc(ms("E"), $#cond-calc(ms("E")) ∪ ms("T")$)
+  #ssa-calc(des, dts)
+  := #reg-calc(des, $#cond-calc(des) ∪ dts$)
 $
-Here, we define $#cond-calc(ms("E"))$ to be the language of _(potentially) conditional branches_,
+Here, we define $#cond-calc(des)$ to be the language of _(potentially) conditional branches_,
 given in @br-grammar below:
 #let fig-br-grammar = figure(
   [
@@ -1480,18 +1462,18 @@ given in @br-grammar below:
   ],
   caption: [
     Grammar
-    for _unconditional branches_ $u ∈ #br-calc(ms("E"))$
-    and _conditional branches_ $τ ∈ #cond-calc(ms("E"), ms("U"))$
-    parametrized by _expressions_ $e ∈ ms("E")$ and _jumps_ $j ∈ ms("U")$.
+    for _unconditional branches_ $u ∈ #br-calc(des)$
+    and _conditional branches_ $τ ∈ #cond-calc(des, ms("U"))$
+    parametrized by _expressions_ $e ∈ des$ and _jumps_ $j ∈ ms("U")$.
     //
-    We define $#cond-calc(ms("E")) := #cond-calc(ms("E"), br-calc(ms("E")))$.
+    We define $#cond-calc(des) := #cond-calc(des, br-calc(des))$.
   ],
   kind: image,
 )
 
 #fig-br-grammar <br-grammar>
 
-We may give typing rules for #cond-calc(ms("E"), ms("U")) in @cart-br-rules below:
+We may give typing rules for #cond-calc(des, ms("U")) in @cart-br-rules below:
 
 // Rules for br-calc(E)
 #let r-cond-tm = rule(
@@ -1528,41 +1510,25 @@ We may give typing rules for #cond-calc(ms("E"), ms("U")) in @cart-br-rules belo
     \
   ],
   caption: [
-    Typing rules for #cond-calc(ms("E"), ms("U")) and #br-calc(ms("E")).
-    We define $#cond-calc(ms("E")) := #cond-calc(ms("E"), br-calc(ms("E")))$.
+    Typing rules for #cond-calc(des, ms("U")) and #br-calc(des).
+    We define $#cond-calc(des) := #cond-calc(des, br-calc(des))$.
   ],
 )
 
 #fig-haslb-br <cart-br-rules>
 
-Weakening and label-weakening can be stated as follows:
-#lemma(name: "Weakening")[
-  If $ms("E")$ and $ms("U")$ are stable under weakening,
-  then so is #cond-calc(ms("E"), ms("U"))
-  -- i.e. for all $Γ ⊑ Δ$,
-  $
-    haslb(Δ, τ, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, τ, ms("L"))
-  $
-  where we say that $ms("E")$ and $ms("U")$ are stable under weakening when
-  - For all $Γ ⊑ Δ$, $hasty(Δ, e, A, annot: ms("E"))$ implies $hasty(Γ, e, A, annot: ms("E"))$.
-  - For all $Γ ⊑ Δ$, $haslb(Δ, j, ms("L"), annot: ms("U"))$ implies
-    $haslb(Γ, j, ms("L"), annot: ms("U"))$.
+Weakening can be stated as follows:
+#lemma(name: [Weakening (#cond-calc(ms("E"), ms("Ts")))])[
+  If $des$ and $ms("U")$ are stable under weakening,
+  then so is #cond-calc(des, ms("U"))
+  -- i.e. for all $Γ ⊑ Δ$ and $ms("L") ⊏ ms("K")$,
+  #space-imp(
+    $haslb(Δ, τ, ms("L"))$,
+    $haslb(Γ, τ, ms("K"))$,
+  )
 ]
 
-#lemma(name: "Label Weakening")[
-  If $ms("T")$ is stable under label weakening,
-  then so is #cond-calc(ms("E"), ms("U"))
-  -- i.e. for all $ms("L") sle() ms("K")$,
-  $
-    haslb(Γ, τ, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, τ, ms("K"))
-  $
-  where we say that $ms("U")$ is stable under label weakening when
-  - For all $ms("L") sle() ms("K")$,
-    $haslb(Γ, j, ms("L"), annot: ms("U"))$ implies
-    $haslb(Γ, j, ms("K"), annot: ms("U"))$.
-]
-
-Likewise, we define capture-avoiding substitution for #cond-calc(ms("E"), ms("U")) by
+Likewise, we define capture-avoiding substitution for #cond-calc(des, ms("U")) by
 structural recursion in @cap-avoid-cond-subst-rules below:
 
 #figure(
@@ -1572,7 +1538,7 @@ structural recursion in @cap-avoid-cond-subst-rules below:
       $$,
     )
     $
-      & γ · (scase(e, K)) := scase(γ ·_ms("E") e, γ · K) "where" \
+      & γ · (scase(e, K)) := scase(γ ·_des e, γ · K) "where" \
       & #h(2em) γ · (·_K) := (·_K), \
       & #h(2em) γ · (K seq sbr(lb("l"), x, j)) := (γ · K, sbr(lb("l"), x, γ ·_ms("U") j))
         #h(2em)
@@ -1582,127 +1548,93 @@ structural recursion in @cap-avoid-cond-subst-rules below:
     where we are given
     \
     $
-      (·_ms("E")) & : substs(ms("E")') → ms("E") → ms("E") & #h(3em) & "(substitution on expressions)" \
-      (·_ms("U")) & : substs(ms("E")') → ms("U") → ms("U") &         & "(substitution on jumps)"
+          (·_des) & : substs(des') → des → des         & #h(3em) & "(substitution on expressions)" \
+      (·_ms("U")) & : substs(des') → ms("U") → ms("U") &         & "(substitution on jumps)"
     $
-    for some expression grammar $vset ⊆ ms("E")'$.
+    for some expression grammar $vset ⊆ des'$.
     \
     \
   ],
   caption: [
-    Capture-avoiding substitution on regions $r ∈ #reg-calc(ms("E"), ms("U"))$
+    Capture-avoiding substitution on regions $r ∈ #reg-calc(des, ms("U"))$
   ],
 ) <cap-avoid-cond-subst-rules>
 
 We can then state the substitution lemma as follows:
-#lemma(name: "Substitution")[
-  If $ms("E")$ and $ms("U")$ are stable under substitution,
-  then so is #cond-calc(ms("E"), ms("U"))
-  -- i.e. for all $issubst(Γ, γ, Δ)$ and $haslb(Δ, τ, ms("L"))$,
-  $ haslb(Γ, γ · τ, ms("L")) $
-  where we say that $ms("E")$ and $ms("U")$ are stable under substitution when
-  - For all $issubst(Γ, γ, Δ)$ and $hasty(Δ, e, A, annot: ms("E"))$,
-    we have $hasty(Γ, γ ·_ms("E") e, A, annot: ms("E"))$.
-  - For all $issubst(Γ, γ, Δ)$ and $haslb(Δ, j, ms("L"), annot: ms("U"))$,
-    we have $haslb(Γ, γ ·_ms("U") j, ms("L"), annot: ms("U"))$.
+#lemma(name: [Substitution (#cond-calc(des, ms("U")))])[
+  If $des$ and $ms("U")$ are $ms("V")$-substitutive,
+  then so is #cond-calc(des, ms("U"))
+  -- i.e. for all $issubst(Γ, γ, Δ, annot: substs(ms("V")))$,
+  #space-imp(
+    $haslb(Δ, τ, ms("L"))$,
+    $haslb(Γ, γ · τ, ms("L"))$,
+  )
 ]
 
-On the other hand, #br-calc(ms("E")) requires only a single typing rule for unconditional jumps:
+On the other hand, #br-calc(des) requires only a single typing rule for unconditional jumps:
 
 #let r-br = rule(
   name: "br",
   $lbcwk(lty(lb("l"), A), ms("L"))$,
-  $hasty(Γ, e, A, annot: ms("E"))$,
-  $haslb(Γ, brb(lb("l"), e), ms("L"), annot: #br-calc(ms("E")))$,
+  $hasty(Γ, e, A, annot: des)$,
+  $haslb(Γ, brb(lb("l"), e), ms("L"), annot: #br-calc(des))$,
 );
 $
   #declare-rule(r-br)
 $
 
-We can view #br-calc(ms("E")) as the minimal "lifting" an of expression language $ms("E")$ into a
+We can view #br-calc(des) as the minimal "lifting" an of expression language $des$ into a
 region language. In particular, defining
 $
-  γ · (brb(lb("l"), e)) := brb(lb("l"), γ ·_ms("E") e)
+  γ · (brb(lb("l"), e)) := brb(lb("l"), γ ·_des e)
 $
 we satisfy
 
-#lemma(name: "Weakening")[
-  If $ms("E")$ is stable under weakening,
-  then so is #br-calc(ms("E"))
-  -- i.e. for all $Γ ⊑ Δ$,
-  $
-    haslb(Δ, u, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, u, ms("L"))
-  $
-  where we say that $ms("E")$ is stable under weakening when
-  - For all $Γ ⊑ Δ$, $hasty(Δ, e, A, annot: ms("E"))$ implies $hasty(Γ, e, A, annot: ms("E"))$.
+#lemma(name: [Weakening (#br-calc(des))])[
+  If $des$ is stable under weakening,
+  then so is #br-calc(des)
+  -- i.e. for all $Γ ⊑ Δ$ and $ms("L") ⊏ ms("K")$,
+  #space-imp(
+    $haslb(Δ, u, ms("L"))$,
+    $haslb(Γ, u, ms("K"))$,
+  )
 ]
 
-#lemma(name: "Label Weakening")[
-  #br-calc(ms("E")) is stable under label weakening
-  -- i.e. for all $ms("L") sle() ms("K")$,
-  $
-    haslb(Γ, u, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, u, ms("K"))
-  $
-]
-
-#lemma(name: "Substitution")[
-  If $ms("E")$ is stable under substitution,
-  then so is #br-calc(ms("E"))
-  -- i.e. for all $issubst(Γ, γ, Δ)$,
-  $
-    haslb(Δ, u, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, γ · u, ms("L"))
-  $
-  where we say that $ms("E")$ is stable under substitution when
-  - For all $issubst(Γ, γ, Δ)$ and $hasty(Δ, e, A, annot: ms("E"))$,
-    we have $hasty(Γ, γ ·_ms("E") e, A, annot: ms("E"))$.
+#lemma(name: [Substitution (#br-calc(des))])[
+  If $des$ is $ms("V")$-substitutive,
+  then so is #br-calc(des)
+  -- i.e. for all $issubst(Γ, γ, Δ, annot: substs(ms("V")))$,
+  #space-imp(
+    $haslb(Δ, u, ms("L"))$,
+    $haslb(Γ, γ · u, ms("L"))$,
+  )
 ]
 
 It follows that we can combine our results for #reg-calc() and #cond-calc() to derive results for
 #ssa-calc(), where we define
 $
-  #ssa-calc(ms("E"), ms("T")) := #reg-calc(ms("E"), $#cond-calc(ms("E")) ∪ ms("T")$)
+  #ssa-calc(des, dts) := #reg-calc(des, $#cond-calc(des) ∪ dts$)
 $
 
 In particular, we have:
 
-#lemma(name: "Weakening")[
-  If $ms("E")$ and $ms("T")$ are stable under weakening,
-  then so is #ssa-calc(ms("E"), ms("T"))
-  -- i.e. for all $Γ ⊑ Δ$,
+#lemma(name: [Weakening (#ssa-calc(des, dts))])[
+  If $des$ and $dts$ are stable under weakening,
+  then so is #ssa-calc(des, dts)
+  -- i.e. for all $Γ ⊑ Δ$ and $ms("L") ⊏ ms("K")$,
   $
-    haslb(Δ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, r, ms("L"))
+    haslb(Δ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, r, ms("K"))
   $
-  where we say that $ms("E")$ and $ms("T")$ are stable under weakening when
-  - For all $Γ ⊑ Δ$, $hasty(Δ, e, A)$ implies $hasty(Γ, e, A)$.
-  - For all $Γ ⊑ Δ$, $haslb(Δ, τ, ms("L"), annot: ms("T"))$ implies
-    $haslb(Γ, τ, ms("L"), annot: ms("T"))$.
 ]
 
-#lemma(name: "Label Weakening")[
-  If $ms("T")$ is stable under label weakening,
-  then so is #ssa-calc(ms("E"), ms("T"))
-  -- i.e. for all $ms("L") sle() ms("K")$,
-  $
-    haslb(Γ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, r, ms("K"))
-  $
-  where we say that $ms("T")$ is stable under label weakening when
-  - For all $ms("L") sle() ms("K")$,
-    $haslb(Γ, τ, ms("L"), annot: ms("T"))$ implies
-    $haslb(Γ, τ, ms("K"), annot: ms("T"))$.
-]
-
-#lemma(name: "Substitution")[
-  If $ms("E")$ and $ms("T")$ are stable under substitution,
-  then so is #ssa-calc(ms("E"), ms("T"))
-  -- i.e. for all $issubst(Γ, γ, Δ)$,
-  $
-    haslb(Δ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, γ · r, ms("L"))
-  $
-  where we say that $ms("E")$ and $ms("T")$ are stable under substitution when
-  - For all $issubst(Γ, γ, Δ)$ and $hasty(Δ, e, A)$,
-    we have $hasty(Γ, γ ·_ms("E") e, A)$.
-  - For all $issubst(Γ, γ, Δ)$ and $haslb(Δ, τ, ms("L"), annot: ms("T"))$,
-    we have $haslb(Γ, γ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
+#lemma(name: [Substitution (#ssa-calc(des, dts))])[
+  If $des$ and $dts$ are $ms("V")$-substitutive,
+  then so is #ssa-calc(des, dts)
+  -- i.e. for all $issubst(Γ, γ, Δ, annot: substs(ms("V")))$
+  #space-imp(
+    $haslb(Δ, r, ms("L"))$,
+    $haslb(Γ, γ · r, ms("L"))$,
+  )
 ]
 
 In particular, substitution therefore holds for lexical SSA
@@ -1746,15 +1678,15 @@ we do _not_ support substitution, as #inst-calc(dof) is not generally stable und
 
 #todo[Segue to relabeling]
 
-We can also perform _relabeling_ in #ssa-calc(ms("E")).
+We can also perform _relabeling_ in #ssa-calc(des).
 In particular,
 
-- We define the action of a relabeling $ρ ∈ lrens$ on regions $r ∈ #reg-calc(ms("E"), ms("T"))$
+- We define the action of a relabeling $ρ ∈ lrens$ on regions $r ∈ #drc$
   by structural recursion as follows:
   $
             ρ · (slet(x, e, r)) & := slet(x, e, ρ · r) \
     ρ · (slet((mb("x")), e, r)) & := slet((mb("x")), e, ρ · r) \
-                          ρ · τ & := ρ ·_ms("T") τ \
+                          ρ · τ & := ρ ·_dts τ \
   $
   $
     & ρ · ({r} seq L) := {ρ · r} seq (ρ · L) "where" \
@@ -1765,15 +1697,15 @@ In particular,
   $
   where we are given
   $
-    ρ ·_ms("T") & : lrens → ms("T") → ms("T")
+    ρ ·_dts & : lrens → dts → dts
   $
-  defining the action of relabelings on terminators $τ ∈ ms("T")$.
+  defining the action of relabelings on terminators $τ ∈ dts$.
 
   Note that we can always choose $lb("l") ∉ fsup(ρ)$ since $fsup(ρ)$ is finite and names of
   bound labels are quotiented up to α-equivalence.
 
   Likewise, we define the action of a relabeling $ρ ∈ lrens$ on terminators
-  $τ ∈ #cond-calc(ms("E"), ms("U"))$ by structural recursion as follows:
+  $τ ∈ #cond-calc(des, ms("U"))$ by structural recursion as follows:
   $
     & ρ · j := ρ ·_ms("U") j \
     & ρ · (scase(e, K)) := scase(e, ρ · K) "where" \
@@ -1789,30 +1721,32 @@ In particular,
   defining the action of relabelings on jumps $j ∈ ms("U")$.
 
   Finally, we define the action of a relabeling $ρ ∈ lrens$ on unconditional branches
-  $u ∈ #br-calc(ms("E"))$ pointwise:
+  $u ∈ #br-calc(des)$ pointwise:
   $
     ρ · (brb(lb("l"), e)) := brb(ρ(lb("l")), e)
   $
 
+#todo[Define: stable under relabeling]
+
 #todo[Standardized relabeling]
 
 - We may then state _relabeling_ for
-  #reg-calc(ms("E"), ms("T")), #cond-calc(ms("E"), ms("U")), #br-calc(ms("E")) as follows:
-  #lemma(name: [Relabeling (#reg-calc(ms("E"), ms("T"))])[
-    If $ms("T")$ is stable under relabeling,
-    then so is #reg-calc(ms("E"), ms("T"))
+  #drc, #cond-calc(des, ms("U")), #br-calc(des) as follows:
+  #lemma(name: [Relabeling (#drc])[
+    If $dts$ is stable under relabeling,
+    then so is #drc
     -- i.e. for all $ρ ∈ lrens$,
     $
       haslb(Γ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ρ · r, ms("L"))
     $
-    where we say that $ms("T")$ is stable under relabeling when
-    - For all $ρ ∈ lrens$ and $haslb(Γ, τ, ms("L"), annot: ms("T"))$,
-      we have $haslb(Γ, ρ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
+    where we say that $dts$ is stable under relabeling when
+    - For all $ρ ∈ lrens$ and $haslb(Γ, τ, ms("L"), annot: dts)$,
+      we have $haslb(Γ, ρ ·_dts τ, ms("L"), annot: dts)$.
   ]
 
-  #lemma(name: [Relabeling (#cond-calc(ms("E"), ms("U"))])[
+  #lemma(name: [Relabeling (#cond-calc(des, ms("U"))])[
     If $ms("U")$ is stable under relabeling,
-    then so is #cond-calc(ms("E"), ms("U"))
+    then so is #cond-calc(des, ms("U"))
     -- i.e. for all $ρ ∈ lrens$,
     $
       haslb(Γ, τ, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ρ · τ, ms("L"))
@@ -1822,8 +1756,8 @@ In particular,
       we have $haslb(Γ, ρ ·_ms("U") j, ms("L"), annot: ms("U"))$.
   ]
 
-  #lemma(name: [Relabeling (#br-calc(ms("E"))])[
-    #br-calc(ms("E")) is stable under relabeling
+  #lemma(name: [Relabeling (#br-calc(des)])[
+    #br-calc(des) is stable under relabeling
     -- i.e. for all $ρ ∈ lrens$,
     $
       haslb(Γ, u, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ρ · u, ms("L"))
@@ -1831,16 +1765,16 @@ In particular,
   ]
 
 It follows that we have:
-#lemma(name: [Relabeling (#ssa-calc(ms("E"), ms("T"))])[
-  If $ms("T")$ is stable under relabeling,
-  then so is #ssa-calc(ms("E"), ms("T"))
+#lemma(name: [Relabeling (#ssa-calc(des, dts)])[
+  If $dts$ is stable under relabeling,
+  then so is #ssa-calc(des, dts)
   -- i.e. for all $ρ ∈ lrens$,
   $
     haslb(Γ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ρ · r, ms("L"))
   $
-  where we say that $ms("T")$ is stable under relabeling when
-  - For all $ρ ∈ lrens$ and $haslb(Γ, τ, ms("L"), annot: ms("T"))$,
-    we have $haslb(Γ, ρ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
+  where we say that $dts$ is stable under relabeling when
+  - For all $ρ ∈ lrens$ and $haslb(Γ, τ, ms("L"), annot: dts)$,
+    we have $haslb(Γ, ρ ·_dts τ, ms("L"), annot: dts)$.
 ]
 
 #todo[
@@ -1855,13 +1789,13 @@ to perform _label-substitution_ -- i.e., to replace _jumps_ to a label $lb("l")$
 with the body of that label
 (rather than simply with a jump to another label).
 
-Our grammar for regions #reg-calc(ms("E"), ms("T")) is compatible with replacing entire
-_terminators_ $τ ∈ ms("T")$ with a region $r ∈ #reg-calc(ms("E"), ms("T"))$
+Our grammar for regions #drc is compatible with replacing entire
+_terminators_ $τ ∈ dts$ with a region $r ∈ #drc$
 (this is, in fact, the real motivation for introducing braces in the first place).
 So whether we can perform label-substitution
 depends on what our grammar of terminators looks like.
 
-#ssa-calc(ms("E")), however, does _not_ allow us to perform label-substitution, since in particular
+#ssa-calc(des), however, does _not_ allow us to perform label-substitution, since in particular
 the branches of a case-statement $scase(e, B)$ can only be unconditional branches $brb(lb("l"), e)$,
 rather than arbitrary regions.
 
@@ -1870,11 +1804,11 @@ _terminators_ $τ$, _regions_ $r$, and unconditional branches $u$ together.
 
 In terms of syntax, what we're doing is allowing the branches of a case-statment to
 be arbitrary, anonymous regions, rather than just unconditional branches, yielding an
-extended language $#ssa-calc(ms("E"), ms("T")) ⊆ #gssa-calc(ms("E"), ms("T"))$.
+extended language $#ssa-calc(des, dts) ⊆ #gssa-calc(des, dts)$.
 Phrased in this way, it's easy to see that we add no additional expressive power:
 we can always name such anonymous regions with a label and jump to them instead,
-recovering an ordinary #ssa-calc(ms("E"), ms("T")) program.
-We give a grammar for #gssa-calc(ms("E"), ms("T")) in @gssa-grammar below.
+recovering an ordinary #ssa-calc(des, dts) program.
+We give a grammar for #gssa-calc(des, dts) in @gssa-grammar below.
 
 #let fig-gssa-grammar = figure(
   [
@@ -1899,7 +1833,7 @@ We give a grammar for #gssa-calc(ms("E"), ms("T")) in @gssa-grammar below.
     )
     \
   ],
-  caption: [Grammar for #gssa-calc(ms("E"), ms("T"))],
+  caption: [Grammar for #gssa-calc(des, dts)],
   kind: image,
 )
 
@@ -1908,58 +1842,58 @@ We give a grammar for #gssa-calc(ms("E"), ms("T")) in @gssa-grammar below.
 We note in particular that we have
 (identifying a language with its set of syntactically-well formed terms)
 $
-  ms("T") ⊆ #gssa-calc(ms("E"), ms("T"))
-  = #ssa-calc(ms("E"), $#gssa-calc(ms("E"), ms("T"))$)
+  dts ⊆ #gssa-calc(des, dts)
+  = #ssa-calc(des, $#gssa-calc(des, dts)$)
 $
 As we would expect from this equation,
 we inherit typing rules from #reg-calc() and #cond-calc() directly
--- in particular, the typing rules for #gssa-calc(ms("E"), ms("T"))
+-- in particular, the typing rules for #gssa-calc(des, dts)
 are given in @cart-gssa-rules.
 
 #fig-haslb-gssa <cart-gssa-rules>
 
-Weakening and label-weakening generalize straightforwardly to #gssa-calc(ms("E"), ms("T")):
+Weakening and label-weakening generalize straightforwardly to #gssa-calc(des, dts):
 
 #lemma(name: "Weakening")[
-  If $ms("E")$ and $ms("T")$ are stable under weakening,
-  then so is #gssa-calc(ms("E"), ms("T"))
+  If $des$ and $dts$ are stable under weakening,
+  then so is #gssa-calc(des, dts)
   -- i.e. for all $Γ ⊑ Δ$,
   $
     haslb(Δ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, r, ms("L"))
   $
-  where we say that $ms("E")$ and $ms("T")$ are stable under weakening when
+  where we say that $des$ and $dts$ are stable under weakening when
   - For all $Γ ⊑ Δ$, $hasty(Δ, e, A)$ implies $hasty(Γ, e, A)$.
-  - For all $Γ ⊑ Δ$, $haslb(Δ, τ, ms("L"), annot: ms("T"))$ implies
-    $haslb(Γ, τ, ms("L"), annot: ms("T"))$.
+  - For all $Γ ⊑ Δ$, $haslb(Δ, τ, ms("L"), annot: dts)$ implies
+    $haslb(Γ, τ, ms("L"), annot: dts)$.
 ]
 
 #lemma(name: "Label Weakening")[
-  If $ms("T")$ is stable under label weakening,
-  then so is #gssa-calc(ms("E"), ms("T"))
+  If $dts$ is stable under label weakening,
+  then so is #gssa-calc(des, dts)
   -- i.e. for all $ms("L") sle() ms("K")$,
   $
     haslb(Γ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, r, ms("K"))
   $
-  where we say that $ms("T")$ is stable under label weakening when
+  where we say that $dts$ is stable under label weakening when
   - For all $ms("L") sle() ms("K")$,
-    $haslb(Γ, τ, ms("L"), annot: ms("T"))$ implies
-    $haslb(Γ, τ, ms("K"), annot: ms("T"))$.
+    $haslb(Γ, τ, ms("L"), annot: dts)$ implies
+    $haslb(Γ, τ, ms("K"), annot: dts)$.
 ]
 
-Likewise, we may define capture-avoiding substitution for #gssa-calc(ms("E"), ms("T"))
-to respect the equation $#gssa-calc(ms("E"), ms("T"))
-= #ssa-calc(ms("E"), $#gssa-calc(ms("E"), ms("T"))$)$ as follows:
+Likewise, we may define capture-avoiding substitution for #gssa-calc(des, dts)
+to respect the equation $#gssa-calc(des, dts)
+= #ssa-calc(des, $#gssa-calc(des, dts)$)$ as follows:
 
 #figure(
   [
     $
-              γ · (slet(x, e, r)) & := slet(x, (γ ·_ms("E") e), (γ · r))
+              γ · (slet(x, e, r)) & := slet(x, (γ ·_des e), (γ · r))
                                     "choosing" x ∉ fsup(γ) \
-      γ · (slet((mb("x")), e, r)) & := slet((mb("x")), (γ ·_ms("E") e), (γ · r))
+      γ · (slet((mb("x")), e, r)) & := slet((mb("x")), (γ ·_des e), (γ · r))
                                     "choosing" mb("x") ∉ fsup(γ) \
-            γ · (brb(lb("l"), e)) & := brb(lb("l"), (γ ·_ms("E") e)) \
-                γ · (scase(e, L)) & := scase(γ ·_ms("E") e, γ · L) \
-                            γ · τ & := γ ·_ms("T") τ \
+            γ · (brb(lb("l"), e)) & := brb(lb("l"), (γ ·_des e)) \
+                γ · (scase(e, L)) & := scase(γ ·_des e, γ · L) \
+                            γ · τ & := γ ·_dts τ \
                 γ · ({ r } seq L) & := { γ · r } seq (γ · L)
     $
     \
@@ -1974,39 +1908,39 @@ to respect the equation $#gssa-calc(ms("E"), ms("T"))
     where we are given
     \
     $
-      (·_ms("E")) & : substs(ms("E")') → ms("E") → ms("E") & #h(3em) & "(substitution on expressions)" \
-      (·_ms("T")) & : substs(ms("E")') → ms("T") → ms("T") &         & "(substitution on terminators)"
+      (·_des) & : substs(des') → des → des & #h(3em) & "(substitution on expressions)" \
+      (·_dts) & : substs(des') → dts → dts &         & "(substitution on terminators)"
     $
-    for some expression grammar $vset ⊆ ms("E")'$.
+    for some expression grammar $vset ⊆ des'$.
     \
     \
   ],
   caption: [
-    Capture-avoiding substitution on regions $r ∈ #gssa-calc(ms("E"), ms("T"))$
+    Capture-avoiding substitution on regions $r ∈ #gssa-calc(des, dts)$
   ],
 )
 
-allowing us to state _the substitution lemma_ for #gssa-calc(ms("E"), ms("T")) as follows:
+allowing us to state _the substitution lemma_ for #gssa-calc(des, dts) as follows:
 
 #lemma(name: "Substitution")[
-  If $ms("E")$ and $ms("T")$ are stable under substitution,
-  then so is #gssa-calc(ms("E"), ms("T"))
+  If $des$ and $dts$ are stable under substitution,
+  then so is #gssa-calc(des, dts)
   -- i.e. for all $issubst(Γ, γ, Δ)$,
   $
     haslb(Δ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, γ · r, ms("L"))
   $
-  where we say that $ms("E")$ and $ms("T")$ are stable under substitution when
+  where we say that $des$ and $dts$ are stable under substitution when
   - For all $issubst(Γ, γ, Δ)$ and $hasty(Δ, e, A)$,
-    we have $hasty(Γ, γ ·_ms("E") e, A)$.
-  - For all $issubst(Γ, γ, Δ)$ and $haslb(Δ, τ, ms("L"), annot: ms("T"))$,
-    we have $haslb(Γ, γ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
+    we have $hasty(Γ, γ ·_des e, A)$.
+  - For all $issubst(Γ, γ, Δ)$ and $haslb(Δ, τ, ms("L"), annot: dts)$,
+    we have $haslb(Γ, γ ·_dts τ, ms("L"), annot: dts)$.
 ]
 
 We can now define _label-substitution_ as follows:
 
-- A _region-with-hole_ #hgssa-calc(ms("E"), ms("T"))
+- A _region-with-hole_ #hgssa-calc(des, dts)
   is a pair $(x, r) ∈$ of a variable $x ∈ vset$ and a
-  region $r ∈ #gssa-calc(ms("E"), ms("T"))$ quotiented up to α-equivalence:
+  region $r ∈ #gssa-calc(des, dts)$ quotiented up to α-equivalence:
   $
     (x, r) ∼ (y, [y slash x]r)
   $
@@ -2016,16 +1950,16 @@ We can now define _label-substitution_ as follows:
     (x, r)(e) := (elet(x, e, r))
   $
 
-- A _label-substitution_ $ℓ ∈ lsubsts(#gssa-calc(ms("E"), ms("T")))$ is a finitely-supported map from labels to
+- A _label-substitution_ $ℓ ∈ lsubsts(#gssa-calc(des, dts))$ is a finitely-supported map from labels to
   regions-with-holes, where we define the support $fsup(ℓ)$ of a function
-  $ℓ : lset → #hgssa-calc(ms("E"), ms("T"))$
+  $ℓ : lset → #hgssa-calc(des, dts)$
   as follows:
   $
     fsup(ℓ) := { lb("l") ∈ lset | ℓ(lb("l")) ≠ (x, brb(lb("l"), x)) }
   $
 
-- We define the action of a label-substitution $ℓ ∈ lsubsts(#gssa-calc(ms("E"), ms("T")))$
-  on regions $r ∈ #gssa-calc(ms("E"), ms("T"))$ by structural recursion as follows:
+- We define the action of a label-substitution $ℓ ∈ lsubsts(#gssa-calc(des, dts))$
+  on regions $r ∈ #gssa-calc(des, dts)$ by structural recursion as follows:
 
   #figure(
     [
@@ -2034,7 +1968,7 @@ We can now define _label-substitution_ as follows:
         ℓ · (slet((mb("x")), e, r)) & := slet((mb("x")), e, ℓ · r) \
               ℓ · (brb(lb("l"), e)) & := ℓ(lb("l"))(e) \
                   ℓ · (scase(e, L)) & := scase(e, ℓ · L) \
-                              ℓ · τ & := ℓ ·_ms("T") τ \
+                              ℓ · τ & := ℓ ·_dts τ \
                   ℓ · ({ r } seq L) & := { ℓ · r } seq (ℓ · L)
       $
       where
@@ -2046,9 +1980,9 @@ We can now define _label-substitution_ as follows:
       $
       where we are given
       $
-        ℓ ·_ms("T") & : lsubsts(#gssa-calc(ms("E"), ms("T"))) → ms("T") → ms("T")
+        ℓ ·_dts & : lsubsts(#gssa-calc(des, dts)) → dts → dts
       $
-      defining the action of label-substitutions on terminators $τ ∈ ms("T")$.
+      defining the action of label-substitutions on terminators $τ ∈ dts$.
       \
     ],
   )
@@ -2075,21 +2009,21 @@ We can now define _label-substitution_ as follows:
         declare-rule(r-lsubst-cons),
       )
     ],
-    caption: [Typing Rule for Label-Substitution in #gssa-calc(ms("E"), ms("T"))],
+    caption: [Typing Rule for Label-Substitution in #gssa-calc(des, dts)],
   ) <gssa-label-subst-rule>
 
-We can now state the _label-substitution lemma_ for #gssa-calc(ms("E"), ms("T")) as follows:
+We can now state the _label-substitution lemma_ for #gssa-calc(des, dts) as follows:
 
 #lemma(name: "Label Substitution")[
-  If $ms("T")$ is stable under label-substitution,
-  then so is #gssa-calc(ms("E"), ms("T"))
+  If $dts$ is stable under label-substitution,
+  then so is #gssa-calc(des, dts)
   -- i.e. for all $lbsubst(cal("L"), ℓ, ms("K"))$,
   $
     haslb(Γ, r, ms("L")) #h(3em) ==> #h(3em) haslb(Γ, ℓ · r, ms("K"))
   $
-  where we say that $ms("T")$ is stable under label-substitution when
-  - For all $lbsubst(cal("L"), ℓ, ms("K"))$ and $haslb(Γ, τ, ms("L"), annot: ms("T"))$,
-    we have $haslb(Γ, ℓ ·_ms("T") τ, ms("K"), annot: ms("T"))$.
+  where we say that $dts$ is stable under label-substitution when
+  - For all $lbsubst(cal("L"), ℓ, ms("K"))$ and $haslb(Γ, τ, ms("L"), annot: dts)$,
+    we have $haslb(Γ, ℓ ·_dts τ, ms("K"), annot: dts)$.
 ]
 
 #todo[
@@ -2101,17 +2035,17 @@ We can now state the _label-substitution lemma_ for #gssa-calc(ms("E"), ms("T"))
 
   - _region syntax_:
     - $ms("S") : ms("X") sfn ms("Y")$ where
-    - $ms("X"), ms("Y")$ equipped with (distinguished) _renaming (left) action_ of 
+    - $ms("X"), ms("Y")$ equipped with (distinguished) _renaming (left) action_ of
       (distinguished) _renaming monoid_ on inputs $|ms("X")|$
     - $|S|$ equipped with (distinguished) renaming (left) action by same monoid
-    - Typing compatible with _renaming_: 
+    - Typing compatible with _renaming_:
       $hasty(X, s, Y, annot: ms("S")) <==> hasty(ρ · X, ρ · s, ρ · Y, annot: ms("S"))$
       -- note we rename outputs as well!
-    - $ms("Y")$ equipped with (distinguished) _Relabeling (right) action_ of 
+    - $ms("Y")$ equipped with (distinguished) _Relabeling (right) action_ of
       (distinguished) _Relabeling monoid_ on outputs $|ms("Y")|$
       -- respects weakening
     - $|S|$ equipped with (distinguished) renaming (right) action by same monoid
-    - Typing compatible with output renaming: 
+    - Typing compatible with output renaming:
       $hasty(X, s, Y, annot: ms("S")) <==> hasty(X, s · ρ, Y · ρ, annot: ms("S"))$
 
     Typical cases:
