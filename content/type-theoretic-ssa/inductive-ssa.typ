@@ -343,16 +343,23 @@ on contexts $sctx(ms("X"))$, cocontexts $slctx(ms("X"))$, and polycontexts $sdnf
 
 #import "../rules/hasty.typ": *
 
+#let dis = ms("I")
+#let dfnl = ms("F")
+#let dael = ms("A")
+#let dic = iter-calc(dis)
+#let daic = iter-calc(dael)
+#let dfic = iter-calc(dfnl)
+
 We've now got everything we need to give typing rules for our expression language, #iter-calc().
-In particular, we give a grammar for #iter-calc(ms("I")) in @cart-iter-calc-grammar,
-parametrized by an _instruction set_ $ms("I") = (ms("F"), ms("A"))$ specifying:
+In particular, we give a grammar for #dic in @cart-iter-calc-grammar,
+parametrized by an _instruction set_ $#dis = (dfnl, dael)$ specifying:
 
-- _functions_ $f ∈ ms("F")$: often, these are our _primitive instructions_ like `add` and `sub`
+- _functions_ $f ∈ dfnl$: often, these are our _primitive instructions_ like `add` and `sub`
 
-- _atomic expressions_ $α ∈ ms("A")$:
+- _atomic expressions_ $α ∈ dael$:
   in the original grammar from @intro-iter-calc-grammar
   these correspond to _constants_, like `2` and `"hello"`,
-  but can be drawn from an arbitrary language $ms("A")$.
+  but can be drawn from an arbitrary language $dael$.
 
 #let iter-calc-grammar = figure(
   [
@@ -365,8 +372,8 @@ parametrized by an _instruction set_ $ms("I") = (ms("F"), ms("A"))$ specifying:
           $e$,
           {
             Or[$x$][_variable_]
-            Or[$α$][_atomic expression_ ($α ∈ ms("A")$)]
-            Or[$f med e$][_application_ ($f ∈ ms("F")$)]
+            Or[$α$][_atomic expression_ ($α ∈ dael$)]
+            Or[$f med e$][_application_ ($f ∈ dfnl$)]
             Or[$lb("l") med e$][_label_]
             Or[$(E)$][_structure_]
             Or[$elet(x, e_1, e_2)$][_let-binding_]
@@ -395,35 +402,37 @@ parametrized by an _instruction set_ $ms("I") = (ms("F"), ms("A"))$ specifying:
     )
   ],
   caption: [
-    Grammar for #iter-calc(ms("I"))
-    for an instruction set $ms("I")$
-    with functions $ms("F")$
-    and atomic expressions $ms("A")$.
+    Grammar for #dis
+    for an instruction set #dic
+    with functions $dfnl$
+    and atomic expressions $dael$.
   ],
   kind: image,
 )
 
 #iter-calc-grammar <cart-iter-calc-grammar>
 
-In @cart-iter-calc-rules, we give typing rules for the judgements
+In @cart-iter-calc-rules below, we give typing rules for the judgements
 
 #judgement-meaning(
-  $hasty(Γ, e, A)$,
-  ["Expression $e ∈ #iter-calc(ms("F"), ms("A"))$ has type $A$ in $Γ$"],
-  $istup(Γ, E, lb("T"))$,
+  $hasty(Γ, e, A, annot: dic)$,
+  ["Expression $e ∈ dic$ has type $A$ in $Γ$"],
+  $istup(Γ, E, lb("T"), annot: dic)$,
   ["The fields $(E)$ have product type $Π lb("T")$ in $Γ$"],
-  $kebrs(cal(K), M, A)$,
+  $kebrs(cal(K), M, A, annot: dic)$,
   ["The case branches $M$ map inputs $cal(K)$ to output $A$"],
 )
 
 parametrized by typing relations:
 
 #judgement-meaning(
-  $isfn(Γ, f, A, B, annot: ms("F"))$,
-  ["$f ∈ ms("F")$ takes inputs $A$ to outputs $B$ in $Γ$"],
-  $hasty(Γ, α, A, annot: ms("A"))$,
-  ["Atomic expression $α ∈ ms("A")$ has type $A$ in $Γ$"],
+  $isfn(Γ, f, A, B, annot: dfnl)$,
+  ["$f ∈ dfnl$ takes inputs $A$ to outputs $B$ in $Γ$"],
+  $hasty(Γ, α, A, annot: dael)$,
+  ["Atomic expression $α ∈ dael$ has type $A$ in $Γ$"],
 )
+
+Where clear from context, we drop the subscript on the turnstile specifying the type system in use.
 
 #let r-var = rule(
   name: "var",
@@ -438,12 +447,12 @@ parametrized by typing relations:
 );
 #let r-atom = rule(
   name: "atom",
-  $hasty(Γ, α, A, annot: ms("A"))$,
+  $hasty(Γ, α, A, annot: dael)$,
   $hasty(Γ, α, A)$,
 );
 #let r-app = rule(
   name: "app",
-  $isfn(Γ, f, A, B, annot: ms("F"))$,
+  $isfn(Γ, f, A, B, annot: dfnl)$,
   $hasty(Γ, a, A)$,
   $hasty(Γ, f med a, B)$,
 );
@@ -524,11 +533,9 @@ parametrized by typing relations:
     \
   ],
   caption: [
-    Typing rules for #iter-calc(ms("I"))
-    for an instruction set
-    $ms("I")$
-    with functions $ms("F")$
-    and atomic expressions $ms("A")$
+    Typing rules for #$hasty(Γ, e, A, annot: dic)$
+    for an _instruction set_
+    $dis = (dfnl, dael)$
   ],
 )
 
@@ -537,9 +544,9 @@ parametrized by typing relations:
 In particular:
 - Variables are typed as usual using @r-cart-var
 
-- We inherit typing atomic expressions from $ms("A")$ using @r-cart-atom;
+- We inherit typing atomic expressions from $dael$ using @r-cart-atom;
   likewise, we type function applications $f med e$ in the usual manner inheriting
-  function typing from $ms("F")$ using @r-cart-app.
+  function typing from $dfnl$ using @r-cart-app.
 
 - We type injections into coproducts using @r-cart-inj -- the output type is a singleton coproduct
   containing just the injected variant,
@@ -572,65 +579,89 @@ In particular:
   and the body $e_2$, given $x : A$, returns either a new value to iterate with
   (of type $A$) or a final result (of type $B$).
 
-- We state that $#iter-calc(ms("I"))$ is stable under subtyping
+- We state that #dic is stable under subtyping
   -- i.e. that if $A sle() B$ and $e$ has type $A$, then $e$ also has type $B$
   -- as the _axiom_ @r-cart-coe.
 
   Alternatively, we could have introduced weakening conditions in the rules
   @r-cart-inj and @r-cart-tuple
-  (as well as requiring $ms("A")$ and $ms("F")$ to be stable under subtyping),
+  (as well as requiring $dael$ and $dfnl$ to be stable under subtyping),
   but this would have been more cumbersome.
 
-As a quick sanity check, we can verify that our type system(s) respect _weakening_ and _subtyping_:
+As a quick sanity check, we can verify that our type system(s) respect _weakening_:
 
-#lemma(name: "Weakening")[
-  If $ms("I")$ is stable under weakening, then so is #iter-calc(ms("I"))
+#lemma(name: [Weakening (#dic)])[
+  If #dis is stable under weakening, then so is #dic
   -- i.e. for all $Γ ⊑ Δ$,
-  $
-    hasty(Δ, e, A) #h(3em) ==> #h(3em) hasty(Γ, e, A)
-  $
-  where we say that $ms("I")$ is stable under weakening when
-  - For all $Γ ⊑ Δ$, $isfn(Δ, f, A, B, annot: ms("F"))$ implies
-    $isfn(Γ, f, A, B, annot: ms("F"))$
-  - For all $Γ ⊑ Δ$, $hasty(Δ, α, A, annot: ms("A"))$ implies
-    $hasty(Γ, α, A, annot: ms("A"))$
+  #space-imp(
+    $hasty(Δ, e, A, annot: dic)$,
+    $hasty(Γ, e, A, annot: dic)$,
+  )
+  where we say that #dis is stable under weakening when
+  - For all $Γ ⊑ Δ$, $isfn(Δ, f, A, B, annot: dfnl)$ implies
+    $isfn(Γ, f, A, B, annot: dfnl)$
+  - For all $Γ ⊑ Δ$, $hasty(Δ, α, A, annot: dael)$ implies
+    $hasty(Γ, α, A, annot: dael)$
 ]
 
-/*
-Trivial
+#todo[Pull note about subtyping and coe rule here...]
 
-#lemma(name: "Subtyping")[
-  If $ms("I")$ is stable under subtyping, then so is #iter-calc(ms("I"))
-  -- i.e. for all $A sle() B$,
-  $
-    hasty(Γ, e, A) #h(3em) ==> #h(3em) hasty(Γ, e, B)
-  $
-  where we say that $ms("I")$ is stable under subtyping when
-  - For all $A' sle() A$, $B sle() B'$,
-    $isfn(Γ, f, A, B, annot: ms("F"))$ implies
-    $isfn(Γ, f, A', B', annot: ms("F"))$.
+#todo[Segue about typing relations here -- give lore on _typed syntax_]
 
-    That is, arrow types $A -> B$ are
-    _covariant_ in the output $B$ and
-    _contravariant_ in the input $A$.
-
-  - For all $A sle() A'$,
-    $hasty(Γ, α, A, annot: ms("A"))$ implies
-    $hasty(Γ, α, A', annot: ms("A"))$
+#todo[
+  - Typing _basis_ over untyped syntax $S$ : relation $ms("X") rstfn(S) ms("Y")$
+    $hasty(X, s, Y, annot: ms("S"))$
+  - _Pretyped_ syntax $ms("S") : ms("X") rsfn ms("Y")$:  
+    pair $(S, ms("S")|_S : ms("X") rstfn(S) ms("Y"))$
+    -- has _untyped syntax_ $|ms("S")| := S$
+  - Typing relation: _profunctor_ $ms("X") stfn(S) ms("Y")$
+    -- i.e. respects weakening on LHS (contravariant) and RHS (covariant)
+  - Typed syntax $ms("X") sfn ms("Y")$: pair $(S, ms("S")|_S : ms("X") stfn(S) ms("Y"))$
 ]
-*/
+
+#todo[Definition of _instruction set_ here]
+
+#todo[Segue to atomic coercion]
+
+- Given a typing relation on atomic expressions $hasty(Γ, α, A, annot: dael)$,
+  we write #daic for #iter-calc($(tzero, dael)$),
+  where $tzero$ is the _empty_ language of functions
+  in which every function _vacuously_ has every type.
+
+  In particular, this means that $hasty(Γ, e, A, annot: daic)$
+  if and only if $hasty(Γ, e, A, annot: #iter-calc($(dfnl, dael)$))$
+  _for all_ choices of function language $dfnl$.
+
+- Likewise, given a typing relation on functions $isfn(Γ, f, A, B, annot: dfnl)$,
+  we write #dfic for #iter-calc($(dfnl, tunit)$),
+  where $tunit$ is the _empty_ language of atomic expressions
+  in which every atomic expression _vacuously_ has every type.
+
+  In particular, this means that $hasty(Γ, e, A, annot: #dfic)$
+  if and only if $hasty(Γ, e, A, annot: #iter-calc($(dfnl, dael)$))$
+  _for all_ choices of atomic expression language $dael$.
+
+#todo[Formally introduce $⊆$-for-typed-syntax -- compare and contrast with looser $⊑$]
+
+#todo[
+  Introduce calculus of _values_ and _operations_ here 
+  -- 
+  type system _by_ $⊆$, _implied by_ rule $⊆$
+]
+
+#todo[Segue to substitution]
 
 To state _substitution_, we begin by defining:
 
-- A _substitution_ is a finitely supported function $γ : vset → ms(#iter-calc(ms("I")))$,
+- A _substitution_ is a finitely supported function $γ : vset → ms(#dic)$,
   where we define the _support_ of a function $γ : vset → ms("E")$ to be given by
   $
     fsup(γ) := { x ∈ vset | γ(x) ≠ x }
   $
   for $vset ⊆ ms("E")$. We write the set of such functions as $substs(#ms("E"))$.
 
-- We _apply_ a substitution $γ ∈ substs(#iter-calc(ms("I")))$
-  to an expression $e ∈ #iter-calc(ms("I"))$;
+- We _apply_ a substitution $γ ∈ substs(#dic)$
+  to an expression $e ∈ #dic$;
   written $γ · e$.
 
   For _expressions_, this is done by structural recursion on $e$,
@@ -641,8 +672,8 @@ To state _substitution_, we begin by defining:
     [
       #eqn-set(
         $γ · x := γ(x)$,
-        $γ · α := γ ·_ms("A") α$,
-        $γ · (f med e) := (γ ·_ms("F") f) med (γ · e)$,
+        $γ · α := γ ·_dael α$,
+        $γ · (f med e) := (γ ·_dfnl f) med (γ · e)$,
         $γ · (lb("l") med e) := lb("l") med (γ · e)$,
       )
       $
@@ -669,16 +700,16 @@ To state _substitution_, we begin by defining:
       where we are given
       \
       $
-        (·_ms("A")) &: substs(#iter-calc(ms("I"))) → ms("A") → #iter-calc(ms("I"))
+        (·_dael) &: substs(#dic) → dael → #dic
         & #h(3em) & "(substitution on atomic expressions)"
         \
-        (·_ms("F")) &: substs(#iter-calc(ms("I"))) → ms("F") → ms("F")
+        (·_dfnl) &: substs(#dic) → dfnl → dfnl
         && "(substitution on closures)"
       $
       \
     ],
     caption: [
-      Capture-avoiding substitution on expressions $e ∈ #iter-calc(ms("I"))$
+      Capture-avoiding substitution on expressions $e ∈ #dic$
     ],
   ) <cap-avoid-iter-subst-rules>
 
@@ -686,25 +717,25 @@ To state _substitution_, we begin by defining:
   - Our substitution is _capture-avoiding_:
     $α$-renaming allows us to choose fresh names $x ∉ fsup(γ)$ for all bound variables.
   - We need to provide definitions for
-    - Substitutions on _closures_ $γ ·_ms("F") f$
-    - Substitutions on _atomic expressions_ $γ ·_ms("A") α$
+    - Substitutions on _closures_ $γ ·_dfnl f$
+    - Substitutions on _atomic expressions_ $γ ·_dael α$
     In the case of constant closures (functions) and constant atomic expressions (constants),
     these are simply the identity.
 
-  Substitutions $γ ∈ substs(#iter-calc(ms("I")))$ in fact form a _monoid_, with
+  Substitutions $γ ∈ substs(#dic)$ in fact form a _monoid_, with
   - Unit the identity substitution $id(x) = x$
   - Multiplication given by composition: $(γ_1γ_2)(x) := γ_1 · (γ_2(x))$
   making $γ · e$ into a _monoid action_ of
-  $substs(#iter-calc(ms("I")))$ on $#iter-calc(ms("I"))$,
+  $substs(#dic)$ on $#dic$,
   whenever substitution on closures and atomic expressions
   also form monoid actions -- i.e., whenever we have
   #eqn-set(
-    $id ·_ms("A") α = α$,
-    $(γ_1γ_2) ·_ms("A") α = γ_1 ·_ms("A") (γ_2 ·_ms("A") α)$,
+    $id ·_dael α = α$,
+    $(γ_1γ_2) ·_dael α = γ_1 ·_dael (γ_2 ·_dael α)$,
   )
   #eqn-set(
-    $id ·_ms("F") f = f$,
-    $(γ_1γ_2) ·_ms("F") f = γ_1 ·_ms("F") (γ_2 ·_ms("F") f)$,
+    $id ·_dfnl f = f$,
+    $(γ_1γ_2) ·_dfnl f = γ_1 ·_dfnl (γ_2 ·_dfnl f)$,
   )
   (otherwise, multiplication of substitutions is still _well-defined_, but may not form a monoid).
 
@@ -741,20 +772,40 @@ To state _substitution_, we begin by defining:
   ],
 ) <cart-iter-subst-rules>
 
-We can then give our _substitution lemma_ for $#iter-calc(ms("I"))$ as follows:
+We can then give our _substitution lemma_ for $#dic$ as follows:
 
 #lemma(name: "Substitution")[
-  If $ms("I")$ is stable under substitution,
-  then so is #iter-calc(ms("I")) --
+  If $dis$ is stable under substitution,
+  then so is #dic --
   i.e. for all $issubst(Γ, γ, Δ)$ and $hasty(Δ, e, A)$,
   $
     hasty(Γ, γ · e, A)
   $
-  where we say that $ms("I")$ is stable under substitution when
-  - For all $issubst(Γ, γ, Δ)$ and $isfn(Δ, f, A, B, annot: ms("F"))$,
-    we have $isfn(Γ, γ ·_ms("F") f, A, B, annot: ms("F"))$.
-  - For all $issubst(Γ, γ, Δ)$ and $hasty(Δ, α, A, annot: ms("A"))$,
-    we have $hasty(Γ, γ ·_ms("A") α, A, annot: ms("A"))$.
+  where we say that $dis$ is stable under substitution when
+  - For all $issubst(Γ, γ, Δ)$ and $isfn(Δ, f, A, B, annot: dfnl)$,
+    we have $isfn(Γ, γ ·_dfnl f, A, B, annot: dfnl)$.
+  - For all $issubst(Γ, γ, Δ)$ and $hasty(Δ, α, A, annot: dael)$,
+    we have $hasty(Γ, γ ·_dael α, A, annot: dael)$.
+]
+
+#todo[
+  Values / operations _don't_ substitute -- but they _do_ rename
+]
+
+#todo[
+  Now:
+  - _expression syntax_: 
+    - $ms("S") : ms("X") sfn ms("Y")$ where
+    - $ms("X")$ equipped with (distinguished) _renaming (left) action_ of 
+      (distinguished) _renaming monoid_ on inputs $|ms("X")|$
+      -- respects weakening
+    - $|S|$ equipped with (distinguished) renaming (left) action by same monoid
+    - Typing compatible with input renaming: 
+      $hasty(X, s, Y, annot: ms("S")) <==> hasty(ρ · X, ρ · s, Y, annot: ms("S"))$
+
+    Typical case:
+    - $ms("S") : sctx(ms("X")) sfn ms("Y")$ (context as LHS, arbitrary RHS) (THIS IS US)
+      - renaming action by $vset ↪_ms("fin") vset$ finitely supported injections
 ]
 
 == Regions
@@ -927,7 +978,7 @@ in @cart-reg-rules below:
   $ksbrs(cal("K"), L, ms("L"))$,
   $haslb(#$Γ, x : A$, r, ms("L"))$,
   $klbrs(#$cal("K"), clty(lb("k"), Γ, A)$, #$K, sbr(lb("k"), x, r)$, ms("L"))$,
-);
+);has
 
 #let fig-haslb-reg = figure(
   [
@@ -991,8 +1042,8 @@ and _label weakening_ by induction:
 To state _substitution_, intuitively,
 we need both our grammar of _expressions_ $ms("E")$
 and our grammar of _terminators_ $ms("T")$ to be appropriately closed under substitution
--- just like how defining capture-avoiding substitution on expressions $e ∈ #iter-calc(ms("I"))$
-requires defining substitution for atomic expressions $α ∈ ms("A")$ and functions $f ∈ ms("F")$.
+-- just like how defining capture-avoiding substitution on expressions $e ∈ #dic$
+requires defining substitution for atomic expressions $α ∈ dael$ and functions $f ∈ dfnl$.
 In particular, we give a definition of capture-avoiding substitution on regions
 in @cap-avoid-reg-subst-rules below:
 
@@ -1044,10 +1095,10 @@ We can then state substitution for #reg-calc(ms("E"), ms("T")) as follows:
 ]
 
 Note that we've snuck in a little additional generality here:
-- We never actually assumed that $ms("E") = #iter-calc(ms("I"))$ for some $ms("I")$
-  -- $#ms("A")$, for example, would also be a perfectly valid choice
+- We never actually assumed that $ms("E") = #dic$ for some $dis$
+  -- $#dael$, for example, would also be a perfectly valid choice
 - Our substitutions are of type $γ ∈ substs(ms("E")')$ -- again, we never assumed that
-  $ms("E")' = ms("E")$ _or_ that $ms("E")' = #iter-calc(ms("I"))$,
+  $ms("E")' = ms("E")$ _or_ that $ms("E")' = #dic$,
   only that $vset ⊆ ms("E"')$.
 
   In particular, this means that our substitution lemma is parametric not only on
@@ -1313,22 +1364,20 @@ In particular, we have:
     we have $haslb(Γ, γ ·_ms("T") τ, ms("L"), annot: ms("T"))$.
 ]
 
-#todo[In particular, substitution holds for lexical SSA with expressions: #ssa-calc(iter-calc(ms("I")))]
+In particular, substitution therefore holds for lexical SSA
+_with expressions_
+as defined in the introduction
+-- $#ssa-calc(dic))$.
+However, we also want to reason about lexical _standard SSA_
+-- i.e., SSA in which each assignment performs only a single primitive instruction,
+as we might find in a typical compiler.
 
-#todo[We want to to discuss regular #ssa-calc() with "one instruction per assignment"]
-
-#todo[Text pointer: $ms("I") ⊆ ms("I")'$ then $#iter-calc(ms("I")) ⊆ #iter-calc($ms("I")'$)$]
-
-#todo[
-  Something something _locally continuous functor_ something something in next section 
-  -- beware limits
-]
-
-#todo[Segue a bit here]
-
-We can recover standard lexical SSA -- i.e., where each assignment must only perform a single
-primitive instruction, by introducing _subgrammars_
-#val-calc(ms("A")) for values and $#inst-calc(ms("I"))$ for single instructions, with
+We define a _grammar_ for _values_
+$#val-calc(dael)$ (parametrized by atomic expressions $α ∈ dael$)
+and single operations
+$#inst-calc(dis) ⊇ #val-calc(dael)$
+(parametrized by an _instruction set_ $dis = (dfnl, dael)$)
+below:
 
 #let val-calc-grammar = figure(
   [
@@ -1338,7 +1387,7 @@ primitive instruction, by introducing _subgrammars_
       gutter: (4em, 0em),
       bnf(
         Prod(
-          $o ∈ #inst-calc(ms("I"))$,
+          $o ∈ #inst-calc(dis)$,
           {
             Or[$v$][_value_]
             Or[$f med v$][_instruction_]
@@ -1346,10 +1395,10 @@ primitive instruction, by introducing _subgrammars_
           },
         ),
         Prod(
-          $v ∈ #val-calc(ms("A"))$,
+          $v ∈ #val-calc(dael)$,
           {
             Or[$x$][_variable_]
-            Or[$α$][_atomic expression_ ($α ∈ ms("A")$)]
+            Or[$α$][_atomic expression_ ($α ∈ dael$)]
             Or[$(V)$][_tuple_]
           },
         ),
@@ -1366,33 +1415,51 @@ primitive instruction, by introducing _subgrammars_
     )
     \
     $
-      #val-calc(ms("A")) ⊆ #inst-calc(ms("I")) ⊆ #iter-calc(ms("I"))
+      #val-calc(dael) ⊆ #inst-calc(dis) ⊆ #dic
       #h(3em) "for" #h(3em)
-      ms("I") = (ms("F"), ms("A"))
+      dis = (dfnl, dael)
     $
     \
   ],
   caption: [
-    Grammar for #iter-calc(ms("I"))
-    for an instruction set $ms("I")$
-    with functions $ms("F")$
-    and atomic expressions $ms("A")$.
+    Grammar for #dic
+    for an instruction set $dis$
+    with functions $dfnl$
+    and atomic expressions $dael$.
   ],
   kind: image,
 )
 
 #val-calc-grammar <val-calc-grammar>
 
-We inherit typing from #iter-calc(ms("I")) for both values $v ∈ #val-calc(ms("A"))$
-and instructions $o ∈ #inst-calc(ms("I"))$ -- implying that we also inherit _weakening_ 
-and _subtyping_.
+We can then define standard lexical SSA
+#footnote[
+  Note that there is also a more strict variant of SSA which does not allow a raw value $v$
+  (and in particular, a constant $α$ or variable $x$)
+  to appear directly on the RHS of an instruction.
+  //TODO: we will study this variant later on.
+]
+by taking
+$
+  #standard-ssa(dis) := #ssa-calc(inst-calc(dis))
+$
+
+#todo[_In general_, when we write $ms("S") ⊆ ms("S")'$ for some _typed syntax_, we mean (lore)]
+
+We inherit typing for $#val-calc()$ and $#inst-calc()$ from $#iter-calc()$
+-- implying that we also inherit both _weakening_ and _subtyping_. More formally,
+
+- #todo[Can use cast for #val-calc()]
+
+- #todo[Thing for #iter-calc()]
+
 
 #todo[Be explicit here -- for #val-calc() case, this introduces the _empty language_]
 
-We can then define standard lexical SSA as 
-$#standard-ssa(ms("I")) := #ssa-calc(inst-calc(ms("I")))$.
+We can then define standard lexical SSA as
+$#standard-ssa(dis) := #ssa-calc(inst-calc(dis))$.
 While the resulting language supports weakening and label-weakening via the above lemmas,
-we do _not_ support substitution, as #inst-calc(ms("I")) is not generally stable under substitution.
+we do _not_ support substitution, as #inst-calc(dis) is not generally stable under substitution.
 
 #todo[We _do_, however, support _renaming_: define below]
 
@@ -1500,8 +1567,8 @@ It follows that we have:
 ]
 
 #todo[
-  Modified segue: #standard-ssa(ms("I")) 
-  is embedded in a bigger language #ssa-calc(iter-calc(ms("I"))) which lets us do substitution]
+  Modified segue: #standard-ssa(dis)
+  is embedded in a bigger language #ssa-calc(dic)) which lets us do substitution]
 
 #todo[What's the bigger language which lets us do _label-substitution_?]
 
@@ -1721,7 +1788,7 @@ We can now define _label-substitution_ as follows:
     $lbsubst(cal("L"), ℓ, ms("K"))$,
     $haslb(#$Γ, x : A$, ℓ(lb("l"))(x), ms("L"))$,
     $x ∉ ms("fv")(ℓ(lb("l")))$,
-    $haslb(#$cal("L"), clty(ℓ, Γ, A)$, ℓ, ms("K"))$
+    $haslb(#$cal("L"), clty(ℓ, Γ, A)$, ℓ, ms("K"))$,
   );
 
   #figure(
@@ -1748,12 +1815,57 @@ We can now state the _label-substitution lemma_ for #gssa-calc(ms("E"), ms("T"))
     we have $haslb(Γ, ℓ ·_ms("T") τ, ms("K"), annot: ms("T"))$.
 ]
 
-== Typing 
+#todo[
+  An expression syntax
+]
+
+#todo[
+  Region language definition:
+
+  - _region syntax_:
+    - $ms("S") : ms("X") sfn ms("Y")$ where
+    - $ms("X"), ms("Y")$ equipped with (distinguished) _renaming (left) action_ of 
+      (distinguished) _renaming monoid_ on inputs $|ms("X")|$
+    - $|S|$ equipped with (distinguished) renaming (left) action by same monoid
+    - Typing compatible with _renaming_: 
+      $hasty(X, s, Y, annot: ms("S")) <==> hasty(ρ · X, ρ · s, ρ · Y, annot: ms("S"))$
+      -- note we rename outputs as well!
+    - $ms("Y")$ equipped with (distinguished) _label renaming (right) action_ of 
+      (distinguished) _label renaming monoid_ on outputs $|ms("Y")|$
+      -- respects weakening
+    - $|S|$ equipped with (distinguished) renaming (right) action by same monoid
+    - Typing compatible with output renaming: 
+      $hasty(X, s, Y, annot: ms("S")) <==> hasty(X, s · ρ, Y · ρ, annot: ms("S"))$
+
+    Typical cases:
+    - $ms("S") : sctx(ms("X")) sfn slctx(ms("Y"))$ (context as LHS, cocontext as RHS)
+      (THIS IS US)
+      - renaming action by $vset ↪_ms("fin") vset$ finitely supported injections
+        -- note this is the identity on RHS since no variables $x ∈ vset$ in cocontexts
+      - label renaming action by $lset ↪_ms("fin") lset$ finitely supported injections
+        on labels
+    - $ms("S") : sctx(ms("X")) sfn sdnf(ms("Y"))$ (context as LHS, polycontext as RHS)
+      - renaming action by $vset ↪_ms("fin") vset$ finitely supported injections
+        -- _not_ the identity on the RHS since polycontexts have variables $x ∈ vset$!
+      - label renaming action by $lset ↪_ms("fin") lset$ finitely supported injections
+        on labels
+]
+
+#todo[
+  Note region syntax =/=> expression syntax -- it's just SSA is both as action by renaming on
+  contexts is identity.
+
+  Later, when we study program fragments with polycontext output, we'll want to rename outputs
+  when we rename inputs -- so a region syntax which is _not_ an expression syntax;
+  or rather, being an expression syntax is a _separate_ property.
+]
+
+== Typing
 
 So far, we've defined numerous languages and associated typing judgements -- to recap:
 #judgement-meaning(
-  $hasty(Γ, e, A, annot: #iter-calc(ms("I")))$,
-  ["Expression $e ∈ #iter-calc(ms("I"))$ has type $A$ in $Γ$"],
+  $hasty(Γ, e, A, annot: #dic)$,
+  ["Expression $e ∈ #dic$ has type $A$ in $Γ$"],
   $haslb(Γ, r, ms("L"), annot: #gssa-calc(ms("E"), ms("T")))$,
   ["Region $r ∈ #gssa-calc(ms("E"), ms("T"))$ takes context $Γ$ to cocontext $ms("L")$"],
   $haslb(Γ, r, ms("L"), annot: #reg-calc(ms("E"), ms("T")))$,
@@ -1763,16 +1875,16 @@ So far, we've defined numerous languages and associated typing judgements -- to 
 )
 We also defined auxiliary judgements:
 #judgement-meaning(
-  $istup(Γ, E, lb("T"), annot: #iter-calc(ms("I")))$,
+  $istup(Γ, E, lb("T"), annot: #dic)$,
   ["The fields $(E)$ have product type $Π lb("T")$ in $Γ$"],
-  $kebrs(cal(K), M, A, annot: #iter-calc(ms("I")))$,
+  $kebrs(cal(K), M, A, annot: #dic)$,
   ["The case-expression branches $M$ map inputs $cal(K)$ to output $A$"],
   $klbrs(cal(K), L, A, annot: #gssa-calc(ms("E"), ms("T")))$,
   ["The CFG $L$ (with branches in #gssa-calc()) maps inputs $cal(K)$ to output $ms("L")$"],
   $klbrs(cal(K), L, A, annot: #reg-calc(ms("E"), ms("T")))$,
   ["The CFG $L$ (with branches in #reg-calc()) maps inputs $cal(K)$ to output $ms("L")$"],
   $ksbrs(cal(K), M, A, annot: #br-calc(ms("T"), ms("E")))$,
-  ["The case-statement branches $M$ (in $#br-calc(ms("T"), ms("E"))$) 
+  ["The case-statement branches $M$ (in $#br-calc(ms("T"), ms("E"))$)
     map inputs $cal(K)$ to output $ms("L")$"],
 )
 and parametrized over judgements
@@ -1781,10 +1893,10 @@ and parametrized over judgements
   ["Expression $e ∈ ms("E")$ has type $A$ in $Γ$"],
   $haslb(Γ, τ, ms("L"), annot: ms("T"))$,
   ["Terminator $τ ∈ ms("T")$ takes context $Γ$ to cocontext $ms("L")$"],
-  $isfn(Γ, f, A, B, annot: ms("F"))$,
-  ["$f ∈ ms("F")$ takes inputs $A$ to outputs $B$ in $Γ$"],
-  $hasty(Γ, α, A, annot: ms("A"))$,
-  ["Atomic expression $α ∈ ms("A")$ has type $A$ in $Γ$"],
+  $isfn(Γ, f, A, B, annot: dfnl)$,
+  ["$f ∈ dfnl$ takes inputs $A$ to outputs $B$ in $Γ$"],
+  $hasty(Γ, α, A, annot: dael)$,
+  ["Atomic expression $α ∈ dael$ has type $A$ in $Γ$"],
   $haslb(Γ, j, ms("L"), annot: ms("U"))$,
   ["Jump $j ∈ ms("U")$ takes context $Γ$ to cocontext $ms("L")$"],
 )
@@ -1796,7 +1908,7 @@ We also introduced _metatheoretic_ judgements
   $lbsubst(cal("L"), ℓ, ms("K"))$,
   ["$ℓ$ is a label-substitution taking polycontext $cal("L")$ to cocontext $ms("K")$"],
 )
-as well as the notion of _renaming_ and _label-renaming_
+as well as the notion of _renaming_ and _label-renaming_.
 
 
 #todo[We've actually _used_ unions and friends above. So... makes sense to actually define them...]
@@ -1809,7 +1921,7 @@ So far, we've defined at least five different typing judgements; to recap:
 
 #judgement-meaning(
   $hasty(Γ, e, A)$,
-  ["Expression $e ∈ #iter-calc(ms("F"), ms("A"))$ has type $A$ in $Γ$"],
+  ["Expression $e ∈ #iter-calc(dfnl, dael)$ has type $A$ in $Γ$"],
   $istup(Γ, E, lb("T"))$,
   ["The fields $(E)$ have product type $Π lb("T")$ in $Γ$"],
   $kebrs(cal(K), M, A)$,
@@ -1821,10 +1933,10 @@ So far, we've defined at least five different typing judgements; to recap:
 dependent on user-provided judgements
 
 #judgement-meaning(
-  $isfn(Γ, f, A, B, annot: ms("F"))$,
-  ["$f ∈ ms("F")$ takes inputs $A$ to outputs $B$ in $Γ$"],
-  $hasty(Γ, α, A, annot: ms("A"))$,
-  ["Atomic expression $α ∈ ms("A")$ has type $A$ in $Γ$"],
+  $isfn(Γ, f, A, B, annot: dfnl)$,
+  ["$f ∈ dfnl$ takes inputs $A$ to outputs $B$ in $Γ$"],
+  $hasty(Γ, α, A, annot: dael)$,
+  ["Atomic expression $α ∈ dael$ has type $A$ in $Γ$"],
   $haslb(Γ, τ, ms("L"), annot: ms("T"))$,
   ["Terminator $τ ∈ ms("T")$ takes context $Γ$ to cocontext $ms("L")$"],
 )
@@ -1916,30 +2028,30 @@ We may now define a closure signature as follows:
 #todo["Closure signature" or "closure type relation"]
 
 #definition(name: "Closure Signature")[
-  A _closure signature_ $ms("F")$ over a cartesian typing discipline $ms("X")$ is
+  A _closure signature_ $dfnl$ over a cartesian typing discipline $ms("X")$ is
   defined to be an expression signature over $adisc(ms("X"))$ -- i.e.
-  - A set of _closures_ or _functions_ $f ∈ |ms("F")|$
-  - A typing relation $isfn(Γ, f, A, B, annot: ms("F"))$
+  - A set of _closures_ or _functions_ $f ∈ |dfnl|$
+  - A typing relation $isfn(Γ, f, A, B, annot: dfnl)$
     where $Γ ∈ sctx(ms("X"))$ and $A, B ∈ ms("X")$
   which is _stable under weakening_:
-  - Given $isfn(Γ, f, A, B, annot: ms("F"))$,
+  - Given $isfn(Γ, f, A, B, annot: dfnl)$,
     for all $Γ' ⊑ Γ$, $A' ⊑ A$, and $B ⊑ B'$,
-    we have $isfn(Γ', f, A', B', annot: ms("F"))$
+    we have $isfn(Γ', f, A', B', annot: dfnl)$
 ]
 
 #todo["Instruction signature" or "instruction type relation"]
 
 #definition(name: "Instruction Signature")[
-  An _instruction signature_ $ms("I")$ over a typing discipline $ms("X")$ consists of:
-  - A closure signature $ms("F")$ over $ms("X")$; for typing _functions_
-  - An expression signature $ms("A")$ over $ms("X")$; for typing _atomic expressions_
+  An _instruction signature_ $dis$ over a typing discipline $ms("X")$ consists of:
+  - A closure signature $dfnl$ over $ms("X")$; for typing _functions_
+  - An expression signature $dael$ over $ms("X")$; for typing _atomic expressions_
 ]
 
 #lemma[
-  If $ms("I")$ is an instruction signature over $sty(ms("X"))$,
+  If $dis$ is an instruction signature over $sty(ms("X"))$,
   where $ms("X")$ is a cartesian typing discipline,
-  then #iter-calc(ms("I")) is an expression signature over $sty(ms("X"))$
-  with rules for $hasty(Γ, e, A, annot: #iter-calc(ms("I")))$
+  then #dic is an expression signature over $sty(ms("X"))$
+  with rules for $hasty(Γ, e, A, annot: #dic)$
   given in @cart-iter-calc-rules.
 ]
 
@@ -1970,28 +2082,28 @@ Writing $issubst(Γ, ρ, Δ) := cwk(ρ · Γ, Δ)$, we say that:
   - Given a renaming $issubst(Γ, ρ, Δ)$,
     $hasty(Δ, e, A, annot: ms("E"))$ implies
     $hasty(Γ, ρ · e, A, annot: ms("E"))$
-- Given an instruction signature $ms("I")$
-  - We define a _monoid action_ of renamings on $ms("I")$ to consist of
+- Given an instruction signature $dis$
+  - We define a _monoid action_ of renamings on $dis$ to consist of
     an monoid action on its closure signature and a monoid action on its expression signature
   - We say an instruction signature
     is _stable under renaming_ if both
     its closure signature and atomic expression signature are stable under renaming.
 
 #todo[
-  Pull up to right after expression definition -- then statement that #iter-calc(ms("I"))
+  Pull up to right after expression definition -- then statement that #dic
   is an expression signature _includes_ both weakening and renaming.
 ]
 
-Given a monoid action of renamings on an instruction signature $ms("I")$,
-we may define a monoid action of renamings on #iter-calc(ms("I")) by structural recursion,
+Given a monoid action of renamings on an instruction signature $dis$,
+we may define a monoid action of renamings on #dic by structural recursion,
 with action on variables given by $ρ · x := ρ(x)$.
 
 Note in particular that, by $α$-equivalence, we may avoid variable capture by
 renaming bound variables to fresh names not appearing in the support of $ρ$.
 
 #lemma(name: "Renaming")[
-  If $ms("I")$ is an instruction signature over a cartesian typing discipline $sty(ms("X"))$
-  that is stable under renaming, then so is #iter-calc(ms("I")).
+  If $dis$ is an instruction signature over a cartesian typing discipline $sty(ms("X"))$
+  that is stable under renaming, then so is #dic.
 ]
 
 In general, we will assume expression signatures,
@@ -2004,9 +2116,9 @@ While we allow atomic expressions and closures to capture variables in general,
 we can use renamings to single out the special case where they are in fact constant:
 
 #definition(name: "Constant Signature")[
-  An expression signature $ms("A")$ over a cartesian typing discipline $ms("X")$
+  An expression signature $dael$ over a cartesian typing discipline $ms("X")$
   is _constant_ if:
-  - For all renamings $ρ$, $∀ α ∈ ms("A") . ρ · α = α$
+  - For all renamings $ρ$, $∀ α ∈ dael . ρ · α = α$
   - For all contexts $Γ$, $hasty(Γ, α, A) <==> hasty(·, α, A)$
 
   In particular, we call a constant closure signature a _function signature_.
@@ -2017,16 +2129,16 @@ in which we replace variables $x$ with _arbitrary_ expressions $e$.
 
 In particular, we'd like to recover the "usual" notion of substitution:
 
-- A _substitution_ is a finitely supported function $γ : vset → #iter-calc(ms("I"))$,
+- A _substitution_ is a finitely supported function $γ : vset → #dic$,
   where we define the _support_ of a substitution to be given by
   $
     fsup(γ) := { x ∈ vset | γ(x) ≠ x }
   $
 
-  We write the set of such substitutions as $substs(#iter-calc(ms("I")))$.
+  We write the set of such substitutions as $substs(#dic)$.
 
-- We _apply_ a substitution $γ ∈ substs(#iter-calc(ms("I")))$
-  to an expression $e ∈ #iter-calc(ms("I"))$;
+- We _apply_ a substitution $γ ∈ substs(#dic)$
+  to an expression $e ∈ #dic$;
   written $γ · e$;
   by recursively replacing each variable $x$ in $e$ with $γ(x)$
   -- in particular, as for renamings,
@@ -2036,14 +2148,14 @@ In particular, we'd like to recover the "usual" notion of substitution:
 - If $issubst(Γ, γ, Δ)$, defined as, for all $cwk(Δ, x : A)$, $hasty(Γ, γ(x), A)$,
   then $hasty(Δ, e, A)$ implies $hasty(Γ, γ · e, A)$.
 
-  In this case, we say that the expression signature #iter-calc(ms("I"))
+  In this case, we say that the expression signature #dic
   is _stable under substitution_.
 
 One minor complication of this approach is that we need to define
-what it means to substitute functions $f ∈ ms("F")$ and atomic expressions $α ∈ ms("A")$
+what it means to substitute functions $f ∈ dfnl$ and atomic expressions $α ∈ dael$
 -- that is,
-to specify an _action_ of the set of substitutions $substs(#iter-calc(ms("I")))$
-on $ms("F")$ and $ms("A")$.
+to specify an _action_ of the set of substitutions $substs(#dic)$
+on $dfnl$ and $dael$.
 
 It turns out we can fit this into a general framework, along with renaming, as follows:
 
@@ -2079,7 +2191,7 @@ It turns out we can fit this into a general framework, along with renaming, as f
     - Whenever $ren2subst(ρ)$ is defined, we have $ren2subst(ρ) · e = ρ · e$
     - If $ms("E")$ is in fact constant, then the action of $ms("S")$ is trivial:
       $γ · e = e$ for all $γ ∈ ms("S")$ and $e ∈ ms("E")$
-  - An instruction signature $ms("I")$ is _stable under $ms("S")$_ if both
+  - An instruction signature $dis$ is _stable under $ms("S")$_ if both
     its closure signature and atomic expression signature are stable under $ms("S")$.
 ]
 
@@ -2111,10 +2223,10 @@ we may define a substitution signature $substs(ms("E"))$ with
 - Coercions $ren2subst(ρ) ∈ |substs(ms("E"))|$ given by $ren2subst(ρ)(x) := ι(ρ(x))$
 - Renaming action $(ρ · γ)(x) = ρ · γ(x)$
 
-We may now state the _syntactic substitution lemma_ for $substs(#iter-calc(ms("I")))$ as follows:
+We may now state the _syntactic substitution lemma_ for $substs(#dic)$ as follows:
 
 #lemma(name: "Substitution")[
-  If $ms("I")$ is stable under $substs(#iter-calc(ms("I")))$, then so is #iter-calc(ms("I"))
+  If $dis$ is stable under $substs(#dic)$, then so is #dic
 
   #todo[Unfolding things, this becomes (ye olde usual statement)]
 ]
@@ -2149,12 +2261,12 @@ We may now state the _syntactic substitution lemma_ for $substs(#iter-calc(ms("I
 );
 #let r-congr-atom = rule(
   name: "atom",
-  $hasty(Γ, α, A, annot: ms("P")_ms("A"))$,
+  $hasty(Γ, α, A, annot: ms("P")_dael)$,
   $hasty(Γ, α, A, annot: "P")$,
 );
 #let r-congr-app = rule(
   name: "app",
-  $isfn(Γ, f, A, B, annot: ms("P")_ms("F"))$,
+  $isfn(Γ, f, A, B, annot: ms("P")_dfnl)$,
   $hasty(Γ, a, A, annot: ms("P"))$,
   $hasty(Γ, f med a, B, annot: ms("P"))$,
 );
@@ -2192,12 +2304,12 @@ We may now state the _syntactic substitution lemma_ for $substs(#iter-calc(ms("I
 );
 #let r-congr2-atom = rule(
   name: "atom",
-  $hasty(Γ, (α, α'), A, annot: ms("R")_ms("A"))$,
+  $hasty(Γ, (α, α'), A, annot: ms("R")_dael)$,
   $hasty(Γ, (α, α'), A, annot: "R")$,
 );
 #let r-congr2-app = rule(
   name: "app",
-  $isfn(Γ, (f, f'), A, B, annot: ms("R")_ms("F"))$,
+  $isfn(Γ, (f, f'), A, B, annot: ms("R")_dfnl)$,
   $hasty(Γ, (a, a'), A, annot: ms("R"))$,
   $hasty(Γ, (f med a, f' med a'), B, annot: ms("R"))$,
 );
@@ -2223,9 +2335,9 @@ We may now state the _syntactic substitution lemma_ for $substs(#iter-calc(ms("I
 #fig-r-hasty <cart-iter-congr2>
 
 #definition(name: "Refinement basis")[
-  A _refinement basis_ $ms("B")$ over $#iter-calc(ms("I"))$ consists of:
-  - A monotone $cal(E)$-family of typed predicates $ms("B")(ε)$ ("has effect $ε$") with $ms("B")(⊤) = #iter-calc(ms("I"))$
-  - A typed relation, _refinement_, $ms("B")_2$ on $#iter-calc(ms("I"))$
+  A _refinement basis_ $ms("B")$ over $#dic$ consists of:
+  - A monotone $cal(E)$-family of typed predicates $ms("B")(ε)$ ("has effect $ε$") with $ms("B")(⊤) = #dic$
+  - A typed relation, _refinement_, $ms("B")_2$ on $#dic$
 ]
 
 #definition(name: "Refinement System")[
@@ -2266,12 +2378,12 @@ We may now state the _syntactic substitution lemma_ for $substs(#iter-calc(ms("I
   We introduce a judgement $dehasty(Γ, ε, e, A)$: the _syntactic_ effect of $e$
   in @cart-iter-eff.
 
-  Parametrized by (we assume $ms("F")$ and $ms("A")$ carry these as data...):
+  Parametrized by (we assume $dfnl$ and $dael$ carry these as data...):
 ]
 
 #judgement-meaning(
-  $ehasty(Γ, ms("A"), ε, α, A)$,
-  ["The atomic expression $α$ has effect $ε$ in context $Γ$ at type $A$ in theory $ms("A")$"],
+  $ehasty(Γ, dael, ε, α, A)$,
+  ["The atomic expression $α$ has effect $ε$ in context $Γ$ at type $A$ in theory $dael$"],
   $eisfn(Γ, ε, f, A, B)$,
   ["The function $f$ has effect $ε$ in context $Γ$ from type $A$ to type $B$"],
 )

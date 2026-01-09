@@ -469,6 +469,10 @@
 
 #let sfn = $↛$
 #let stfn(W) = $scripts(↛)_#W$
+
+#let rsfn = $rfn$
+#let rstfn(W) = $scripts(rsfn)_#W$
+
 #let adisc(X) = $ms("Arr")(#X)$
 
 #let vset = ms("Var")
@@ -564,6 +568,14 @@
 #let dntty(j, t) = align(center, block(stroke: black, inset: 0.75em, $⟦#j⟧ : #t$))
 
 #let dntdef(r, d) = $#dntree(r) &:= #d$
+
+#let space-stmt(..xs) = xs.pos().join(h(3em))
+
+#let space-eqn(..xs) = $
+  #space-stmt(..xs)                         
+$
+
+#let space-imp(lhs, rhs) = space-eqn(lhs, $==>$, rhs)
 
 #let eqn-set(column-gutter: 3em, row-gutter: 2em, ..eqns) = align(center, block(
   // stroke: black,
