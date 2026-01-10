@@ -345,8 +345,6 @@ on contexts $sctx(ms("X"))$, cocontexts $slctx(ms("X"))$, and polycontexts $sdnf
   $sctx(ms("X"))$, $slctx(ms("X"))$, and $sdnf(ms("X"))$
 ]
 
-#todo[Why do we care about renaming]
-
 We define a _renaming_ $ρ : vrens$ to be a finitely supported injection, where the _support_ of a
 function $ρ : vset → vset$ is defined as
 $
@@ -364,6 +362,7 @@ and identity $id : vrens$.
 ]
 
 In particular,
+- Renaming for types is the identity: $ρ A := A$
 - Renaming for contexts is pointwise: $ρ (Γ, x : A) := (ρ Γ), ρ(x) : A$, and $ρ (·^⊗) := (·^⊗)$
 - Renaming for cocontexts is the identity: $ρ (ms("L")) := ms("L")$
 - Renaming for polycontexts is pointwise:
@@ -387,6 +386,7 @@ and identity $id : lrens$.
 ]
 
 In particular,
+- Relabeling for types is the identity: $A ρ := A$
 - Relabeling for contexts is the identity: $Γ ρ := Γ$
 - Relabeling for cocontexts is pointwise: $(ms("L"), lb("l")(A)) ρ := (ms("L")), (ρ(lb("l")))(A)$
 - Relabeling for polycontexts is pointwise:
@@ -612,26 +612,17 @@ Where clear from context, we drop the subscript on the turnstile specifying the 
 #fig-r-hasty <cart-iter-calc-rules>
 
 More formally,
-#definition(name: [Typing relation, typed syntax])[
+#definition(name: [Pretyping relation, pretyped syntax])[
   Given cartesian typing disciplines $ms("X")$ and $ms("Y")$,
   we define a _pretyping relation_ $srel(ms("S")) : ms("X") stfn(S) ms("Y")$ over a _syntax_ $S$
   to consist of a ternary relation $hasty(X, s, Y, annot: ms("S"))$
   over _inputs_ $X ∈ |ms("X")|$, _terms_ $s ∈ S$, and _outputs_ $Y ∈ |ms("Y")|$.
-
-  - _closed_ if it does not depend on its input -- i.e., for all inputs $X ⊑ X' ∈ |ms("X")|$,
-    #space-iff(
-      $hasty(X, s, Y, annot: ms("S"))$,
-      $hasty(X', s, Y, annot: ms("S"))$,
-    )
 
   We define a _pretyped syntax_ $ms("S")$ to consist of:
   - A set of _terms_ $|ms("S")|$
   - A pretyping relation $srel(ms("S")) : ms("X") stfn(|ms("S")|) ms("Y")$
 
   Where there is no risk of confusion, we identify $ms("S")$ with its set of terms.
-
-  We say $ms("S")$ is a _stable under (input/output) weakening_ if $srel(ms("S"))$ is
-  -- if $ms("S")$ is stable under weakening, we call $ms("S")$ a _typed syntax_.
 ]
 
 #definition(name: [Operator family])[
@@ -663,17 +654,15 @@ We may now define
 
 Given a pretyping relation on atomic expressions $hasty(Γ, α, A, annot: dael)$,
 we write #daic for #iter-calc($(tzero, dael)$),
-where $tzero$ is the _empty_ function syntax
-(in which every function _vacuously_ has every type).
+where $tzero$ is the _empty_ function syntax.
 
 In particular, this means that $hasty(Γ, e, A, annot: daic)$
 if and only if $hasty(Γ, e, A, annot: #iter-calc($(dfnl, dael)$))$
 _for all_ choices of function syntax $dfnl$.
 
 Likewise, given a pretyping relation on functions $isfn(Γ, f, A, B, annot: dfnl)$,
-we write #dfic for #iter-calc($(dfnl, tunit)$),
-where $tunit$ is the _empty_ atomic expressions syntax
-in which every atomic expression _vacuously_ has every type.
+we write #dfic for #iter-calc($(dfnl, tzero)$),
+where $tzero$ is the _empty_ atomic expressions syntax.
 
 In particular, this means that $hasty(Γ, e, A, annot: #dfic)$
 if and only if $hasty(Γ, e, A, annot: #iter-calc($(dfnl, dael)$))$
@@ -691,6 +680,8 @@ and joins and meets given by union and intersection respectively as follows:
   $⋃_i ms("S")_i := (⋃_i |ms("S")_i|, (λ Γ, s, a qd ⋁_i hasty(Γ, s, A, annot: ms("S")_i)))$,
   $⋂_i ms("S")_i := (⋂_i |ms("S")_i|, (λ Γ, s, a qd ⋀_i hasty(Γ, s, A, annot: ms("S")_i)))$,
 )
+
+As a concrete example, we note that by @r-cart-atom, $dael ⊆ #iter-calc(dael) ⊆ dic$
 
 In general, #iter-calc() preserves subsets:
 #space-imp(
@@ -716,7 +707,7 @@ For this to be true, however, we need to ensure that the typing relations for
 $ms("F")$ and $ms("A")$ satisfy weakening as well.
 
 Formally,
-#definition(name: "Typing Relation")[
+#definition(name: "Typing Relation, Typed Syntax")[
   We say $srel(ms("S"))$ is:
   - _stable under input weakening_ if, for all inputs $X' ⊑ X$,
     $hasty(X, s, Y, annot: ms("S"))$ implies $hasty(X', s, Y, annot: ms("S"))$.
@@ -732,11 +723,12 @@ Formally,
     -- i.e., it is a _profunctor_ w.r.t. the weakening order.
 
     In this case, we call $srel(ms("S"))$ a _typing relation_.
+
+  We say a pretyped syntax $ms("S")$ is a _typed syntax_ if $srel(ms("S"))$ is a typing relation.
 ]
 
 We say $dof$ is _stable under (input/output) weakening_
 if both $dfnl$ and $dael$ are stable under (input/output) weakening.
--- if $dof$ is stable under weakening, we say $dof$ is a _(typed) operator family_.
 
 We can then state our _weakening lemma_ as follows:
 
@@ -756,10 +748,10 @@ replacing every variable $x$ with $ρ x$ for some renaming
 $ρ : vrens$ should preserve well-typedness.
 
 Concretely, we expect that a term
-$hasty(Γ, e, A)$ typechecks if and only if $hasty(ρ Γ, ρ e, A)$ typechecks, whenever
+$hasty(Γ, e, A)$ typechecks if and only if $hasty(ρ Γ, ρ · e, A)$ typechecks, whenever
 $ρ : vrens$ is a renaming -- for this to hold, we need both that:
 - The typing relations for $ms("F")$ and $ms("A")$ support renaming
-- We have a well-defined notion of renaming on expressions $ρ e$
+- We have a well-defined notion of renaming on expressions $ρ · e$
 
 It turns out that expressions in fact support a more general operation than renaming
 -- namely, _substitution_ -- in which each variable $x : A$ in a context $Δ$
@@ -768,18 +760,18 @@ is replaced with an arbitrary _term_ $hasty(Γ, e, A)$
 
 In particular, we define:
 
-- A _substitution_ is a finitely supported function $γ : vset → des$,
+-  Given $vset ⊆ ms("E")$, a _substitution_ is a finitely supported function $γ : vset → des$,
   where we define the _support_ of a function $γ : vset → des$ to be given by
   $
     fsup(γ) := { x ∈ vset | γ(x) ≠ x }
   $
-  for $vset ⊆ des$. We write the set of such functions as $substs(#des)$.
+  We write the set of such functions as $substs(#des)$.
 
-- We _apply_ a substitution $γ ∈ substs(#dic)$
+- We may _apply_ a substitution $γ ∈ substs(#dic)$
   to an expression $e ∈ #dic$;
   written $γ · e$.
 
-  For _expressions_, this is done by structural recursion on $e$,
+  This is done by structural recursion on $e$,
   replacing each variable $x$ in $e$ with $γ(x)$: we give the full definition in
   @cap-avoid-iter-subst-rules.
 
@@ -901,7 +893,7 @@ In particular, we define:
   ],
 ) <cart-iter-subst-rules>
 
-#definition(name: "Renaming, Operation Family")[
+#definition(name: "Renaming, Operator Family")[
   We say a pretyping relation $des : ms("X") stfn(S) ms("Y")$ is _stable under renaming_ if
   - $ms("X")$ and $ms("Y")$ support renaming
   - $S$ is equipped with a distinguished monoid action
@@ -912,13 +904,13 @@ In particular, we define:
     $hasty(ρ X, ρ s, ρ Y, annot: des)$,
   )
 
-  We define an _operation family_ $dof = (dfnl, dael)$ to be a preoperation family
-  such tha $dfnl$ and $dael$ are both stable under renaming and weakening --
+  We define an _operator family_ $dof = (dfnl, dael)$ to be a pre-operator family
+  such that $dfnl$ and $dael$ are both stable under renaming and weakening --
   we write
-  - The set of operation families from $ms("X")$ to $ms("Y")$ as
-    $hop(ms("X"), ms("Y")) ⊆ hpop(ms("X"), ms("Y"))$
-  - The set of operation families over $ms("X")$ as
-    $sop(ms("X")) := hop(sctx(ms("X")), ms("X")) ⊆ spop(ms("X"))$
+  /*- The set of operation families from $ms("X")$ to $ms("Y")$ as
+    $hop(ms("X"), ms("Y")) ⊆ hpop(ms("X"), ms("Y"))$*/
+  the set of operator families over $ms("X")$ as
+  $sop(ms("X")) ⊆ spop(ms("X"))$
 ]
 
 In particular, we note that we have
@@ -930,6 +922,9 @@ In particular, we note that we have
     $hasty(ρ Γ, ρ e, A, annot: dic)$,
   )
 ]
+
+In particular, the right-hand side of $hasty(Γ, e, A, annot: dic)$ is a _type_, and hence
+invariant under renaming $ρ$.
 
 Finally, we want to ensure that our type system supports _substitution_ as well.
 
@@ -1034,14 +1029,19 @@ We can now give our _substitution lemma_ for $#dic$ as follows:
   $
 ]
 
-#todo[Segue to values]
+In our original grammar for #ssa-calc() -- as well as for #rtl-flat() -- we did not allow aribtrary
+expressions to appear on the RHS of an assignment. Rather we introduced a restricted grammar of
+- _Values_ $v ∈ #val-calc(dael)$, 
+  parametrized by constants $c$ -- or here, atomic expressions $α ∈ dael$
+- _Operations_ $o ∈ #inst-calc(dof)$,
+  parametrized by an operator family $dof = (dfnl, dael)$
+  -- which each execute only _at most_ a single primitive instruction.
 
-We define a grammar for _values_
-$#val-calc(dael)$ (parametrized by atomic expressions $α ∈ dael$)
-and single operations
-$#inst-calc(dof)$
-(parametrized by an _operator family_ $dof = (dfnl, dael)$)
-below:
+  Note we allow a value $v$ without a primitive instruction to be treated as an operation
+  -- i.e. we have $#val-calc(dael) ⊆ #inst-calc(dael)$. Some IRs, such as LLVM, are more
+  strict, and do not allow this.
+
+We give a grammar for #val-calc(dael) and #inst-calc(dof) in @val-calc-grammar below:
 
 #let val-calc-grammar = figure(
   [
@@ -1119,7 +1119,7 @@ $
 
 We note in particular that:
 
-- #val-calc() inherits weakening and renaming from #dic:
+- #val-calc(dael) inherits weakening and renaming from #iter-calc(dael):
   - If $ms("A")$ is stable under (input/output) weakening,
     then so is #val-calc(dael)
     -- in particular, if $ms("A")$ is a typed syntax,
@@ -1132,7 +1132,7 @@ We note in particular that:
   (that is, #val-calc(dael)-substitutive, _not_ #iter-calc(dael)-substitutive!)
   whenever $dael$ is $#val-calc(dael)$-substitutive
 
-- #inst-calc() inherits weakening and renaming from #dic:
+- #inst-calc(dof) inherits weakening and renaming from #dic:
   - If $dof$ is stable under (input/output) weakening,
     then so is #inst-calc(dof)
     -- in particular, if $dof$ is an operation family,
@@ -1163,8 +1163,6 @@ We note in particular that:
 - $#inst-calc($(ms("F"), #val-calc(ms("A")))$) = #inst-calc($(ms("F"), ms("A"))$)$
 
 == Regions
-
-#todo[Tag all substitution / weakening / label-weakening with appropriate language]
 
 #import "../rules/haslb.typ": *
 
@@ -1407,10 +1405,10 @@ in @cap-avoid-reg-subst-rules below:
     where we are given
     \
     $
-      (·_des) & : substs(des') → des → des & #h(3em) & "(substitution on expressions)" \
-      (·_dts) & : substs(des') → dts → dts &         & "(substitution on terminators)"
+      (·_des) & : substs(ms("V")) → des → des & #h(3em) & "(substitution on expressions)" \
+      (·_dts) & : substs(ms("V")) → dts → dts &         & "(substitution on terminators)"
     $
-    for some expression grammar $vset ⊆ des'$.
+    for some expression grammar $vset ⊆ ms("V")$.
     \
     \
   ],
@@ -1548,10 +1546,10 @@ structural recursion in @cap-avoid-cond-subst-rules below:
     where we are given
     \
     $
-          (·_des) & : substs(des') → des → des         & #h(3em) & "(substitution on expressions)" \
-      (·_ms("U")) & : substs(des') → ms("U") → ms("U") &         & "(substitution on jumps)"
+          (·_des) & : substs(ms("V")) → des → des         & #h(3em) & "(substitution on expressions)" \
+      (·_ms("U")) & : substs(ms("V")) → ms("U") → ms("U") &         & "(substitution on jumps)"
     $
-    for some expression grammar $vset ⊆ des'$.
+    for some expression grammar $vset ⊆ ms("V")$.
     \
     \
   ],
@@ -1640,37 +1638,13 @@ In particular, we have:
 In particular, substitution therefore holds for lexical SSA
 _with expressions_
 as defined in the introduction
--- $#ssa-calc(dic))$.
+-- $#ssa-calc(dic)$.
 However, we also want to reason about lexical _standard SSA_
 -- i.e., SSA in which each assignment performs only a single primitive instruction,
 as we might find in a typical compiler.
 
-We can then define standard lexical SSA
-#footnote[
-  Note that there is also a more strict variant of SSA which does not allow a raw value $v$
-  (and in particular, a constant $α$ or variable $x$)
-  to appear directly on the RHS of an instruction.
-  //TODO: we will study this variant later on.
-]
-by taking
-$
-  #standard-ssa(dof) := #ssa-calc(inst-calc(dof))
-$
-
-#todo[_In general_, when we write $ms("S") ⊆ ms("S")'$ for some _typed syntax_, we mean (lore)]
-
-We inherit typing for $#val-calc()$ and $#inst-calc()$ from $#iter-calc()$
--- implying that we also inherit both _weakening_ and _subtyping_. More formally,
-
-- #todo[Can use cast for #val-calc()]
-
-- #todo[Thing for #iter-calc()]
-
-
-#todo[Be explicit here -- for #val-calc() case, this introduces the _empty language_]
-
-We can then define standard lexical SSA as
-$#standard-ssa(dof) := #ssa-calc(inst-calc(dof))$.
+We define standard lexical SSA as
+$#standard-ssa(dof) := #ssa-calc(inst-calc(dof)) ⊆ #ssa-calc(dic)$.
 While the resulting language supports weakening and label-weakening via the above lemmas,
 we do _not_ support substitution, as #inst-calc(dof) is not generally stable under substitution.
 
@@ -2027,48 +2001,7 @@ We can now state the _label-substitution lemma_ for #gssa-calc(des, dts) as foll
 ]
 
 #todo[
-  An expression syntax
-]
-
-#todo[
-  Region language definition:
-
-  - _region syntax_:
-    - $ms("S") : ms("X") sfn ms("Y")$ where
-    - $ms("X"), ms("Y")$ equipped with (distinguished) _renaming (left) action_ of
-      (distinguished) _renaming monoid_ on inputs $|ms("X")|$
-    - $|S|$ equipped with (distinguished) renaming (left) action by same monoid
-    - Typing compatible with _renaming_:
-      $hasty(X, s, Y, annot: ms("S")) <==> hasty(ρ · X, ρ · s, ρ · Y, annot: ms("S"))$
-      -- note we rename outputs as well!
-    - $ms("Y")$ equipped with (distinguished) _Relabeling (right) action_ of
-      (distinguished) _Relabeling monoid_ on outputs $|ms("Y")|$
-      -- respects weakening
-    - $|S|$ equipped with (distinguished) renaming (right) action by same monoid
-    - Typing compatible with output renaming:
-      $hasty(X, s, Y, annot: ms("S")) <==> hasty(X, s · ρ, Y · ρ, annot: ms("S"))$
-
-    Typical cases:
-    - $ms("S") : sctx(ms("X")) sfn slctx(ms("Y"))$ (context as LHS, cocontext as RHS)
-      (THIS IS US)
-      - renaming action by $vset ↪_ms("fin") vset$ finitely supported injections
-        -- note this is the identity on RHS since no variables $x ∈ vset$ in cocontexts
-      - Relabeling action by $lset ↪_ms("fin") lset$ finitely supported injections
-        on labels
-    - $ms("S") : sctx(ms("X")) sfn sdnf(ms("Y"))$ (context as LHS, polycontext as RHS)
-      - renaming action by $vset ↪_ms("fin") vset$ finitely supported injections
-        -- _not_ the identity on the RHS since polycontexts have variables $x ∈ vset$!
-      - Relabeling action by $lset ↪_ms("fin") lset$ finitely supported injections
-        on labels
-]
-
-#todo[
-  Note region syntax =/=> expression syntax -- it's just SSA is both as action by renaming on
-  contexts is identity.
-
-  Later, when we study program fragments with polycontext output, we'll want to rename outputs
-  when we rename inputs -- so a region syntax which is _not_ an expression syntax;
-  or rather, being an expression syntax is a _separate_ property.
+  A _region language_ is just an expression language which also allows relabeling
 ]
 
 = Refinement
