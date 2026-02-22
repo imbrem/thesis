@@ -50,9 +50,7 @@ Along the way, we'll introduce notions of:
 - _Substitutions_ $issubst(Γ, γ, Δ)$ for contexts and
   _label substitutions_ $lbsubst(cal("L"), κ, ms("K"))$ for cocontexts.
 
-  Note that label-substitutions in general take a _polycontext_ as input
-
-and prove some basic syntactic metatheorems.
+  Note that label-substitutions in general take a _polycontext_ as input.
 
 == Types and Contexts
 
@@ -1643,12 +1641,17 @@ However, we also want to reason about lexical _standard SSA_
 -- i.e., SSA in which each assignment performs only a single primitive instruction,
 as we might find in a typical compiler.
 
-We define standard lexical SSA as
+We may now define standard lexical SSA as
 $#standard-ssa(dof) := #ssa-calc(inst-calc(dof)) ⊆ #ssa-calc(dic)$.
 While the resulting language supports weakening and label-weakening via the above lemmas,
 we do _not_ support substitution, as #inst-calc(dof) is not generally stable under substitution.
 
-#todo[We _do_, however, support _renaming_: define below]
+#todo[We _do_, however, support _renaming_: define properly]
+
+We do, however, support the more restricted notion of _renaming_: we say a substitution $issubst(Γ, γ, Δ)$ is a _renaming_ when $γ$ is a bijection on variables:
+$
+  ∀ x ∈ Δ, !∃ y ∈ Γ. γ(x) = y
+$
 
 #todo[Segue to relabeling]
 
