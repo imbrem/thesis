@@ -58,8 +58,12 @@ We can compile this program into RTL, yielding the code in @rtl-factorial, by:
   Here, expressions like $a + b$ are syntactic sugar for primitive operations $+ (a, b)$.
 - Converting structured control flow (e.g., $ms("while")$) into unstructured jumps
   between basic blocks, generating labels $lb("body")$ and $lb("loop")$ as necessary.
+  /*
+  TODO: think about entry block labelling
+
   While, in our formalism, the entry block has no name,
   we will adopt the convention of assigning it the label $lb("entry")$.
+  */
 
   In general, we refer to the basic block with label $lb("label")$ as $β_lb("label")$.
 
@@ -81,7 +85,7 @@ We can compile this program into RTL, yielding the code in @rtl-factorial, by:
 ]
 
 While three-address code is dramatically simpler to reason about than high-level imperative languages,
-everything is complicated by the fact that variable may have multiple definitions.
+everything is complicated by the fact that variables may have multiple definitions.
 For example, the definition of dominance above uses a set of definitions $ms("defs")(x)$,
 Likewise
 because a variable's value may be set by multiple definitions throughout the program's execution,
@@ -129,16 +133,21 @@ Unfortunately, $ϕ$-nodes do not have an obvious operational semantics.
 Additionally,
 they require us to adopt more complex scoping rules than simple dominance-based scoping.
 For example, in the basic block $lb("loop")$ in @ϕ-factorial,
-$i_0$ evaluates to 1 if we came from $lb("entry")$ and to $i_1$ if we came from $lb("body")$.
-Similarly,
-$a_0$ evaluates to either 1 or $a_1$ based on the predecessor block.
+
+- $i_0$ evaluates to 1 if we came from $lb("entry")$ and to $i_1$ if we came from $lb("body")$.
+- $a_0$ evaluates to either 1 or $a_1$ based on the predecessor block.
+
 This does not obey dominance-based scoping,
 since $i_0$ and $i_1$ are defined _after_ the $ϕ$-nodes $i_0$, $a_0$ that reference them,
 which seems counterintuitive -- after all, variables are typically used after they are defined.
+
 In fact,
 since the value of a $ϕ$-node is determined by which basic block is our immediate predecessor,
 we instead need to use the rule that expressions in $ϕ$-node branches with source $S$
 can use any variable $y$ defined at the _end_ of $S$.
+
+#todo[Needs rewording to be more concise and straightforward]
+
 Note that this is a strict superset of the variables visible for a normal instruction $i$,
 which can only use variables $y$ which _dominate_ $i$ -- i.e.,
 such that _every_ path from the entry block to the definition of $i$ goes through $y$,
@@ -157,10 +166,9 @@ By _moving_ the expression in each branch to the _call-site_,
 we can transition to an isomorphic syntax called basic blocks with arguments (BBA),
 as illustrated in @bba-factorial.
 
-#figure(
-  todo[this],
-  caption: todo-inline[BBA factorial],
-) <bba-factorial>
+#bba-10-fact
+
+#todo[Make parenthetical about scoping clearer]
 
 In this approach,
 each $ϕ$-node -- since it lacks side effects and has scoping rules independent of its position in the basic block,
@@ -168,10 +176,14 @@ depending only on the source of each branch --
 can be moved to the top of the block.
 This reorganization allows us to treat each $ϕ$-node as equivalent to an argument for the basic block,
 with the corresponding values passed at the jump site.
+
 Converting a program from BBA format back to standard SSA form with $ϕ$-nodes is straightforward:
-introduce a $ϕ$-node for each argument of a basic block,
-and for each branch corresponding to the $ϕ$-node,
-add an argument to the jump instruction from the appropriate source block.
+
+- Introduce a $ϕ$-node for each argument of a basic block,
+
+- For each branch corresponding to the $ϕ$-node,
+  add an argument to the jump instruction from the appropriate source block.
+
 We give a formal grammar for basic blocks-with-arguments SSA in @bba-grammar.
 #footnote[
   Many variants of SSA do not allow variables to appear alone on the right-hand side of assignments,
@@ -179,8 +191,9 @@ We give a formal grammar for basic blocks-with-arguments SSA in @bba-grammar.
   We do not incorporate this restriction,
   though we could by normalizing even further and substituting $[y slash x]β$ instead.
 ]
-Note that this grammar no longer needs a separate terminator for returns:
-we can treat the return point as a distinguished label (with argument) that a program can jump to.
+This grammar no longer needs a separate terminator for returns:
+the return point is just a distinguished label (with argument) 
+that a program can jump to.
 
 #ssa-flat-grammar <bba-grammar>
 
@@ -190,11 +203,12 @@ this means that a variable is visible within the block $D$ where it is defined,
 starting from the point of its definition.
 It continues to be visible in all subsequent blocks $P$
 that are strictly dominated by $D$ in the control-flow graph (CFG).
+
 For example, in @bba-factorial:
 - $ms("entry")$ strictly dominates $ms("loop")$ and $ms("body")$;
   thus, the variable $n$ defined in $ms("entry")$ is visible in $ms("loop")$ and $ms("body")$.
 - $ms("loop")$ strictly dominates $ms("body")$;
-  therefore, the parameters $i_0$, $a_0$ to $ms("loop")$ are visible in $ms("body")$
+  therefore, the parameters $i_1$, $a_1$ to $ms("loop")$ are visible in $ms("body")$
   without the need to pass them as parameters.
 - $ms("body")$ does _not_ strictly dominate $ms("loop")$,
   since there is a path from $ms("entry")$ to $ms("loop")$ that does not pass through $ms("body")$.
@@ -243,7 +257,7 @@ For example, in @bba-factorial:
 #todo[deal with this jump, might want to try another tack since scoping is a later section]
 
 #block-note[
-  In the original, we put the scoping discussion first because later, when we introducd $ϕ$-nodes, we use the complexity of scoping as part of the argument for why to do BBA.
+  In the original, we put the scoping discussion first because later, when we introduced $ϕ$-nodes, we use the complexity of scoping as part of the argument for why to do BBA.
 
   But this doesn't make much sense in terms of flow because we want to talk about SSA first and _then_ lexical SSA, and now the stuff about scoping and dominance is split across sections. So go fix that.
 ]
@@ -251,8 +265,6 @@ For example, in @bba-factorial:
 #todo[text]
 
 #todo[convert factorial to lexical SSA]
-
-
 
 While functional languages typically rely on _lexical scoping_,
 where the scope of a variable is determined by its position within the code's nested structure,
@@ -292,7 +304,7 @@ We call this tree the _dominator tree_ @cytron-91-ssa-intro.
 
 It follows that we may consider a variable usage in a block $β$ in-scope if and only if either:
 - $x$ is defined earlier in $β$
-- The set $ms("defs")(x)$ of basic blocks in which $x$ is defined _stricly_ dominates $β$.
+- The set $ms("defs")(x)$ of basic blocks in which $x$ is defined _strictly_ dominates $β$.
 
   In general, we say a set of nodes $D$ strictly dominates a node $u$ if $D backslash {n}$ dominates $n$.
   Likewise, $d$ strictly dominates $u$ if ${d} backslash {u}$ dominates $u$, i.e.,
@@ -485,7 +497,7 @@ establishing an isomorphism between lexical SSA and standard SSA.
     - Let's go max generality and say λiter
 ]
 
-Lexical scoping allows us to apply many of techniques developed in type theory and functional programming
+Lexical scoping allows us to apply many of the techniques developed in type theory and functional programming
 for reasoning about program transformations.
 Indeed,
 the result of our conversion to lexical scoping looks a lot like the correspondence

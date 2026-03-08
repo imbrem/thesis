@@ -333,8 +333,7 @@
 
 #tt-ssa-grammar
 
-#let rtl-10-fact = subpar.grid(
-  align: bottom,
+#let rtl-10-fact = comparison(
   figure(
     [$
       & klet n = 10 seq \
@@ -344,11 +343,6 @@
       & quad a = a * (i + 1) \
       & quad i = i + 1 \
       & } \
-      \
-      \
-      \
-      \
-      \
     $],
     caption: [
       As an imperative program \ \
@@ -367,7 +361,6 @@
                   & a = a * t seq \
                   & i = i + 1 seq \
                   & kbr lb("loop") \
-                  \
     $],
     caption: [
       As RTL \ \
@@ -375,7 +368,6 @@
   ),
   <rtl-factorial>,
 
-  columns: (1fr, 1fr),
   caption: [
     A simple, slightly suboptimal program to compute 10! via multiplication in a loop,
     represented as typical imperative code and in RTL.
@@ -384,10 +376,7 @@
 
 #rtl-10-fact
 
-#let ssa-ϕ-10-fact = subpar.grid(
-  placement: auto,
-  align: bottom,
-
+#let ssa-ϕ-10-fact = comparison(
   figure(
     [$
                   & n = 10 seq \
@@ -399,12 +388,6 @@
                   & a = a * t seq \
                   & i = i + 1 seq \
                   & kbr lb("loop") \
-                  \
-                  \
-                  \
-                  \
-                  \
-                  \
     $],
     caption: [
       As RTL \ \
@@ -425,19 +408,64 @@
                   & a₂ = a₁ * t seq \
                   & i₂ = i₁ + 1 seq \
                   & kbr lb("loop") \
-                  \
     $],
     caption: [
-      A SSA with ϕ-nodes \ \
+      As SSA with ϕ-nodes \ \
     ],
   ),
   <ϕ-factorial>,
 
-  columns: (1fr, 1fr),
   caption: [
     A simple, slightly suboptimal program to compute 10! via multiplication in a loop,
-    represented in RTL and in SSA with ϕ-nodes
+    represented in RTL and in SSA with ϕ-nodes.
   ],
 )
 
 #ssa-ϕ-10-fact
+
+#let bba-10-fact = comparison(
+  figure(
+    [$
+                  & n = 10 seq \
+                  & i₀ = 1 seq \
+                  & a₀ = 1 seq \
+                  & kbr lb("loop") seq \
+      lb("loop"): & i₁ = #eϕ($lb("entry") : i₀, lb("body") : i₂$) \
+                  & a₁ = #eϕ($lb("entry") : a₀, lb("body") : a₂$) \
+                  & ite(i₁ < n, brb(lb("body")), retb(a₁)) seq \
+      lb("body"): & t = i₁ + 1 seq \
+                  & a₂ = a₁ * t seq \
+                  & i₂ = i₁ + 1 seq \
+                  & kbr lb("loop") \
+    $],
+    caption: [
+      With ϕ-nodes \ \
+    ],
+  ),
+  <ϕ-factorial2>,
+
+  figure(
+    [$
+                          & n = 10 seq \
+                          & i₀ = 1 seq \
+                          & a₀ = 1 seq \
+                          & brb(lb("loop"), (i₀, a₀)) seq \
+    lb("loop")(i₁, a₁) : & ite(i₁ < n, brb(lb("body")), retb(a₁)) seq \
+          lb("body") :    & t = i₁ + 1 seq \
+                          & a₂ = a₁ * t seq \
+                          & i₂ = i₁ + 1 seq \
+                          & brb(lb("loop"), (i₂, a₂)) \
+    $],
+    caption: [
+      With basic block arguments \ \
+    ],
+  ),
+  <bba-factorial-sub>,
+
+  caption: [
+    10! in SSA with ϕ-nodes and in BBA (basic-blocks-with-arguments) form.
+    Each ϕ-node becomes a parameter of its basic block,
+    with corresponding values passed at each branch site.
+  ],
+  label: <bba-factorial>,
+)

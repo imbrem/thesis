@@ -658,3 +658,30 @@ $
 
 #let cdem = gray.darken(50%)
 #let dem(x) = text(cdem, x)
+
+/// A side-by-side comparison figure: content aligned at the top, captions at the bottom.
+#let comparison(
+  fig-l, label-l,
+  fig-r, label-r,
+  caption: none,
+  label: none,
+  placement: auto,
+) = context {
+  let lh = measure(fig-l.body).height
+  let rh = measure(fig-r.body).height
+  let max-h = calc.max(lh, rh)
+  subpar.grid(
+    placement: placement,
+    figure(
+      box(width: 100%, height: max-h, align(top + start, fig-l.body)),
+      caption: fig-l.caption,
+    ), label-l,
+    figure(
+      box(width: 100%, height: max-h, align(top + start, fig-r.body)),
+      caption: fig-r.caption,
+    ), label-r,
+    columns: (1fr, 1fr),
+    caption: caption,
+    label: label,
+  )
+}
