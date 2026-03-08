@@ -25,32 +25,56 @@ $
 $
 meaning that $r$ is a well-typed SSA program such that:
 - given the variables in the _context_ $Γ = x : A, y : B, z : C$ are live on entry,
-- when control leaves $r$, it does so by jumping to some label in the _cocontext_
-  $ms("L") = lb("l")(A), lb("k")(B), lb("j")(C)$ with a parameter of the appropriate type.
+- when control leaves $r$, it does so by jumping to some label in 
+  the set $ms("L") = lb("l")(A), lb("k")(B), lb("j")(C)$ 
+  with a parameter of the appropriate type.
 
 Likewise, we'll need to type _expressions_ $e$, which we'll do in the standard manner using a
 judgement of the form $hasty(Γ, e, A)$ -- meaning, "$e$ has type $A$ in context $Γ$".
 
 We'll hence need to define:
 - Valid types $A$
-- Contexts $Γ$ and cocontexts $ms("L")$
+- Contexts $Γ$, and
+- _Cocontexts_ $ms("L")$ 
+  -- which are simply finitely supported maps from labels to (parameter) types.
 
-To effectively study _control-flow graphs_, which may have multiple entrypoints,
-we will also introduce the notion of a _polycontext_ $cal("L")$, composed of _ports_
-$clty(lb("l"), Γ, A)$
-associating each entry label $lb("l")$
-with a set of live variables $Γ$
-and a parameter type $A$.
+We'll proceed to equip these with mostly-standard notions of:
 
-Along the way, we'll introduce notions of:
 - _Subtyping_ $tywk(A, B)$
-- _Weakening_ $cwk(Γ, Δ)$ for contexts,
-  $lbcwk(ms("L"), ms("K"))$ for cocontexts,
-  and $cal("L") ⊑ cal("K")$ for polycontexts
-- _Substitutions_ $issubst(Γ, γ, Δ)$ for contexts and
-  _label substitutions_ $lbsubst(cal("L"), κ, ms("K"))$ for cocontexts.
+- _Weakening_ $cwk(Γ, Δ)$ for contexts, and
+  $lbcwk(ms("L"), ms("K"))$ for cocontexts
+- _Substitutions_ $issubst(Γ, γ, Δ)$ 
+  taking the context $Γ$ to the context $Δ$
 
-  Note that label-substitutions in general take a _polycontext_ as input.
+We will also want to study the typing of _control-flow graphs_.
+In particular, a _region_ $haslb(Γ, r, ms("L"))$
+is simply a _control-flow graph_ with a single distinguished entry point, 
+say $lb("entry")$ 
+-- this can implicitly be taken to have a single parameter of unit type $tunit$.
+The _cocontext_ of the region is then just the set of exit points of this CFG
+-- note that it can be empty 
+(for example, if the CFG is an infinite loop) 
+or contain multiple labels 
+(for example, a CFG with regular and exceptional return paths)
+-- that is, we can say that $r$ takes $clty(lb("entry"), Γ, tunit)$ to $ms("L")$.
+
+More generally, we can define a _port_ of an arbitrary CFG to be a triple $clty(lb("l"), Γ, A)$ associating:
+- A label $lb("l")$
+- A context $Γ$ of live variables on entry to the CFG
+- A parameter type $A$ of the value passed to the CFG on entry
+
+A _polycontext_ $cal("L")$ is then just a set of ports, 
+allowing us to type CFGs with multiple entry points 
+as taking a polycontext $cal("L")$ to a cocontext $ms("L")$.
+This notion will be very useful in developing the metatheory of $#ssa-calc()$
+-- in particular, we may observe that 
+(up to externally-observable behavior)
+a CFG _is the same thing_ as a
+
+- _label substitution_ $lbsubst(cal("L"), κ, ms("K"))$
+  taking the polycontext $cal("L")$ to the cocontext $ms("K")$
+
+which, among other things, will allow us to give a type-theoretic account of CFG rewriting.
 
 == Types and Contexts
 
