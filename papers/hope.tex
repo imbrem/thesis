@@ -1,0 +1,386 @@
+%% Commands for TeXCount
+%TC:macro \cite [option:text,text]
+%TC:macro \citep [option:text,text]
+%TC:macro \citet [option:text,text]
+%TC:envir table 0 1
+%TC:envir table* 0 1
+%TC:envir tabular [ignore] word
+%TC:envir displaymath 0 word
+%TC:envir math 0 word
+%TC:envir comment 0 0
+
+\documentclass[acmsmall,screen,review]{acmart}
+
+\usepackage{syntax}
+\renewcommand{\syntleft}{\normalfont\itshape}
+\renewcommand{\syntright}{\normalfont\itshape}
+
+\usepackage{prftree}
+
+\usepackage{listings}
+\usepackage{lstautogobble}
+\usepackage{xcolor} % \usepackage[dvipsnames]{xcolor}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{fancyvrb}
+\usepackage{enumitem}
+\usepackage{string-diagrams}
+\usepackage{cancel}
+\usepackage{thmtools}
+\usepackage{pifont}
+\usepackage[export]{adjustbox}
+\usetikzlibrary{calc}
+
+\lstset{ %
+  autogobble=true,
+}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+%    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\newcounter{todos}
+\newcommand{\TODO}[1]{{
+  \stepcounter{todos}
+  \begin{center}\large{\textcolor{red}{\textbf{TODO \arabic{todos}:} #1}}\end{center}
+}}
+
+\newcommand{\todo}[1]{\stepcounter{todos} \textcolor{red}{\textbf{TODO \arabic{todos}}: #1}}
+
+% Math fonts
+\newcommand{\mc}[1]{\ensuremath{\mathcal{#1}}}
+\newcommand{\mb}[1]{\ensuremath{\mathbf{#1}}}
+\newcommand{\mbb}[1]{\ensuremath{\mathbb{#1}}}
+\newcommand{\ms}[1]{\ensuremath{\mathsf{#1}}}
+
+\newcommand{\kwms}[1]{\textcolor{violet}{\ms{#1}}}
+\newcommand{\lbms}[1]{{\ms{#1}}}
+
+% Math
+\newcommand{\nats}{\mathbb{N}}
+
+% Syntax atoms
+\newcommand{\lbl}[1]{{`#1}}
+\newcommand{\lto}{:}
+\newcommand{\linl}[1]{\iota_l\;{#1}}
+\newcommand{\linr}[1]{\iota_r\;{#1}}
+\newcommand{\labort}[1]{\ms{abort}\;{#1}}
+
+% Syntax
+\newcommand{\letexpr}[3]{\ensuremath{\ms{let}\;#1 = #2;\;#3}}
+\newcommand{\caseexpr}[5]{\ms{case}\;#1\;\{\linl{#2} \lto #3, \linr{#4} \lto #5\}}
+\newcommand{\letstmt}[3]{\ensuremath{\ms{let}\;#1 = #2; #3}}
+\newcommand{\brb}[2]{\ms{br}\;#1\;#2}
+\newcommand{\ite}[3]{\ms{if}\;#1\;\{#2\}\;\ms{else}\;\{#3\}}
+\newcommand{\casestmt}[5]{\ms{case}\;#1\;\{\linl{#2} \lto #3, \linr{#4} \lto #5\}}
+\newcommand{\loopstmt}[4]{\ms{loop}\;#1\;\{#2(#3) \lto #4\}}
+\newcommand{\awhere}[2]{#1\;\ms{where}_{\ms{nonrec}}\;#2}
+\newcommand{\cwhere}[2]{#1\;\ms{where}_{\ms{rec}}\;#2}
+\newcommand{\where}[2]{#1\;\ms{where}\;#2}
+\newcommand{\wbranch}[3]{#1(#2) \lto \{#3\}}
+\newcommand{\cfgsubst}[1]{\ms{cfgs}\;\{#1\}}
+\newcommand{\wseq}[2]{{#1} \mathbin{{;}{;}} {#2}}
+\newcommand{\rupg}[1]{{#1}^\upharpoonright}
+\newcommand{\lupg}[1]{{#1}^\upharpoonleft}
+\newcommand{\liter}[3]{\ms{iter}\;#1\;\{ \linr{#2} \lto #3 \}}
+\newcommand{\einf}[1]{#1 \in \mc{E}^\infty}
+
+\newcommand{\ncaseexpr}[3]{\ms{case}_{#1}\;#2\;\{#3\}}
+\newcommand{\splitexpr}[3]{\ms{split}_{#1; #2}(#3)}
+\newcommand{\webranch}[3]{#1(#2) \lto #3}
+
+% Judgements
+\newcommand{\qsp}[4]{#1 \vdash #2 = #3 + #4}
+\newcommand{\qwk}[4]{#1 \vdash #2 \geq #3 + #4}
+\newcommand{\swk}[3]{#1 \mapsto #2 ; #3}
+\newcommand{\cwk}[2]{#1 \mapsto #2}
+\newcommand{\lwk}[3]{#1 \vdash #2 \rightsquigarrow #3}
+\newcommand{\thyp}[3]{#1 : {#2}^{#3}}
+\newcommand{\bhyp}[2]{#1 : #2}
+\newcommand{\lhyp}[2]{#1(#2)}
+\newcommand{\rle}[1]{{\scriptsize\textsf{#1}}}
+\newcommand{\qbc}[2]{(#1) , #2}
+
+\newcommand{\hasty}[4]{#1 \vdash_{#2} #3: {#4}}
+\newcommand{\haslb}[4]{#1 \vdash_{#2} #3 \rhd #4}
+
+\newcommand{\ahasty}[4]{#1 \vdash_{#2}^{\ms{anf}} #3 : {#4}}
+\newcommand{\thaslb}[3]{#1 \vdash^{\ms{t}}_{\ms{ssa}} #2 \rhd #3}
+\newcommand{\ahaslb}[3]{#1 \vdash^{\ms{anf}} #2 \rhd #3}
+\newcommand{\bhaslb}[3]{#1 \vdash^{\ms{b}}_{\ms{ssa}} #2 \rhd #3}
+% \newcommand{\chaslb}[3]{#1 \vdash^{\ms{c}}_{\ms{ssa}} #2 \rhd #3}
+
+\newcommand{\shaslb}[3]{#1 \vdash^{\ms{s}} #2 \rhd #3}
+
+\newcommand{\isop}[4]{#1 \in \mc{I}_{#4}(#2, #3)}
+\newcommand{\issubst}[4]{#1 \vdash_{#2} #3 \rhd #4}
+\newcommand{\lbsubst}[4]{#1 \vdash #2: #3 \rightsquigarrow #4}
+\newcommand{\teqv}{\approx}
+\newcommand{\tref}{\twoheadrightarrow}
+\newcommand{\antitref}{\twoheadleftarrow}
+\newcommand{\tmle}[5]{#1 \vdash_{#2} #3 \tref #4 : {#5}}
+\newcommand{\tmlep}[6]{#1 \vdash_{#2} #3 \tref^{#6} #4 : {#5}}
+\newcommand{\tmeq}[5]{#1 \vdash_{#2} #3 \teqv #4 : {#5}}
+\newcommand{\lbeq}[4]{#1 \vdash #2 \teqv #3 \rhd {#4}}
+\newcommand{\tmseq}[4]{\issubst{#1 \teqv #2}{#3}{#4}}
+\newcommand{\lbseq}[5]{\lbsubst{#1 \teqv #2}{#3}{#4}{#5}}
+\newcommand{\brle}[1]{{\textsf{#1}}}
+
+\newcommand{\tossa}[2]{\ms{SSA}(#1 \Rightarrow #2)}
+\newcommand{\ssalet}[3]{\ms{SSA}_{\ms{let}}(#1, #2, #3)}
+\newcommand{\toanf}[1]{\ms{ANF}(#1)}
+\newcommand{\anflet}[3]{\ms{ANF}_{\ms{let}}(#1, #2, #3)}
+\newcommand{\toterm}[1]{\ms{Term}(#1)}
+\newcommand{\etoty}[1]{[#1]}
+\newcommand{\ctoty}[1]{[#1]}
+\newcommand{\ltoty}[2]{[#1]}
+\newcommand{\dltoty}[2]{[#1; #2]}
+
+% Denotational semantics
+\newcommand{\dnt}[1]{\llbracket{#1}\rrbracket}
+\newcommand{\ednt}[1]{\left\llbracket{#1}\right\rrbracket}
+\newcommand{\tmor}[1]{{!}_{#1}}
+\newcommand{\dmor}[1]{{\Delta}_{#1}}
+\newcommand{\entrymor}[3]{\ms{esem}_{#1, #3}(#2)}
+\newcommand{\loopmor}[3]{\ms{lsem}_{#1, #3}(#2)}
+\newcommand{\substpure}[1]{#1\;\ms{pure}}
+
+% Comonadic lore
+\newcommand{\lmor}[1]{\ms{let}(#1)}
+\newcommand{\envcom}[2]{{#1}_{#2 \otimes \cdot}}
+\newcommand{\rlmor}[1]{\ms{rlet}(#1)}
+\newcommand{\rcase}[1]{\ms{rcase}(#1)}
+\newcommand{\rfix}[1]{\ms{rfix}(#1)}
+\newcommand{\rseq}[3]{#2 \gg_{#1} #3}
+\newcommand{\envpil}[1]{\pi_{{#1}l}}
+\newcommand{\envpir}[1]{\pi_{{#1}r}}
+
+\newcommand{\toenv}[2]{\ms{env}_{#1}(#2)}
+\newcommand{\envcop}[3]{[#2, #3]_{#1}}
+\newcommand{\envinr}[1]{\iota^{#1}_{r}}
+\newcommand{\envinl}[1]{\iota^{#1}_{l}}
+\newcommand{\envtn}[3]{{#2} \otimes_{#1} {#3}}
+
+% Composition
+\newcommand{\invar}{\square}
+\newcommand{\outlb}{\blacksquare}
+\newcommand{\pckd}[1]{\langle #1 \rangle}
+
+% Weak memory
+\newcommand{\bufloc}[1]{\overline{#1}}
+
+% Branding
+\newcommand{\subiterexp}{\texorpdfstring{\(\lambda_{\ms{iter}}\)}{lambda-iter}}
+\newcommand{\isotopessa}{\(\lambda_{\ms{SSA}}\)}
+\newcommand{\thsubiter}[1]{\ms{Th}(#1)}
+
+% Formalization pointers
+\newcommand{\formalizedas}[1]{Formalized as \texttt{#1}}
+
+% Commutativity
+\newcommand{\rightmove}{\rightharpoonup}
+\newcommand{\leftmove}{\leftharpoondown}
+\newcommand{\slides}{\rightleftharpoons}
+
+% Quantities
+\newcommand{\zeroq}{0}
+\newcommand{\oneq}{1}
+\newcommand{\delq}{1^?}
+\newcommand{\cpyq}{\omega^+}
+\newcommand{\topq}{\omega}
+\newcommand{\zeroqv}[1]{#1^\uparrow}
+\newcommand{\dwnqv}[1]{\downarrow(#1)}
+
+% Operators
+\newcommand{\pto}{\rightharpoonup}
+\newcommand{\alquant}{\ms{q}}
+\newcommand{\alcount}{\sharp}
+\newcommand{\aldquant}{\bar{\ms{q}}}
+\newcommand{\varcount}[2]{\sharp(#1, #2)}
+
+% Truth tables
+\newcommand{\cmark}{\textcolor{green}{\ding{51}}}%
+\newcommand{\xmark}{\textcolor{red}{\ding{55}}}%
+% \newcommand{\cmark}{\textcolor{Green}{\ding{51}}}%
+% \newcommand{\xmark}{\textcolor{BrickRed}{\ding{55}}}%
+
+
+%% Rights management information.  This information is sent to you
+%% when you complete the rights form.  These commands have SAMPLE
+%% values in them; it is your responsibility as an author to replace
+%% the commands and values with those provided to you when you
+%% complete the rights form.
+\setcopyright{acmcopyright}
+\copyrightyear{2025}
+\acmYear{2025}
+\acmDOI{XXXXXXX.XXXXXXX}
+
+%%
+%% These commands are for a JOURNAL article.
+% \acmJournal{JACM}
+% \acmVolume{37}
+% \acmNumber{4}
+% \acmArticle{111}
+% \acmMonth{8}
+
+%%
+%% Submission ID.
+%% Use this when submitting an article to a sponsored event. You'll
+%% receive a unique submission ID from the organizers
+%% of the event, and this ID should be used as the parameter to this command.
+%%\acmSubmissionID{123-A56-BU3}
+
+\begin{document}
+
+\title{Sound and Complete Refinement for SSA with Substructural Effects}
+
+\author{Jad Ghalayini}
+\email{jeg74@cl.cam.ac.uk}
+\orcid{0000-0002-6905-1303}
+
+\author{Neel Krishnaswami}
+\email{nk480@cl.cam.ac.uk}
+\orcid{0000-0003-2838-5865}
+
+\begin{CCSXML}
+  <ccs2012>
+  <concept>
+  <concept_id>10003752.10010124.10010131.10010133</concept_id>
+  <concept_desc>Theory of computation~Denotational semantics</concept_desc>
+  <concept_significance>500</concept_significance>
+  </concept>
+  <concept>
+  <concept_id>10003752.10010124.10010131.10010137</concept_id>
+  <concept_desc>Theory of computation~Categorical semantics</concept_desc>
+  <concept_significance>500</concept_significance>
+  </concept>
+  <concept>
+  <concept_id>10003752.10003790.10011740</concept_id>
+  <concept_desc>Theory of 
+  Just like for branching control-flow, we also require an additional condition to ensure that our
+  iteration operator is compatible with our premonoidal structure. Specifically, we would like to be
+  able to ``thread'' values through our loop bodies; i.e., the following two programs should be
+  equivalent for \emph{pure} $c$:
+  $$
+  (\liter{a}{x}{b}, c) \approx \liter{(a, c)}{(x, y)}
+    {\caseexpr{b}{z}{\linl{(z, y)}}{z}{\linr{(z, y)}}}
+  $$
+  This corresponds to requiring our Conway iteration operator to be \emph{strong}, defined as follows:
+  \begin{definition}[Strong Conway Iteration Operator]
+    If $\mc{C}$ is distributcomputation~Type theory</concept_desc>
+  <concept_significance>500</concept_significance>
+  </concept>
+  </ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Theory of computation~Denotational semantics}
+\ccsdesc[500]{Theory of computation~Categorical semantics}
+\ccsdesc[500]{Theory of computation~Type theory}
+
+%%
+%% Keywords. The author(s) should pick words that accurately describe
+%% the work being presented. Separate the keywords with commas.
+\keywords{SSA, Categorical Semantics, Elgot Structure, Effectful Category}
+
+% \received{20 February 2007}
+% \received[revised]{12 March 2009}
+% \received[accepted]{5 June 2009}
+
+\maketitle
+
+Compiler optimizations are fundamentally directed rewrites. Most production compilers use the
+\emph{static single assignment}, or SSA, as their intermediate representation, with optimization
+passes consisting of transformations from one \emph{effectful} SSA program into another. This
+immediately leads to a correctness question: is the output program a \emph{refinement} of the input
+program?
+
+Depending on what style semantics we assign our program, we can attempt to answer this question in
+two different ways. Using operational semantics, we can verify transformations by constructing
+explicit simulation proofs, demonstrating that optimized programs replicate the behavior of their
+originals. A notable example is \citet{vellvm-12}'s work on Vellvm, which introduces multiple
+operational semantics for LLVM and establishes refinements among them. For instance, verifying the
+SoftBound transformation \cite{nagarakatte-softbound-09} involved defining a bespoke operational
+semantics tailored specifically to SoftBound and then proving simulation relative to the original
+semantics.
+
+In contrast, denotational semantics allow verification by establishing semantic equivalence or
+refinement of the denotations of the original and transformed programs. Even complex side effects,
+such as those arising in weak memory models, can often be elegantly captured using monadic
+frameworks. Examples include monadic Brookes-style semantics for release-acquire
+(\citet{release-acquire}) and TSO (\citet{jagadeesan-brookes-relaxed-12}) memory models.
+Compositionality means that denotational semantics can often be used to reason about optimizations
+\emph{inductively}, as well as effectively reason about small program transformations such as
+peephole rewrites.
+
+Simulation proofs in operational semantics are often labor-intensive and lack reusability,
+necessitating new bespoke proofs for each optimization or additional side effect. Conversely,
+denotational semantics demands significant initial investment to construct comprehensive
+mathematical models, with resulting proofs that typically remain tightly coupled to the details of a
+specific model. Using denotational semantics also requires us to figure out how to break down a
+program into components, and compositionally assign a semantics to those components; this has
+recently been achieved for SSA by \citet{ghalayini-24-ssa-densem-arxiv}.
+
+However, many practical compiler optimizations, such as loop hoisting, \texttt{mem2reg}, and sparse
+conditional constant propagation, seem not to depend upon the specific details of the model, instead
+relying on high level information such as which operations are pure/constant; for example,
+\citet{release-acquire} note that, since they use a monadic semantics, they have access to a huge
+amount of generic machinery to deal with, e.g., higher-order programs, ``for free''. In particular,
+we observe that we often only require information about:
+\begin{enumerate}
+  \item How different effects commute; for example, printing commutes with (potential) UB, but not
+  with (potential) nontermination. Sometimes, this is a \emph{refinement}, rather than an
+  \emph{equation}: since UB followed by nontermination is UB (which can be optimized to
+  nontermination), but nontermination followed by UB is nontermination (which cannot be optimized to
+  UB)
+  \item Peephole rewrties on effectful operations relevant to our optimization; for example, a
+  \texttt{mem2reg} optimization may not care about details of our memory model except for facts like
+  $\ms{store}\;a\;b ; \ms{get}\;a \tref \letexpr{x}{b}{\ms{store}\;a\;x ; x}$, where $\tref$
+  indicates refinement. In particular, we are interested in
+  \item The \emph{linearity} of different effects. For example, we can't duplicate or discard a
+  printing operation, so it is \emph{linear}. On the other hand, an effect like nontermination can
+  be duplicated (e.g. $\letexpr{x}{\ms{maybeloop}}{(x, x)} \teqv (\ms{maybeloop}, \ms{maybeloop})$),
+  i.e. is \emph{relevant}, while an effect like nondeterminism can be discarded (e.g.
+  $\letexpr{\cdot}{\ms{nondet}}{5} \teqv 5$), i.e. is \emph{affine}. Again, linearity is sometimes a
+  refinement rather than an equation; for example, $(\ms{nondet}, \ms{nondet}) \tref
+  \letexpr{x}{\ms{nondet}}{(x, x)}$, making nondeterminism \emph{fusable}, but not relevant.
+\end{enumerate}
+In this work, we introduce \subiterexp{}, a simple calculus for reasoning about program refinement
+given an effect system and information about (directed) commutativity, linearity, and an arbitrary
+set of peephole rewrites. We then proceed to:
+\begin{itemize}
+  \item Show \subiterexp{} is in fact equivalent to (substructural) SSA, and explore how this can be
+  used to reason about compiler optimization passes
+  \item Provide a denotational semantics for \subiterexp{}, which we prove is sound and complete
+  \item Give some interesting models of \subiterexp{}, supporting effects such as weak memory and
+  complex type-system features such as separation logic
+\end{itemize}
+We hope to use this work as a starting point to explore the utility of high-level algebraic
+approaches to building model and effect-generic optimizations and analysis passes for effectful
+programs, as well as to verify that new models are compatible with standard optimizations.
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+
+\end{document}

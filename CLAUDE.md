@@ -39,7 +39,14 @@ Formalizing Static Single Assignment (SSA) form using type theory and category t
 - `wordometer` (word count), `lemmify` (theorems), `curryst` (proof trees),
   `fletcher` (diagrams), `simplebnf` (BNF grammars)
 
+## Source papers (`papers/`)
+
+LaTeX sources for the papers this thesis is based on. See `papers/CLAUDE.md` for detailed notes.
+
+1. **The Denotational Semantics of SSA** (`denotational-semantics-of-ssa.tex`) — 2024 arXiv preprint. Foundational paper: type theory for SSA (lambda_SSA), equational theory, Freyd-Elgot categorical semantics, soundness/completeness, concrete models (TSO, Brookes-style). Lean formalization.
+2. **A Complete Refinement System for Substructural SSA** (`complete-refinement-ssa.tex`) — 2025 submission, under review. Extends paper 1 with substructural types, effect system, and directed refinement. Introduces lambda_iter calculus. Sound and complete refinement w.r.t. categorical axiomatization.
+3. **Sound and Complete Refinement for SSA with Substructural Effects** (`hope.tex`) — 2025 HOPE extended abstract summarizing paper 2.
+
 ## Conventions
 
 - Thesis is work-in-progress; many sections have TODOs
-- Papers and LaTeX sources to be added later for reference

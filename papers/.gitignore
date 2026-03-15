@@ -1,0 +1,14 @@
+*.pdf
+*.fdb_latexmk
+*.fls
+*log
+*.out
+*.synctex*
+*.aux
+*.cut
+*.bbl
+*.blg
+*.xdv
+*.autosave.xopp
+*.xcp
+
