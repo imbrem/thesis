@@ -1,0 +1,28 @@
+name: Formalization CI
+
+on:
+  pull_request:
+    paths: ['formalization/thesis/**']
+  workflow_dispatch:
+
+env:
+  # lean-action@v1 internally uses actions/cache@v4 which requires Node.js 20;
+  # opt into Node.js 24 until upstream updates to cache v5.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: formalization
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: formalization/thesis

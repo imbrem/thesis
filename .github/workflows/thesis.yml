@@ -1,0 +1,23 @@
+name: Compile Typst
+
+on:
+  pull_request:
+    paths: ['thesis/**', 'notes/**', 'lib/**', 'typst.toml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: typst-community/setup-typst@v5
+
+      - name: Compile Typst sources
+        run: |
+          for src in $(find thesis notes -name '*.typ'); do
+            typst compile --root . "$src" "${src%.typ}.pdf"
+          done

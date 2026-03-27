@@ -1,0 +1,174 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  # lean-action@v1 uses actions/cache@v4 and upload-pages-artifact@v4 pins
+  # upload-artifact@v4.6.2, both requiring Node.js 20; opt into Node.js 24
+  # until upstream updates.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: write
+  actions: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  typst:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: typst-community/setup-typst@v5
+
+      - name: Compile Typst sources
+        run: |
+          for src in $(find thesis notes -name '*.typ'); do
+            typst compile --root . "$src" "${src%.typ}.pdf"
+          done
+
+      - name: Upload PDFs
+        uses: actions/upload-artifact@v7
+        with:
+          name: typst-pdfs
+          path: |
+            thesis/**/*.pdf
+            notes/**/*.pdf
+
+  latex:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Compile papers
+        uses: xu-cheng/latex-action@v4
+        with:
+          root_file: |
+            hope.tex
+            denotational-semantics-of-ssa.tex
+            complete-refinement-ssa.tex
+          working_directory: papers/isotope
+
+      - name: Upload PDFs
+        uses: actions/upload-artifact@v7
+        with:
+          name: latex-pdfs
+          path: papers/isotope/*.pdf
+
+  formalization:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: formalization/thesis
+
+      - name: Generate API documentation
+        working-directory: formalization/thesis
+        run: |
+          TOOLCHAIN_REV=$(cut -d: -f2 < lean-toolchain)
+
+          mkdir -p docbuild
+          cat > docbuild/lakefile.toml << TOML
+          name = "docbuild"
+          reservoir = false
+          version = "0.1.0"
+          packagesDir = "../.lake/packages"
+
+          [[require]]
+          name = "Isotope"
+          path = "../"
+
+          [[require]]
+          scope = "leanprover"
+          name = "doc-gen4"
+          git = "https://github.com/leanprover/doc-gen4"
+          rev = "$TOOLCHAIN_REV"
+          TOML
+
+          cd docbuild
+          MATHLIB_NO_CACHE_ON_UPDATE=1 lake update Isotope
+          lake build Isotope:docs
+
+      - name: Upload docs
+        uses: actions/upload-artifact@v7
+        with:
+          name: lean-docs
+          path: formalization/thesis/docbuild/.lake/build/doc/
+
+  deploy:
+    needs: [typst, latex, formalization]
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Checkout outputs branch
+        uses: actions/checkout@v6
+        with:
+          ref: outputs
+
+      - name: Download Typst PDFs
+        uses: actions/download-artifact@v8
+        with:
+          name: typst-pdfs
+
+      - name: Download LaTeX PDFs
+        uses: actions/download-artifact@v8
+        with:
+          name: latex-pdfs
+
+      - name: Push to outputs branch
+        run: |
+          git add -A
+          git diff --cached --quiet || {
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Update PDFs from ${{ github.sha }}"
+          }
+          git push origin outputs
+
+      - name: Fetch README from main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          path: _main
+          sparse-checkout: README.md
+          sparse-checkout-cone-mode: false
+
+      - name: Install pandoc
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq pandoc
+
+      - name: Render README as index.html
+        run: |
+          pandoc _main/README.md -s --metadata title="Categorical Imperative Programming" \
+            -c https://cdn.simplecss.org/simple.min.css \
+            -o index.html
+          rm -rf _main
+
+      - name: Download Lean docs
+        uses: actions/download-artifact@v8
+        with:
+          name: lean-docs
+          path: formalization/isotope
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v5

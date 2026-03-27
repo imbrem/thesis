@@ -1,0 +1,6 @@
+[submodule "formalization/papers/discretion"]
+	path = formalization/papers/discretion
+	url = https://github.com/imbrem/discretion.git
+[submodule "formalization/papers/debruijn-ssa"]
+	path = formalization/papers/debruijn-ssa
+	url = https://github.com/imbrem/debruijn-ssa.git

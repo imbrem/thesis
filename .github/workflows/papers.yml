@@ -1,0 +1,24 @@
+name: Compile LaTeX
+
+on:
+  pull_request:
+    paths: ['papers/isotope/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Compile papers
+        uses: xu-cheng/latex-action@v4
+        with:
+          root_file: |
+            hope.tex
+            denotational-semantics-of-ssa.tex
+            complete-refinement-ssa.tex
+          working_directory: papers/isotope

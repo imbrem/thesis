@@ -1,0 +1,2019 @@
+@misc{llvm-github,
+  title = { clang introduces undefined behavior into well-formed C++ program with infinite loop },
+  url   = { https://github.com/llvm/llvm-project/issues/62057 },
+  note  = { Accessed: 11 July 2025 }
+}
+
+@inproceedings{staton-state-10,
+  author    = {Sam Staton},
+  title     = {Completeness for Algebraic Theories of Local State},
+  booktitle = {Foundations of Software Science and Computational Structures, 13th
+               International Conference, {FOSSACS} 2010, Held as Part of the Joint
+               European Conferences on Theory and Practice of Software, {ETAPS} 2010,
+               Paphos, Cyprus, March 20-28, 2010. Proceedings},
+  pages     = {48--63},
+  year      = {2010},
+  crossref  = {DBLP:conf/fossacs/2010},
+  url       = {https://doi.org/10.1007/978-3-642-12032-9\_5},
+  doi       = {10.1007/978-3-642-12032-9\_5},
+  timestamp = {Wed, 16 Mar 2022 23:55:17 +0100},
+  biburl    = {https://dblp.org/rec/conf/fossacs/Staton10.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{gifford86,
+  author    = {David K. Gifford and
+               John M. Lucassen},
+  editor    = {William L. Scherlis and
+               John H. Williams and
+               Richard P. Gabriel},
+  title     = {Integrating Functional and Imperative Programming},
+  booktitle = {Proceedings of the 1986 {ACM} Conference on {LISP} and Functional
+               Programming, {LFP} 1986, Cambridge, Massachusetts, USA, August 4-6,
+               1986},
+  pages     = {28--38},
+  publisher = {{ACM}},
+  year      = {1986},
+  url       = {https://doi.org/10.1145/319838.319848},
+  doi       = {10.1145/319838.319848},
+  timestamp = {Fri, 06 Aug 2021 15:08:55 +0200},
+  biburl    = {https://dblp.org/rec/conf/lfp/GiffordL86.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{promonad,
+  doi       = {10.4204/eptcs.380.20},
+  url       = {https://doi.org/10.4204%2Feptcs.380.20},
+  year      = 2023,
+  month     = {aug},
+  publisher = {Open Publishing Association},
+  volume    = {380},
+  pages     = {344--361},
+  author    = {Mario Rom{\'{a}}n},
+  title     = {Promonads and String Diagrams for Effectful Categories},
+  journal   = {Electronic Proceedings in Theoretical Computer Science}
+}
+
+# Note: manually added the number of pages from the PDF
+# Check whether this is the right thing to do...
+@article{linear-state-usage,
+  doi       = {10.2168/lmcs-10(1:17)2014},
+  url       = {https://doi.org/10.2168%2Flmcs-10%281%3A17%292014},
+  year      = 2014,
+  month     = {mar},
+  publisher = {Centre pour la Communication Scientifique Directe ({CCSD})},
+  volume    = {Volume 10, Issue 1},
+  author    = {Rasmus Ejlers M{\o}gelberg and Sam Staton},
+  title     = {Linear usage of state},
+  journal   = {Logical Methods in Computer Science},
+  numpages  = {52}
+}
+
+@article{sparky,
+  title    = {A Denotational Semantics for SPARC TSO},
+  journal  = {Electronic Notes in Theoretical Computer Science},
+  volume   = {336},
+  pages    = {223-239},
+  year     = {2018},
+  note     = {The Thirty-third Conference on the Mathematical Foundations of Programming Semantics (MFPS XXXIII)},
+  issn     = {1571-0661},
+  doi      = {https://doi.org/10.1016/j.entcs.2018.03.025},
+  url      = {https://www.sciencedirect.com/science/article/pii/S1571066118300288},
+  author   = {Ryan Kavanagh and Stephen Brookes},
+  keywords = {SPARC TSO, denotational semantics, pomsets, concurrency, weak memory models},
+  abstract = {The SPARC TSO weak memory model is defined axiomatically, with a non-compositional formulation that makes modular reasoning about programs difficult. Our denotational approach uses pomsets to provide a compositional semantics capturing exactly the behaviours permitted by SPARC TSO. Our approach facilitates the study of SPARC TSO and supports modular analysis of program behaviour.}
+}
+
+@inproceedings{llvm,
+  author    = {Lattner, Chris and Adve, Vikram},
+  title     = {LLVM: A Compilation Framework for Lifelong Program Analysis \& Transformation},
+  year      = {2004},
+  isbn      = {0769521029},
+  publisher = {IEEE Computer Society},
+  address   = {USA},
+  abstract  = {This paper describes LLVM (Low Level Virtual Machine),a compiler framework designed to support transparent, lifelongprogram analysis and transformation for arbitrary programs,by providing high-level information to compilertransformations at compile-time, link-time, run-time, and inidle time between runs.LLVM defines a common, low-levelcode representation in Static Single Assignment (SSA) form,with several novel features: a simple, language-independenttype-system that exposes the primitives commonly used toimplement high-level language features; an instruction fortyped address arithmetic; and a simple mechanism that canbe used to implement the exception handling features ofhigh-level languages (and setjmp/longjmp in C) uniformlyand efficiently.The LLVM compiler framework and coderepresentation together provide a combination of key capabilitiesthat are important for practical, lifelong analysis andtransformation of programs.To our knowledge, no existingcompilation approach provides all these capabilities.We describethe design of the LLVM representation and compilerframework, and evaluate the design in three ways: (a) thesize and effectiveness of the representation, including thetype information it provides; (b) compiler performance forseveral interprocedural problems; and (c) illustrative examplesof the benefits LLVM provides for several challengingcompiler problems.},
+  booktitle = {Proceedings of the International Symposium on Code Generation and Optimization: Feedback-Directed and Runtime Optimization},
+  pages     = {75},
+  location  = {Palo Alto, California},
+  series    = {CGO '04}
+}
+
+@inproceedings{mlir,
+  author    = {Lattner, Chris and Amini, Mehdi and Bondhugula, Uday and Cohen, Albert and Davis, Andy and Pienaar, Jacques and Riddle, River and Shpeisman, Tatiana and Vasilache, Nicolas and Zinenko, Oleksandr},
+  title     = {MLIR: Scaling Compiler Infrastructure for Domain Specific Computation},
+  year      = {2021},
+  isbn      = {9781728186139},
+  publisher = {IEEE Press},
+  address   = {Piscataway, NJ, USA},
+  url       = {https://doi.org/10.1109/CGO51591.2021.9370308},
+  doi       = {10.1109/CGO51591.2021.9370308},
+  abstract  = {This work presents MLIR, a novel approach to building reusable and extensible compiler infrastructure. MLIR addresses software fragmentation, compilation for heterogeneous hardware, significantly reducing the cost of building domain specific compilers, and connecting existing compilers together.MLIR facilitates the design and implementation of code generators, translators and optimizers at different levels of abstraction and across application domains, hardware targets and execution environments. The contribution of this work includes (1) discussion of MLIR as a research artifact, built for extension and evolution, while identifying the challenges and opportunities posed by this novel design, semantics, optimization specification, system, and engineering. (2) evaluation of MLIR as a generalized infrastructure that reduces the cost of building compilers---describing diverse use-cases to show research and educational opportunities for future programming languages, compilers, execution environments, and computer architecture. The paper also presents the rationale for MLIR, its original design principles, structures and semantics.},
+  booktitle = {Proceedings of the 2021 IEEE/ACM International Symposium on Code Generation and Optimization},
+  pages     = {2–14},
+  numpages  = {13},
+  location  = {Virtual Event, Republic of Korea},
+  series    = {CGO '21}
+}
+
+@misc{cranelift,
+  author = {Cranelift Development Team},
+  title  = {Cranelift: A Simple, Fast WebAssembly Code Generator},
+  year   = 2023,
+  url    = {https://github.com/bytecodealliance/wasmtime/tree/main/cranelift}
+}
+
+@misc{SIL,
+  author       = {{Apple Inc.}},
+  title        = {Swift Intermediate Language (SIL) - Swift Programming Language},
+  year         = {2023},
+  howpublished = {\url{https://github.com/apple/swift/blob/main/docs/SIL.rst}}
+}
+
+@inproceedings{kelsey-95-cps,
+  author    = {Richard Kelsey},
+  editor    = {Michael D. Ernst},
+  title     = {A Correspondence between Continuation Passing Style and Static Single
+               Assignment Form},
+  booktitle = {Proceedings {ACM} {SIGPLAN} Workshop on Intermediate Representations
+               (IR'95), San Francisco, CA, USA, January 22, 1995},
+  pages     = {13--23},
+  publisher = {{ACM}},
+  address   = {USA},
+  year      = {1995},
+  url       = {https://doi.org/10.1145/202529.202532},
+  doi       = {10.1145/202529.202532},
+  timestamp = {Sat, 31 Jul 2021 17:22:12 +0200},
+  biburl    = {https://dblp.org/rec/conf/irep/Kelsey95.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{appel-ssa,
+  author    = {Andrew W. Appel},
+  title     = {{SSA} is Functional Programming},
+  journal   = {{ACM} {SIGPLAN} Notices},
+  volume    = {33},
+  number    = {4},
+  pages     = {17--20},
+  year      = {1998},
+  url       = {https://doi.org/10.1145/278283.278285},
+  doi       = {10.1145/278283.278285},
+  timestamp = {Mon, 15 Jun 2020 16:54:03 +0200},
+  biburl    = {https://dblp.org/rec/journals/sigplan/Appel88.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{alpern-ssa-original-88,
+  author    = {Alpern, B. and Wegman, M. N. and Zadeck, F. K.},
+  title     = {Detecting Equality of Variables in Programs},
+  year      = {1988},
+  isbn      = {0897912527},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  url       = {https://doi.org/10.1145/73560.73561},
+  doi       = {10.1145/73560.73561},
+  booktitle = {Proceedings of the 15th ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+  pages     = {1–11},
+  numpages  = {11},
+  location  = {San Diego, California, USA},
+  series    = {POPL '88}
+}
+
+% According to ChatGPT, publisher address for Springer is Berlin, Germany, so might change to that
+% Alas for the lack of just using a UUID and having everything be resolved!
+
+% Note: added address to make warning go away, may be wrong
+@inproceedings{goncharov-guarded-unguarded,
+  author    = {Sergey Goncharov and
+               Lutz Schr{\"{o}}der and
+               Christoph Rauch and
+               Maciej Pir{\'{o}}g},
+  editor    = {Javier Esparza and
+               Andrzej S. Murawski},
+  title     = {Unifying Guarded and Unguarded Iteration},
+  booktitle = {Foundations of Software Science and Computation Structures - 20th
+               International Conference, {FOSSACS} 2017, Held as Part of the European
+               Joint Conferences on Theory and Practice of Software, {ETAPS} 2017,
+               Uppsala, Sweden, April 22-29, 2017, Proceedings},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {10203},
+  pages     = {517--533},
+  publisher = {Springer},
+  address   = {Uppsala, Sweden},
+  year      = {2017},
+  url       = {https://doi.org/10.1007/978-3-662-54458-7\_30},
+  doi       = {10.1007/978-3-662-54458-7\_30},
+  timestamp = {Thu, 14 Oct 2021 09:53:29 +0200},
+  biburl    = {https://dblp.org/rec/conf/fossacs/0001SRP17.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+% Note: added address to make warning go away, may be wrong
+@inproceedings{goncharov-squaring,
+  author    = {Sergey Goncharov and
+               Lutz Schr{\"{o}}der},
+  editor    = {Christel Baier and
+               Ugo Dal Lago},
+  title     = {Guarded Traced Categories},
+  booktitle = {Foundations of Software Science and Computation Structures - 21st
+               International Conference, {FOSSACS} 2018, Held as Part of the European
+               Joint Conferences on Theory and Practice of Software, {ETAPS} 2018,
+               Thessaloniki, Greece, April 14-20, 2018, Proceedings},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {10803},
+  pages     = {313--330},
+  publisher = {Springer},
+  address   = {Thessaloniki, Greece},
+  year      = {2018},
+  url       = {https://doi.org/10.1007/978-3-319-89366-2\_17},
+  doi       = {10.1007/978-3-319-89366-2\_17},
+  timestamp = {Sun, 25 Jul 2021 11:44:50 +0200},
+  biburl    = {https://dblp.org/rec/conf/fossacs/0001S18.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{goncharov-16-complete-elgot,
+  author    = {Sergey Goncharov and
+               Stefan Milius and
+               Christoph Rauch},
+  editor    = {Lars Birkedal},
+  title     = {Complete Elgot Monads and Coalgebraic Resumptions},
+  booktitle = {The Thirty-second Conference on the Mathematical Foundations of Programming
+               Semantics, {MFPS} 2016, Carnegie Mellon University, Pittsburgh, PA,
+               USA, May 23-26, 2016},
+  series    = {Electronic Notes in Theoretical Computer Science},
+  volume    = {325},
+  pages     = {147--168},
+  publisher = {Elsevier},
+  address   = {Amsterdam, The Netherlands},
+  year      = {2016},
+  url       = {https://doi.org/10.1016/j.entcs.2016.09.036},
+  doi       = {10.1016/J.ENTCS.2016.09.036},
+  timestamp = {Tue, 16 Aug 2022 23:07:08 +0200},
+  biburl    = {https://dblp.org/rec/journals/entcs/GoncharovMR16.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{goncharov-21-uniform-elgot,
+  author     = {Sergey Goncharov},
+  title      = {Uniform Elgot Iteration in Foundations},
+  journal    = {CoRR},
+  volume     = {abs/2102.11828},
+  year       = {2021},
+  url        = {https://arxiv.org/abs/2102.11828},
+  eprinttype = {arXiv},
+  eprint     = {2102.11828},
+  timestamp  = {Fri, 26 Feb 2021 14:31:25 +0100},
+  biburl     = {https://dblp.org/rec/journals/corr/abs-2102-11828.bib},
+  bibsource  = {dblp computer science bibliography, https://dblp.org},
+  numpages   = {41}
+}
+
+@inproceedings{mellies-ftrs,
+  author    = {Paul{-}Andr{\'{e}} Melli{\`{e}}s and
+               Noam Zeilberger},
+  editor    = {Sriram K. Rajamani and
+               David Walker},
+  title     = {Functors are Type Refinement Systems},
+  booktitle = {Proceedings of the 42nd Annual {ACM} {SIGPLAN-SIGACT} Symposium on
+               Principles of Programming Languages, {POPL} 2015, Mumbai, India, January
+               15-17, 2015},
+  pages     = {3--16},
+  publisher = {{ACM}},
+  address   = {Mumbai, India},
+  year      = {2015},
+  url       = {https://doi.org/10.1145/2676726.2676970},
+  doi       = {10.1145/2676726.2676970},
+  timestamp = {Sat, 30 Sep 2023 09:54:52 +0200},
+  biburl    = {https://dblp.org/rec/conf/popl/MelliesZ15.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{laplaza-distributivity,
+  author    = {Laplaza, Miguel L.},
+  editor    = {Kelly, G. M.
+               and Laplaza, M.
+               and Lewis, G.
+               and Mac Lane, Saunders},
+  title     = {Coherence for distributivity},
+  booktitle = {Coherence in Categories},
+  year      = {1972},
+  publisher = {Springer Berlin Heidelberg},
+  address   = {Berlin, Heidelberg},
+  pages     = {29--65},
+  isbn      = {978-3-540-37958-4}
+}
+
+@inproceedings{reynolds-separation-2002,
+  author    = {John C. Reynolds},
+  title     = {Separation Logic: {A} Logic for Shared Mutable Data Structures},
+  booktitle = {17th {IEEE} Symposium on Logic in Computer Science {(LICS} 2002),
+               22-25 July 2002, Copenhagen, Denmark, Proceedings},
+  pages     = {55--74},
+  publisher = {{IEEE} Computer Society},
+  address   = {Copenhagen, Denmark},
+  year      = {2002},
+  url       = {https://doi.org/10.1109/LICS.2002.1029817},
+  doi       = {10.1109/LICS.2002.1029817},
+  timestamp = {Fri, 24 Mar 2023 00:01:50 +0100},
+  biburl    = {https://dblp.org/rec/conf/lics/Reynolds02.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{leaky-semicolon,
+  author    = {Alan Jeffrey and
+               James Riely and
+               Mark Batty and
+               Simon Cooksey and
+               Ilya Kaysin and
+               Anton Podkopaev},
+  title     = {The leaky semicolon: compositional semantic dependencies for relaxed-memory
+               concurrency},
+  journal   = {Proc. {ACM} Program. Lang.},
+  volume    = {6},
+  number    = {{POPL}},
+  pages     = {1--30},
+  year      = {2022},
+  url       = {https://doi.org/10.1145/3498716},
+  doi       = {10.1145/3498716},
+  timestamp = {Mon, 28 Aug 2023 21:30:20 +0200},
+  biburl    = {https://dblp.org/rec/journals/pacmpl/JeffreyRBCKP22.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{rosen-gvn-1988,
+  author    = {Rosen, B. K. and Wegman, M. N. and Zadeck, F. K.},
+  title     = {Global Value Numbers and Redundant Computations},
+  year      = {1988},
+  isbn      = {0897912527},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  url       = {https://doi.org/10.1145/73560.73562},
+  doi       = {10.1145/73560.73562},
+  booktitle = {Proceedings of the 15th ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+  pages     = {12–27},
+  numpages  = {16},
+  location  = {San Diego, California, USA},
+  series    = {POPL '88}
+}
+
+@phdthesis{schneider-phd,
+  author    = {Sigurd Schneider},
+  title     = {A verified compiler for a linear imperative / functional intermediate
+               language},
+  school    = {Saarland University, Saarbr{\"{u}}cken, Germany},
+  year      = {2018},
+  url       = {https://publikationen.sulb.uni-saarland.de/handle/20.500.11880/27296},
+  urn       = {urn:nbn:de:bsz:291--ds-275667},
+  timestamp = {Sat, 17 Jul 2021 09:07:30 +0200},
+  biburl    = {https://dblp.org/rec/phd/dnb/Schneider18d.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+% removed number    = {2},
+% they really need to start allowing comments *inside* the records...
+@inproceedings{chakravarty-functional-ssa-2003,
+  author    = {Manuel M. T. Chakravarty and
+               Gabriele Keller and
+               Patryk Zadarnowski},
+  editor    = {Jens Knoop and
+               Wolf Zimmermann},
+  title     = {A Functional Perspective on {SSA} Optimisation Algorithms},
+  booktitle = {Compiler Optimization Meets Compiler Verification, COCV@ETAPS 2003,
+               Warsaw, Poland, April 12, 2003},
+  series    = {Electronic Notes in Theoretical Computer Science},
+  volume    = {82},
+  pages     = {347--361},
+  publisher = {Elsevier},
+  address   = {Warsaw, Poland},
+  year      = {2003},
+  url       = {https://doi.org/10.1016/S1571-0661(05)82596-4},
+  doi       = {10.1016/S1571-0661(05)82596-4},
+  timestamp = {Tue, 13 Dec 2022 10:38:55 +0100},
+  biburl    = {https://dblp.org/rec/journals/entcs/ChakravartyKZ03.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{barthe-compcert-ssa-2014,
+  author     = {Barthe, Gilles and Demange, Delphine and Pichardie, David},
+  title      = {Formal Verification of an SSA-Based Middle-End for CompCert},
+  year       = {2014},
+  issue_date = {March 2014},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {36},
+  number     = {1},
+  issn       = {0164-0925},
+  url        = {https://doi.org/10.1145/2579080},
+  doi        = {10.1145/2579080},
+  abstract   = {CompCert is a formally verified compiler that generates compact and efficient code for a large subset of the C language. However, CompCert foregoes using SSA, an intermediate representation employed by many compilers that enables writing simpler, faster optimizers. In fact, it has remained an open problem to verify formally an SSA-based compiler. We report on a formally verified, SSA-based middle-end for CompCert. In addition to providing a formally verified SSA-based middle-end, we address two problems raised by Leroy in [2009]: giving an intuitive formal semantics to SSA, and leveraging its global properties to reason locally about program optimizations.},
+  journal    = {ACM Trans. Program. Lang. Syst.},
+  month      = {mar},
+  articleno  = {4},
+  numpages   = {35},
+  keywords   = {mechanized proof, Single static assignment, compiler verification}
+}
+
+@inproceedings{buchwald-verified-ssa-2016,
+  author    = {Sebastian Buchwald and
+               Denis Lohner and
+               Sebastian Ullrich},
+  editor    = {Ayal Zaks and
+               Manuel V. Hermenegildo},
+  title     = {Verified construction of static single assignment form},
+  booktitle = {Proceedings of the 25th International Conference on Compiler Construction,
+               {CC} 2016, Barcelona, Spain, March 12-18, 2016},
+  pages     = {67--76},
+  publisher = {{ACM}},
+  address   = {Barcelona, Spain},
+  year      = {2016},
+  url       = {https://doi.org/10.1145/2892208.2892211},
+  doi       = {10.1145/2892208.2892211},
+  timestamp = {Tue, 06 Nov 2018 16:57:57 +0100},
+  biburl    = {https://dblp.org/rec/conf/cc/BuchwaldLU16.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{herklotz-gsa-2023,
+  author    = {Herklotz, Yann and Demange, Delphine and Blazy, Sandrine},
+  title     = {Mechanised Semantics for Gated Static Single Assignment},
+  year      = {2023},
+  isbn      = {9798400700262},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  url       = {https://doi.org/10.1145/3573105.3575681d},
+  doi       = {10.1145/3573105.3575681},
+  abstract  = {The Gated Static Single Assignment (GSA) form was proposed by Ottenstein et al. in 1990, as an intermediate representation for implementing advanced static analyses and optimisation passes in compilers. Compared to SSA, GSA records additional data dependencies and provides more context, making optimisations more effective and allowing one to reason about programs as data-flow graphs. Many practical implementations have been proposed that follow, more or less faithfully, Ottenstein et al.'s seminal paper. But many discrepancies remain between these, depending on the kind of dependencies they are supposed to track and to leverage in analyses and code optimisations. In this paper, we present a formal semantics for GSA, mechanised in Coq. In particular, we clarify the nature and the purpose of gates in GSA, and define control-flow insensitive semantics for them. We provide a specification that can be used as a reference description for GSA. We also specify a translation from SSA to GSA and prove that this specification is semantics-preserving. We demonstrate that the approach is practical by implementing the specification as a validated translation within the CompCertSSA verified compiler.},
+  booktitle = {Proceedings of the 12th ACM SIGPLAN International Conference on Certified Programs and Proofs},
+  pages     = {182–196},
+  numpages  = {15},
+  keywords  = {Verified Compilation, SSA, Gated SSA},
+  location  = {Boston, MA, USA},
+  series    = {CPP 2023}
+}
+
+% added numpages based on # of pages in PDF
+@inproceedings{pop-ssa-inout-2009,
+  title       = {{In and Out of SSA : a Denotational Specification}},
+  author      = {Pop, Sebastian and Jouvelot, Pierre and Silber, George Andr{\'e}},
+  url         = {https://minesparis-psl.hal.science/hal-00915979},
+  booktitle   = {{Workshop Static Single-Assignment Form Seminar,}},
+  publisher   = {Universität des Saarlandes},
+  address     = {Autrans, France},
+  year        = {2009},
+  month       = Apr,
+  keywords    = {static single assignment ; SSA ; RAM model ; partial recursive functions theory ; program slicing},
+  pdf         = {https://minesparis-psl.hal.science/hal-00915979/file/E-285.pdf},
+  hal_id      = {hal-00915979},
+  hal_version = {v1},
+  numpages    = {15}
+}
+
+% added number of pages based on PDF
+@article{garbuzov-structural-cfg-2018,
+  author     = {Dmitri Garbuzov and
+                William Mansky and
+                Christine Rizkallah and
+                Steve Zdancewic},
+  title      = {Structural Operational Semantics for Control Flow Graph Machines},
+  journal    = {CoRR},
+  volume     = {abs/1805.05400},
+  year       = {2018},
+  url        = {http://arxiv.org/abs/1805.05400},
+  eprinttype = {arXiv},
+  eprint     = {1805.05400},
+  timestamp  = {Mon, 13 Aug 2018 16:46:51 +0200},
+  biburl     = {https://dblp.org/rec/journals/corr/abs-1805-05400.bib},
+  bibsource  = {dblp computer science bibliography, https://dblp.org},
+  numpages   = {27}
+}
+
+% address of conference, publisher IEEE
+@inproceedings{hua-explicit-ssa-2010,
+  author    = {Baojian Hua and Bo Xu and Ying Gao},
+  booktitle = {2010 2nd International Conference on Education Technology and Computer},
+  title     = {Explicitly typed static single-assignment form},
+  year      = {2010},
+  volume    = {1},
+  publisher = {IEEE},
+  address   = {Shanghai, China},
+  number    = {},
+  pages     = {V1-43-V1-47},
+  doi       = {10.1109/ICETC.2010.5529303}
+}
+
+@article{rvsdg,
+  author     = {Reissmann, Nico and Meyer, Jan Christian and Bahmann, Helge and Sj\"{a}lander, Magnus},
+  title      = {RVSDG: An Intermediate Representation for Optimizing Compilers},
+  year       = {2020},
+  issue_date = {November 2020},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {19},
+  number     = {6},
+  issn       = {1539-9087},
+  url        = {https://doi.org/10.1145/3391902},
+  doi        = {10.1145/3391902},
+  journal    = {ACM Trans. Embed. Comput. Syst.},
+  month      = {dec},
+  articleno  = {49},
+  numpages   = {28},
+  keywords   = {LLVM, intermediate representation, Regionalized value state dependence graph (RVSDG)}
+}
+
+@inproceedings{carette-central-2022,
+  author    = {Titouan Carette and
+               Louis Lemonnier and
+               Vladimir Zamdzhiev},
+  title     = {Central Submonads and Notions of Computation: Soundness, Completeness
+               and Internal Languages},
+  booktitle = {38th Annual {ACM/IEEE} Symposium on Logic in Computer Science, {LICS}
+               2023, Boston, MA, USA, June 26-29, 2023},
+  pages     = {1--13},
+  publisher = {{IEEE}},
+  year      = {2023},
+  url       = {https://doi.org/10.1109/LICS56636.2023.10175687},
+  doi       = {10.1109/LICS56636.2023.10175687},
+  timestamp = {Wed, 29 May 2024 16:05:22 +0200},
+  biburl    = {https://dblp.org/rec/conf/lics/CaretteLZ23.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{fuhrmann-direct-1999,
+  author    = {Carsten F{\"{u}}hrmann},
+  title     = {Direct Models for the Computational Lambda Calculus},
+  booktitle = {Fifteenth Conference on Mathematical Foundations of Progamming Semantics,
+               {MFPS} 1999, Tulane University, New Orleans, LA, USA, April 28 - May
+               1, 1999},
+  pages     = {245--292},
+  year      = {1999},
+  crossref  = {DBLP:conf/mfps/1999},
+  url       = {https://doi.org/10.1016/S1571-0661(04)80078-1},
+  doi       = {10.1016/S1571-0661(04)80078-1},
+  timestamp = {Mon, 08 Feb 2021 13:26:19 +0100},
+  biburl    = {https://dblp.org/rec/journals/entcs/Fuhrmann99.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@proceedings{DBLP:conf/mfps/1999,
+  editor    = {Stephen D. Brookes and
+               Achim Jung and
+               Michael W. Mislove and
+               Andre Scedrov},
+  title     = {Fifteenth Conference on Mathematical Foundations of Progamming Semantics,
+               {MFPS} 1999, Tulane University, New Orleans, LA, USA, April 28 - May
+               1, 1999},
+  series    = {Electronic Notes in Theoretical Computer Science},
+  volume    = {20},
+  publisher = {Elsevier},
+  address   = {USA},
+  year      = {1999},
+  url       = {https://www.sciencedirect.com/journal/electronic-notes-in-theoretical-computer-science/vol/20/suppl/C},
+  timestamp = {Fri, 10 Nov 2023 17:18:00 +0100},
+  biburl    = {https://dblp.org/rec/conf/mfps/1999.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{ssa-types-matsuno-ohori-06,
+  author    = {Yutaka Matsuno and
+               Atsushi Ohori},
+  editor    = {Annalisa Bossi and
+               Michael J. Maher},
+  title     = {A type system equivalent to static single assignment},
+  booktitle = {Proceedings of the 8th International {ACM} {SIGPLAN} Conference on
+               Principles and Practice of Declarative Programming, July 10-12, 2006,
+               Venice, Italy},
+  address   = {Venice, Italy},
+  pages     = {249--260},
+  publisher = {{ACM}},
+  year      = {2006},
+  url       = {https://doi.org/10.1145/1140335.1140365},
+  doi       = {10.1145/1140335.1140365},
+  timestamp = {Tue, 06 Nov 2018 16:57:25 +0100},
+  biburl    = {https://dblp.org/rec/conf/ppdp/MatsunoO06.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{typed-effect-ssa-rigon-torrens-vasconcellos-20,
+  author    = {Leonardo Filipe Rigon and
+               Paulo Torrens and
+               Cristiano D. Vasconcellos},
+  editor    = {Chih{-}Cheng Hung and
+               Tom{\'{a}}s Cern{\'{y}} and
+               Dongwan Shin and
+               Alessio Bechini},
+  title     = {Inferring types and effects via static single assignment},
+  booktitle = {{SAC} '20: The 35th {ACM/SIGAPP} Symposium on Applied Computing, online
+               event, [Brno, Czech Republic], March 30 - April 3, 2020},
+  pages     = {1314--1321},
+  publisher = {{ACM}},
+  address   = {Brno, Czech Republic},
+  year      = {2020},
+  url       = {https://doi.org/10.1145/3341105.3373888},
+  doi       = {10.1145/3341105.3373888},
+  timestamp = {Mon, 15 Jun 2020 17:05:37 +0200},
+  biburl    = {https://dblp.org/rec/conf/sac/RigonTV20.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{paviotti-modular-relaxed-dep-20,
+  author    = {Marco Paviotti and
+               Simon Cooksey and
+               Anouk Paradis and
+               Daniel Wright and
+               Scott Owens and
+               Mark Batty},
+  editor    = {Peter M{\"{u}}ller},
+  title     = {Modular Relaxed Dependencies in Weak Memory Concurrency},
+  booktitle = {Programming Languages and Systems - 29th European Symposium on Programming,
+               {ESOP} 2020, Held as Part of the European Joint Conferences on Theory
+               and Practice of Software, {ETAPS} 2020, Dublin, Ireland, April 25-30,
+               2020, Proceedings},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {12075},
+  pages     = {599--625},
+  publisher = {Springer},
+  address   = {Dublin, Ireland},
+  year      = {2020},
+  url       = {https://doi.org/10.1007/978-3-030-44914-8\_22},
+  doi       = {10.1007/978-3-030-44914-8\_22},
+  timestamp = {Sun, 02 Oct 2022 16:00:35 +0200},
+  biburl    = {https://dblp.org/rec/conf/esop/PaviottiCPWOB20.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{flanagan-93-anf,
+  author    = {Cormac Flanagan and
+               Amr Sabry and
+               Bruce F. Duba and
+               Matthias Felleisen},
+  editor    = {Robert Cartwright},
+  title     = {The Essence of Compiling with Continuations},
+  booktitle = {Proceedings of the {ACM} SIGPLAN'93 Conference on Programming Language
+               Design and Implementation (PLDI), Albuquerque, New Mexico, USA, June
+               23-25, 1993},
+  pages     = {237--247},
+  publisher = {{ACM}},
+  address   = {USA},
+  year      = {1993},
+  url       = {https://doi.org/10.1145/155090.155113},
+  doi       = {10.1145/155090.155113},
+  timestamp = {Fri, 09 Jul 2021 14:03:46 +0200},
+  biburl    = {https://dblp.org/rec/conf/pldi/FlanaganSDF93.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{schneider-imp-fun,
+  author    = {Sigurd Schneider and
+               Gert Smolka and
+               Sebastian Hack},
+  editor    = {Christian Urban and
+               Xingyuan Zhang},
+  title     = {A Linear First-Order Functional Intermediate Language for Verified
+               Compilers},
+  booktitle = {Interactive Theorem Proving - 6th International Conference, {ITP}
+               2015, Nanjing, China, August 24-27, 2015, Proceedings},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {9236},
+  pages     = {344--358},
+  publisher = {Springer},
+  address   = {Nanjing, China},
+  year      = {2015},
+  url       = {https://doi.org/10.1007/978-3-319-22102-1\_23},
+  doi       = {10.1007/978-3-319-22102-1\_23},
+  timestamp = {Tue, 14 May 2019 10:00:37 +0200},
+  biburl    = {https://dblp.org/rec/conf/itp/SchneiderSH15.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+% Removed number    = {1}, to fix warning
+@inproceedings{beringer-imp-fun,
+  author    = {Lennart Beringer and
+               Kenneth MacKenzie and
+               Ian Stark},
+  editor    = {Riccardo Focardi and
+               Gianluigi Zavattaro},
+  title     = {Grail: a functional form for imperative mobile code},
+  booktitle = {2nd {EATCS} Workshop on Foundations of Global Computing, {FGC} 2003,
+               Satellite Event of {ICALP} 2003, Eindhoven, The Netherlands, June
+               28-29, 2003},
+  series    = {Electronic Notes in Theoretical Computer Science},
+  volume    = {85},
+  pages     = {3--23},
+  publisher = {Elsevier},
+  address   = {Eindhoven, The Netherlands},
+  year      = {2003},
+  url       = {https://doi.org/10.1016/S1571-0661(05)80083-0},
+  doi       = {10.1016/S1571-0661(05)80083-0},
+  timestamp = {Thu, 08 Dec 2022 14:05:21 +0100},
+  biburl    = {https://dblp.org/rec/journals/entcs/BeringerMS03.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{lassen-bisim,
+  author    = {S{\o}ren B. Lassen and
+               Paul Blain Levy},
+  editor    = {Jacques Duparc and
+               Thomas A. Henzinger},
+  title     = {Typed Normal Form Bisimulation},
+  booktitle = {Computer Science Logic, 21st International Workshop, {CSL} 2007, 16th
+               Annual Conference of the EACSL, Lausanne, Switzerland, September 11-15,
+               2007, Proceedings},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {4646},
+  pages     = {283--297},
+  publisher = {Springer},
+  address   = {Lausanne, Switzerland},
+  year      = {2007},
+  url       = {https://doi.org/10.1007/978-3-540-74915-8\_23},
+  doi       = {10.1007/978-3-540-74915-8\_23},
+  timestamp = {Tue, 14 May 2019 10:00:42 +0200},
+  biburl    = {https://dblp.org/rec/conf/csl/LassenL07.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@book{cbpv,
+  author    = {Paul Blain Levy},
+  title     = {Call-By-Push-Value: {A} Functional/Imperative Synthesis},
+  series    = {Semantics Structures in Computation},
+  volume    = {2},
+  publisher = {Springer},
+  address   = {USA},
+  year      = {2004},
+  isbn      = {1-4020-1730-8},
+  timestamp = {Tue, 12 Sep 2006 09:32:36 +0200},
+  biburl    = {https://dblp.org/rec/books/sp/Levy2004.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{levy-cbpv-99,
+  author    = {Paul Blain Levy},
+  editor    = {Jean{-}Yves Girard},
+  title     = {Call-by-Push-Value: {A} Subsuming Paradigm},
+  booktitle = {Typed Lambda Calculi and Applications, 4th International Conference,
+               TLCA'99, L'Aquila, Italy, April 7-9, 1999, Proceedings},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {1581},
+  pages     = {228--242},
+  publisher = {Springer},
+  year      = {1999},
+  url       = {https://doi.org/10.1007/3-540-48959-2\_17},
+  doi       = {10.1007/3-540-48959-2\_17},
+  timestamp = {Tue, 14 May 2019 10:00:41 +0200},
+  biburl    = {https://dblp.org/rec/conf/tlca/Levy99.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@phdthesis{sevcik-drf-sc,
+  author    = {Jaroslav Sevc{\'{\i}}k},
+  title     = {Program transformations in weak memory models},
+  school    = {University of Edinburgh, {UK}},
+  year      = {2009},
+  url       = {https://hdl.handle.net/1842/3132},
+  timestamp = {Wed, 04 May 2022 12:59:34 +0200},
+  biburl    = {https://dblp.org/rec/phd/ethos/Sevcik09.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{jagadeesan-pwp-20,
+  author    = {Radha Jagadeesan and
+               Alan Jeffrey and
+               James Riely},
+  title     = {Pomsets with preconditions: a simple model of relaxed memory},
+  journal   = {Proc. {ACM} Program. Lang.},
+  volume    = {4},
+  number    = {{OOPSLA}},
+  pages     = {194:1--194:30},
+  year      = {2020},
+  url       = {https://doi.org/10.1145/3428262},
+  doi       = {10.1145/3428262},
+  timestamp = {Mon, 03 Jan 2022 21:53:45 +0100},
+  biburl    = {https://dblp.org/rec/journals/pacmpl/JagadeesanJR20.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+%TODO: check this citation
+@book{maclane:71,
+  added-at   = {2009-09-18T21:22:09.000+0200},
+  address    = {New York},
+  author     = {MacLane, Saunders},
+  keywords   = {CategoryTheory},
+  mrclass    = {18-02},
+  mrnumber   = {MR0354798 (50 \#7275)},
+  mrreviewer = {H.-B. Brinkmann},
+  note       = {Graduate Texts in Mathematics, Vol. 5},
+  pages      = {ix+262},
+  publisher  = {Springer-Verlag},
+  title      = {Categories for the Working Mathematician},
+  year       = 1971
+}
+
+@article{cytron-ssa-intro-91,
+  author     = {Cytron, Ron and Ferrante, Jeanne and Rosen, Barry K. and Wegman, Mark N. and Zadeck, F. Kenneth},
+  title      = {Efficiently computing static single assignment form and the control dependence graph},
+  year       = {1991},
+  issue_date = {Oct. 1991},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {13},
+  number     = {4},
+  issn       = {0164-0925},
+  url        = {https://doi.org/10.1145/115372.115320},
+  doi        = {10.1145/115372.115320},
+  journal    = {ACM Trans. Program. Lang. Syst.},
+  month      = {oct},
+  pages      = {451–490},
+  numpages   = {40},
+  keywords   = {optimizing compilers, dominator, def-use chain, control flow graph, control dependence}
+}
+
+@article{allen-70-cfa,
+  author     = {Allen, Frances E.},
+  title      = {Control flow analysis},
+  year       = {1970},
+  issue_date = {July 1970},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {5},
+  number     = {7},
+  issn       = {0362-1340},
+  url        = {https://doi.org/10.1145/390013.808479},
+  doi        = {10.1145/390013.808479},
+  journal    = {SIGPLAN Not.},
+  month      = {jul},
+  pages      = {1–19},
+  numpages   = {19}
+}
+
+@inproceedings{liang-95-interpreters,
+  author    = {Sheng Liang and
+               Paul Hudak and
+               Mark P. Jones},
+  editor    = {Ron K. Cytron and
+               Peter Lee},
+  title     = {Monad Transformers and Modular Interpreters},
+  booktitle = {Conference Record of POPL'95: 22nd {ACM} {SIGPLAN-SIGACT} Symposium
+               on Principles of Programming Languages, San Francisco, California,
+               USA, January 23-25, 1995},
+  pages     = {333--343},
+  publisher = {{ACM} Press},
+  address   = {USA},
+  year      = {1995},
+  url       = {https://doi.org/10.1145/199448.199528},
+  doi       = {10.1145/199448.199528},
+  timestamp = {Tue, 06 Nov 2018 11:07:43 +0100},
+  biburl    = {https://dblp.org/rec/conf/popl/LiangHJ95.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{ullrich-22-do-unchained,
+  author    = {Sebastian Ullrich and
+               Leonardo de Moura},
+  title     = {'do' unchained: embracing local imperativity in a purely functional
+               language (functional pearl)},
+  journal   = {Proc. {ACM} Program. Lang.},
+  volume    = {6},
+  number    = {{ICFP}},
+  pages     = {512--539},
+  year      = {2022},
+  url       = {https://doi.org/10.1145/3547640},
+  doi       = {10.1145/3547640},
+  timestamp = {Mon, 28 Aug 2023 21:30:21 +0200},
+  biburl    = {https://dblp.org/rec/journals/pacmpl/UllrichM22.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{goncharov-18-guarded-traced,
+  author    = {Sergey Goncharov and
+               Lutz Schr{\"{o}}der},
+  editor    = {Christel Baier and
+               Ugo Dal Lago},
+  title     = {Guarded Traced Categories},
+  booktitle = {Foundations of Software Science and Computation Structures - 21st
+               International Conference, {FOSSACS} 2018, Held as Part of the European
+               Joint Conferences on Theory and Practice of Software, {ETAPS} 2018,
+               Thessaloniki, Greece, April 14-20, 2018, Proceedings},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {10803},
+  pages     = {313--330},
+  publisher = {Springer},
+  year      = {2018},
+  url       = {https://doi.org/10.1007/978-3-319-89366-2\_17},
+  doi       = {10.1007/978-3-319-89366-2\_17},
+  timestamp = {Sun, 04 Aug 2024 19:40:23 +0200},
+  biburl    = {https://dblp.org/rec/conf/fossacs/0001S18.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org},
+  address   = {Thessaloniki, Greece}
+}
+
+@book{crole-93-cat-types,
+  author    = {Roy L. Crole},
+  title     = {Categories for Types},
+  series    = {Cambridge mathematical textbooks},
+  publisher = {Cambridge University Press},
+  address   = {Cambridge, UK},
+  year      = {1993},
+  url       = {http://www.cambridge.org/de/academic/subjects/computer-science/programming-languages-and-applied-logic/categories-types?format=PB},
+  isbn      = {978-0-521-45701-9},
+  timestamp = {Sun, 06 Oct 2013 17:17:13 +0200},
+  biburl    = {https://dblp.org/rec/books/daglib/0031706.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{moggi-91-monad,
+  author    = {Eugenio Moggi},
+  title     = {Notions of Computation and Monads},
+  journal   = {Inf. Comput.},
+  volume    = {93},
+  number    = {1},
+  pages     = {55--92},
+  year      = {1991},
+  url       = {https://doi.org/10.1016/0890-5401(91)90052-4},
+  doi       = {10.1016/0890-5401(91)90052-4},
+  timestamp = {Fri, 12 Feb 2021 22:16:40 +0100},
+  biburl    = {https://dblp.org/rec/journals/iandc/Moggi91.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@phdthesis{Thielecke1997CategoricalSO,
+  title  = {Categorical Structure of Continuation Passing Style},
+  author = {Hayo Thielecke},
+  year   = {1997},
+  school = {University of Edinburgh},
+  url    = {https://api.semanticscholar.org/CorpusID:53887531}
+}
+
+@inproceedings{release-acquire,
+  author    = {Yotam Dvir and
+               Ohad Kammar and
+               Ori Lahav},
+  title     = {A Denotational Approach to Release/Acquire Concurrency},
+  booktitle = {Programming Languages and Systems - 33rd European Symposium on Programming,
+               {ESOP} 2024, Held as Part of the European Joint Conferences on Theory
+               and Practice of Software, {ETAPS} 2024, Luxembourg City, Luxembourg,
+               April 6-11, 2024, Proceedings, Part {II}},
+  pages     = {121--149},
+  year      = {2024},
+  crossref  = {DBLP:conf/esop/2024-2},
+  url       = {https://doi.org/10.1007/978-3-031-57267-8\_5},
+  doi       = {10.1007/978-3-031-57267-8\_5},
+  timestamp = {Sat, 08 Jun 2024 13:13:57 +0200},
+  biburl    = {https://dblp.org/rec/conf/esop/DvirKL24.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org},
+  address   = {Luxembourg City, Luxembourg}
+}
+
+@proceedings{DBLP:conf/esop/2024-2,
+  editor    = {Stephanie Weirich},
+  title     = {Programming Languages and Systems - 33rd European Symposium on Programming,
+               {ESOP} 2024, Held as Part of the European Joint Conferences on Theory
+               and Practice of Software, {ETAPS} 2024, Luxembourg City, Luxembourg,
+               April 6-11, 2024, Proceedings, Part {II}},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {14577},
+  publisher = {Springer},
+  year      = {2024},
+  url       = {https://doi.org/10.1007/978-3-031-57267-8},
+  doi       = {10.1007/978-3-031-57267-8},
+  isbn      = {978-3-031-57266-1},
+  timestamp = {Thu, 03 Oct 2024 18:28:47 +0200},
+  biburl    = {https://dblp.org/rec/conf/esop/2024-2.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{bohm-jacopini,
+  author     = {B\"{o}hm, Corrado and Jacopini, Giuseppe},
+  title      = {Flow diagrams, turing machines and languages with only two formation rules},
+  year       = {1966},
+  issue_date = {May 1966},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {9},
+  number     = {5},
+  issn       = {0001-0782},
+  url        = {https://doi.org/10.1145/355592.365646},
+  doi        = {10.1145/355592.365646},
+  journal    = {Commun. ACM},
+  month      = may,
+  pages      = {366–371},
+  numpages   = {6}
+}
+
+@article{batty-compositional-17,
+  author  = {Batty, Mark },
+  title   = {Compositional relaxed concurrency},
+  journal = {Philosophical Transactions of the Royal Society A: Mathematical, Physical and Engineering Sciences},
+  volume  = {375},
+  number  = {2104},
+  pages   = {20150406},
+  year    = {2017},
+  doi     = {10.1098/rsta.2015.0406},
+  url     = {https://royalsocietypublishing.org/doi/abs/10.1098/rsta.2015.0406},
+  eprint  = {https://royalsocietypublishing.org/doi/pdf/10.1098/rsta.2015.0406}
+}
+
+@article{brookes-full-abstraction-96,
+  author    = {Stephen D. Brookes},
+  title     = {Full Abstraction for a Shared-Variable Parallel Language},
+  journal   = {Inf. Comput.},
+  volume    = {127},
+  number    = {2},
+  pages     = {145--163},
+  year      = {1996},
+  url       = {https://doi.org/10.1006/inco.1996.0056},
+  doi       = {10.1006/INCO.1996.0056},
+  timestamp = {Fri, 12 Feb 2021 22:16:48 +0100},
+  biburl    = {https://dblp.org/rec/journals/iandc/Brookes96.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{jagadeesan-brookes-relaxed-12,
+  author    = {Radha Jagadeesan and
+               Gustavo Petri and
+               James Riely},
+  editor    = {Lars Birkedal},
+  title     = {Brookes Is Relaxed, Almost!},
+  booktitle = {Foundations of Software Science and Computational Structures - 15th
+               International Conference, {FOSSACS} 2012, Held as Part of the European
+               Joint Conferences on Theory and Practice of Software, {ETAPS} 2012,
+               Tallinn, Estonia, March 24 - April 1, 2012. Proceedings},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {7213},
+  pages     = {180--194},
+  publisher = {Springer},
+  year      = {2012},
+  url       = {https://doi.org/10.1007/978-3-642-28729-9\_12},
+  doi       = {10.1007/978-3-642-28729-9\_12},
+  timestamp = {Tue, 14 May 2019 10:00:55 +0200},
+  biburl    = {https://dblp.org/rec/conf/fossacs/JagadeesanPR12.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org},
+  address   = {Tallinn, Estonia}
+}
+
+@inproceedings{coinductive-resumption-levy-goncharov-19,
+  author    = {Paul Blain Levy and
+               Sergey Goncharov},
+  editor    = {Markus Roggenbach and
+               Ana Sokolova},
+  title     = {Coinductive Resumption Monads: Guarded Iterative and Guarded Elgot},
+  booktitle = {8th Conference on Algebra and Coalgebra in Computer Science, {CALCO}
+               2019, June 3-6, 2019, London, United Kingdom},
+  series    = {LIPIcs},
+  volume    = {139},
+  pages     = {13:1--13:17},
+  publisher = {Schloss Dagstuhl - Leibniz-Zentrum f{\"{u}}r Informatik},
+  year      = {2019},
+  url       = {https://doi.org/10.4230/LIPIcs.CALCO.2019.13},
+  doi       = {10.4230/LIPICS.CALCO.2019.13},
+  timestamp = {Wed, 21 Aug 2024 22:46:00 +0200},
+  biburl    = {https://dblp.org/rec/conf/calco/Levy019.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org},
+  address   = {London, UK}
+}
+
+@inproceedings{mlir-effect-handlers-yu-23,
+  author    = {Yu, Pingshi},
+  title     = {Reasoning about MLIR Semantics through Effects and Handlers},
+  year      = {2023},
+  isbn      = {9798400702211},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  url       = {https://doi.org/10.1145/3597926.3605239},
+  doi       = {10.1145/3597926.3605239},
+  abstract  = {MLIR is a novel framework for developing intermediate representations (IRs) of compilers. At its core, MLIR is a framework for the specification of syntax fragments (dialects) and optimisations, which can be combined \`{a}−la−carte to form customised IRs. Through this, MLIR allows IR abstractions to be shared across different domains. With rapid adoption of MLIR across industry, techniques for formalised semantics which matches the flexibility and extensibility offered by MLIR are urgently needed. We propose a framework for MLIR semantics based on effect handlers, which allows for dialect semantics to be specified in a modular and composable way, parallel to MLIR. We also describe several research directions continuing on from handlers-based MLIR semantics.},
+  booktitle = {Proceedings of the 32nd ACM SIGSOFT International Symposium on Software Testing and Analysis},
+  pages     = {1552–1554},
+  numpages  = {3},
+  keywords  = {interpreters, algebraic effects, Semantics, MLIR},
+  location  = {Seattle, WA, USA},
+  series    = {ISSTA 2023}
+}
+
+@inproceedings{siddharth-24-peephole,
+  author    = {Bhat, Siddharth and Keizer, Alex and Hughes, Chris and Goens, Andr\'{e}s and Grosser, Tobias},
+  title     = {{Verifying Peephole Rewriting in SSA Compiler IRs}},
+  booktitle = {15th International Conference on Interactive Theorem Proving (ITP 2024)},
+  pages     = {9:1--9:20},
+  series    = {Leibniz International Proceedings in Informatics (LIPIcs)},
+  isbn      = {978-3-95977-337-9},
+  issn      = {1868-8969},
+  year      = {2024},
+  volume    = {309},
+  editor    = {Bertot, Yves and Kutsia, Temur and Norrish, Michael},
+  publisher = {Schloss Dagstuhl -- Leibniz-Zentrum f{\"u}r Informatik},
+  address   = {Dagstuhl, Germany},
+  url       = {https://drops.dagstuhl.de/entities/document/10.4230/LIPIcs.ITP.2024.9},
+  urn       = {urn:nbn:de:0030-drops-207372},
+  doi       = {10.4230/LIPIcs.ITP.2024.9},
+  annote    = {Keywords: compilers, semantics, mechanization, MLIR, SSA, regions, peephole rewrites}
+}
+
+@article{vale-linearizability-24,
+  author    = {Arthur Oliveira Vale and
+               Zhong Shao and
+               Yixuan Chen},
+  title     = {A Compositional Theory of Linearizability},
+  journal   = {J. {ACM}},
+  volume    = {71},
+  number    = {2},
+  pages     = {14:1--14:107},
+  year      = {2024},
+  url       = {https://doi.org/10.1145/3643668},
+  doi       = {10.1145/3643668},
+  timestamp = {Tue, 07 May 2024 20:24:59 +0200},
+  biburl    = {https://dblp.org/rec/journals/jacm/ValeSC24.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{benton-kennedy-99,
+  title    = {Monads, Effects and Transformations},
+  journal  = {Electronic Notes in Theoretical Computer Science},
+  volume   = {26},
+  pages    = {3-20},
+  year     = {1999},
+  note     = {HOOTS '99, Higher Order Operational Techniques in Semantics},
+  issn     = {1571-0661},
+  doi      = {https://doi.org/10.1016/S1571-0661(05)80280-4},
+  url      = {https://www.sciencedirect.com/science/article/pii/S1571066105802804},
+  author   = {Nick Benton and Andrew Kennedy},
+  abstract = {We define a typed compiler intermediate language, MIL-lite, which incorporates computational types refined with effect information. We characterise MIL-lite observational congruence by using Howe's method to prove a ciu theorem for the language in terms of a termination predicate defined directly on the term. We then define a logical predicate which captures an observable version of the intended meaning of each of our effect annotations. Having proved the fundamental theorem for this predicate, we use it with the ciu theorem to validate a number of effect-based transformations performed by the MLj compiler for Standard ML.}
+}
+
+@inproceedings{thorin-12,
+  author    = {Roland Lei{\ss}a and
+               Marcel K{\"{o}}ster and
+               Sebastian Hack},
+  editor    = {Kunle Olukotun and
+               Aaron Smith and
+               Robert Hundt and
+               Jason Mars},
+  title     = {A graph-based higher-order intermediate representation},
+  booktitle = {Proceedings of the 13th Annual {IEEE/ACM} International Symposium
+               on Code Generation and Optimization, {CGO} 2015, San Francisco, CA,
+               USA, February 07 - 11, 2015},
+  address   = {San Francisco, CA, USA},
+  pages     = {202--212},
+  publisher = {{IEEE} Computer Society},
+  year      = {2015},
+  url       = {https://doi.org/10.1109/CGO.2015.7054200},
+  doi       = {10.1109/CGO.2015.7054200},
+  timestamp = {Thu, 23 Mar 2023 23:59:39 +0100},
+  biburl    = {https://dblp.org/rec/conf/cgo/LeissaKH15.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{compcert-ssa-12,
+  author    = {Gilles Barthe and
+               Delphine Demange and
+               David Pichardie},
+  editor    = {Helmut Seidl},
+  title     = {A Formally Verified SSA-Based Middle-End - Static Single Assignment
+               Meets CompCert},
+  booktitle = {Programming Languages and Systems - 21st European Symposium on Programming,
+               {ESOP} 2012, Held as Part of the European Joint Conferences on Theory
+               and Practice of Software, {ETAPS} 2012, Tallinn, Estonia, March 24
+               - April 1, 2012. Proceedings},
+  address   = {Tallinn, Estonia},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {7211},
+  pages     = {47--66},
+  publisher = {Springer},
+  year      = {2012},
+  url       = {https://doi.org/10.1007/978-3-642-28869-2\_3},
+  doi       = {10.1007/978-3-642-28869-2\_3},
+  timestamp = {Tue, 14 May 2019 10:00:41 +0200},
+  biburl    = {https://dblp.org/rec/conf/esop/BartheDP12.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{vellvm-12,
+  author    = {Jianzhou Zhao and
+               Santosh Nagarakatte and
+               Milo M. K. Martin and
+               Steve Zdancewic},
+  editor    = {John Field and
+               Michael Hicks},
+  title     = {Formalizing the {LLVM} intermediate representation for verified program
+               transformations},
+  booktitle = {Proceedings of the 39th {ACM} {SIGPLAN-SIGACT} Symposium on Principles
+               of Programming Languages, {POPL} 2012, Philadelphia, Pennsylvania,
+               USA, January 22-28, 2012},
+  address   = {Philadelphia, Pennsylvania},
+  pages     = {427--440},
+  publisher = {{ACM}},
+  year      = {2012},
+  url       = {https://doi.org/10.1145/2103656.2103709},
+  doi       = {10.1145/2103656.2103709},
+  timestamp = {Thu, 24 Jun 2021 16:19:31 +0200},
+  biburl    = {https://dblp.org/rec/conf/popl/ZhaoNMZ12.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@phdthesis{fiore-phd-94,
+  author    = {Marcelo P. Fiore},
+  title     = {Axiomatic domain theory in categories of partial maps},
+  school    = {University of Edinburgh, {UK}},
+  year      = {1994},
+  url       = {https://hdl.handle.net/1842/406},
+  timestamp = {Wed, 04 May 2022 12:59:19 +0200},
+  biburl    = {https://dblp.org/rec/phd/ethos/Fiore94.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{castellan-16,
+  title       = {{Weak memory models using event structures}},
+  author      = {Castellan, Simon},
+  url         = {https://inria.hal.science/hal-01333582},
+  booktitle   = {{Vingt-septi{\`e}mes Journ{\'e}es Francophones des Langages Applicatifs (JFLA 2016)}},
+  address     = {Saint-Malo, France},
+  editor      = {Julien Signoles},
+  year        = {2016},
+  month       = Jan,
+  pdf         = {https://inria.hal.science/hal-01333582v1/file/jfla-2016.pdf},
+  hal_id      = {hal-01333582},
+  hal_version = {v1}
+}
+
+@article{ghica-08,
+  author    = {Dan R. Ghica and
+               Andrzej S. Murawski},
+  title     = {Angelic semantics of fine-grained concurrency},
+  journal   = {Ann. Pure Appl. Log.},
+  volume    = {151},
+  number    = {2-3},
+  pages     = {89--114},
+  year      = {2008},
+  url       = {https://doi.org/10.1016/j.apal.2007.10.005},
+  doi       = {10.1016/J.APAL.2007.10.005},
+  timestamp = {Fri, 21 Feb 2020 21:18:19 +0100},
+  biburl    = {https://dblp.org/rec/journals/apal/GhicaM08.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{abramsky-algol-96,
+  author    = {Samson Abramsky and
+               Guy McCusker},
+  editor    = {Jean{-}Yves Girard and
+               Mitsuhiro Okada and
+               Andre Scedrov},
+  title     = {Linearity, Sharing and State: a fully abstract game semantics for
+               Idealized Algol with active expressions},
+  booktitle = {Linear Logic Tokyo Meeting 1996, Keio University, Mita Campus, Tokyo,
+               Japan, March 29 - April 2, 1996},
+  series    = {Electronic Notes in Theoretical Computer Science},
+  volume    = {3},
+  pages     = {2--14},
+  publisher = {Elsevier},
+  year      = {1996},
+  url       = {https://doi.org/10.1016/S1571-0661(05)80398-6},
+  doi       = {10.1016/S1571-0661(05)80398-6},
+  timestamp = {Fri, 11 Nov 2022 13:24:56 +0100},
+  biburl    = {https://dblp.org/rec/journals/entcs/AbramskyM96.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org},
+  address   = {Tokyo, Japan}
+}
+
+@article{goncharov-metalang-21,
+  author    = {Sergey Goncharov and
+               Christoph Rauch and
+               Lutz Schr{\"{o}}der},
+  title     = {A metalanguage for guarded iteration},
+  journal   = {Theor. Comput. Sci.},
+  volume    = {880},
+  pages     = {111--137},
+  year      = {2021},
+  url       = {https://doi.org/10.1016/j.tcs.2021.04.005},
+  doi       = {10.1016/J.TCS.2021.04.005},
+  timestamp = {Fri, 30 Jul 2021 08:47:49 +0200},
+  biburl    = {https://dblp.org/rec/journals/tcs/GoncharovRS21.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{geron-iteration-16,
+  author    = {Bram Geron and
+               Paul Blain Levy},
+  editor    = {Lars Birkedal},
+  title     = {Iteration and Labelled Iteration},
+  booktitle = {The Thirty-second Conference on the Mathematical Foundations of Programming
+               Semantics, {MFPS} 2016, Carnegie Mellon University, Pittsburgh, PA,
+               USA, May 23-26, 2016},
+  series    = {Electronic Notes in Theoretical Computer Science},
+  volume    = {325},
+  pages     = {127--146},
+  publisher = {Elsevier},
+  year      = {2016},
+  url       = {https://doi.org/10.1016/j.entcs.2016.09.035},
+  doi       = {10.1016/J.ENTCS.2016.09.035},
+  timestamp = {Tue, 16 Aug 2022 23:07:15 +0200},
+  biburl    = {https://dblp.org/rec/journals/entcs/GeronL16.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org},
+  address   = {USA}
+}
+
+@incollection{milner-processes-75,
+  title     = {Processes: A Mathematical Model of Computing Agents},
+  editor    = {H.E. Rose and J.C. Shepherdson},
+  series    = {Studies in Logic and the Foundations of Mathematics},
+  publisher = {Elsevier},
+  volume    = {80},
+  pages     = {157-173},
+  year      = {1975},
+  booktitle = {Logic Colloquium '73},
+  issn      = {0049-237X},
+  doi       = {https://doi.org/10.1016/S0049-237X(08)71948-7},
+  url       = {https://www.sciencedirect.com/science/article/pii/S0049237X08719487},
+  author    = {Robin Milner},
+  abstract  = {Publisher Summary
+               Most of the computing agents with which computing science is concerned exhibit behavior that is not just the computation of a mathematical function of their inputs but rather a possibly infinite sequence of communications with their environment. The mathematics of processes promises to unify the behavioral study of computing agents, both hardware and software. This chapter describes the concepts that may be useful in modeling the behavior of intercommunicating agents, together with some examples. It is becoming clear that informal (but rigorous) proofs about communicating systems, analogous to proofs about serial programs based on the assertion technique introduced by Floyd and others, are considerably harder to express.}
+}
+
+@article{plotkin-power-76,
+  author    = {Gordon D. Plotkin},
+  title     = {A Powerdomain Construction},
+  journal   = {{SIAM} J. Comput.},
+  volume    = {5},
+  number    = {3},
+  pages     = {452--487},
+  year      = {1976},
+  url       = {https://doi.org/10.1137/0205035},
+  doi       = {10.1137/0205035},
+  timestamp = {Wed, 14 Nov 2018 10:45:06 +0100},
+  biburl    = {https://dblp.org/rec/journals/siamcomp/Plotkin76.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{xia-itrees-20,
+  author    = {Li{-}yao Xia and
+               Yannick Zakowski and
+               Paul He and
+               Chung{-}Kil Hur and
+               Gregory Malecha and
+               Benjamin C. Pierce and
+               Steve Zdancewic},
+  title     = {Interaction trees: representing recursive and impure programs in Coq},
+  journal   = {Proc. {ACM} Program. Lang.},
+  volume    = {4},
+  number    = {{POPL}},
+  pages     = {51:1--51:32},
+  year      = {2020},
+  url       = {https://doi.org/10.1145/3371119},
+  doi       = {10.1145/3371119},
+  timestamp = {Sun, 12 Nov 2023 02:17:41 +0100},
+  biburl    = {https://dblp.org/rec/journals/pacmpl/XiaZHHMPZ20.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{wegman-sccp-91,
+  author    = {Mark N. Wegman and
+               F. Kenneth Zadeck},
+  title     = {Constant Propagation with Conditional Branches},
+  journal   = {{ACM} Trans. Program. Lang. Syst.},
+  volume    = {13},
+  number    = {2},
+  pages     = {181--210},
+  year      = {1991},
+  url       = {https://doi.org/10.1145/103135.103136},
+  doi       = {10.1145/103135.103136},
+  timestamp = {Wed, 14 Nov 2018 10:30:40 +0100},
+  biburl    = {https://dblp.org/rec/journals/toplas/WegmanZ91.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{plotkin-adequacy-01,
+  author    = {Gordon D. Plotkin and
+               John Power},
+  editor    = {Furio Honsell and
+               Marino Miculan},
+  title     = {Adequacy for Algebraic Effects},
+  booktitle = {Foundations of Software Science and Computation Structures, 4th International
+               Conference, {FOSSACS} 2001 Held as Part of the Joint European Conferences
+               on Theory and Practice of Software, {ETAPS} 2001 Genova, Italy, April
+               2-6, 2001, Proceedings},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {2030},
+  pages     = {1--24},
+  publisher = {Springer},
+  year      = {2001},
+  url       = {https://doi.org/10.1007/3-540-45315-6\_1},
+  doi       = {10.1007/3-540-45315-6\_1},
+  timestamp = {Tue, 14 May 2019 10:00:55 +0200},
+  biburl    = {https://dblp.org/rec/conf/fossacs/PlotkinP01.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{nakata-hoare-15,
+  author    = {Keiko Nakata and
+               Tarmo Uustalu},
+  title     = {A Hoare logic for the coinductive trace-based big-step semantics of
+               While},
+  journal   = {Log. Methods Comput. Sci.},
+  volume    = {11},
+  number    = {1},
+  year      = {2015},
+  url       = {https://doi.org/10.2168/LMCS-11(1:1)2015},
+  doi       = {10.2168/LMCS-11(1:1)2015},
+  timestamp = {Thu, 25 Jun 2020 21:29:11 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/NakataU14.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{goncharov-hybrid-18,
+  author    = {Sergey Goncharov and
+               Julian Jakob and
+               Renato Neves},
+  editor    = {Sven Schewe and
+               Lijun Zhang},
+  title     = {A Semantics for Hybrid Iteration},
+  booktitle = {29th International Conference on Concurrency Theory, {CONCUR} 2018,
+               September 4-7, 2018, Beijing, China},
+  series    = {LIPIcs},
+  volume    = {118},
+  pages     = {22:1--22:17},
+  publisher = {Schloss Dagstuhl - Leibniz-Zentrum f{\"{u}}r Informatik},
+  year      = {2018},
+  url       = {https://doi.org/10.4230/LIPIcs.CONCUR.2018.22},
+  doi       = {10.4230/LIPICS.CONCUR.2018.22},
+  timestamp = {Tue, 11 Feb 2020 15:52:14 +0100},
+  biburl    = {https://dblp.org/rec/conf/concur/0001JN18.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{hennessy-parallel-79,
+  author    = {Matthew Hennessy and
+               Gordon D. Plotkin},
+  editor    = {Jir{\'{\i}} Becv{\'{a}}r},
+  title     = {Full Abstraction for a Simple Parallel Programming Language},
+  booktitle = {Mathematical Foundations of Computer Science 1979, Proceedings, 8th
+               Symposium, Olomouc, Czechoslovakia, September 3-7, 1979},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {74},
+  pages     = {108--120},
+  publisher = {Springer},
+  year      = {1979},
+  url       = {https://doi.org/10.1007/3-540-09526-8\_8},
+  doi       = {10.1007/3-540-09526-8\_8},
+  timestamp = {Tue, 14 May 2019 10:00:37 +0200},
+  biburl    = {https://dblp.org/rec/conf/mfcs/HennessyP79.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{adve-drf-98,
+  author    = {Sarita V. Adve and
+               Mark D. Hill},
+  editor    = {Gurindar S. Sohi},
+  title     = {Weak Ordering - {A} New Definition},
+  booktitle = {25 Years of the International Symposia on Computer Architecture (Selected
+               Papers)},
+  pages     = {363--375},
+  publisher = {{ACM}},
+  year      = {1998},
+  url       = {https://doi.org/10.1145/285930.285996},
+  doi       = {10.1145/285930.285996},
+  timestamp = {Fri, 09 Jul 2021 15:51:20 +0200},
+  biburl    = {https://dblp.org/rec/conf/isca/AdveH98a.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{kang-promising-17,
+  author    = {Jeehoon Kang and
+               Chung{-}Kil Hur and
+               Ori Lahav and
+               Viktor Vafeiadis and
+               Derek Dreyer},
+  editor    = {Giuseppe Castagna and
+               Andrew D. Gordon},
+  title     = {A promising semantics for relaxed-memory concurrency},
+  booktitle = {Proceedings of the 44th {ACM} {SIGPLAN} Symposium on Principles of
+               Programming Languages, {POPL} 2017, Paris, France, January 18-20,
+               2017},
+  pages     = {175--189},
+  publisher = {{ACM}},
+  year      = {2017},
+  url       = {https://doi.org/10.1145/3009837.3009850},
+  doi       = {10.1145/3009837.3009850},
+  timestamp = {Sun, 06 Oct 2024 21:13:08 +0200},
+  biburl    = {https://dblp.org/rec/conf/popl/KangHLVD17.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{hoare-parallel-14,
+  author    = {Tony Hoare and
+               Stephan van Staden},
+  title     = {The laws of programming unify process calculi},
+  journal   = {Sci. Comput. Program.},
+  volume    = {85},
+  pages     = {102--114},
+  year      = {2014},
+  url       = {https://doi.org/10.1016/j.scico.2013.08.012},
+  doi       = {10.1016/J.SCICO.2013.08.012},
+  timestamp = {Wed, 17 Feb 2021 21:56:03 +0100},
+  biburl    = {https://dblp.org/rec/journals/scp/HoareS14.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{jeffrey-premonoidal-97,
+  author    = {Alan Jeffrey},
+  editor    = {Andrew D. Gordon and
+               Andrew M. Pitts and
+               Carolyn L. Talcott},
+  title     = {Premonoidal categories and flow graphs},
+  booktitle = {Second Workshop on Higher-Order Operational Techniques in Semantics,
+               {HOOTS} 1997, Stanford, CA, USA, December 8-12, 1997},
+  series    = {Electronic Notes in Theoretical Computer Science},
+  volume    = {10},
+  pages     = {51},
+  publisher = {Elsevier},
+  year      = {1997},
+  url       = {https://doi.org/10.1016/S1571-0661(05)80688-7},
+  doi       = {10.1016/S1571-0661(05)80688-7},
+  timestamp = {Fri, 11 Nov 2022 13:33:56 +0100},
+  biburl    = {https://dblp.org/rec/journals/entcs/Jeffrey97.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{power-premonoidal-97,
+  author    = {John Power and
+               Edmund Robinson},
+  title     = {Premonoidal Categories and Notions of Computation},
+  journal   = {Math. Struct. Comput. Sci.},
+  volume    = {7},
+  number    = {5},
+  pages     = {453--468},
+  year      = {1997},
+  url       = {https://doi.org/10.1017/S0960129597002375},
+  doi       = {10.1017/S0960129597002375},
+  timestamp = {Wed, 01 Apr 2020 08:48:35 +0200},
+  biburl    = {https://dblp.org/rec/journals/mscs/PowerR97.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{power-premonoidal-02,
+  author    = {John Power},
+  title     = {Premonoidal categories as categories with algebraic structure},
+  journal   = {Theor. Comput. Sci.},
+  volume    = {278},
+  number    = {1-2},
+  pages     = {303--321},
+  year      = {2002},
+  url       = {https://doi.org/10.1016/S0304-3975(00)00340-6},
+  doi       = {10.1016/S0304-3975(00)00340-6},
+  timestamp = {Wed, 17 Feb 2021 21:59:00 +0100},
+  biburl    = {https://dblp.org/rec/journals/tcs/Power02.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{uustalu-comonad-08,
+  author    = {Tarmo Uustalu and
+               Varmo Vene},
+  editor    = {Jir{\'{\i}} Ad{\'{a}}mek and
+               Clemens Kupke},
+  title     = {Comonadic Notions of Computation},
+  booktitle = {Proceedings of the Ninth Workshop on Coalgebraic Methods in Computer
+               Science, {CMCS} 2008, Budapest, Hungary, April 4-6, 2008},
+  series    = {Electronic Notes in Theoretical Computer Science},
+  volume    = {203},
+  number    = {5},
+  pages     = {263--284},
+  publisher = {Elsevier},
+  year      = {2008},
+  url       = {https://doi.org/10.1016/j.entcs.2008.05.029},
+  doi       = {10.1016/J.ENTCS.2008.05.029},
+  timestamp = {Wed, 17 Feb 2021 22:02:00 +0100},
+  biburl    = {https://dblp.org/rec/journals/entcs/UustaluV08.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{staton-impure-13,
+  author    = {Sam Staton and
+               Paul Blain Levy},
+  editor    = {Roberto Giacobazzi and
+               Radhia Cousot},
+  title     = {Universal properties of impure programming languages},
+  booktitle = {The 40th Annual {ACM} {SIGPLAN-SIGACT} Symposium on Principles of
+               Programming Languages, {POPL} '13, Rome, Italy - January 23 - 25,
+               2013},
+  pages     = {179--192},
+  publisher = {{ACM}},
+  year      = {2013},
+  url       = {https://doi.org/10.1145/2429069.2429091},
+  doi       = {10.1145/2429069.2429091},
+  timestamp = {Thu, 24 Jun 2021 16:19:31 +0200},
+  biburl    = {https://dblp.org/rec/conf/popl/StatonL13.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{adamek-elgot-11,
+  author    = {Jir{\'{\i}} Ad{\'{a}}mek and
+               Stefan Milius and
+               Jir{\'{\i}} Velebil},
+  title     = {Elgot theories: a new perspective on the equational properties of
+               iteration},
+  journal   = {Math. Struct. Comput. Sci.},
+  volume    = {21},
+  number    = {2},
+  pages     = {417--480},
+  year      = {2011},
+  url       = {https://doi.org/10.1017/S0960129510000496},
+  doi       = {10.1017/S0960129510000496},
+  timestamp = {Mon, 04 Sep 2023 12:29:24 +0200},
+  biburl    = {https://dblp.org/rec/journals/mscs/AdamekMV11.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@incollection{elgot-elgot-75,
+  title     = {Monadic Computation And Iterative Algebraic Theories**The material reported on here evolved from research which was intiated at the University of Bristol and supported by the Science Research Council of Great Britain.},
+  editor    = {H.E. Rose and J.C. Shepherdson},
+  series    = {Studies in Logic and the Foundations of Mathematics},
+  publisher = {Elsevier},
+  volume    = {80},
+  pages     = {175-230},
+  year      = {1975},
+  booktitle = {Logic Colloquium '73},
+  issn      = {0049-237X},
+  doi       = {https://doi.org/10.1016/S0049-237X(08)71949-9},
+  url       = {https://www.sciencedirect.com/science/article/pii/S0049237X08719499},
+  author    = {Calvin C. Elgot},
+  address   = {Amsterdam, The Netherlands}
+}
+
+@inproceedings{menon-verified-06,
+  author    = {Vijay Menon and
+               Neal Glew and
+               Brian R. Murphy and
+               Andrew McCreight and
+               Tatiana Shpeisman and
+               Ali{-}Reza Adl{-}Tabatabai and
+               Leaf Petersen},
+  editor    = {J. Gregory Morrisett and
+               Simon L. Peyton Jones},
+  title     = {A verifiable {SSA} program representation for aggressive compiler
+               optimization},
+  booktitle = {Proceedings of the 33rd {ACM} {SIGPLAN-SIGACT} Symposium on Principles
+               of Programming Languages, {POPL} 2006, Charleston, South Carolina,
+               USA, January 11-13, 2006},
+  pages     = {397--408},
+  publisher = {{ACM}},
+  year      = {2006},
+  url       = {https://doi.org/10.1145/1111037.1111072},
+  doi       = {10.1145/1111037.1111072},
+  timestamp = {Mon, 28 Aug 2023 21:17:40 +0200},
+  biburl    = {https://dblp.org/rec/conf/popl/MenonGMMSAP06.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org},
+  address   = {USA}
+}
+
+@inproceedings{demange-ssa-15,
+  author    = {Delphine Demange and
+               David Pichardie and
+               L{\'{e}}o Stefanesco},
+  editor    = {Bj{\"{o}}rn Franke},
+  title     = {Verifying Fast and Sparse SSA-Based Optimizations in Coq},
+  booktitle = {Compiler Construction - 24th International Conference, {CC} 2015,
+               Held as Part of the European Joint Conferences on Theory and Practice
+               of Software, {ETAPS} 2015, London, UK, April 11-18, 2015. Proceedings},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {9031},
+  pages     = {233--252},
+  publisher = {Springer},
+  year      = {2015},
+  url       = {https://doi.org/10.1007/978-3-662-46663-6\_12},
+  doi       = {10.1007/978-3-662-46663-6\_12},
+  timestamp = {Tue, 20 Aug 2019 15:27:46 +0200},
+  biburl    = {https://dblp.org/rec/conf/cc/DemangePS15.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org},
+  address   = {London, UK}
+}
+
+@article{leroy-compcert-09,
+  author    = {Xavier Leroy},
+  title     = {Formal verification of a realistic compiler},
+  journal   = {Commun. {ACM}},
+  volume    = {52},
+  number    = {7},
+  pages     = {107--115},
+  year      = {2009},
+  url       = {https://doi.org/10.1145/1538788.1538814},
+  doi       = {10.1145/1538788.1538814},
+  timestamp = {Tue, 06 Nov 2018 12:51:38 +0100},
+  biburl    = {https://dblp.org/rec/journals/cacm/Leroy09.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{hyland-ong-00,
+  author    = {J. M. E. Hyland and
+               C.{-}H. Luke Ong},
+  title     = {On Full Abstraction for {PCF:} I, II, and {III}},
+  journal   = {Inf. Comput.},
+  volume    = {163},
+  number    = {2},
+  pages     = {285--408},
+  year      = {2000},
+  url       = {https://doi.org/10.1006/inco.2000.2917},
+  doi       = {10.1006/INCO.2000.2917},
+  timestamp = {Fri, 12 Feb 2021 22:15:47 +0100},
+  biburl    = {https://dblp.org/rec/journals/iandc/HylandO00.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@misc{nlab:markov-category,
+  author       = {{nLab authors}},
+  title        = {{{M}}arkov category},
+  howpublished = {\url{https://ncatlab.org/nlab/show/Markov+category}},
+  note         = {\href{https://ncatlab.org/nlab/revision/Markov+category/62}{Revision 62}},
+  month        = oct,
+  year         = 2024
+}
+
+@inproceedings{hasegawa-trace-02,
+  author    = {Masahito Hasegawa},
+  editor    = {Richard Blute and
+               Peter Selinger},
+  title     = {The Uniformity Principle on Traced Monoidal Categories},
+  booktitle = {Category Theory and Computer Science, {CTCS} 2002, Ottawa, Canada,
+               August 15-17, 2002},
+  series    = {Electronic Notes in Theoretical Computer Science},
+  volume    = {69},
+  pages     = {137--155},
+  publisher = {Elsevier},
+  year      = {2002},
+  url       = {https://doi.org/10.1016/S1571-0661(04)80563-2},
+  doi       = {10.1016/S1571-0661(04)80563-2},
+  timestamp = {Fri, 12 Feb 2021 22:19:09 +0100},
+  biburl    = {https://dblp.org/rec/journals/entcs/Hasegawa02.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org},
+  address   = {Amsterdam, The Netherlands}
+}
+
+@article{ghalayini-24-ssa-densem-arxiv,
+  author        = {{Ghalayini}, Jad Elkhaleq and {Krishnaswami}, Neel},
+  title         = {{The Denotational Semantics of SSA}},
+  journal       = {arXiv e-prints},
+  keywords      = {Computer Science - Programming Languages, Computer Science - Logic in Computer Science, F.3.2, D.3.4, D.3.1},
+  year          = 2024,
+  month         = nov,
+  eid           = {arXiv:2411.09347},
+  pages         = {arXiv:2411.09347},
+  doi           = {10.48550/arXiv.2411.09347},
+  archiveprefix = {arXiv},
+  eprint        = {2411.09347},
+  primaryclass  = {cs.PL},
+  adsurl        = {https://ui.adsabs.harvard.edu/abs/2024arXiv241109347E},
+  adsnote       = {Provided by the SAO/NASA Astrophysics Data System}
+}
+
+@article{lipton-mover-75,
+  author    = {Richard J. Lipton},
+  title     = {Reduction: {A} Method of Proving Properties of Parallel Programs},
+  journal   = {Commun. {ACM}},
+  volume    = {18},
+  number    = {12},
+  pages     = {717--721},
+  year      = {1975},
+  url       = {https://doi.org/10.1145/361227.361234},
+  doi       = {10.1145/361227.361234},
+  timestamp = {Tue, 06 Nov 2018 12:51:43 +0100},
+  biburl    = {https://dblp.org/rec/journals/cacm/Lipton75.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+
+@article{hefford-optics-23,
+  title     = {Optics for Premonoidal Categories},
+  volume    = {397},
+  issn      = {2075-2180},
+  url       = {http://dx.doi.org/10.4204/EPTCS.397.10},
+  doi       = {10.4204/eptcs.397.10},
+  journal   = {Electronic Proceedings in Theoretical Computer Science},
+  publisher = {Open Publishing Association},
+  author    = {Hefford, James and Román, Mario},
+  year      = {2023},
+  month     = dec,
+  pages     = {152–171}
+}
+
+@article{jiang-stack-25,
+  author     = {Yuchen Jiang and
+                Runze Xue and
+                Max S. New},
+  title      = {Notions of Stack-manipulating Computation and Relative Monads (Extended
+                Version)},
+  journal    = {CoRR},
+  volume     = {abs/2502.15031},
+  year       = {2025},
+  url        = {https://doi.org/10.48550/arXiv.2502.15031},
+  doi        = {10.48550/ARXIV.2502.15031},
+  eprinttype = {arXiv},
+  eprint     = {2502.15031},
+  timestamp  = {Thu, 20 Mar 2025 13:28:39 +0100},
+  biburl     = {https://dblp.org/rec/journals/corr/abs-2502-15031.bib},
+  bibsource  = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{kammar-effect-12,
+  author    = {Ohad Kammar and
+               Gordon D. Plotkin},
+  editor    = {John Field and
+               Michael Hicks},
+  title     = {Algebraic foundations for effect-dependent optimisations},
+  booktitle = {Proceedings of the 39th {ACM} {SIGPLAN-SIGACT} Symposium on Principles
+               of Programming Languages, {POPL} 2012, Philadelphia, Pennsylvania,
+               USA, January 22-28, 2012},
+  pages     = {349--360},
+  publisher = {{ACM}},
+  year      = {2012},
+  url       = {https://doi.org/10.1145/2103656.2103698},
+  doi       = {10.1145/2103656.2103698},
+  timestamp = {Thu, 24 Jun 2021 16:19:31 +0200},
+  biburl    = {https://dblp.org/rec/conf/popl/KammarP12.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{math-cpp-batty-11,
+  author    = {Mark Batty and
+               Scott Owens and
+               Susmit Sarkar and
+               Peter Sewell and
+               Tjark Weber},
+  editor    = {Thomas Ball and
+               Mooly Sagiv},
+  title     = {Mathematizing {C++} concurrency},
+  booktitle = {Proceedings of the 38th {ACM} {SIGPLAN-SIGACT} Symposium on Principles
+               of Programming Languages, {POPL} 2011, Austin, TX, USA, January 26-28,
+               2011},
+  pages     = {55--66},
+  publisher = {{ACM}},
+  year      = {2011},
+  url       = {https://doi.org/10.1145/1926385.1926394},
+  doi       = {10.1145/1926385.1926394},
+  timestamp = {Tue, 09 Jul 2024 07:54:49 +0200},
+  biburl    = {https://dblp.org/rec/conf/popl/BattyOSSW11.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{comp-cpp-batty-12,
+  author    = {Mark Batty and
+               Kayvan Memarian and
+               Scott Owens and
+               Susmit Sarkar and
+               Peter Sewell},
+  editor    = {John Field and
+               Michael Hicks},
+  title     = {Clarifying and compiling {C/C++} concurrency: from {C++11} to {POWER}},
+  booktitle = {Proceedings of the 39th {ACM} {SIGPLAN-SIGACT} Symposium on Principles
+               of Programming Languages, {POPL} 2012, Philadelphia, Pennsylvania,
+               USA, January 22-28, 2012},
+  pages     = {509--520},
+  publisher = {{ACM}},
+  year      = {2012},
+  url       = {https://doi.org/10.1145/2103656.2103717},
+  doi       = {10.1145/2103656.2103717},
+  timestamp = {Thu, 24 Jun 2021 16:19:31 +0200},
+  biburl    = {https://dblp.org/rec/conf/popl/BattyMOSS12.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{nagarakatte-softbound-09,
+  author    = {Santosh Nagarakatte and
+               Jianzhou Zhao and
+               Milo M. K. Martin and
+               Steve Zdancewic},
+  editor    = {Michael Hind and
+               Amer Diwan},
+  title     = {SoftBound: highly compatible and complete spatial memory safety for
+               c},
+  booktitle = {Proceedings of the 2009 {ACM} {SIGPLAN} Conference on Programming
+               Language Design and Implementation, {PLDI} 2009, Dublin, Ireland,
+               June 15-21, 2009},
+  pages     = {245--258},
+  publisher = {{ACM}},
+  year      = {2009},
+  url       = {https://doi.org/10.1145/1542476.1542504},
+  doi       = {10.1145/1542476.1542504},
+  timestamp = {Sun, 19 Jan 2025 13:10:54 +0100},
+  biburl    = {https://dblp.org/rec/conf/pldi/NagarakatteZMZ09.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{power-97-premonoidal,
+  author    = {John Power and
+               Edmund Robinson},
+  title     = {Premonoidal Categories and Notions of Computation},
+  journal   = {Math. Struct. Comput. Sci.},
+  volume    = {7},
+  number    = {5},
+  pages     = {453--468},
+  year      = {1997},
+  url       = {https://doi.org/10.1017/S0960129597002375},
+  doi       = {10.1017/S0960129597002375},
+  timestamp = {Wed, 01 Apr 2020 08:48:35 +0200},
+  biburl    = {https://dblp.org/rec/journals/mscs/PowerR97.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{levy-03-environment,
+  author    = {Paul Blain Levy and
+               John Power and
+               Hayo Thielecke},
+  title     = {Modelling environments in call-by-value programming languages},
+  journal   = {Inf. Comput.},
+  volume    = {185},
+  number    = {2},
+  pages     = {182--210},
+  year      = {2003},
+  url       = {https://doi.org/10.1016/S0890-5401(03)00088-9},
+  doi       = {10.1016/S0890-5401(03)00088-9},
+  timestamp = {Fri, 12 Feb 2021 22:15:52 +0100},
+  biburl    = {https://dblp.org/rec/journals/iandc/LevyPT03.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{li-20-kllvm,
+  author    = {Li, Liyi and Gunter, Elsa L.},
+  title     = {{K-LLVM: A Relatively Complete Semantics of LLVM IR}},
+  booktitle = {34th European Conference on Object-Oriented Programming (ECOOP 2020)},
+  pages     = {7:1--7:29},
+  series    = {Leibniz International Proceedings in Informatics (LIPIcs)},
+  isbn      = {978-3-95977-154-2},
+  issn      = {1868-8969},
+  year      = {2020},
+  volume    = {166},
+  editor    = {Hirschfeld, Robert and Pape, Tobias},
+  publisher = {Schloss Dagstuhl -- Leibniz-Zentrum f{\"u}r Informatik},
+  address   = {Dagstuhl, Germany},
+  url       = {https://drops.dagstuhl.de/entities/document/10.4230/LIPIcs.ECOOP.2020.7},
+  urn       = {urn:nbn:de:0030-drops-131649},
+  doi       = {10.4230/LIPIcs.ECOOP.2020.7},
+  annote    = {Keywords: LLVM, formal semantics, K framework, memory model, abstract machine}
+}
+
+@article{xia-20-itrees,
+  author    = {Li{-}yao Xia and
+               Yannick Zakowski and
+               Paul He and
+               Chung{-}Kil Hur and
+               Gregory Malecha and
+               Benjamin C. Pierce and
+               Steve Zdancewic},
+  title     = {Interaction trees: representing recursive and impure programs in Coq},
+  journal   = {Proc. {ACM} Program. Lang.},
+  volume    = {4},
+  number    = {{POPL}},
+  pages     = {51:1--51:32},
+  year      = {2020},
+  url       = {https://doi.org/10.1145/3371119},
+  doi       = {10.1145/3371119},
+  timestamp = {Sun, 19 Jan 2025 14:47:51 +0100},
+  biburl    = {https://dblp.org/rec/journals/pacmpl/XiaZHHMPZ20.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{chappe-25-ctrees,
+  author    = {Chappe, Nicolas and Henrio, Ludovic and Zakowski, Yannick},
+  title     = {Monadic Interpreters for Concurrent Memory Models: Executable Semantics of a Concurrent Subset of LLVM IR},
+  year      = {2025},
+  isbn      = {9798400713477},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  url       = {https://doi.org/10.1145/3703595.3705890},
+  doi       = {10.1145/3703595.3705890},
+  abstract  = {Monadic interpreters have gained attention as a powerful tool for modeling and reasoning about first order languages.        In particular in the Coq ecosystem, the Choice Tree (CTree) library provides generic tools to craft such interpreters in presence of divergence, stateful effects, failure, and non-determinism.        This monadic approach allows the definition of semantics for programming languages that are modular in its effects, compositional w.r.t. its syntax, and executable.                This paper demonstrates the use of CTrees to formalize a semantics for concurrency and weak memory models.        We instantiate the approach over a minimal concurrent subset of LLVM IR.        Our semantics is built in successive stages, interpreting each aspect of the semantics separately.        In particular, a stage encodes multi-threading as an interleaving semantics, and        another implements a weak memory model that supports various LLVM memory orderings.        Furthermore, the modularity of the approach makes it possible to plug a different source language or memory model by changing a single interpretation phase.        By leveraging the notions of (bi)similarity on CTrees, we establish the equational theory of our constructions,         show how to transport equivalences through our layered construction, and prove simulation results between memory models.        Finally, our model is executable, hence the semantics can be tested by extraction to OCaml.},
+  booktitle = {Proceedings of the 14th ACM SIGPLAN International Conference on Certified Programs and Proofs},
+  pages     = {283–298},
+  numpages  = {16},
+  keywords  = {Concurrency, Coq, LLVM, Semantics},
+  location  = {Denver, CO, USA},
+  series    = {CPP '25}
+}
+
+@article{adamek-iterative-10,
+  author    = {Jir{\'{\i}} Ad{\'{a}}mek and
+               Stefan Milius and
+               Jir{\'{\i}} Velebil},
+  title     = {Equational properties of iterative monads},
+  journal   = {Inf. Comput.},
+  volume    = {208},
+  number    = {12},
+  pages     = {1306--1348},
+  year      = {2010},
+  url       = {https://doi.org/10.1016/j.ic.2009.10.006},
+  doi       = {10.1016/J.IC.2009.10.006},
+  timestamp = {Mon, 04 Sep 2023 12:29:24 +0200},
+  biburl    = {https://dblp.org/rec/journals/iandc/AdamekMV10.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{goncharov-unguarded-18,
+  author    = {Sergey Goncharov and
+               Lutz Schr{\"{o}}der and
+               Christoph Rauch and
+               Julian Jakob},
+  title     = {Unguarded Recursion on Coinductive Resumptions},
+  journal   = {Log. Methods Comput. Sci.},
+  volume    = {14},
+  number    = {3},
+  year      = {2018},
+  url       = {https://doi.org/10.23638/LMCS-14(3:10)2018},
+  doi       = {10.23638/LMCS-14(3:10)2018},
+  timestamp = {Mon, 03 Mar 2025 22:18:19 +0100},
+  biburl    = {https://dblp.org/rec/journals/lmcs/GoncharovSRJ18.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
