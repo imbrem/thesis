@@ -4,10 +4,6 @@
 **Subtitle:** Type theory, refinement, and semantics for SSA
 **Typesetting:** Typst
 
-## Topic
-
-SSA (Static Single Assignment) is the dominant compiler intermediate representation: every variable is assigned exactly once, making substitution valid and enabling efficient optimizations. This thesis gives SSA a type-theoretic and categorical foundation. It introduces lambda_SSA, a type theory whose terms are SSA programs, with an equational theory strong enough to validate standard compiler transformations. The categorical semantics uses Freyd categories (effectful computation), Elgot iteration (loops), and distributive coproducts (branching). The equational theory is proved sound and complete w.r.t. these categorical axioms. An extension adds substructural types and an effect system, lifting the theory from program equivalence to directed refinement.
-
 ## Layout
 
 ```

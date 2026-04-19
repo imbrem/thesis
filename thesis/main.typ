@@ -9,6 +9,8 @@
 
 #include "intro/main.typ"
 
+#include "type-theoretic-ssa/main.typ"
+
 #pagebreak()
 #bibliography("refs.bib")
 

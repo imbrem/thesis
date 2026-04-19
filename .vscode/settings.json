@@ -1,0 +1,7 @@
+{
+  "lean4.input.languages": [
+    "lean4",
+    "typst",
+    "markdown"
+  ]
+}
