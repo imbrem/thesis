@@ -29,8 +29,8 @@ where
 
 - $B_1,...,B_n ∈ types$ are types -- $n$ is called the _output arity_ of $f$.
 
-  For now, we'll only consider operations with an output 
-  arity of $1$.
+For now, we'll only consider operations with an output 
+arity of $1$.
 
 We define a _(typing) context_ $Γ ∈ ctx(types, vars: vars)$ to be given by
 a list of _bindings_
