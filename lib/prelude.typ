@@ -5,6 +5,7 @@
 
 #import "@preview/curryst:0.6.0": rule, prooftree, rule-set
 
+
 #let chapter-quote(
   body,
   attribution: none,
@@ -20,10 +21,11 @@
 // Default sets
 #let vars = $N$
 #let ops = $O$
+#let vals = $V$
 #let types = $cal(T)$
 
 // Grammars
-#let sexp(ops, vars: none) = $ms("SExp")_vars (ops)$
+#let sexp1(ops, vars: none) = $ms("STm")_vars (ops)$
 #let ctx(types, vars: none) = $ms("Ctx")_vars (types)$
 
 #let stty(inputs, op, outputs) = $op : inputs -> outputs$
