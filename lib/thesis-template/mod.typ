@@ -1,5 +1,7 @@
 // Thesis template: title page, statement of originality, TOC, and document setup.
 
+#import "@preview/ctheorems:1.1.3": thmrules
+
 #let statement-of-originality = align(center + horizon, read("statement-of-originality.txt"))
 
 #let cambridge-logo = image("ucam-cs-colour.svg", width: 15em)
@@ -47,6 +49,7 @@
   set document(title: title, author: author, date: date)
   set text(lang: "en")
   set heading(numbering: "1.")
+  show: thmrules
   show heading.where(level: 1): set heading(supplement: [Chapter])
 
   // --- Title page ---

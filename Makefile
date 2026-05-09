@@ -25,7 +25,9 @@ papers: $(TEX_PDFS)
 submodules:
 	git submodule update --init --recursive
 
-%.pdf: %.typ $(LIB)
+# Each .typ depends on its own source, all .typ files in child directories, and lib.
+.SECONDEXPANSION:
+%.pdf: %.typ $$(shell find $$(dir $$*.typ) -name '*.typ') $(LIB)
 	typst compile --root . $< $@
 
 $(PAPER_DIR)/%.pdf: $(PAPER_DIR)/%.tex $(PAPER_DIR)/references.bib

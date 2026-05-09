@@ -2,8 +2,12 @@
 // Usage: #import "/lib/prelude.typ": *
 
 #import "/lib/thesis-template/mod.typ": appendix, thesis
+#import "/lib/template.typ": part, chapter
 
 #import "@preview/curryst:0.6.0": rule, prooftree, rule-set
+
+#import "@preview/ctheorems:1.1.3": thmrules
+#import "/lib/theorems.typ": theorem, lemma, corollary, definition, example, remark, proof
 
 
 #let chapter-quote(

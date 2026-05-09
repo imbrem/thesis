@@ -1,4 +1,5 @@
 #import "/lib/prelude.typ": *
+#show: part
 
 /*
 Current status:

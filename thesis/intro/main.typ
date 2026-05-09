@@ -1,4 +1,5 @@
 #import "/lib/prelude.typ": *
+#show: chapter
 
 = Introduction
 
