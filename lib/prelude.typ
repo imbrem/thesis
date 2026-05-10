@@ -34,4 +34,15 @@
 
 #let stty(inputs, op, outputs) = $op : inputs -> outputs$
 
+#import "/lib/todos.typ": todo
+
 #let hasty(ctx, exp, ty) = $ctx ⊢ exp : ty$
+
+#let sexp(..args) = {
+  let parts = args.pos()
+  let result = parts.first()
+  for part in parts.slice(1) {
+    result = $#result med #part$
+  }
+  $(#result)$
+}

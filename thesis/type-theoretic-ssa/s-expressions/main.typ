@@ -13,14 +13,14 @@ unary operators (like $-x$),
 and $n$-ary function applications (like $f(x, y, z)$),
 we can instead normalize everything to _S-expressions_ 
 -- or _sexprs_ -- 
-of the form $(f med e_1 med ... med e_n)$.
-We can then uniformly write: 
+of the form $sexp(f, e_1, ..., e_n)$.
+We can then uniformly write:
 
-- binary operations like $x + y$ as binary sexprs $(+ med x med y)$,
+- binary operations like $x + y$ as binary sexprs $sexp(+, x, y)$,
 
-- unary operations $-x$ as unary sexprs $(- med x)$, 
+- unary operations $-x$ as unary sexprs $sexp(-, x)$,
 
-- function appplications $f(x, y, z)$ as $n$-ary sexprs $(f med x med y med z)$. 
+- function appplications $f(x, y, z)$ as $n$-ary sexprs $sexp(f, x, y, z)$.
 
 In particular, the _operator_ $f$ always comes first,
 and there is no order-of-operations -- all bracketing is explicit.
@@ -29,8 +29,8 @@ Restricting ourselves to _first-order_ sexprs means that
 we always require operators $f$ to be atomic symbols drawn from a fixed set $ops$
 --
 in particular, we don't support _partial application_, 
-like $((ms("add") med 2) med 3)$,
-since that would require $f = (ms("add") med 2)$ to be a compound expression.
+like $sexp(sexp(ms("add"), 2), 3)$,
+since that would require $f = sexp(ms("add"), 2)$ to be a compound expression.
 
 Formally, we define our _syntax_ as follows:
 
@@ -43,11 +43,17 @@ Formally, we define our _syntax_ as follows:
   $e ∈ sexp1(ops, vars: vars)$ to be given by the grammar
 
   $
-    e ::= x | c | (f med e^*)
+    e ::= x | c | sexp(f, e^*)
   $
 ]
 
-// ...
+#todo[Open-vs-closed programs -- operational semantics of closed programs first]
+
+#todo[Operational semantics of S-expressions -- partiality via division]
+
+#todo[_Observational equivalence_ of S-expressions]
+
+#todo[Well-typed vs. ill-typed S-expressions]
 
 Given a set of _types_ $A ∈ types$, we'll define a 
 _stack-typing relation_ on $ops$ to be any relation
@@ -88,8 +94,10 @@ We can define a simple type system for S-expressions by giving a typing relation
   label: "app",
   [#stty($[A_1,..., A_n]$, $f$, $[B]$)],
   [$∀ i . hasty(Γ, a_i, A_i)$],
-  [$hasty(Γ, (f med a_1 med ... med a_n), B)$]
+  [$hasty(Γ, sexp(f, a_1, ..., a_n), B)$]
 )
+
+#todo[Typing rules for constants -- as distinct from nullary ops]
 
 $
 \
@@ -100,3 +108,37 @@ $
 )
 \
 $
+
+#todo[_Soundness_ of typing: preservation of typing]
+
+#todo[_Completeness_ of typing: in the presence of _simple types_]
+
+#todo[Church vs. Curry -- we will only consider _well-typed_ terms]
+
+#todo[Doesn't lose generality -- unityping works in this framework due to multi-arity]
+
+#todo[_Substitution_ and _observational equivalence_ -- typing rules for substitution -- two open programs are equivalent iff equivalent under every substitution -- this is usually where _metavariables_ come in]
+
+#todo[_Purity_ -- required for substitution to preserve equivalence -- typing rules for purity]
+
+#todo[Denotational semantics of S-expressions: partial functions]
+
+#todo[Denotational semantics of S-expressions: _soundness_ and _completeness_]
+
+#todo[Equational theory of S-expressions: _purity_ -- as otherwise you can't _introduce_ divisions]
+
+#todo[Equational theory of S-expressions: _soundness_ and _completeness_]
+
+= State
+
+#todo[Operational semantics of S-expressions -- _state_]
+
+#todo[_Observational equivalence_ in the presence of state]
+
+#todo[Denotational semantics of S-expressions -- the partial state monad]
+
+#todo[Denotational semantics of S-expressions: _soundness_ and _completeness_]
+
+#todo[Equational theory of S-expressions: _purity_]
+
+#todo[Equational theory of S-expressions: _soundness_ and _completeness_]

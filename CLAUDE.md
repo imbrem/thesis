@@ -48,7 +48,12 @@ Every `.typ` file starts with:
 The leading `/` resolves to the repo root via `typst.toml`. Never use relative `../` imports for library code.
 
 ### Standalone compilation
+=== TODOs ===
+  1. {'func': 'text', 'text': 'Operational semantics-as-meaning'}
+  2. {'func': 'text', 'text': 'Partial functions via division'}
+  3. {'func': 'text', 'text': 'Segue to type systems'}
 
+Total: 3 TODO(s)
 Every `.typ` file under `thesis/` compiles to its own PDF. Files use a standalone wrapper from `lib/template.typ` that applies document formatting when compiled directly but becomes a no-op when included by a parent.
 
 ### File roles
@@ -70,6 +75,8 @@ make all         # build everything
 make submodules  # clone/update git submodules (formalization/papers/*)
 make clean       # remove generated PDFs + LaTeX aux files
 ```
+
+To compile a single chapter or file, use `make` with the PDF path, e.g. `make thesis/type-theoretic-ssa/s-expressions/main.pdf`. Always use `make` rather than invoking `typst` directly so that `--root` and dependencies are set correctly.
 
 PDFs are generated in-place next to their `.typ` source and are gitignored.
 
