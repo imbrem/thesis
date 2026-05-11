@@ -30,6 +30,8 @@
 
 // Grammars
 #let sexp1(ops, vars: none) = $ms("STm")_vars (ops)$
+#let csexp1(ops) = $ms("STm")_∅ (ops)$
+
 #let ctx(types, vars: none) = $ms("Ctx")_vars (types)$
 
 #let stty(inputs, op, outputs) = $op : inputs -> outputs$
@@ -37,6 +39,34 @@
 #import "/lib/todos.typ": todo
 
 #let hasty(ctx, exp, ty) = $ctx ⊢ exp : ty$
+
+#let sadd = $+$
+#let smul = $·$
+#let sneg = $-$
+#let sdiv = $slash$
+
+
+#let fv(sexp) = $sans("use")(sexp)$
+#let ecv(ectx) = $sans("def")(ectx)$
+
+#let evop(func) = $sans("ev")(func)$
+#let stev(expr) = $sans("ev")(expr)$
+#let ssto = $→$
+#let pto = $⇀$
+#let bsto = $⇓$
+#let sred = $attach(->, tr: *)$
+
+// TODO: fix this
+#let def-set(..defs) = {
+  let parts = defs.pos()
+  let result = parts.first()
+  for part in parts.slice(1) {
+    result = $#result #h(4em) #part$
+  }
+  $
+  result
+  $
+}
 
 #let sexp(..args) = {
   let parts = args.pos()
