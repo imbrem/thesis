@@ -22,6 +22,15 @@
 #let mt(body) = $mono(body)$
 #let mb(body) = $bold(body)$
 
+#let seq = $\; med$
+#let lexp(x, a, e) = $ms("let") med #x = #a seq #e$
+
+#let rwopt(lhs, rhs) = $
+  #lhs
+  quad quad --> quad quad
+  #rhs                         
+$
+
 // Default sets
 #let vars = $N$
 #let ops = $O$
