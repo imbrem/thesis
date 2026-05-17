@@ -1,4 +1,3 @@
-import Mathlib.Data.Nat.Notation
 import Mathlib.Data.List.OfFn
 
 namespace Isotope
