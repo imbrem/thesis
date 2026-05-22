@@ -25,6 +25,16 @@ variable {L : STm.Lang Arity}
 
 variable {A A₁ A₂ A₃}
 
+@[simp]
+def arity? : STm L A → Option Arity
+  | .op (arity := arity) _ _ => some arity
+  | _ => none
+
+-- @[simp]
+-- def op? : (e : STm L A) → Option (L.Op? e.arity?)
+--   | .op o _ => .some (.op o)
+--   | _ => .none
+
 -- Coercion
 
 instance instCoeSym : Coe A (STm L A) where

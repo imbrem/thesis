@@ -9,11 +9,25 @@ universe uargs uix
 class UArgs (Arity : Type uargs) where
   Ix : Arity -> Type uix
 
-instance UArgs.instSum {L R} [UArgs L] [UArgs R] : UArgs (Sum L R) where
+namespace UArgs
+
+variable {Arity L R : Type uargs}
+  [inst : UArgs Arity]
+  [instL : UArgs L] [instR : UArgs R]
+
+inductive Ix? : Option Arity → Type _
+  | mk {args : Arity} : Ix args → Ix? (some args)
+
+inductive IxN : Type _
+  | mk {args : Arity} : Ix args → IxN
+
+instance instSum : UArgs (Sum L R) where
   Ix e := e.elim UArgs.Ix UArgs.Ix
 
-instance UArgs.instProd {L R} [UArgs L] [UArgs R] : UArgs (Prod L R) where
+instance instProd : UArgs (Prod L R) where
   Ix e := Sum (UArgs.Ix e.1) (UArgs.Ix e.2)
+
+end UArgs
 
 class Args (Arity : Type uargs) extends UArgs Arity where
   posList : ∀ args : Arity, List (Ix args)
@@ -30,7 +44,7 @@ attribute [simp]
 
 namespace Args
 
-export UArgs (Ix)
+export UArgs (Ix Ix?)
 
 class IxFin (Arity : Type uargs) [inst : Args Arity] where
   finType : ∀ (args : Arity), Fintype (Ix args)
