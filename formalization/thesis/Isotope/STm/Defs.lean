@@ -6,11 +6,11 @@ universe uargs uix uval uop
 
 open Args
 
-structure STm.Lang (Arity : Type uargs) [instArgs : Args.{uargs, uix} Arity] where
+structure STm.Lang (Arity : Type uargs) [I : Args.{uargs, uix} Arity] where
   Val : Type uval
   Op : Arity -> Type uop
 
-variable {Arity} [instArgs : Args Arity]
+variable {Arity} [I : Args Arity]
 
 universe uatom
 
@@ -21,6 +21,29 @@ inductive STm (L : STm.Lang Arity) (A : Type uatom) where
 
 namespace STm
 
+namespace Lang
+
+inductive Tag (L : Lang Arity) : Type _
+  | val : L.Val → Tag L
+  | op {arity} (o : L.Op arity) : Tag L
+
+@[simp]
+def Tag.arity? {L : Lang Arity} : Tag L → WithZero Arity
+  | .val _ => 0
+  | .op (arity := arity) _ => arity
+
+inductive Tag? (L : Lang Arity) (A : Type uatom) : Type _
+  | sym (a : A) : Tag? L A
+  | val (c : L.Val) : Tag? L A
+  | op {arity} (o : L.Op arity) : Tag? L A
+
+@[simp]
+def Tag?.arity? {L : Lang Arity} {A : Type uatom} : Tag? L A → WithZero Arity
+  | .op (arity := arity) _ => arity
+  | _ => 0
+
+end Lang
+
 variable {L : STm.Lang Arity}
 
 variable {A A₁ A₂ A₃}
@@ -30,10 +53,11 @@ def arity? : STm L A → Option Arity
   | .op (arity := arity) _ _ => some arity
   | _ => none
 
--- @[simp]
--- def op? : (e : STm L A) → Option (L.Op? e.arity?)
---   | .op o _ => .some (.op o)
---   | _ => .none
+@[simp]
+def tag? : (e : STm L A) → Option L.Tag
+  | .const c => some (.val c)
+  | .op o _ => some (.op o)
+  | _ => none
 
 -- Coercion
 
@@ -102,6 +126,10 @@ theorem map_sym (f : A₁ → A₂) (a : A₁) :
   f <$> (.sym a : STm L A₁) = .sym (f a) := rfl
 
 @[simp]
+theorem map_const (f : A₁ → A₂) (c : L.Val) :
+  f <$> (.const c : STm L A₁) = .const c := rfl
+
+@[simp]
 theorem map_op (f : A₁ → A₂) {arity} (o : L.Op arity) (es : Ix arity → STm L A₁) :
   f <$> (.op o es : STm L A₁) = .op o (fun i => f <$> es i) := rfl
 
@@ -111,6 +139,10 @@ theorem bind_def (e : STm L A₁) (f : A₁ → STm L A₂) :
 @[simp]
 theorem bind_sym (a : A₁) (f : A₁ → STm L A₂) :
   (.sym a : STm L A₁) >>= f = f a := rfl
+
+@[simp]
+theorem bind_const (c : L.Val) (f : A₁ → STm L A₂) :
+  (.const c : STm L A₁) >>= f = .const c := rfl
 
 @[simp]
 theorem bind_op {arity} (o : L.Op arity) (es : Ix arity → STm L A₁) (f : A₁ → STm L A₂) :

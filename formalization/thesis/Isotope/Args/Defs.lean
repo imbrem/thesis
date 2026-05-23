@@ -1,6 +1,7 @@
 import Mathlib.Data.Nat.Notation
 import Mathlib.Data.Fintype.Basic
 import Mathlib.Logic.Encodable.Basic
+import Mathlib.Algebra.Group.WithOne.Defs
 
 namespace Isotope
 
@@ -11,21 +12,30 @@ class UArgs (Arity : Type uargs) where
 
 namespace UArgs
 
+structure Len (Arity : Type uargs) where
+  arity : Arity
+
 variable {Arity L R : Type uargs}
   [inst : UArgs Arity]
   [instL : UArgs L] [instR : UArgs R]
 
-inductive Ix? : Option Arity → Type _
-  | mk {args : Arity} : Ix args → Ix? (some args)
+inductive Ix? : WithZero Arity → Type _
+  | mk {args : Arity} : Ix args → Ix? args
 
-inductive IxN : Type _
-  | mk {args : Arity} : Ix args → IxN
+instance instWithZero : UArgs (WithZero Arity) where
+  Ix args := Ix? args
+
+inductive LIx (Arity) [inst : UArgs Arity] : Type _
+  | mk {args : Arity} : Ix args → LIx Arity
 
 instance instSum : UArgs (Sum L R) where
   Ix e := e.elim UArgs.Ix UArgs.Ix
 
 instance instProd : UArgs (Prod L R) where
   Ix e := Sum (UArgs.Ix e.1) (UArgs.Ix e.2)
+
+class IxFin (Arity : Type uargs) [inst : UArgs Arity] where
+  finType : ∀ (args : Arity), Fintype (Ix args)
 
 end UArgs
 
@@ -44,10 +54,7 @@ attribute [simp]
 
 namespace Args
 
-export UArgs (Ix Ix?)
-
-class IxFin (Arity : Type uargs) [inst : Args Arity] where
-  finType : ∀ (args : Arity), Fintype (Ix args)
+export UArgs (Ix Ix? LIx IxFin)
 
 section PosList
 
@@ -122,6 +129,30 @@ instance instEmpty : Args Empty where
   posList_getElem_ixPos _ i := by cases i
   ixPos _ := 0
   ixPos_lt_length i := by cases i
+
+variable {Arity : Type uargs} [inst : Args Arity]
+
+instance instWithZero : Args (WithZero Arity) where
+  Ix e := Ix? e
+  posList
+    | 0 => []
+    | (arity : Arity) => (posList arity).map UArgs.Ix?.mk
+  posList_nodup e
+    := by cases e with
+    | zero => simp
+    | coe e =>
+      apply (posList_nodup e).map
+      intro _ _ h; cases h; rfl
+  length_posList_eq_maxPos e
+    := by cases e <;> simp [length_posList_eq_maxPos]
+  maxPos
+    | 0 => 0
+    | (arity : Arity) => maxPos arity
+  posList_getElem_ixPos
+    | (arity : Arity), .mk i => by simp
+  ixPos
+    | .mk i => ixPos i
+  ixPos_lt_length e := by cases e; simp
 
 universe usrc utrg
 

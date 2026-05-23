@@ -12,6 +12,42 @@ variable {A A₁ A₂ A₃}
 
 def Closed (L : STm.Lang Arity) := STm L Empty
 
+namespace Closed
+
+@[match_pattern]
+abbrev const (c : L.Val) : Closed L := STm.const c
+
+@[match_pattern]
+abbrev op {arity} (o : L.Op arity) (es : Ix arity → Closed L)
+  : Closed L := STm.op o es
+
+@[simp]
+def toOpen : Closed L → STm L A
+  | .sym a => nomatch a
+  | .const c => .const c
+  | .op o es => .op o (fun i => (es i).toOpen)
+
+@[simp]
+theorem toOpen_empty (e : Closed L) : e.toOpen (A := Empty) = e
+  := by induction e with
+  | sym a => cases a
+  | _ => simp [*]
+
+theorem toOpen_toOpen (e : Closed L) : toOpen (A := A) (e.toOpen) = e.toOpen
+  := by rw [toOpen_empty]
+
+@[simp]
+theorem map_toOpen (f : A₁ → A₂) (e : Closed L) : f <$> e.toOpen = e.toOpen
+  := by induction e with
+  | sym a => cases a
+  | _ => simp [*]
+
+@[simp]
+theorem map_empty (f : Empty → A) (e : Closed L) : f <$> e = e.toOpen
+  := by rw [<-e.toOpen_empty]; rw [map_toOpen, e.toOpen_empty]
+
+end Closed
+
 inductive Mem (a : A) : STm L A → Prop where
   | sym : Mem a (.sym a)
   | op {arity} {o : L.Op arity} {es : Ix arity → STm L A} :
@@ -32,19 +68,24 @@ variable {a : A} {e : STm L A}
 instance instMembership : Membership A (STm L A) where
   mem e a := Mem a e
 
-inductive IsClosed : STm L A → Prop where
+class inductive IsClosed : STm L A → Prop where
   | const {c} : IsClosed (.const c)
   | op {arity} {o : L.Op arity} {es : Ix arity → STm L A} :
     (∀ i : Ix arity, IsClosed (es i)) → IsClosed (.op o es)
 
-attribute [simp] IsClosed.const
+attribute [instance, simp] IsClosed.const IsClosed.op
 
-inductive IsOpen : STm L A → Prop where
+instance IsClosed.instEmpty {e : STm L A} [instEmpty : IsEmpty A] : IsClosed e
+  := by induction e with
+  | sym a => exact instEmpty.elim a
+  | _ => simp [*]
+
+class inductive IsOpen : STm L A → Prop where
   | sym {a} : IsOpen (.sym a)
   | op {arity} {o : L.Op arity} {es : Ix arity → STm L A} :
     (i : Ix arity) → IsOpen (es i) → IsOpen (.op o es)
 
-attribute [simp] IsOpen.sym
+attribute [instance, simp] IsOpen.sym IsOpen.op
 
 theorem Mem.open (h : a ∈ e) : IsOpen e
   := by induction h <;> constructor <;> assumption
@@ -96,6 +137,34 @@ theorem IsClosed.of_not_mem (h : ∀ a, a ∉ e) : IsClosed e
 
 theorem IsClosed.not_mem_iff : IsClosed e ↔ ∀ a, a ∉ e
   := ⟨fun h _ => h.not_mem, of_not_mem⟩
+
+def mapEmpty {A B} (e : STm L A) [hc : IsClosed e] : STm L B
+  :=
+  let rec f : ∀ {A} (e : STm L A), IsClosed e -> STm L B
+    := fun e instClosed => match e with
+    | .sym _ => nomatch instClosed
+    | .const c => .const c
+    | .op o es => .op o (fun i => f (es i) (instClosed.arg i))
+  f e hc
+
+@[simp]
+theorem mapEmpty_const {A B}
+  (c : L.Val) :
+  mapEmpty (A := A) (B := B) (.const c) = .const c := rfl
+
+@[simp]
+theorem mapEmpty_op {A B} {arity} (o : L.Op arity) (es : Ix arity → STm L A)
+  [hc : IsClosed (.op o es)] :
+  mapEmpty (A := A) (B := B) (.op o es) =
+    .op o (fun i => mapEmpty (hc := hc.arg i) (es i))
+  := rfl
+
+@[simp]
+theorem mapEmpty_id (e : STm L A) (hc : IsClosed e) :
+  mapEmpty (B := A) e = e := by
+  induction e with
+  | sym => cases hc
+  | _ => simp [*]
 
 theorem IsOpen.not_const : ¬ IsOpen (.const c : STm L A)
   := fun h => nomatch h
