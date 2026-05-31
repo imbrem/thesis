@@ -1,6 +1,7 @@
 // Thesis template: title page, statement of originality, TOC, and document setup.
 
 #import "@preview/ctheorems:1.1.3": thmrules
+#import "/lib/template.typ": _nesting-depth, thesis-info
 
 #let statement-of-originality = align(center + horizon, read("statement-of-originality.txt"))
 
@@ -41,11 +42,12 @@
 #let thesis(
   title: none,
   subtitle: none,
-  author: none,
-  date: none,
+  author: thesis-info.author,
+  date: thesis-info.date,
   logo: cambridge-logo,
   body,
 ) = {
+  _nesting-depth.update(n => n + 1)
   set document(title: title, author: author, date: date)
   set text(lang: "en")
   set heading(numbering: "1.")
@@ -69,6 +71,7 @@
 
   // --- Body ---
   body
+  _nesting-depth.update(n => n - 1)
 }
 
 /// Show rule for appendix sections.

@@ -4,6 +4,11 @@ namespace Isotope
 
 universe ua
 
+inductive SExp2 (A : Type ua) : Type ua where
+  | atom : A → SExp2 A
+  | pair : SExp2 A → SExp2 A → SExp2 A
+  | nil : SExp2 A
+
 inductive SExp (A : Type ua) : Type ua where
   | atom : A → SExp A
   | par: {length : ℕ} → (Fin length → SExp A) → SExp A
