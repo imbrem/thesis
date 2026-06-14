@@ -42,14 +42,20 @@ $
 #let ops = $O$
 #let vals = $V$
 #let types = $cal(T)$
+#let ctxts(types, vars: vars) = $ms("Ctx")_vars (types)$
+
+#let cvty(ctx) = $sans("pty")(ctx)$
 
 // Grammars
-#let sexp1(ops, vars: none) = $ms("STm")_vars (ops)$
+#let sexp1(ops, vals, vars: none) = $ms("STm")_vars (ops, vals)$
 #let csexp1(ops) = $ms("STm")_∅ (ops)$
 
 #let ctx(types, vars: none) = $ms("Ctx")_vars (types)$
 
+#let opty(op, inputs, output) = $op : inputs -> output$
 #let stty(inputs, op, outputs) = $op : inputs -> outputs$
+
+#let prfn = $⇸$
 
 #import "/lib/todos.typ": todo
 
@@ -62,7 +68,7 @@ $
 
 
 #let fv(sexp) = $sans("use")(sexp)$
-#let ecv(ectx) = $sans("def")(ectx)$
+#let cv(ctx) = $sans("def")(ctx)$
 
 #let evop(func) = $sans("ev")(func)$
 #let stev(expr) = $sans("ev")(expr)$

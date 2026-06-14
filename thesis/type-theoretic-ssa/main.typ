@@ -206,4 +206,18 @@ hence, to validate that it is in fact the "right" semantics, we'll show that:
 
 Let's get started!
 
-#include "s-expressions/main.typ"
+#include "basic-arithmetic/main.typ"
+
+#todo[
+
+  Writing plan:
+
+  - Write out basic arithmetic definitions
+
+  - Write out effectful definitions
+
+  - Write out iter-definitions...
+
+  - Or should we _start_ with $λ$-iter... just following the paper...
+
+]

@@ -34,21 +34,121 @@ in particular, we don't support _partial application_,
 like $sexp(sexp(ms("add"), 2), 3)$,
 since that would require $f = sexp(ms("add"), 2)$ to be a compound expression.
 
-Formally, we define our _syntax_ as follows:
+Formally, we define our untyped _syntax_ as follows:
 
 #definition("First-order S-expressions")[
-  fixing
+  Fixing
   - a set of _variables_ $x ∈ vars$
   - a set of _operations_ $f ∈ ops$
   - a set of _constants_ $c ∈ vals$
   we define the set of _first-order S-expressions_
-  $e ∈ sexp1(ops, vars: vars)$ 
+  $e ∈ sexp1(ops, vals, vars: vars)$ 
   to be given by the grammar
 
   $
     e ::= x | c | sexp(f, e^*)
   $
 ]
+
+We can define a typing relation over this syntax,
+parametrized by a set of types $A ∈ types$,
+in the usual manner. We begin by fixing some conventions:
+
+#definition("Typing Context")[
+  Given a set of variables $vars$ and a set of types $types$,
+  we define the set of _contexts_
+  $Γ : ctxts(types, vars: vars)$ 
+  to be the set of lists of bindings $x : A$,
+  given by the grammar
+  $
+    Γ ::= · | Γ, x : A text("where") x ∉ cv(Γ)
+  $
+  Here, $cv(Γ)$ denotes the set of _defined variables_ in $Γ$,
+  defined as
+  #def-set(
+    $cv(· = ∅)$,
+    $cv(#$Γ, x : A$) = cv(Γ) ∪ {x}$
+  )
+]
+
+Given a context $Γ$, 
+we can hence define a partial function from variables $vars$
+to types $types$ as follows:
+
+#def-set(
+  $(cvty(Γ), x : A)(x) := A$,
+  $cvty(#$Γ, y : A$)(x) := cvty(Γ)(x) text("where") x ∈ cv(Γ)$
+)
+
+It follows that we can view a context $Γ$ as isomorphic to:
+
+- a _finitely supported partial function_ 
+  $cvty(Γ) : vars pto types$
+  -- where the support of $Γ$ is the set of defined variables $cv(Γ)$
+
+- a _total order_ on the set of defined variables $cv(Γ)$
+  -- given by the order in which they appear in the context
+
+In general, we'll define $Γ(x) := cvty(Γ)(x)$.
+
+#definition("Typed Constants")[
+  We define a set of _typed constants_ $c ∈ vals$ 
+  to be a set $vals$ equipped with a _typing relation_ $vals prfn types$
+  -- written $c : A$ to mean "$c$ has type $A$".
+]
+
+Note that constants are typed with a _relation_
+-- 
+that is, 
+the same constant $c$ can be assigned multiple types $A, B, C$.
+
+#definition("Typed Operations")[
+  We define a set of _typed operations_ $f ∈ ops$
+  to be a set $ops$ equipped with a _typing relation_
+  $ops × types^* prfn types$
+  -- written $opty(f, [A_1,...,A_m], B)$
+  to mean "$f$ takes inputs $[A_1,...,A_m]$ to output $B$".
+]
+
+We've now got what we need to define a 
+well-typed first-order S-expressions:
+
+#definition("Typed First-order S-expressions")[
+  Fixing
+  - a set of _variables_ $x ∈ vars$
+  - a set of _typed operations_ $f ∈ ops$ equipped with a 
+    _typing relation_ $ops × types^* prfn types$
+    --
+    where "$f$ takes inputs $[A_1,...,A_m]$ to output $B$" is
+    written $opty(f, [A_1,...,A_m], B)$
+  - a set of _typed constants_ $c ∈ vals$ equipped with a
+    _typing relation_ $vals prfn types$
+    --
+    where "$c$ has type $A$" is written $c : A$
+  
+  we define a typing relation on first-order S-expressions $e$
+  via the following rules:
+
+  - #todo[Var]
+
+  - #todo[Const]
+
+  - #todo[Op]
+]
+
+#todo[Subtyping, weakening and substitution]
+
+#todo[
+  Define the denotational semantics
+
+  - Pure
+
+  - Monadic
+
+  - Categorical
+]
+
+/*
 
 We say a sexpr is _closed_ if it contains no free variables
 --
@@ -63,6 +163,10 @@ where the _free variables_ $fv(e)$ of a sexpr $e$ are defined as follows:
 )
 
 We'll write the set of closed sexprs as $csexp1(ops)$.
+
+*/
+
+/*
 
 It's easy enough, in the language of simple arithmetic,
 to define what a closed sexpr "means",
@@ -335,3 +439,5 @@ $
 #todo[Equational theory of S-expressions: _purity_]
 
 #todo[Equational theory of S-expressions: _soundness_ and _completeness_]
+
+*/
