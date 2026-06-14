@@ -31,6 +31,12 @@
   #rhs                         
 $
 
+#let rwbad(lhs, rhs) = $
+  #lhs
+  quad quad cancel(-->) quad quad
+  #rhs
+$
+
 // Default sets
 #let vars = $N$
 #let ops = $O$
@@ -65,6 +71,20 @@ $
 #let bsto = $⇓$
 #let sred = $attach(->, tr: *)$
 
+#let rfn = $→$
+#let eqv = $≈$
+
+#let red-seq(..args) = {
+  let parts = args.pos()
+  let result = parts.first()
+  for part in parts.slice(1) {
+    result = $#result --> #part$
+  }
+  $
+  #result
+  $
+}
+
 // TODO: fix this
 #let def-set(..defs) = {
   let parts = defs.pos()
@@ -85,3 +105,12 @@ $
   }
   $(#result)$
 }
+
+#let lang-name(name) = $λ_ms(#name)$
+
+#let larith = lang-name("arith");
+#let lexpr = lang-name("expr");
+#let lop = lang-name("op");
+#let lbb = lang-name("bb");
+#let lareg = lang-name("areg");
+#let lreg = lang-name("reg");

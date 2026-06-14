@@ -1,7 +1,5 @@
 #import "/lib/prelude.typ": *
-#show: chapter
-
-= Introduction
+#show: chapter.with(title: "Introduction")
 
 /* Take 1: */
 

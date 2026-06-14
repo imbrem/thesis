@@ -14,7 +14,8 @@
 
 /// Standalone wrapper for a part (e.g. type-theoretic-ssa/main.typ).
 /// When standalone, shows an article-style title and sets document metadata.
-/// When nested, shifts all headings down by the nesting offset.
+/// When nested, the title becomes a top-level heading and all body headings
+/// are shifted down by the nesting offset.
 #let part(title: none, body) = {
   _nesting-depth.update(n => n + 1)
   set heading(numbering: "1.")
@@ -32,6 +33,9 @@
       }
       body
     } else {
+      if title != none {
+        heading(depth: 1, title)
+      }
       set heading(offset: offset)
       body
     }
@@ -58,6 +62,9 @@
       }
       body
     } else {
+      if title != none {
+        heading(depth: 1, title)
+      }
       set heading(offset: offset)
       body
     }

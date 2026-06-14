@@ -1,7 +1,9 @@
 #import "/lib/prelude.typ": *
-#show: chapter
+#show: chapter.with(title: "Basic Arithmetic")
 
-= Evaluating Arithmetic Expressions
+#quote(block: true, attribution: "TODO")[
+  We'll do it tomorrow
+]
 
 We'll start by giving a formal account of the simplest practical language
 -- that of _first-order_ arithmetic expressions, 

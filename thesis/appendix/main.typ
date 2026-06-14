@@ -1,6 +1,4 @@
 #import "/lib/prelude.typ": *
-#show: chapter
-
-= Sample Appendix
+#show: chapter.with(title: "Sample Appendix")
 
 SAMPLE TEXT
