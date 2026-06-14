@@ -12,6 +12,17 @@
 /// Nesting depth: 0 at top level, incremented by each document wrapper.
 #let _nesting-depth = state("_nesting-depth", 0)
 
+/// Bibliography emitted at the end of a standalone (top-level) part/chapter,
+/// so that `@key` citations resolve when a leaf file is compiled on its own.
+/// Only rendered when the document actually contains citations, to avoid a
+/// stray "Bibliography" heading on chapters that cite nothing.
+#let _standalone-bibliography() = context {
+  if query(ref).any(r => r.element == none) {
+    pagebreak(weak: true)
+    bibliography("/thesis/refs.bib")
+  }
+}
+
 /// Standalone wrapper for a part (e.g. type-theoretic-ssa/main.typ).
 /// When standalone, shows an article-style title and sets document metadata.
 /// When nested, the title becomes a top-level heading and all body headings
@@ -32,6 +43,7 @@
         ]
       }
       body
+      _standalone-bibliography()
     } else {
       if title != none {
         heading(depth: 1, title)
@@ -61,6 +73,7 @@
         ]
       }
       body
+      _standalone-bibliography()
     } else {
       if title != none {
         heading(depth: 1, title)

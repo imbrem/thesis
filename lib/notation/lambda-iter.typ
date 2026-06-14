@@ -28,13 +28,21 @@
 
 // Let-binding: let x = a; b. The binder `x` may itself be a pattern, e.g.
 // `(x, y)`, so this covers both ordinary and destructuring lets.
-#let letx(x, a, b) = $#kw("let") med #x = #a; med #b$
+#let seq = $\; med$
+#let letx(x, a, b) = $#kw("let") med #x = #a seq #b$
 
 // Case-expression: case e { ι_l x : a, ι_r y : b }.
 #let casex(e, x, a, y, b) = $#kw("case") med #e med {linl(#x) lto #a, linr(#y) lto #b}$
 
 // Iteration: iter a { ι_r x : b } -- a tail-controlled loop.
 #let iterx(a, x, b) = $#kw("iter") med #a med {linr(#x) lto #b}$
+
+// --- Instructions ---
+// Source and target of an instruction f ∈ I, and the typing f : A → B that
+// they induce.
+#let isrc(f) = $sans("src")(#f)$
+#let itrg(f) = $sans("trg")(#f)$
+#let instty(f, a, b) = $#f : #a -> #b$
 
 // --- Quantities ---
 // The join-semilattice of usage quantities Q^0 = {0, 1, 1^?, ω^+, ω}.

@@ -17,9 +17,14 @@
 // Render a sequence of `production`s as an aligned three-column table:
 // the metavariables, the production delimiter, and the alternatives.
 //
+// To split a long production over several lines, insert a `linebreak()`
+// between alternatives; continuation lines are prefixed with `cont-sep` so
+// they read as ordinary BNF.
+//
 // Knobs (tweak here to restyle every grammar at once):
 //   delim:        production symbol drawn between lhs and rhs (default `::=`)
 //   alt-sep:      separator drawn between alternatives (default a vertical bar)
+//   cont-sep:     prefix drawn at the start of a continuation line
 //   col-gutter:   horizontal space between the three columns
 //   row-gutter:   vertical space between productions
 //   alts-width:   track sizing for the alternatives column; `1fr` lets long
@@ -28,15 +33,30 @@
   ..prods,
   delim: $::=$,
   alt-sep: $space.med | space.med$,
+  cont-sep: $| space.med$,
   col-gutter: 0.75em,
   row-gutter: 0.7em,
   alts-width: 1fr,
 ) = {
   let render-alts(alts) = {
     let out = ()
-    for (i, a) in alts.enumerate() {
-      if i != 0 { out.push(alt-sep) }
+    let started = false    // emitted an alternative on the current line yet?
+    let line-start = true  // at the beginning of a (continuation) line?
+    for a in alts {
+      if type(a) == content and a.func() == linebreak {
+        out.push(linebreak())
+        started = false
+        line-start = true
+        continue
+      }
+      if started {
+        out.push(alt-sep)
+      } else if line-start and out.len() != 0 {
+        out.push(cont-sep)
+      }
       out.push(a)
+      started = true
+      line-start = false
     }
     out.join()
   }

@@ -15,10 +15,10 @@ we will then show that this language is _equivalent_ to SSA,
 and therefore we'll be able to use it as a tool to more effectively
 give a sound and complete equational, and later refinement, theory for SSA.
 
-== Syntax
+= Syntax
 
 #liter is a standard first-order expression language with branching and
-iteration: a functional analogue of #smallcaps[While].
+iteration: a functional analogue of #smallcaps[Imp]~@winskel1993.
 Its grammar is parametrized by a set of _base types_ $X ∈ cal(X)$
 and a set of _instructions_ $f ∈ cal(I)$.
 To model multiple arguments and control flow,
@@ -32,10 +32,12 @@ Mirroring this, expressions $a, b, c$ consist of
 - _Applications_ $f med a$, consisting of instructions $f ∈ cal(I)$
   applied to an expression $a$
 
-- _Let-bindings_ $#letx($x$, $a$, $b$)$ and _destructuring let-bindings_
-  $#letx($(x, y)$, $a$, $b$)$. We write $a; b$ as syntactic sugar for
-  $#letx($·$, $a$, $b$)$ (i.e., a let-binding where the bound variable is not
-  used in $b$).
+- _Let-bindings_ $#letx($x$, $a$, $b$)$ 
+  and _destructuring let-bindings_ $#letx($(x, y)$, $a$, $b$)$. 
+  
+  We write $a seq b$ as syntactic sugar for
+  $#letx($·$, $a$, $b$)$ 
+  (i.e., a let-binding where the bound variable is not used in $b$).
 
 - _Case-expressions_ $#casex($e$, $x$, $a$, $y$, $b$)$,
   representing branching control-flow
@@ -61,9 +63,11 @@ contexts in @fig-expr-syntax.
       $x$,
       $f med a$,
       letx($x$, $a$, $b$),
+      linebreak(),
       $()$,
       $(a, b)$,
       letx($(x, y)$, $a$, $b$),
+      linebreak(),
       linl($a$),
       linr($b$),
       casex($a$, $x$, $b$, $y$, $c$),
@@ -75,11 +79,116 @@ contexts in @fig-expr-syntax.
   caption: [Syntax for #liter types, expressions, and contexts.],
 ) <fig-expr-syntax>
 
-We can then give typing rules for #liter as follows:
-#todo[give raw typing rules]
+Here, our _contexts_ $Γ$ are finite sequences of variable-type pairs $x : A$,
+with the usual _well-formedness_ condition that no variable appears more than once.
 
-#todo[weakening]
+== Typing
 
-#todo[substitution]
+Our typing judgement is #hasty($Γ$, $a$, $A$),
+read "in the context $Γ$, the expression $a$ has type $A$".
+The rules, given in @fig-expr-typing, are _syntax-directed_:
+there is one rule for each production in our grammar.
+For now, we work over a fixed _signature_ assigning each instruction $f ∈ cal(I)$
+a _source type_ $isrc(f)$ and a _target type_ $itrg(f)$:
 
-#todo[]
+- #smallcaps[var] looks up a variable's type in the context.
+
+- #smallcaps[op] applies an instruction $f$ to an argument, using the
+  instruction's signature given by #smallcaps[inst].
+
+- #smallcaps[let] and #smallcaps[let-pair] bind the result of $a$
+  --
+  either to a single variable or, by destructuring, to a pair of variables
+  --
+  in the body.
+
+- #smallcaps[unit] and #smallcaps[pair] introduce the unit and tensor product;
+  #smallcaps[let-pair] eliminates the latter.
+
+- #smallcaps[inl], #smallcaps[inr], and #smallcaps[case] introduce and
+  eliminate the coproduct, while #smallcaps[abort] eliminates the empty type.
+
+- #smallcaps[iter] types a tail-controlled loop: the body $b$ is evaluated with
+  $x$ bound to the current value of type $A$, and either returns a final value
+  of type $B$ or a new value of type $A$ to loop with.
+
+#let t-var = rule(
+  label: smallcaps("var"),
+  $(x : A) ∈ Γ$,
+  hasty($Γ$, $x$, $A$),
+)
+#let t-inst = rule(
+  label: smallcaps("inst"),
+  $f ∈ cal(I)$, $isrc(f) = A$, $itrg(f) = B$,
+  instty($f$, $A$, $B$),
+)
+#let t-op = rule(
+  label: smallcaps("op"),
+  instty($f$, $A$, $B$), hasty($Γ$, $a$, $A$),
+  hasty($Γ$, $f med a$, $B$),
+)
+#let t-let = rule(
+  label: smallcaps("let"),
+  hasty($Γ$, $a$, $A$), hasty($Γ, x : A$, $b$, $B$),
+  hasty($Γ$, letx($x$, $a$, $b$), $B$),
+)
+#let t-unit = rule(
+  label: smallcaps("unit"),
+  hasty($Γ$, $()$, $tyunit$),
+)
+#let t-pair = rule(
+  label: smallcaps("pair"),
+  hasty($Γ$, $a$, $A$), hasty($Γ$, $b$, $B$),
+  hasty($Γ$, $(a, b)$, $A tytensor B$),
+)
+#let t-let-pair = rule(
+  label: smallcaps("let-pair"),
+  hasty($Γ$, $a$, $A tytensor B$), hasty($Γ, x : A, y : B$, $c$, $C$),
+  hasty($Γ$, letx($(x, y)$, $a$, $c$), $C$),
+)
+#let t-inl = rule(
+  label: smallcaps("inl"),
+  hasty($Γ$, $a$, $A$),
+  hasty($Γ$, linl($a$), $A tysum B$),
+)
+#let t-inr = rule(
+  label: smallcaps("inr"),
+  hasty($Γ$, $b$, $B$),
+  hasty($Γ$, linr($b$), $A tysum B$),
+)
+#let t-abort = rule(
+  label: smallcaps("abort"),
+  hasty($Γ$, $a$, $tyempty$),
+  hasty($Γ$, labort($a$), $C$),
+)
+#let t-case = rule(
+  label: smallcaps("case"),
+  hasty($Γ$, $e$, $A tysum B$),
+  hasty($Γ, x : A$, $a$, $C$),
+  hasty($Γ, y : B$, $b$, $C$),
+  hasty($Γ$, casex($e$, $x$, $a$, $y$, $b$), $C$),
+)
+#let t-iter = rule(
+  label: smallcaps("iter"),
+  hasty($Γ$, $a$, $A$),
+  hasty($Γ, x : A$, $b$, $B tysum A$),
+  hasty($Γ$, iterx($a$, $x$, $b$), $B$),
+)
+
+#figure(
+  rule-set(
+    prooftree(t-var),
+    prooftree(t-inst),
+    prooftree(t-op),
+    prooftree(t-let),
+    prooftree(t-unit),
+    prooftree(t-pair),
+    prooftree(t-let-pair),
+    prooftree(t-inl),
+    prooftree(t-inr),
+    prooftree(t-abort),
+    prooftree(t-case),
+    prooftree(t-iter),
+  ),
+  caption: [Typing rules for #liter.],
+) <fig-expr-typing>
