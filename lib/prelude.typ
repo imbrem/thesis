@@ -9,6 +9,9 @@
 #import "@preview/ctheorems:1.1.3": thmrules
 #import "/lib/theorems.typ": theorem, lemma, corollary, definition, example, remark, proof
 
+#import "/lib/figures/mod.typ": *
+#import "/lib/notation/mod.typ": *
+
 
 #let chapter-quote(
   body,
@@ -120,3 +123,4 @@ $
 #let lbb = lang-name("bb");
 #let lareg = lang-name("areg");
 #let lreg = lang-name("reg");
+#let liter = lang-name("iter");
