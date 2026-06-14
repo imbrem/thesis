@@ -24,6 +24,7 @@
 #let mc(body) = $cal(body)$
 #let mt(body) = $mono(body)$
 #let mb(body) = $bold(body)$
+#let msc = smallcaps
 
 #let seq = $\; med$
 #let lexp(x, a, e) = $ms("let") med #x = #a seq #e$

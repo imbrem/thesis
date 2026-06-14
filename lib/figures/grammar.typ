@@ -14,6 +14,14 @@
   alts: alts.pos(),
 )
 
+// Attach a side condition to a grammar alternative, e.g.
+// `cond($Γ, x : A$, $x ∉ Γ$)` renders as `Γ, x : A  where x ∉ Γ`.
+//   alt:  the alternative the condition qualifies
+//   side: the condition itself
+//   kw:   the connective drawn before the condition (default an italic "where")
+//   gap:  space between the alternative and the connective
+#let cond(alt, side, kw: emph[where], gap: 0.75em) = [#alt#h(gap)#kw #side]
+
 // Render a sequence of `production`s as an aligned three-column table:
 // the metavariables, the production delimiter, and the alternatives.
 //
