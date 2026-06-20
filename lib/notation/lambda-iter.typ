@@ -52,6 +52,26 @@
 // and relaxing types along subtyping.
 #let wkns(g, d) = $#g ⊑ #d$
 
+// --- Substitution ---
+// Substitution typing Γ ⊢ σ ▷ Δ: σ maps the variables of Δ to terms over Γ.
+#let issub(g, s, d) = $#g ⊢ #s ▷ #d$
+// Action [σ]a of a substitution σ on a term a.
+#let subap(s, a) = $[#s] #a$
+
+// --- Effects ---
+// The lattice E of effects, with ⊥ the pure effect and ⊤ the unrestricted one.
+#let effs = $cal(E)$
+#let effpure = $⊥$
+#let efftop = $⊤$
+// The effect of an instruction f.
+#let ieff(f) = $sans("eff")(#f)$
+// The monotone operator E → E giving the effect of iterating an effect.
+#let effiter(e) = $attach(#e, tr: ↺)$
+// Effectful typing Γ ⊢_ε a : A.
+#let hastye(g, e, a, ty) = $#g ⊢_#e #a : #ty$
+// Effectful instruction typing f : A →_ε B.
+#let insttye(f, a, e, b) = $#f : #a ->_#e #b$
+
 // --- Quantities ---
 // The join-semilattice of usage quantities Q^0 = {0, 1, 1^?, ω^+, ω}.
 #let zeroq = $0$        // used zero times

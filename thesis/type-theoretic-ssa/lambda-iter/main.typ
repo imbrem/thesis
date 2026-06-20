@@ -250,3 +250,135 @@ figure: _subtyping_ #subty($A$, $B$) and _context weakening_ #wkns($Γ$, $Δ$).
   ),
   caption: [Typing rules for #liter, including subtyping and weakening.],
 ) <fig-expr-typing>
+
+== Syntactic Metatheory
+
+#todo[explain weakening: it folds context weakening and subtyping on the result type into a single admissible rule]
+
+#lemma("Weakening")[
+  If #wkns($Γ$, $Δ$), #subty($A$, $B$), and #hasty($Δ$, $a$, $A$),
+  then #hasty($Γ$, $a$, $B$).
+]
+
+#todo[explain the substitution typing judgement #issub($Γ$, $σ$, $Δ$): a substitution $σ$ assigns to each variable of $Δ$ a term well-typed over $Γ$]
+
+#let sub-nil = rule(
+  label: msc("nil"),
+  issub($Γ$, $·$, $·$),
+)
+#let sub-cons = rule(
+  label: msc("cons"),
+  issub($Γ$, $σ$, $Δ$), hasty($Γ$, $a$, $A$), $x ∉ σ$,
+  issub($Γ$, $σ, x ↦ a$, $Δ, x : A$),
+)
+
+#figure(
+  rule-set(
+    prooftree(sub-nil),
+    prooftree(sub-cons),
+  ),
+  caption: [Substitution rules for #liter.],
+) <fig-expr-subst>
+
+#todo[the substitution defined here is *syntactic*, not *semantic*: it does not take side-effects into account, so substituting an effectful term for a variable used zero or many times may drop or duplicate its effects. It is sound only for pure terms, and must be revisited once effects are introduced.]
+
+#lemma("Substitution")[
+  If #issub($Γ'$, $σ$, $Γ$) and #hasty($Γ$, $a$, $A$),
+  then #hasty($Γ'$, subap($σ$, $a$), $A$).
+]
+
+- Well typed
+
+- But not semantically valid -- as it discards / duplicates effects
+
+- Usual thing: restrict substitution to values 
+  -- but we want to use substitution to do _algebraic_ reasoning inside a compiler
+
+== Effects
+
+#todo[introduce the effect lattice #effs, with #effpure the pure effect and #efftop the unrestricted effect, ordered by $≤$ with joins $⊔$]
+
+#todo[each instruction $f ∈ cal(I)$ carries an effect #ieff($f$); the effectful judgement #hastye($Γ$, $ε$, $a$, $A$) bounds the effects of $a$ above by $ε$, so pure constructors may be typed at any $ε$]
+
+#todo[#effiter($ε$) is a monotone closure operator on #effs giving the effect of iterating an $ε$-effectful body: extensive ($ε ≤ effiter(ε)$) and idempotent ($effiter(effiter(ε)) = effiter(ε)$)]
+
+#let te-var = rule(
+  label: msc("var"),
+  wkns($Γ$, $x : A$),
+  hastye($Γ$, $ε$, $x$, $A$),
+)
+#let te-inst = rule(
+  label: msc("inst"),
+  $f ∈ cal(I)$, $isrc(f) = A$, $itrg(f) = B$, $ieff(f) ≤ ε$,
+  insttye($f$, $A$, $ε$, $B$),
+)
+#let te-op = rule(
+  label: msc("op"),
+  insttye($f$, $A$, $ε$, $B$), hastye($Γ$, $ε$, $a$, $A$),
+  hastye($Γ$, $ε$, $f med a$, $B$),
+)
+#let te-let = rule(
+  label: msc("let"),
+  hastye($Γ$, $ε$, $a$, $A$), hastye($Γ, x : A$, $ε$, $b$, $B$),
+  hastye($Γ$, $ε$, letx($x$, $a$, $b$), $B$),
+)
+#let te-unit = rule(
+  label: msc("unit"),
+  hastye($Γ$, $ε$, $()$, $tyunit$),
+)
+#let te-pair = rule(
+  label: msc("pair"),
+  hastye($Γ$, $ε$, $a$, $A$), hastye($Γ$, $ε$, $b$, $B$),
+  hastye($Γ$, $ε$, $(a, b)$, $A tytensor B$),
+)
+#let te-let-pair = rule(
+  label: msc("let-pair"),
+  hastye($Γ$, $ε$, $a$, $A tytensor B$), hastye($Γ, x : A, y : B$, $ε$, $c$, $C$),
+  hastye($Γ$, $ε$, letx($(x, y)$, $a$, $c$), $C$),
+)
+#let te-inl = rule(
+  label: msc("inl"),
+  hastye($Γ$, $ε$, $a$, $A$),
+  hastye($Γ$, $ε$, linl($a$), $A tysum B$),
+)
+#let te-inr = rule(
+  label: msc("inr"),
+  hastye($Γ$, $ε$, $b$, $B$),
+  hastye($Γ$, $ε$, linr($b$), $A tysum B$),
+)
+#let te-abort = rule(
+  label: msc("abort"),
+  hastye($Γ$, $ε$, $a$, $tyempty$),
+  hastye($Γ$, $ε$, labort($a$), $C$),
+)
+#let te-case = rule(
+  label: msc("case"),
+  hastye($Γ$, $ε$, $e$, $A tysum B$),
+  hastye($Γ, x : A$, $ε$, $a$, $C$),
+  hastye($Γ, y : B$, $ε$, $b$, $C$),
+  hastye($Γ$, $ε$, casex($e$, $x$, $a$, $y$, $b$), $C$),
+)
+#let te-iter = rule(
+  label: msc("iter"),
+  hastye($Γ$, $ε$, $a$, $A$),
+  hastye($Γ, x : A$, $ε$, $b$, $B tysum A$),
+  hastye($Γ$, effiter($ε$), iterx($a$, $x$, $b$), $B$),
+)
+
+#figure(
+  rule-set(
+    prooftree(te-var),
+    prooftree(te-inst),
+    prooftree(te-op),
+    prooftree(te-let),
+    prooftree(te-unit),
+    prooftree(te-pair),
+    prooftree(te-let-pair),
+    prooftree(te-inl),
+    prooftree(te-inr),
+    prooftree(te-abort),
+    prooftree(te-case),
+    prooftree(te-iter),
+  ),
+  caption: [Effectful typing rules for #liter.],
+) <fig-expr-typing-eff>
