@@ -381,11 +381,6 @@
 
 // --- Binding / let-normalisation (commuting conversions) -------------------
 
-#let eqv-let-eta = rule(
-  label: msc("let-η"),
-  hasty($Γ$, $a$, $A$),
-  eqat($Γ$, letx($x$, $a$, $x$), $a$, $A$),
-)
 #let eqv-let-op = rule(
   label: msc("let-op"),
   instty($f$, $A$, $B$),
@@ -449,6 +444,22 @@
 
 // --- β / η reductions ------------------------------------------------------
 
+// let-β, restricted to a PURE bound expression (Γ ⊢_⊥ a : A). A pure a commutes
+// with everything and may be freely dropped or duplicated, so substituting it is
+// sound with no further side conditions; the effectful, directed generalisation
+// is `ref-let-beta` in the refinement theory.
+#let eqv-let-beta = rule(
+  label: msc("let-β"),
+  hastye($Γ$, $effpure$, $a$, $A$),
+  hasty($Γ, x : A$, $b$, $B$),
+  eqat($Γ$, letx($x$, $a$, $b$), subvar($a$, $x$, $b$), $B$),
+)
+// let-η: a let whose body is just the bound variable is the bound expression.
+#let eqv-let-eta = rule(
+  label: msc("let-η"),
+  hasty($Γ$, $a$, $A$),
+  eqat($Γ$, letx($x$, $a$, $x$), $a$, $A$),
+)
 // Unit η: a unit-typed result is its own sequencing.
 #let eqv-unit = rule(
   label: msc("unit"),
@@ -540,6 +551,102 @@
     iterx($a$, $x$, $b$),
     letx($y$, $a$, iterx($y$, $x$, $b$)),
     $B$),
+)
+
+// --- Pure let-distribution (deriving let-β) ---------------------------------
+// For a PURE bound expression (Γ ⊢_⊥ e : A), `let x = e; -` distributes through
+// every former, exactly following the cases of single-variable substitution
+// `subvar`. Together with `let-η` (the variable-hit case, let x = e; x ≈ e),
+// these derive `let-β` (let x = e; b ≈ [e/x]b) by induction on b.
+
+// Variable (miss): a binding the body does not use is dropped.
+#let eqv-push-var = rule(
+  label: msc("let-ne"),
+  hastye($Γ$, $effpure$, $e$, $A$),
+  hasty($Γ$, $y$, $B$),
+  $x ≠ y$,
+  eqat($Γ$, letx($x$, $e$, $y$), $y$, $B$),
+)
+#let eqv-push-op = rule(
+  label: msc("let-op"),
+  hastye($Γ$, $effpure$, $e$, $A$),
+  instty($f$, $B$, $C$),
+  hasty($Γ, x : A$, $a$, $B$),
+  eqat($Γ$, letx($x$, $e$, $f med a$), $f med (#letx($x$, $e$, $a$))$, $C$),
+)
+#let eqv-push-nil = rule(
+  label: msc("let-nil"),
+  hastye($Γ$, $effpure$, $e$, $A$),
+  eqat($Γ$, letx($x$, $e$, $()$), $()$, $tyunit$),
+)
+#let eqv-push-pair = rule(
+  label: msc("let-pair"),
+  hastye($Γ$, $effpure$, $e$, $A$),
+  hasty($Γ, x : A$, $a$, $B$),
+  hasty($Γ, x : A$, $b$, $C$),
+  eqat($Γ$,
+    letx($x$, $e$, $(a, b)$),
+    $(#letx($x$, $e$, $a$), #letx($x$, $e$, $b$))$,
+    $B tytensor C$),
+)
+#let eqv-push-inl = rule(
+  label: msc("let-inl"),
+  hastye($Γ$, $effpure$, $e$, $A$),
+  hasty($Γ, x : A$, $a$, $B$),
+  eqat($Γ$, letx($x$, $e$, linl($a$)), linl($(#letx($x$, $e$, $a$))$), $B tysum C$),
+)
+#let eqv-push-inr = rule(
+  label: msc("let-inr"),
+  hastye($Γ$, $effpure$, $e$, $A$),
+  hasty($Γ, x : A$, $b$, $C$),
+  eqat($Γ$, letx($x$, $e$, linr($b$)), linr($(#letx($x$, $e$, $b$))$), $B tysum C$),
+)
+#let eqv-push-let = rule(
+  label: msc("let"),
+  hastye($Γ$, $effpure$, $e$, $A$),
+  hasty($Γ, x : A$, $a$, $B$),
+  hasty($Γ, x : A, y : B$, $b$, $C$),
+  eqat($Γ$,
+    letx($x$, $e$, letx($y$, $a$, $b$)),
+    letx($y$, $(#letx($x$, $e$, $a$))$, letx($x$, $e$, $b$)),
+    $C$),
+)
+#let eqv-push-let-pair = rule(
+  label: msc("let-pair"),
+  hastye($Γ$, $effpure$, $e$, $A$),
+  hasty($Γ, x : A$, $a$, $B tytensor C$),
+  hasty($Γ, x : A, y : B, z : C$, $b$, $D$),
+  eqat($Γ$,
+    letx($x$, $e$, letx($(y, z)$, $a$, $b$)),
+    letx($(y, z)$, $(#letx($x$, $e$, $a$))$, letx($x$, $e$, $b$)),
+    $D$),
+)
+#let eqv-push-case = rule(
+  label: msc("case"),
+  hastye($Γ$, $effpure$, $e$, $A$),
+  hasty($Γ, x : A$, $a$, $B tysum C$),
+  hasty($Γ, x : A, y : B$, $b$, $D$),
+  hasty($Γ, x : A, z : C$, $c$, $D$),
+  eqat($Γ$,
+    letx($x$, $e$, casex($a$, $y$, $b$, $z$, $c$)),
+    casex($(#letx($x$, $e$, $a$))$, $y$, letx($x$, $e$, $b$), $z$, letx($x$, $e$, $c$)),
+    $D$),
+)
+#let eqv-push-abort = rule(
+  label: msc("abort"),
+  hastye($Γ$, $effpure$, $e$, $A$),
+  hasty($Γ, x : A$, $a$, $tyempty$),
+  eqat($Γ$, letx($x$, $e$, labort($a$)), labort($(#letx($x$, $e$, $a$))$), $C$),
+)
+#let eqv-push-iter = rule(
+  label: msc("iter"),
+  hastye($Γ$, $effpure$, $e$, $A$),
+  hasty($Γ, x : A$, $a$, $B$),
+  hasty($Γ, x : A, y : B$, $b$, $C tysum B$),
+  eqat($Γ$,
+    letx($x$, $e$, iterx($a$, $y$, $b$)),
+    iterx($(#letx($x$, $e$, $a$))$, $y$, letx($x$, $e$, $b$)),
+    $C$),
 )
 
 // ===========================================================================
@@ -668,14 +775,21 @@
 )
 // The equational axioms, split by former: let rules, case (+ empty/abort)
 // rules, and the fixpoint (Conway iteration) rules.
-#let eqv-let-rules = (eqv-unit, eqv-pair-beta)
+#let eqv-let-rules = (eqv-let-beta, eqv-let-eta, eqv-unit, eqv-pair-beta)
 #let eqv-case-rules = (eqv-case-betal, eqv-case-betar, eqv-case-eta, eqv-init)
 #let eqv-fixpoint-rules = (eqv-iter-beta, eqv-iter-nat, eqv-iter-codiag)
+
+// The pure let-distribution rules (one per substitution case) that derive let-β.
+#let eqv-push-rules = (
+  eqv-push-var, eqv-push-op, eqv-push-nil, eqv-push-pair,
+  eqv-push-inl, eqv-push-inr, eqv-push-let, eqv-push-let-pair,
+  eqv-push-case, eqv-push-abort, eqv-push-iter,
+)
 
 // Commuting conversions / η / bind laws, kept available but not part of the
 // core βη presentation above.
 #let eqv-binding-rules = (
-  eqv-let-eta, eqv-let-op, eqv-let-let, eqv-let-let-pair,
+  eqv-let-op, eqv-let-let, eqv-let-let-pair,
   eqv-let-case, eqv-let-pair-bind, eqv-case-bind,
   eqv-pair-eta, eqv-iter-bind,
 )

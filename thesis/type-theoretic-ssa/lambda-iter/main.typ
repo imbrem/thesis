@@ -1,5 +1,6 @@
 #import "/lib/prelude.typ": *
 #import "/thesis/type-theoretic-ssa/lambda-iter/theory.typ": *
+#import "/thesis/type-theoretic-ssa/lambda-iter/semantics.typ": *
 #show: chapter.with(title: "Iteration Expressions")
 
 SSA is a useful IR because it enables complex, 
@@ -331,6 +332,12 @@ _fixpoint rules_ in @fig-expr-eqv-fixpoint.
   caption: [Let rules for the equational theory of #liter.],
 ) <fig-expr-eqv-let>
 
+#todo[pure let rules]
+
+#figure(
+  rules-block(eqv-push-rules),
+  caption: [Pure let-distribution for #liter],
+) <fig-expr-eqv-push>
 
 #todo[explain each case-rule]
 
@@ -395,14 +402,124 @@ duplicate -- is exactly what motivates the substructural type system.
 
 = Semantics
 
+/*
+
+CLAUDE:
+
+So far #liter is pure syntax: we have said how to _rewrite_ programs, but not
+what they _mean_.
+We now give a _denotational semantics_, interpreting each well-typed term as a
+computation in a monad of #emph[interaction trees]~@xia2020itrees.
+This is, deliberately, the easy way in: the monadic semantics is exactly the
+_Kleisli_ reading of the categorical semantics we give in the next chapter,
+where it reappears as one instance of a general construction over a
+Freyd--Elgot category.
+
+*/
+
 == Interaction Trees
 
-#todo[this]
+/*
+
+CLAUDE:
+
+An _interaction tree_ #itree($A$) is a (possibly infinite) tree that records
+how a computation interacts with its environment before -- if ever -- returning
+a value of type $A$.
+It is the free completely-iterative monad on the _signature of events_ a program
+may perform; for #liter, the events are the instructions $f ∈ cal(I)$, each of
+which takes an input and awaits a response.
+The datatype, given coinductively in @fig-itree, has three node shapes:
+
+- #iret($a$) returns the value $a : A$ and stops;
+
+- #itau($t$) takes a single silent step and continues as $t$ -- these guard the
+  productive-but-nonterminating computations that an #emph[iter] loop can
+  produce;
+
+- #ivis($e$, $k$) performs the event $e$ and resumes as $k med r$ once the
+  environment supplies a response $r$.
+
+*/
+
+#figure(
+  grammar(
+    production(itree($A$), iret($a$), itau($t$), ivis($e$, $k$)),
+  ),
+  caption: [The interaction-tree datatype #itree($A$), defined coinductively.],
+) <fig-itree>
+
+/*
+
+CLAUDE:
+
+Interaction trees form a monad: #kret($a$) is the leaf #iret($a$), and bind
+$t ≫= k$ grafts $k$ onto every #ms[Ret] leaf of $t$, leaving the event
+structure untouched (@fig-itree-monad).
+Crucially, they also support _iteration_: given a loop body
+$f : A → itree(B tysum A)$, the operator #kiter($f$) runs $f$ repeatedly,
+emitting a #ms[Tau] step on each #emph[continue] ($iota_r$) and returning on
+the first #emph[exit] ($iota_l$).
+This makes #itree($-$) a strong _Elgot monad_~@xia2020itrees, which is precisely
+the structure we need to interpret every former of #liter -- including loops --
+without leaving the monad.
+
+*/
+
+#figure(
+  rule-set(..itree-op-eqns),
+  caption: [Return, bind ($≫=$), and iteration for interaction trees.],
+) <fig-itree-monad>
 
 == Monadic Semantics
 
-#todo[this]
+/*
 
-== Categorical Semantics
+CLAUDE
+
+We interpret each type $A$ as a set #sem($A$) of values and each context $Γ$ as
+the set #sem($Γ$) of environments assigning a value to every variable
+(@fig-sem-ty); a base type $X$ is interpreted by a set fixed by the model, and
+an instruction $f$ by a Kleisli map $#sem($f$) : #sem($isrc(f)$) → itree(#sem($itrg(f)$))$.
+
+*/
+
+#figure(
+  stack(
+    spacing: 1.5em,
+    rule-set(..sem-ty-eqns),
+    rule-set(..sem-ctx-eqns),
+  ),
+  caption: [Interpretation of #liter types and contexts as sets.],
+) <fig-sem-ty>
+
+/*
+
+CLAUDE:
+
+A term-in-context #hasty($Γ$, $a$, $A$) then denotes a function
+$#sem($a$) : #sem($Γ$) → itree(#sem($A$))$
+-- a #emph[Kleisli arrow] from environments to interaction trees -- defined by
+recursion on the typing derivation in @fig-sem-tm.
+Each former is interpreted by the corresponding monad operation: sequencing a
+#emph[let] is bind, a #emph[case] branches on the returned value, and an
+#emph[iter] is the Elgot #kiter operator.
+Effects never appear in the interpretation itself: a computation's effects are
+recorded structurally, as the #ms[Vis] nodes of the tree it returns.
+
+*/
+
+#figure(
+  rule-set(..sem-tm-eqns),
+  caption: [Monadic semantics of #liter terms, where $γ ∈ #sem($Γ$)$.],
+) <fig-sem-tm>
+
+#todo[state soundness: $#eqat($Γ$, $a$, $b$, $A$)$ implies $#sem($a$) = #sem($b$)$]
+
+== Refinement
+
+#todo[this -- define ordered monads, etc.]
+
+= Categorical Semantics
 
 #todo[this]
