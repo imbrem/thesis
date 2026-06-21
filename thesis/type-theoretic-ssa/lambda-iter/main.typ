@@ -440,8 +440,6 @@ Syntactic substitution tells me that the term is _well-typed_...
   hastye($Γ$, effiter($ε$), iterx($a$, $x$, $b$), $B$),
 )
 
-#todo[fix typesetting here]
-
 #figure(
   rule-set(
     prooftree(te-var),

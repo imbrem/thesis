@@ -67,10 +67,11 @@
 #let ieff(f) = $sans("eff")(#f)$
 // The monotone operator E → E giving the effect of iterating an effect.
 #let effiter(e) = $attach(#e, tr: ↺)$
-// Effectful typing Γ ⊢_ε a : A.
-#let hastye(g, e, a, ty) = $#g ⊢_#e #a : #ty$
-// Effectful instruction typing f : A →_ε B.
-#let insttye(f, a, e, b) = $#f : #a ->_#e #b$
+// Effectful typing Γ ⊢_ε a : A. The effect rides the bottom-right corner of
+// the turnstile (via `attach`) rather than tucking under it as a subscript.
+#let hastye(g, e, a, ty) = $#g attach(⊢, br: #e) #a : #ty$
+// Effectful instruction typing f : A →_ε B, effect on the arrow's bottom-right.
+#let insttye(f, a, e, b) = $#f : #a attach(->, br: #e) #b$
 
 // --- Quantities ---
 // The join-semilattice of usage quantities Q^0 = {0, 1, 1^?, ω^+, ω}.
