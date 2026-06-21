@@ -98,6 +98,10 @@ This language is intentionally very minimal -- in particular:
     )
   $
 
+#todo[
+  Add note about locally-nameless syntax
+]
+
 == Typing
 
 Our typing judgement is #hasty($Γ$, $a$, $A$),
@@ -304,6 +308,48 @@ satisfy _syntactic weakening_, as stated below:
   then #hasty($Γ$, $a$, $B$).
 ]
 
+== Substitution
+
+Recall that our high-level goal here is to develop a syntactic equational theory to reason about compiler optimizations on #liter -- that means, we want to be able to introduce a judgement
+
+$
+  #eqat($Γ$, $a_1$, $a_2$, $A$)
+$
+
+meaning that replacing $a_1$ with $a_2$ shouldn't change observable program behaviour.
+
+In particular, this means that we want $a_1$ and $a_2$ to be indistinguishable in any _program context_ -- that is, we want, for all $#hasty($Γ, x : A$, $b$, $B$)$
+$
+  eqat(Γ, subvar(a_1, x, b), subvar(a_2, x, b), B)
+$
+
+where $subvar(a, x, b)$ denotes replacing all occurrences of $x$ in $b$ with $a$
+--
+i.e.,
+
+#todo[improve segue here]
+
+#rule-set(
+  $subvar(a, x, x) = a$,
+  $subvar(a, x, y) = y "where" x ≠ y$,
+  $subvar(a, x, f med b) = f med subvar(a, x, b)$,
+  $subvar(a, x, letx(x, b, c)) = letx(x, subvar(a, x, b), subvar(a, x, c))$,
+  $subvar(a, x, letx((x, y), b, c)) 
+    = letx((x, y), subvar(a, x, b), subvar(a, x, c))$,
+  $subvar(a, x, ()) = ()$,
+  $subvar(a, x, (b, c)) = (subvar(a, x, b), subvar(a, x, c))$,
+  $subvar(a, x, linl(b)) = linl(subvar(a, x, b))$,
+  $subvar(a, x, linr(b)) = linr(subvar(a, x, b))$,
+  $subvar(a, x, casex(e, x, a, y, b)) 
+    = casex(subvar(a, x, e), x, subvar(a, x, a), y, subvar(a, x, b))$,
+  $subvar(a, x, labort(a)) = labort(subvar(a, x, a))$,
+  $subvar(a, x, iterx(a, x, b)) = iterx(subvar(a, x, a), x, subvar(a, x, b))$,
+)
+
+#todo["both sides are well-typed"]
+
+#todo[segue to _parallel_ substitution; rewrite below]
+
 To be able to reason about algebraic rewrites, however,
 we need to make sure that each side of the equation is at least _well-typed_
 so that we can assign it a meaning at all, before worrying
@@ -338,21 +384,22 @@ partial function from pairs $σ, a$ to terms $subap(σ, a)$
 in the usual manner as follows:
 
 #rule-set(
-  $[(σ, x ↦ a)]x = a$,
-  $[(σ, y ↦ a)]x = [σ]x "where" x ≠ y$,
-  $[σ](f med a) = f med [σ]a$,
-  $[σ](#letx($x$, $a$, $b$)) = #letx($x$, $[σ]a$, $[σ, x ↦ x]b$)$,
-  $[σ](#letx($(x, y)$, $a$, $b$)) 
-    = #letx($(x, y)$, $[σ]a$, $[σ, x ↦ x, y ↦ y]b$)$,
-  $[σ]() = ()$,
-  $[σ](a, b) = ([σ]a, [σ]b)$,
-  $[σ](linl(a)) = linl([σ]a)$,
-  $[σ](linr(b)) = linr([σ]b)$,
-  $[σ](#casex($e$, $x$, $a$, $y$, $b$)) 
-    = #casex($[σ]e$, $x$, $[σ, x ↦ x]a$, $y$, $[σ, y ↦ y]b$)$,
-  $[σ](#labort($a$)) = #labort($[σ]a$)$,
-  $[σ](#iterx($a$, $x$, $b$)) = #iterx($[σ]a$, $x$, $[σ, x ↦ x]b$)$
+  $subap(subcons(σ, x, a), x) = a$,
+  $subap(subcons(σ, y, a), x) = subap(σ, x) "where" x ≠ y$,
+  $subap(σ, f med a) = f med subap(σ, a)$,
+  $subap(σ, letx(x, a, b)) = letx(x, subap(σ, a), subap(subcons(σ, x, x), b))$,
+  $subap(σ, letx((x, y), a, b)) 
+    = letx((x, y), subap(σ, a), subap(subcons(subcons(σ, x, x), y, y), b))$,
+  $subap(σ, ()) = ()$,
+  $subap(σ, (a, b)) = (subap(σ, a), subap(σ, b))$,
+  $subap(σ, linl(a)) = linl(subap(σ, a))$,
+  $subap(σ, linr(b)) = linr(subap(σ, b))$,
+  $subap(σ, casex(e, x, a, y, b)) 
+    = casex(subap(σ, e), x, subap(subcons(σ, x, x), a), y, subap(subcons(σ, y, y), b))$,
+  $subap(σ, labort(a)) = labort(subap(σ, a))$,
+  $subap(σ, iterx(a, x, b)) = iterx(subap(σ, a), x, subap(subcons(σ, x, x), b))$
 )
+
 
 We can then state _syntactic substition_ as usual:
 

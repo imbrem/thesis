@@ -55,8 +55,15 @@
 // --- Substitution ---
 // Substitution typing Γ ⊢ σ ▷ Δ: σ maps the variables of Δ to terms over Γ.
 #let issub(g, s, d) = $#g ⊢ #s ▷ #d$
+// Substitute a variable x with a term a in a term b: [a/x]b
+#let subvar(a, x, b) = $[#a slash #x] #b$
 // Action [σ]a of a substitution σ on a term a.
 #let subap(s, a) = $[#s] #a$
+// Extend a substitution σ with a new mapping x ↦ a: (σ, x ↦ a).
+#let subcons(s, x, a) = $(#s, #x ↦ #a)$
+
+// --- Equational theory ---
+#let eqat(ctx, exp1, exp2, ty) = $ctx ⊢ exp1 ≈ exp2 : ty$
 
 // --- Effects ---
 // The lattice E of effects, with ⊥ the pure effect and ⊤ the unrestricted one.
