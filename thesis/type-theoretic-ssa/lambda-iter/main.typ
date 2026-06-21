@@ -1,4 +1,5 @@
 #import "/lib/prelude.typ": *
+#import "/thesis/type-theoretic-ssa/lambda-iter/theory.typ": *
 #show: chapter.with(title: "Iteration Expressions")
 
 SSA is a useful IR because it enables complex, 
@@ -165,108 +166,6 @@ In particular:
   $x$ bound to the current value of type $A$, and either returns a final value
   of type $B$ or a new value of type $A$ to loop with.
 
-#let s-base = rule(
-  label: msc("base"),
-  $X ≤ Y$,
-  subty($X$, $Y$),
-)
-#let s-tensor = rule(
-  label: msc("tensor"),
-  subty($A$, $A'$), subty($B$, $B'$),
-  subty($A tytensor B$, $A' tytensor B'$),
-)
-#let s-sum = rule(
-  label: msc("sum"),
-  subty($A$, $A'$), subty($B$, $B'$),
-  subty($A tysum B$, $A' tysum B'$),
-)
-#let s-initial = rule(
-  label: msc("initial"),
-  subty($tyempty$, $A$),
-)
-#let s-terminal = rule(
-  label: msc("terminal"),
-  subty($A$, $tyunit$),
-)
-
-#let w-nil = rule(
-  label: msc("nil"),
-  wkns($·$, $·$),
-)
-#let w-cons = rule(
-  label: msc("cons"),
-  wkns($Γ$, $Δ$), subty($A$, $B$),
-  wkns($Γ, x : A$, $Δ, x : B$),
-)
-#let w-drop = rule(
-  label: msc("drop"),
-  wkns($Γ$, $Δ$),
-  wkns($Γ, x : A$, $Δ$),
-)
-
-#let t-var = rule(
-  label: msc("var"),
-  wkns($Γ$, $x : A$),
-  hasty($Γ$, $x$, $A$),
-)
-#let t-inst = rule(
-  label: msc("inst"),
-  $f ∈ cal(I)$, $subty(A, isrc(f))$, $subty(itrg(f), B)$,
-  instty($f$, $A$, $B$),
-)
-#let t-op = rule(
-  label: msc("op"),
-  instty($f$, $A$, $B$), hasty($Γ$, $a$, $A$),
-  hasty($Γ$, $f med a$, $B$),
-)
-#let t-let = rule(
-  label: msc("let"),
-  hasty($Γ$, $a$, $A$), hasty($Γ, x : A$, $b$, $B$),
-  hasty($Γ$, letx($x$, $a$, $b$), $B$),
-)
-#let t-unit = rule(
-  label: msc("unit"),
-  hasty($Γ$, $()$, $tyunit$),
-)
-#let t-pair = rule(
-  label: msc("pair"),
-  hasty($Γ$, $a$, $A$), hasty($Γ$, $b$, $B$),
-  hasty($Γ$, $(a, b)$, $A tytensor B$),
-)
-#let t-let-pair = rule(
-  label: msc("let-pair"),
-  hasty($Γ$, $a$, $A tytensor B$), hasty($Γ, x : A, y : B$, $c$, $C$),
-  hasty($Γ$, letx($(x, y)$, $a$, $c$), $C$),
-)
-#let t-inl = rule(
-  label: msc("inl"),
-  hasty($Γ$, $a$, $A$),
-  hasty($Γ$, linl($a$), $A tysum B$),
-)
-#let t-inr = rule(
-  label: msc("inr"),
-  hasty($Γ$, $b$, $B$),
-  hasty($Γ$, linr($b$), $A tysum B$),
-)
-#let t-abort = rule(
-  label: msc("abort"),
-  hasty($Γ$, $a$, $tyempty$),
-  hasty($Γ$, labort($a$), $C$),
-)
-#let t-case = rule(
-  label: msc("case"),
-  hasty($Γ$, $e$, $A tysum B$),
-  hasty($Γ, x : A$, $a$, $C$),
-  hasty($Γ, y : B$, $b$, $C$),
-  hasty($Γ$, casex($e$, $x$, $a$, $y$, $b$), $C$),
-)
-#let t-iter = rule(
-  label: msc("iter"),
-  hasty($Γ$, $a$, $A$),
-  hasty($Γ, x : A$, $b$, $B tysum A$),
-  hasty($Γ$, iterx($a$, $x$, $b$), $B$),
-)
-
 #figure(
   stack(
     spacing: 1.5em,
@@ -329,22 +228,7 @@ i.e.,
 
 #todo[improve segue here]
 
-#rule-set(
-  $subvar(a, x, x) = a$,
-  $subvar(a, x, y) = y "where" x ≠ y$,
-  $subvar(a, x, f med b) = f med subvar(a, x, b)$,
-  $subvar(a, x, letx(x, b, c)) = letx(x, subvar(a, x, b), subvar(a, x, c))$,
-  $subvar(a, x, letx((x, y), b, c)) 
-    = letx((x, y), subvar(a, x, b), subvar(a, x, c))$,
-  $subvar(a, x, ()) = ()$,
-  $subvar(a, x, (b, c)) = (subvar(a, x, b), subvar(a, x, c))$,
-  $subvar(a, x, linl(b)) = linl(subvar(a, x, b))$,
-  $subvar(a, x, linr(b)) = linr(subvar(a, x, b))$,
-  $subvar(a, x, casex(e, x, a, y, b)) 
-    = casex(subvar(a, x, e), x, subvar(a, x, a), y, subvar(a, x, b))$,
-  $subvar(a, x, labort(a)) = labort(subvar(a, x, a))$,
-  $subvar(a, x, iterx(a, x, b)) = iterx(subvar(a, x, a), x, subvar(a, x, b))$,
-)
+#rule-set(..subst-var-eqns)
 
 #todo["both sides are well-typed"]
 
@@ -361,16 +245,6 @@ $issub(Γ, σ, Δ)$ as an ordered mapping from variables
 $#wkns($Δ$, $x : A$)$ to well-typed values $hasty(Γ, a, A)$
 -- as described in @fig-expr-subst.
 
-#let sub-nil = rule(
-  label: msc("nil"),
-  issub($Γ$, $·$, $·$),
-)
-#let sub-cons = rule(
-  label: msc("cons"),
-  issub($Γ$, $σ$, $Δ$), hasty($Γ$, $a$, $A$), $x ∉ σ$,
-  issub($Γ$, $σ, x ↦ a$, $Δ, x : A$),
-)
-
 #figure(
   rule-set(
     prooftree(sub-nil),
@@ -383,22 +257,7 @@ We can then define substitution of #liter expressions as a
 partial function from pairs $σ, a$ to terms $subap(σ, a)$
 in the usual manner as follows:
 
-#rule-set(
-  $subap(subcons(σ, x, a), x) = a$,
-  $subap(subcons(σ, y, a), x) = subap(σ, x) "where" x ≠ y$,
-  $subap(σ, f med a) = f med subap(σ, a)$,
-  $subap(σ, letx(x, a, b)) = letx(x, subap(σ, a), subap(subcons(σ, x, x), b))$,
-  $subap(σ, letx((x, y), a, b)) 
-    = letx((x, y), subap(σ, a), subap(subcons(subcons(σ, x, x), y, y), b))$,
-  $subap(σ, ()) = ()$,
-  $subap(σ, (a, b)) = (subap(σ, a), subap(σ, b))$,
-  $subap(σ, linl(a)) = linl(subap(σ, a))$,
-  $subap(σ, linr(b)) = linr(subap(σ, b))$,
-  $subap(σ, casex(e, x, a, y, b)) 
-    = casex(subap(σ, e), x, subap(subcons(σ, x, x), a), y, subap(subcons(σ, y, y), b))$,
-  $subap(σ, labort(a)) = labort(subap(σ, a))$,
-  $subap(σ, iterx(a, x, b)) = iterx(subap(σ, a), x, subap(subcons(σ, x, x), b))$
-)
+#rule-set(..subst-par-eqns)
 
 
 We can then state _syntactic substition_ as usual:
@@ -424,69 +283,6 @@ Syntactic substitution tells me that the term is _well-typed_...
 
 #todo[#effiter($ε$) is a monotone closure operator on #effs giving the effect of iterating an $ε$-effectful body: extensive ($ε ≤ effiter(ε)$) and idempotent ($effiter(effiter(ε)) = effiter(ε)$)]
 
-#let te-var = rule(
-  label: msc("var"),
-  wkns($Γ$, $x : A$),
-  hastye($Γ$, $ε$, $x$, $A$),
-)
-#let te-inst = rule(
-  label: msc("inst"),
-  $f ∈ cal(I)$, $isrc(f) = A$, $itrg(f) = B$, $ieff(f) ≤ ε$,
-  insttye($f$, $A$, $ε$, $B$),
-)
-#let te-op = rule(
-  label: msc("op"),
-  insttye($f$, $A$, $ε$, $B$), hastye($Γ$, $ε$, $a$, $A$),
-  hastye($Γ$, $ε$, $f med a$, $B$),
-)
-#let te-let = rule(
-  label: msc("let"),
-  hastye($Γ$, $ε$, $a$, $A$), hastye($Γ, x : A$, $ε$, $b$, $B$),
-  hastye($Γ$, $ε$, letx($x$, $a$, $b$), $B$),
-)
-#let te-unit = rule(
-  label: msc("unit"),
-  hastye($Γ$, $ε$, $()$, $tyunit$),
-)
-#let te-pair = rule(
-  label: msc("pair"),
-  hastye($Γ$, $ε$, $a$, $A$), hastye($Γ$, $ε$, $b$, $B$),
-  hastye($Γ$, $ε$, $(a, b)$, $A tytensor B$),
-)
-#let te-let-pair = rule(
-  label: msc("let-pair"),
-  hastye($Γ$, $ε$, $a$, $A tytensor B$), hastye($Γ, x : A, y : B$, $ε$, $c$, $C$),
-  hastye($Γ$, $ε$, letx($(x, y)$, $a$, $c$), $C$),
-)
-#let te-inl = rule(
-  label: msc("inl"),
-  hastye($Γ$, $ε$, $a$, $A$),
-  hastye($Γ$, $ε$, linl($a$), $A tysum B$),
-)
-#let te-inr = rule(
-  label: msc("inr"),
-  hastye($Γ$, $ε$, $b$, $B$),
-  hastye($Γ$, $ε$, linr($b$), $A tysum B$),
-)
-#let te-abort = rule(
-  label: msc("abort"),
-  hastye($Γ$, $ε$, $a$, $tyempty$),
-  hastye($Γ$, $ε$, labort($a$), $C$),
-)
-#let te-case = rule(
-  label: msc("case"),
-  hastye($Γ$, $ε$, $e$, $A tysum B$),
-  hastye($Γ, x : A$, $ε$, $a$, $C$),
-  hastye($Γ, y : B$, $ε$, $b$, $C$),
-  hastye($Γ$, $ε$, casex($e$, $x$, $a$, $y$, $b$), $C$),
-)
-#let te-iter = rule(
-  label: msc("iter"),
-  hastye($Γ$, $ε$, $a$, $A$),
-  hastye($Γ, x : A$, $ε$, $b$, $B tysum A$),
-  hastye($Γ$, effiter($ε$), iterx($a$, $x$, $b$), $B$),
-)
-
 #figure(
   rule-set(
     prooftree(te-var),
@@ -509,9 +305,93 @@ Syntactic substitution tells me that the term is _well-typed_...
 
 #todo[give equational theory for #liter]
 
+#todo[reword below]
+
+The equational theory of #liter is the least congruence on well-typed
+expressions closed under the axioms below.
+Its congruence rules -- reflexivity, symmetry, transitivity, and one
+compatibility rule per former -- are given in @fig-expr-eqv-cong.
+The axioms themselves are split by former: the _let rules_ in
+@fig-expr-eqv-let, the _case rules_ in @fig-expr-eqv-case, and the
+_fixpoint rules_ in @fig-expr-eqv-fixpoint.
+
+#todo[explain congruence variables]
+
+#figure(
+  rules-block(eqv-congruence-rules),
+  caption: [Congruence rules for the equational theory of #liter.],
+) <fig-expr-eqv-cong>
+
+#todo[relate to single variable substitution]
+
+#todo[explain each let-rule]
+
+#figure(
+  rules-block(eqv-let-rules),
+  caption: [Let rules for the equational theory of #liter.],
+) <fig-expr-eqv-let>
+
+
+#todo[explain each case-rule]
+
+#figure(
+  rules-block(eqv-case-rules),
+  caption: [Case rules for the equational theory of #liter.],
+) <fig-expr-eqv-case>
+
+#todo[explain each fixpoint-rule]
+
+#figure(
+  rules-block(eqv-fixpoint-rules),
+  caption: [Fixpoint rules for the equational theory of #liter.],
+) <fig-expr-eqv-fixpoint>
+
 == Refinement Theory
 
 #todo[give refinement theory for #liter]
+
+#todo[reword below]
+
+Refinement #tref($Γ$, rwsys, $a$, $b$, $A$) is a _directed_ analogue of
+equivalence: a preorder, rather than an equivalence relation, generated by a
+rewrite system #rwsys.
+Its congruence rules are given in @fig-expr-ref-cong.
+Two terms are _R-equivalent_, #treqr($Γ$, rwsys, $a$, $b$, $A$), when each
+refines the other -- that is, when $a ↠ b$ and $b ↠ a$ -- as in
+@fig-expr-ref-equiv.
+Every equational axiom lifts to such a two-way refinement; the theory's only
+genuinely _directed_ rule is directed substitution (#msc[let-β]), given in
+@fig-expr-ref.
+It is gated on two conditions: that the substituted effect $ε$ is a _mover_
+over the body's effect $η$ (so reordering it past $b$ adds no behaviour), and
+that $ε$ has _unrestricted_ quantity $elin(ε) = topq$ (so it may be freely
+dropped or duplicated as $x$'s occurrences in $b$ demand).
+The latter is a blunt instrument: replacing it with a precise account of _how
+many times_ $x$ is used -- affine effects to drop, relevant effects to
+duplicate -- is exactly what motivates the substructural type system.
+#todo[forward-reference the substructural type system chapter here]
+
+#todo[explain congruence rules, rewrite systems]
+
+#figure(
+  rules-block(ref-congruence-rules),
+  caption: [Congruence rules for the refinement theory of #liter.],
+) <fig-expr-ref-cong>
+
+#todo[explain equivalence -- note we don't use a rewrite system above since an equivalence system is a rewrite system but _not_ vice-versa! Note that #rwsys includes effect commutativity -- versus "pure" which always commutes with everything even at the empty #rwsys]
+
+#figure(
+  rules-block(ref-equiv-rules),
+  caption: [Equivalence as mutual refinement with respect to a rewrite system
+    #rwsys.],
+) <fig-expr-ref-equiv>
+
+#todo[explain directed substitution; discuss as an option/a theorem/etc. -- or leave out for now!]
+
+#figure(
+  rules-block(ref-directed-rules),
+  caption: [Directed substitution for the refinement theory of #liter.],
+) <fig-expr-ref>
 
 = Semantics
 

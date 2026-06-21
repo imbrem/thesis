@@ -23,9 +23,8 @@
 //  New judgement / side-condition notation
 // ===========================================================================
 
-// Equivalence judgement Γ ⊢_ε a ≈ b : A. The effect ε rides the turnstile's
-// bottom-right corner, matching `hastye`.
-#let tmeqv(g, e, a, b, ty) = $#g attach(⊢, br: #e) #a ≈ #b : #ty$
+// Equivalence judgement Γ ⊢ a ≈ b : A is the effect-free `eqat` from the
+// notation lib: equivalence and the effect system are deliberately separate.
 
 // Refinement judgement Γ ⊢_R a ↠ b : A ("a is refined by b"). The subscript is
 // the rewrite system R (the base peephole rewrites); the effect lives on the
@@ -36,11 +35,16 @@
 // p = - is b ↠ a. Lets a directed rule and its dual be stated at once.
 #let trefp(g, r, a, b, ty, p) = $#g attach(⊢, br: #r) #a attach(↠, tr: #p) #b : #ty$
 
+// R-relative equivalence Γ ⊢_R a ≈ b : A: mutual R-refinement (a ↠ b and b ↠ a).
+// Distinct from the effect-free equational `eqat`; here ≈ is indexed by R.
+#let treqr(g, r, a, b, ty) = $#g attach(⊢, br: #r) #a ≈ #b : #ty$
+
 // The rewrite-system metavariable.
 #let rwsys = $cal(R)$
 
-// Single-variable substitution [a/x]b: replace x by a in b.
-#let substx(a, x, b) = $[#a slash #x] #b$
+// Single-variable substitution [a/x]b (subvar), parallel substitution [σ]a
+// (subap), and substitution extension (σ, x ↦ a) (subcons) all come from
+// `/lib/notation/lambda-iter.typ` via the prelude.
 
 // --- Movers (directed commutativity) ---
 // ε ⇀ η : ε is a right-mover over η (an ε-step may be pushed *after* an η-step).
@@ -52,12 +56,11 @@
 // Polarity-selected mover ⇀^p : ⇀^+ = ⇀, ⇀^- = ↽.
 #let rmovep(e, n, p) = $#e attach(⇀, tr: #p) #n$
 
-// --- Concrete effects for examples ---
-// Undefined behaviour (UB).
-#let lub = $↯$
-// Partial coproduct projections ρ_l, ρ_r.
-#let lprojl(a) = $rho_l med #a$
-#let lprojr(a) = $rho_r med #a$
+// --- Effect quantity (a teaser for the substructural type system) ---
+// αl(ε) ∈ Q is the linearity/quantity of an effect. αl(ε) = ω ("unrestricted",
+// `topq`) lets ε be freely dropped and duplicated -- exactly what an arbitrary
+// substitution may do to the substituted expression.
+#let elin(e) = $alpha_l (#e)$
 
 // ===========================================================================
 //  TYPING
@@ -258,20 +261,20 @@
 // no capture-avoiding side conditions clutter the binder cases.
 
 #let subst-var-eqns = (
-  $[a slash x] x = a$,
-  $[a slash x] y = y "where" x ≠ y$,
-  $[a slash x](f med b) = f med [a slash x] b$,
-  $[a slash x](#letx($z$, $b$, $c$)) = #letx($z$, $[a slash x] b$, $[a slash x] c$)$,
-  $[a slash x](#letx($(y, z)$, $b$, $c$))
-    = #letx($(y, z)$, $[a slash x] b$, $[a slash x] c$)$,
-  $[a slash x]() = ()$,
-  $[a slash x](b, c) = ([a slash x] b, [a slash x] c)$,
-  $[a slash x](linl(b)) = linl([a slash x] b)$,
-  $[a slash x](linr(b)) = linr([a slash x] b)$,
-  $[a slash x](#casex($e$, $y$, $b$, $z$, $c$))
-    = #casex($[a slash x] e$, $y$, $[a slash x] b$, $z$, $[a slash x] c$)$,
-  $[a slash x](#labort($b$)) = #labort($[a slash x] b$)$,
-  $[a slash x](#iterx($b$, $y$, $c$)) = #iterx($[a slash x] b$, $y$, $[a slash x] c$)$,
+  $subvar(a, x, x) = a$,
+  $subvar(a, x, y) = y "where" x ≠ y$,
+  $subvar(a, x, f med b) = f med subvar(a, x, b)$,
+  $subvar(a, x, letx(z, b, c)) = letx(z, subvar(a, x, b), subvar(a, x, c))$,
+  $subvar(a, x, letx((y, z), b, c))
+    = letx((y, z), subvar(a, x, b), subvar(a, x, c))$,
+  $subvar(a, x, ()) = ()$,
+  $subvar(a, x, (b, c)) = (subvar(a, x, b), subvar(a, x, c))$,
+  $subvar(a, x, linl(b)) = linl(subvar(a, x, b))$,
+  $subvar(a, x, linr(b)) = linr(subvar(a, x, b))$,
+  $subvar(a, x, casex(e, y, b, z, c))
+    = casex(subvar(a, x, e), y, subvar(a, x, b), z, subvar(a, x, c))$,
+  $subvar(a, x, labort(b)) = labort(subvar(a, x, b))$,
+  $subvar(a, x, iterx(b, y, c)) = iterx(subvar(a, x, b), y, subvar(a, x, c))$,
 )
 
 // --- Parallel substitution action [σ]a -------------------------------------
@@ -280,160 +283,165 @@
 // mapping (σ, x ↦ x), keeping it capture-avoiding under the variable convention.
 
 #let subst-par-eqns = (
-  $[(σ, x ↦ a)]x = a$,
-  $[(σ, y ↦ a)]x = [σ]x "where" x ≠ y$,
-  $[σ](f med a) = f med [σ]a$,
-  $[σ](#letx($x$, $a$, $b$)) = #letx($x$, $[σ]a$, $[σ, x ↦ x]b$)$,
-  $[σ](#letx($(x, y)$, $a$, $b$))
-    = #letx($(x, y)$, $[σ]a$, $[σ, x ↦ x, y ↦ y]b$)$,
-  $[σ]() = ()$,
-  $[σ](a, b) = ([σ]a, [σ]b)$,
-  $[σ](linl(a)) = linl([σ]a)$,
-  $[σ](linr(b)) = linr([σ]b)$,
-  $[σ](#casex($e$, $x$, $a$, $y$, $b$))
-    = #casex($[σ]e$, $x$, $[σ, x ↦ x]a$, $y$, $[σ, y ↦ y]b$)$,
-  $[σ](#labort($a$)) = #labort($[σ]a$)$,
-  $[σ](#iterx($a$, $x$, $b$)) = #iterx($[σ]a$, $x$, $[σ, x ↦ x]b$)$,
+  $subap(subcons(σ, x, a), x) = a$,
+  $subap(subcons(σ, y, a), x) = subap(σ, x) "where" x ≠ y$,
+  $subap(σ, f med a) = f med subap(σ, a)$,
+  $subap(σ, letx(x, a, b)) = letx(x, subap(σ, a), subap(subcons(σ, x, x), b))$,
+  $subap(σ, letx((x, y), a, b))
+    = letx((x, y), subap(σ, a), subap(subcons(subcons(σ, x, x), y, y), b))$,
+  $subap(σ, ()) = ()$,
+  $subap(σ, (a, b)) = (subap(σ, a), subap(σ, b))$,
+  $subap(σ, linl(a)) = linl(subap(σ, a))$,
+  $subap(σ, linr(b)) = linr(subap(σ, b))$,
+  $subap(σ, casex(e, x, a, y, b))
+    = casex(subap(σ, e), x, subap(subcons(σ, x, x), a), y, subap(subcons(σ, y, y), b))$,
+  $subap(σ, labort(a)) = labort(subap(σ, a))$,
+  $subap(σ, iterx(a, x, b)) = iterx(subap(σ, a), x, subap(subcons(σ, x, x), b))$,
 )
 
 // ===========================================================================
 //  EQUIVALENCE THEORY
 // ===========================================================================
 
+// The equivalence judgement Γ ⊢ a ≈ b : A carries NO effect: it relates terms
+// that are well-typed under the (effect-free) typing judgement Γ ⊢ a : A.
+// `let-β` is absent here -- substitution is sound only up to the effect/mover
+// conditions of the refinement theory, so it lives there as `ref-let-beta`.
+
 // --- Congruence (reflexivity, symmetry, transitivity + one rule per former) --
 
 #let eqv-refl = rule(
   label: msc("refl"),
-  hastye($Γ$, $ε$, $a$, $A$),
-  tmeqv($Γ$, $ε$, $a$, $a$, $A$),
+  hasty($Γ$, $a$, $A$),
+  eqat($Γ$, $a$, $a$, $A$),
 )
 #let eqv-symm = rule(
   label: msc("symm"),
-  tmeqv($Γ$, $ε$, $a$, $b$, $A$),
-  tmeqv($Γ$, $ε$, $b$, $a$, $A$),
+  eqat($Γ$, $a$, $b$, $A$),
+  eqat($Γ$, $b$, $a$, $A$),
 )
 #let eqv-trans = rule(
   label: msc("trans"),
-  tmeqv($Γ$, $ε$, $a$, $b$, $A$),
-  tmeqv($Γ$, $ε$, $b$, $c$, $A$),
-  tmeqv($Γ$, $ε$, $a$, $c$, $A$),
+  eqat($Γ$, $a$, $b$, $A$),
+  eqat($Γ$, $b$, $c$, $A$),
+  eqat($Γ$, $a$, $c$, $A$),
 )
 #let eqv-op = rule(
   label: msc("op"),
-  insttye($f$, $A$, $ε$, $B$),
-  tmeqv($Γ$, $ε$, $a$, $a'$, $A$),
-  tmeqv($Γ$, $ε$, $f med a$, $f med a'$, $B$),
+  instty($f$, $A$, $B$),
+  eqat($Γ$, $a$, $a'$, $A$),
+  eqat($Γ$, $f med a$, $f med a'$, $B$),
 )
 #let eqv-let = rule(
   label: msc("let"),
-  tmeqv($Γ$, $ε$, $a$, $a'$, $A$),
-  tmeqv($Γ, x : A$, $ε$, $b$, $b'$, $B$),
-  tmeqv($Γ$, $ε$, letx($x$, $a$, $b$), letx($x$, $a'$, $b'$), $B$),
+  eqat($Γ$, $a$, $a'$, $A$),
+  eqat($Γ, x : A$, $b$, $b'$, $B$),
+  eqat($Γ$, letx($x$, $a$, $b$), letx($x$, $a'$, $b'$), $B$),
 )
 #let eqv-pair = rule(
   label: msc("pair"),
-  tmeqv($Γ$, $ε$, $a$, $a'$, $A$),
-  tmeqv($Γ$, $ε$, $b$, $b'$, $B$),
-  tmeqv($Γ$, $ε$, $(a, b)$, $(a', b')$, $A tytensor B$),
+  eqat($Γ$, $a$, $a'$, $A$),
+  eqat($Γ$, $b$, $b'$, $B$),
+  eqat($Γ$, $(a, b)$, $(a', b')$, $A tytensor B$),
 )
 #let eqv-let-pair = rule(
   label: msc("let-pair"),
-  tmeqv($Γ$, $ε$, $e$, $e'$, $A tytensor B$),
-  tmeqv($Γ, x : A, y : B$, $ε$, $c$, $c'$, $C$),
-  tmeqv($Γ$, $ε$, letx($(x, y)$, $e$, $c$), letx($(x, y)$, $e'$, $c'$), $C$),
+  eqat($Γ$, $e$, $e'$, $A tytensor B$),
+  eqat($Γ, x : A, y : B$, $c$, $c'$, $C$),
+  eqat($Γ$, letx($(x, y)$, $e$, $c$), letx($(x, y)$, $e'$, $c'$), $C$),
 )
 #let eqv-inl = rule(
   label: msc("inl"),
-  tmeqv($Γ$, $ε$, $a$, $a'$, $A$),
-  tmeqv($Γ$, $ε$, linl($a$), linl($a'$), $A tysum B$),
+  eqat($Γ$, $a$, $a'$, $A$),
+  eqat($Γ$, linl($a$), linl($a'$), $A tysum B$),
 )
 #let eqv-inr = rule(
   label: msc("inr"),
-  tmeqv($Γ$, $ε$, $b$, $b'$, $B$),
-  tmeqv($Γ$, $ε$, linr($b$), linr($b'$), $A tysum B$),
+  eqat($Γ$, $b$, $b'$, $B$),
+  eqat($Γ$, linr($b$), linr($b'$), $A tysum B$),
 )
 #let eqv-case = rule(
   label: msc("case"),
-  tmeqv($Γ$, $ε$, $e$, $e'$, $A tysum B$),
-  tmeqv($Γ, x : A$, $ε$, $a$, $a'$, $C$),
-  tmeqv($Γ, y : B$, $ε$, $b$, $b'$, $C$),
-  tmeqv($Γ$, $ε$, casex($e$, $x$, $a$, $y$, $b$), casex($e'$, $x$, $a'$, $y$, $b'$), $C$),
+  eqat($Γ$, $e$, $e'$, $A tysum B$),
+  eqat($Γ, x : A$, $a$, $a'$, $C$),
+  eqat($Γ, y : B$, $b$, $b'$, $C$),
+  eqat($Γ$, casex($e$, $x$, $a$, $y$, $b$), casex($e'$, $x$, $a'$, $y$, $b'$), $C$),
 )
 #let eqv-abort = rule(
   label: msc("abort"),
-  tmeqv($Γ$, $ε$, $a$, $a'$, $tyempty$),
-  tmeqv($Γ$, $ε$, labort($a$), labort($a'$), $C$),
+  eqat($Γ$, $a$, $a'$, $tyempty$),
+  eqat($Γ$, labort($a$), labort($a'$), $C$),
 )
 #let eqv-iter = rule(
   label: msc("iter"),
-  tmeqv($Γ$, $ε$, $a$, $a'$, $A$),
-  tmeqv($Γ, x : A$, $ε$, $b$, $b'$, $B tysum A$),
-  tmeqv($Γ$, effiter($ε$), iterx($a$, $x$, $b$), iterx($a'$, $x$, $b'$), $B$),
+  eqat($Γ$, $a$, $a'$, $A$),
+  eqat($Γ, x : A$, $b$, $b'$, $B tysum A$),
+  eqat($Γ$, iterx($a$, $x$, $b$), iterx($a'$, $x$, $b'$), $B$),
 )
 
 // --- Binding / let-normalisation (commuting conversions) -------------------
 
 #let eqv-let-eta = rule(
   label: msc("let-η"),
-  hastye($Γ$, $ε$, $a$, $A$),
-  tmeqv($Γ$, $ε$, letx($x$, $a$, $x$), $a$, $A$),
+  hasty($Γ$, $a$, $A$),
+  eqat($Γ$, letx($x$, $a$, $x$), $a$, $A$),
 )
 #let eqv-let-op = rule(
   label: msc("let-op"),
-  insttye($f$, $A$, $ε$, $B$),
-  hastye($Γ$, $ε$, $a$, $A$),
-  hastye($Γ, y : B$, $ε$, $c$, $C$),
-  tmeqv($Γ$, $ε$,
+  instty($f$, $A$, $B$),
+  hasty($Γ$, $a$, $A$),
+  hasty($Γ, y : B$, $c$, $C$),
+  eqat($Γ$,
     letx($y$, $f med a$, $c$),
     letx($x$, $a$, letx($y$, $f med x$, $c$)),
     $C$),
 )
 #let eqv-let-let = rule(
   label: msc("let-let"),
-  hastye($Γ$, $ε$, $a$, $A$),
-  hastye($Γ, x : A$, $ε$, $b$, $B$),
-  hastye($Γ, y : B$, $ε$, $c$, $C$),
-  tmeqv($Γ$, $ε$,
-    letx($y$, letx($x$, $a$, $b$), $c$),
+  hasty($Γ$, $a$, $A$),
+  hasty($Γ, x : A$, $b$, $B$),
+  hasty($Γ, y : B$, $c$, $C$),
+  eqat($Γ$,
+    letx($y$, $(#letx($x$, $a$, $b$))$, $c$),
     letx($x$, $a$, letx($y$, $b$, $c$)),
     $C$),
 )
 #let eqv-let-let-pair = rule(
   label: msc("let-let-pair"),
-  hastye($Γ$, $ε$, $e$, $A tytensor B$),
-  hastye($Γ, x : A, y : B$, $ε$, $c$, $C$),
-  hastye($Γ, z : C$, $ε$, $d$, $D$),
-  tmeqv($Γ$, $ε$,
-    letx($z$, letx($(x, y)$, $e$, $c$), $d$),
+  hasty($Γ$, $e$, $A tytensor B$),
+  hasty($Γ, x : A, y : B$, $c$, $C$),
+  hasty($Γ, z : C$, $d$, $D$),
+  eqat($Γ$,
+    letx($z$, $(#letx($(x, y)$, $e$, $c$))$, $d$),
     letx($(x, y)$, $e$, letx($z$, $c$, $d$)),
     $D$),
 )
 #let eqv-let-case = rule(
   label: msc("let-case"),
-  hastye($Γ$, $ε$, $e$, $A tysum B$),
-  hastye($Γ, x : A$, $ε$, $a$, $C$),
-  hastye($Γ, y : B$, $ε$, $b$, $C$),
-  hastye($Γ, z : C$, $ε$, $d$, $D$),
-  tmeqv($Γ$, $ε$,
+  hasty($Γ$, $e$, $A tysum B$),
+  hasty($Γ, x : A$, $a$, $C$),
+  hasty($Γ, y : B$, $b$, $C$),
+  hasty($Γ, z : C$, $d$, $D$),
+  eqat($Γ$,
     letx($z$, casex($e$, $x$, $a$, $y$, $b$), $d$),
     casex($e$, $x$, letx($z$, $a$, $d$), $y$, letx($z$, $b$, $d$)),
     $D$),
 )
 #let eqv-let-pair-bind = rule(
   label: msc("let-pair-bind"),
-  hastye($Γ$, $ε$, $a$, $A tytensor B$),
-  hastye($Γ, x : A, y : B$, $ε$, $c$, $C$),
-  tmeqv($Γ$, $ε$,
+  hasty($Γ$, $a$, $A tytensor B$),
+  hasty($Γ, x : A, y : B$, $c$, $C$),
+  eqat($Γ$,
     letx($(x, y)$, $a$, $c$),
     letx($z$, $a$, letx($(x, y)$, $z$, $c$)),
     $C$),
 )
 #let eqv-case-bind = rule(
   label: msc("case-bind"),
-  hastye($Γ$, $ε$, $e$, $A tysum B$),
-  hastye($Γ, x : A$, $ε$, $a$, $C$),
-  hastye($Γ, y : B$, $ε$, $b$, $C$),
-  tmeqv($Γ$, $ε$,
+  hasty($Γ$, $e$, $A tysum B$),
+  hasty($Γ, x : A$, $a$, $C$),
+  hasty($Γ, y : B$, $b$, $C$),
+  eqat($Γ$,
     casex($e$, $x$, $a$, $y$, $b$),
     letx($z$, $e$, casex($z$, $x$, $a$, $y$, $b$)),
     $C$),
@@ -441,61 +449,53 @@
 
 // --- β / η reductions ------------------------------------------------------
 
-// β for let, restricted to a PURE bound expression (the directed, effectful
-// version lives in the refinement theory as `ref-let-beta`).
-#let eqv-let-beta = rule(
-  label: msc("let-β"),
-  hastye($Γ$, $effpure$, $a$, $A$),
-  hastye($Γ, x : A$, $ε$, $b$, $B$),
-  tmeqv($Γ$, $ε$, letx($x$, $a$, $b$), substx($a$, $x$, $b$), $B$),
-)
 // Unit η: a unit-typed result is its own sequencing.
 #let eqv-unit = rule(
   label: msc("unit"),
-  hastye($Γ$, $ε$, $a$, $tyunit$),
-  tmeqv($Γ$, $ε$, letx($x$, $a$, $()$), $a$, $tyunit$),
+  hasty($Γ$, $a$, $tyunit$),
+  eqat($Γ$, letx($x$, $a$, $()$), $a$, $tyunit$),
 )
 // Empty type: everything after an aborting binding is equated (dead code).
 #let eqv-init = rule(
   label: msc("init"),
-  hastye($Γ$, $ε$, $a$, $tyempty$),
-  hastye($Γ, x : A$, $ε$, $b$, $B$),
-  hastye($Γ, x : A$, $ε$, $b'$, $B$),
-  tmeqv($Γ$, $ε$, letx($x$, labort($a$), $b$), letx($x$, labort($a$), $b'$), $B$),
+  hasty($Γ$, $a$, $tyempty$),
+  hasty($Γ, x : A$, $b$, $B$),
+  hasty($Γ, x : A$, $b'$, $B$),
+  eqat($Γ$, letx($x$, labort($a$), $b$), letx($x$, labort($a$), $b'$), $B$),
 )
 #let eqv-pair-beta = rule(
   label: msc("pair-β"),
-  hastye($Γ$, $ε$, $a$, $A$),
-  hastye($Γ$, $ε$, $b$, $B$),
-  hastye($Γ, x : A, y : B$, $ε$, $c$, $C$),
-  tmeqv($Γ$, $ε$,
+  hasty($Γ$, $a$, $A$),
+  hasty($Γ$, $b$, $B$),
+  hasty($Γ, x : A, y : B$, $c$, $C$),
+  eqat($Γ$,
     letx($(x, y)$, $(a, b)$, $c$),
     letx($x$, $a$, letx($y$, $b$, $c$)),
     $C$),
 )
 #let eqv-pair-eta = rule(
   label: msc("pair-η"),
-  hastye($Γ$, $ε$, $a$, $A tytensor B$),
-  tmeqv($Γ$, $ε$, letx($(x, y)$, $a$, $(x, y)$), $a$, $A tytensor B$),
+  hasty($Γ$, $a$, $A tytensor B$),
+  eqat($Γ$, letx($(x, y)$, $a$, $(x, y)$), $a$, $A tytensor B$),
 )
 #let eqv-case-betal = rule(
   label: msc("case-βl"),
-  hastye($Γ$, $ε$, $e$, $A$),
-  hastye($Γ, x : A$, $ε$, $a$, $C$),
-  hastye($Γ, y : B$, $ε$, $b$, $C$),
-  tmeqv($Γ$, $ε$, casex(linl($e$), $x$, $a$, $y$, $b$), letx($x$, $e$, $a$), $C$),
+  hasty($Γ$, $e$, $A$),
+  hasty($Γ, x : A$, $a$, $C$),
+  hasty($Γ, y : B$, $b$, $C$),
+  eqat($Γ$, casex(linl($e$), $x$, $a$, $y$, $b$), letx($x$, $e$, $a$), $C$),
 )
 #let eqv-case-betar = rule(
   label: msc("case-βr"),
-  hastye($Γ$, $ε$, $e$, $B$),
-  hastye($Γ, x : A$, $ε$, $a$, $C$),
-  hastye($Γ, y : B$, $ε$, $b$, $C$),
-  tmeqv($Γ$, $ε$, casex(linr($e$), $x$, $a$, $y$, $b$), letx($y$, $e$, $b$), $C$),
+  hasty($Γ$, $e$, $B$),
+  hasty($Γ, x : A$, $a$, $C$),
+  hasty($Γ, y : B$, $b$, $C$),
+  eqat($Γ$, casex(linr($e$), $x$, $a$, $y$, $b$), letx($y$, $e$, $b$), $C$),
 )
 #let eqv-case-eta = rule(
   label: msc("case-η"),
-  hastye($Γ$, $ε$, $e$, $A tysum B$),
-  tmeqv($Γ$, $ε$, casex($e$, $x$, linl($x$), $y$, linr($y$)), $e$, $A tysum B$),
+  hasty($Γ$, $e$, $A tysum B$),
+  eqat($Γ$, casex($e$, $x$, linl($x$), $y$, linr($y$)), $e$, $A tysum B$),
 )
 
 // --- Iteration (Conway / Elgot axioms) -------------------------------------
@@ -503,9 +503,9 @@
 // Fixpoint unfolding: one pass of the loop.
 #let eqv-iter-beta = rule(
   label: msc("iter-β"),
-  hastye($Γ$, $ε$, $a$, $A$),
-  hastye($Γ, x : A$, $ε$, $b$, $B tysum A$),
-  tmeqv($Γ$, effiter($ε$),
+  hasty($Γ$, $a$, $A$),
+  hasty($Γ, x : A$, $b$, $B tysum A$),
+  eqat($Γ$,
     iterx($a$, $x$, $b$),
     letx($x$, $a$, casex($b$, $y$, $y$, $z$, iterx($z$, $x$, $b$))),
     $B$),
@@ -513,10 +513,10 @@
 // Naturality: a continuation after a loop moves into the loop's exit branch.
 #let eqv-iter-nat = rule(
   label: msc("let-iter"),
-  hastye($Γ$, $ε$, $a$, $A$),
-  hastye($Γ, x : A$, $ε$, $b$, $B tysum A$),
-  hastye($Γ, y : B$, $ε$, $c$, $C$),
-  tmeqv($Γ$, effiter($ε$),
+  hasty($Γ$, $a$, $A$),
+  hasty($Γ, x : A$, $b$, $B tysum A$),
+  hasty($Γ, y : B$, $c$, $C$),
+  eqat($Γ$,
     letx($y$, iterx($a$, $x$, $b$), $c$),
     iterx($a$, $x$, casex($b$, $y$, linl($c$), $z$, linr($z$))),
     $C$),
@@ -524,9 +524,9 @@
 // Codiagonal: a loop nested on the same parameter collapses to a single loop.
 #let eqv-iter-codiag = rule(
   label: msc("codiag"),
-  hastye($Γ$, $ε$, $a$, $A$),
-  hastye($Γ, x : A$, $ε$, $b$, $(B tysum A) tysum A$),
-  tmeqv($Γ$, effiter($ε$),
+  hasty($Γ$, $a$, $A$),
+  hasty($Γ, x : A$, $b$, $(B tysum A) tysum A$),
+  eqat($Γ$,
     iterx($a$, $x$, iterx($x$, $y$, $b$)),
     iterx($a$, $y$, casex($b$, $x$, $x$, $y$, linr($y$))),
     $B$),
@@ -534,9 +534,9 @@
 // Binding: float the loop's initial value out into a let.
 #let eqv-iter-bind = rule(
   label: msc("iter-bind"),
-  hastye($Γ$, $ε$, $a$, $A$),
-  hastye($Γ, x : A$, $ε$, $b$, $B tysum A$),
-  tmeqv($Γ$, effiter($ε$),
+  hasty($Γ$, $a$, $A$),
+  hasty($Γ, x : A$, $b$, $B tysum A$),
+  eqat($Γ$,
     iterx($a$, $x$, $b$),
     letx($y$, $a$, iterx($y$, $x$, $b$)),
     $B$),
@@ -617,41 +617,32 @@
   tref($Γ$, rwsys, iterx($a$, $x$, $b$), iterx($a'$, $x$, $b'$), $B$),
 )
 
+// --- Equivalence as mutual refinement --------------------------------------
+
+// Two terms are R-equivalent when each refines the other: a ↠ b and b ↠ a.
+#let ref-equiv = rule(
+  label: msc("equiv"),
+  tref($Γ$, rwsys, $a$, $b$, $A$),
+  tref($Γ$, rwsys, $b$, $a$, $A$),
+  treqr($Γ$, rwsys, $a$, $b$, $A$),
+)
+#let ref-equiv-rules = (ref-equiv,)
+
 // --- Directed substitution -------------------------------------------------
 
 // The headline directed law. Substitute a (possibly effectful) `a` for `x`,
 // provided a's effect ε is a p-mover over the body's effect η (p = + pushes the
-// binding inward, a ↠ [a/x]b; p = - is the reverse). The *multiplicity* side
-// conditions on x (affine to drop, relevant to duplicate) belong to the
-// substructural layer and are omitted here.
+// binding inward, a ↠ [a/x]b; p = - is the reverse) AND ε has unrestricted
+// quantity αl(ε) = ω, so it may be dropped or duplicated as x's occurrences in b
+// demand. Tracking the *exact* multiplicity of x (affine to drop, relevant to
+// duplicate) instead of demanding ω is the job of the substructural type system.
 #let ref-let-beta = rule(
   label: msc("let-β"),
   hastye($Γ$, $ε$, $a$, $A$),
   hastye($Γ, x : A$, $η$, $b$, $B$),
   rmovep($ε$, $η$, $p$),
-  trefp($Γ$, rwsys, letx($x$, $a$, $b$), substx($a$, $x$, $b$), $B$, $p$),
-)
-
-// --- Example rewrites: undefined behaviour ---------------------------------
-
-// UB ⌁ is a right-mover over every effect, so it may always be pushed forward;
-// these absorption laws seed R with the corresponding peephole rewrites.
-#let ref-ub-seq = rule(
-  label: msc("ub-seq"),
-  hastye($Γ, x : A$, $ε$, $b$, $B$),
-  tref($Γ$, rwsys, letx($x$, lub, $b$), lub, $B$),
-)
-#let ref-ub-inl = rule(
-  label: msc("ub-inl"),
-  hastye($Γ$, $ε$, $a$, $A tysum B$),
-  hastye($Γ, x : A$, $ε$, $c$, $C$),
-  tref($Γ$, rwsys, casex($a$, $x$, $c$, $y$, lub), letx($x$, lprojl($a$), $c$), $C$),
-)
-#let ref-ub-inr = rule(
-  label: msc("ub-inr"),
-  hastye($Γ$, $ε$, $a$, $A tysum B$),
-  hastye($Γ, y : B$, $ε$, $c$, $C$),
-  tref($Γ$, rwsys, casex($a$, $x$, lub, $y$, $c$), letx($y$, lprojr($a$), $c$), $C$),
+  $elin(ε) = topq$,
+  trefp($Γ$, rwsys, letx($x$, $a$, $b$), subvar($a$, $x$, $b$), $B$, $p$),
 )
 
 // ===========================================================================
@@ -675,17 +666,18 @@
   eqv-op, eqv-let, eqv-pair, eqv-let-pair,
   eqv-inl, eqv-inr, eqv-case, eqv-abort, eqv-iter,
 )
+// The equational axioms, split by former: let rules, case (+ empty/abort)
+// rules, and the fixpoint (Conway iteration) rules.
+#let eqv-let-rules = (eqv-unit, eqv-pair-beta)
+#let eqv-case-rules = (eqv-case-betal, eqv-case-betar, eqv-case-eta, eqv-init)
+#let eqv-fixpoint-rules = (eqv-iter-beta, eqv-iter-nat, eqv-iter-codiag)
+
+// Commuting conversions / η / bind laws, kept available but not part of the
+// core βη presentation above.
 #let eqv-binding-rules = (
   eqv-let-eta, eqv-let-op, eqv-let-let, eqv-let-let-pair,
   eqv-let-case, eqv-let-pair-bind, eqv-case-bind,
-)
-#let eqv-reduction-rules = (
-  eqv-let-beta, eqv-unit, eqv-init,
-  eqv-pair-beta, eqv-pair-eta,
-  eqv-case-betal, eqv-case-betar, eqv-case-eta,
-)
-#let eqv-iteration-rules = (
-  eqv-iter-beta, eqv-iter-nat, eqv-iter-codiag, eqv-iter-bind,
+  eqv-pair-eta, eqv-iter-bind,
 )
 
 #let ref-congruence-rules = (
@@ -693,8 +685,9 @@
   ref-op, ref-let, ref-pair, ref-let-pair,
   ref-inl, ref-inr, ref-case, ref-abort, ref-iter,
 )
+// Refinement adds a single directed rule -- directed substitution (let-β);
+// every other rule of the theory is equational (a two-way refinement).
 #let ref-directed-rules = (ref-let-beta,)
-#let ref-ub-rules = (ref-ub-seq, ref-ub-inl, ref-ub-inr)
 
 // Lay an array of rules out as a single `rule-set` of proof trees.
 #let rules-block(rules) = rule-set(..rules.map(prooftree))
