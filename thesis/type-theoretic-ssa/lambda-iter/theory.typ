@@ -542,6 +542,25 @@
     iterx($a$, $y$, casex($b$, $x$, $x$, $y$, linr($y$))),
     $B$),
 )
+// Uniformity: two loops whose states are related by a PURE comparison h agree.
+// h : A → A' transports the A-loop to the A'-loop; the middle premise is the
+// commuting square `f ; (id + h) = h ; g`. This is NOT derivable from
+// fixpoint/naturality/codiagonal (uniformity is independent of the Conway
+// axioms); restricting h to be pure makes the general rule's mover side
+// condition trivial, so only h's purity appears.
+#let eqv-uniformity = rule(
+  label: msc("uniformity"),
+  hasty($Γ$, $a$, $A$),
+  hastye($Γ, x : A$, $effpure$, $h$, $A'$),
+  eqat($Γ, x : A$,
+    casex($b$, $y$, linl($y$), $x$, linr($h$)),
+    subvar($h$, $x'$, $b'$),
+    $B tysum A'$),
+  eqat($Γ$,
+    iterx($a$, $x$, $b$),
+    iterx($(#letx($x$, $a$, $h$))$, $x'$, $b'$),
+    $B$),
+)
 // Binding: float the loop's initial value out into a let.
 #let eqv-iter-bind = rule(
   label: msc("iter-bind"),
@@ -777,7 +796,9 @@
 // rules, and the fixpoint (Conway iteration) rules.
 #let eqv-let-rules = (eqv-let-beta, eqv-let-eta, eqv-unit, eqv-pair-beta)
 #let eqv-case-rules = (eqv-case-betal, eqv-case-betar, eqv-case-eta, eqv-init)
-#let eqv-fixpoint-rules = (eqv-iter-beta, eqv-iter-nat, eqv-iter-codiag)
+#let eqv-fixpoint-rules = (
+  eqv-iter-beta, eqv-iter-nat, eqv-iter-codiag, eqv-uniformity,
+)
 
 // The pure let-distribution rules (one per substitution case) that derive let-β.
 #let eqv-push-rules = (

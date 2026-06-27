@@ -37,6 +37,8 @@
 // Iteration: iter a { ι_r x : b } -- a tail-controlled loop.
 #let iterx(a, x, b) = $#kw("iter") med #a med {linr(#x) lto #b}$
 
+#let loopx = kw("loop");
+
 // --- Instructions ---
 // Source and target of an instruction f ∈ I, and the typing f : A → B that
 // they induce.
@@ -64,6 +66,7 @@
 
 // --- Equational theory ---
 #let eqat(ctx, exp1, exp2, ty) = $ctx ⊢ exp1 ≈ exp2 : ty$
+#let neat(ctx, exp1, exp2, ty) = $ctx ⊢ exp1 ≉ exp2 : ty$
 
 // --- Effects ---
 // The lattice E of effects, with ⊥ the pure effect and ⊤ the unrestricted one.

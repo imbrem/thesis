@@ -4,6 +4,15 @@
 **Subtitle:** Type theory, refinement, and semantics for SSA
 **Typesetting:** Typst
 
+## Authoring
+
+**Do not write prose/body text unless specifically instructed.** When asked to
+add rules, figures, definitions, grammars, or equations, produce exactly those
+artifacts (plus any `#let` definitions they need) — do not add explanatory
+paragraphs, lead-in sentences, captions beyond what's asked, or section prose
+around them. The author writes the prose. Where a section needs framing, leave a
+`#todo[...]` describing what to write rather than writing it.
+
 ## Layout
 
 ```

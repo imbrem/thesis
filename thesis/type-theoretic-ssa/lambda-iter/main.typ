@@ -1,7 +1,11 @@
 #import "/lib/prelude.typ": *
 #import "/thesis/type-theoretic-ssa/lambda-iter/theory.typ": *
 #import "/thesis/type-theoretic-ssa/lambda-iter/semantics.typ": *
-#show: chapter.with(title: "Iteration Expressions")
+#show: chapter.with(title: "The Calculus of Iteration")
+
+#quote(attribution: "Albert Einstein", block: true)[
+  The definition of insanity is -- doing the same thing over and over and expecting a different result.
+]
 
 SSA is a useful IR because it enables complex, 
 whole-procedure transformation of code, 
@@ -225,23 +229,26 @@ $
 
 where $subvar(a, x, b)$ denotes replacing all occurrences of $x$ in $b$ with $a$
 --
-i.e.,
-
-#todo[improve segue here]
+as shown in the figure below:
 
 #rule-set(..subst-var-eqns)
 
-#todo["both sides are well-typed"]
+The first question we need to ask, therefore, 
+is whether both sides of this equation are well-typed at all
+--
+this is one of the primary motivations for proving _syntactic substitution_ for #liter,
+which we state as follows:
 
-#todo[segue to _parallel_ substitution; rewrite below]
+#lemma("Substitution")[
+  If #issub($Γ$, $a$, $A$) and #hasty($Γ, x : A$, $b$, $B$),
+  then #hasty($Γ$, $subvar(a, x, b)$, $B$).
+]
 
-To be able to reason about algebraic rewrites, however,
-we need to make sure that each side of the equation is at least _well-typed_
-so that we can assign it a meaning at all, before worrying
-about whether both sides have the _same_ meaning.
+#todo[segue straight to effects, leaving parallel substitution to later?]
 
-To this end, we require our calculus to satisfy _syntactic substitution_.
-We begin by defining a _substition_ 
+It is straightforward to generalize this to _parallel substitution_ 
+in the usual manner:
+we begin by defining a _substition_ 
 $issub(Γ, σ, Δ)$ as an ordered mapping from variables
 $#wkns($Δ$, $x : A$)$ to well-typed values $hasty(Γ, a, A)$
 -- as described in @fig-expr-subst.
@@ -254,35 +261,134 @@ $#wkns($Δ$, $x : A$)$ to well-typed values $hasty(Γ, a, A)$
   caption: [Substitution rules for #liter.],
 ) <fig-expr-subst>
 
-We can then define substitution of #liter expressions as a 
-partial function from pairs $σ, a$ to terms $subap(σ, a)$
+We can then define parallel substitution 
+on #liter expressions as a partial function 
+from pairs $σ, a$ to terms $subap(σ, a)$
 in the usual manner as follows:
 
 #rule-set(..subst-par-eqns)
 
+yielding the usual parallel substitution lemma;
 
-We can then state _syntactic substition_ as usual:
-
-#lemma("Substitution")[
+#lemma("Parallel Substitution")[
   If #issub($Γ'$, $σ$, $Γ$) and #hasty($Γ$, $a$, $A$),
   then #hasty($Γ'$, subap($σ$, $a$), $A$).
 ]
 
 == Effects
 
-Syntactic substitution tells me that the term is _well-typed_...
+We note that, by substitution, 
+given $hasty(Γ, a, A)$ and #hasty($Γ, x : A$, $b$, $B$), 
+we have that both 
 
-#todo[We want to define congruence via substitution... doesn't work here]
+- $hasty(Γ, letx(x, a, b), B)$.
 
-#todo[Typical move: substitute a syntactic category of _values_/_constants_]
+- $hasty(Γ, subvar(a, x, b), B)$.
 
-#todo[Instead: distinguish _pure_ vs. _impure_ expressions via _effect system_]
+In general, however, we do not have that
 
-#todo[introduce the effect lattice #effs, with #effpure the pure effect and #efftop the unrestricted effect, ordered by $≤$ with joins $⊔$]
+$
+  eqat(Γ, letx(x, a, b), subvar(a, x, b), B)
+$
 
-#todo[each instruction $f ∈ cal(I)$ carries an effect #ieff($f$); the effectful judgement #hastye($Γ$, $ε$, $a$, $A$) bounds the effects of $a$ above by $ε$, so pure constructors may be typed at any $ε$]
+-- for example, it is obvious that
 
-#todo[#effiter($ε$) is a monotone closure operator on #effs giving the effect of iterating an $ε$-effectful body: extensive ($ε ≤ effiter(ε)$) and idempotent ($effiter(effiter(ε)) = effiter(ε)$)]
+$
+  neat(Γ, 
+    letx(ms("panic")(), a, ()), 
+    subvar(ms("panic")(), x, ()), 
+    ()
+  )
+$
+since the left-hand side crashes, 
+while the right-hand side (hopefully) does not.
+
+The typical way that this is handled is by distinguishing 
+a _syntactic_ category of _values_ $v ∈ vals$, like $3$ or $5$,
+and then stating that
+$
+  eqat(Γ, letx(x, v, b), subvar(v, x, b), B)
+$
+only when we in fact have $v ∈ vals$.
+
+The issue with this approach for our purposes is that 
+we would like to study _algebraic rewrites_ like
+$
+  eqat(Γ, letx(x, y + y, x + x), 4 * y, ℤ)
+$
+as well as, eventually, optimizations 
+like _global value numbering_ and _common subexpression elimination_
+in the context of SSA.
+
+So we need some way to distinguish between 
+_pure_ values and general effectful _computations_
+so that $x + y$ and $sin(x)$ are recognized as _pure_
+while $ms("panic")()$ and $ms("print")(#`"hello"`)$
+remain correctly recognized as having side-effects.
+
+One particularly thorny case we'll need to consider is that of _iteration_
+-- since unlike the other examples of effects we've considered,
+it can be introduced without any explicitly effectful instructions.
+
+For example, defining the _infinite loop_
+$hasty(Γ, loopx = iterx((), x, linr(x)), A)$
+--
+note this is well-typed for arbitrary $A$
+--
+we have that
+
+$
+  neat(Γ, 
+    letx(x, loopx, subvar(x, x, ())), 
+    subvar(loopx, x, ()), 
+    ()
+  )  
+$
+
+since the former diverges while the latter does not.
+
+To handle all this, we introduce the concept of an _effect signature_ #effs, 
+consisting of:
+
+- a _bounded_ lattice
+  --
+  that is, a partially ordered set #effs
+  having a top $⊤$, bottom $⊥$, 
+  meets (infima) $⊓$, and joins (suprema) $⊔$
+
+- a _fixpoint operator_ 
+  #effiter($ε$) which is
+  - _extensive_: $∀ ε, ε ≤ effiter(ε)$
+  - _idempotent_: $∀ ε, effiter((effiter(ε))) = effiter(ε)$
+  representing the effect obtained by iterating $ε$ 
+  an unbounded (potentially infinite) number of times
+  
+  We say an effect signature is _complete_ if $∀ ε, effiter(ε) = ε$
+  -- i.e. $effiter(·)$ is the identity.
+
+The most basic example of an effect signature 
+is the _boolean effect signature_: 
+the boolean lattice ${⊥, ⊤}$ equipped with $effiter(⊥) = effiter(⊤) = ⊤$.
+
+We will also make use of:
+
+- The _trivial effect signature_ ${⊤ = ⊥ = *}$
+
+- The _complete boolean effect signature_: 
+  the boolean lattice ${⊥, ⊤}$ equipped with $effiter(ε) = ε$
+
+
+We can now extend our signature $cal(S)$ with
+
+- An effect signature #effs
+
+- For each instruction $f ∈ cal(I)$, 
+  an effect #ieff($f$)
+  
+We then likewise introduce an effectful version $hastye(Γ, ε, a, A)$
+of our typing judgement $hasty(Γ, a, A)$
+which bounds the effects of $a$ above by $ε$.
+We give the rules for this judgement in @fig-expr-typing-eff.
 
 #figure(
   rule-set(
@@ -305,16 +411,6 @@ Syntactic substitution tells me that the term is _well-typed_...
 == Equational Theory
 
 #todo[give equational theory for #liter]
-
-#todo[reword below]
-
-The equational theory of #liter is the least congruence on well-typed
-expressions closed under the axioms below.
-Its congruence rules -- reflexivity, symmetry, transitivity, and one
-compatibility rule per former -- are given in @fig-expr-eqv-cong.
-The axioms themselves are split by former: the _let rules_ in
-@fig-expr-eqv-let, the _case rules_ in @fig-expr-eqv-case, and the
-_fixpoint rules_ in @fig-expr-eqv-fixpoint.
 
 #todo[explain congruence variables]
 
@@ -346,7 +442,7 @@ _fixpoint rules_ in @fig-expr-eqv-fixpoint.
   caption: [Case rules for the equational theory of #liter.],
 ) <fig-expr-eqv-case>
 
-#todo[explain each fixpoint-rule]
+#todo[explain each fixpoint-rule; uniformity is primitive -- independent of the Conway axioms (Simpson & Plotkin, LICS 2000) -- and stated only for pure comparison maps $h$]
 
 #figure(
   rules-block(eqv-fixpoint-rules),
@@ -356,27 +452,6 @@ _fixpoint rules_ in @fig-expr-eqv-fixpoint.
 == Refinement Theory
 
 #todo[give refinement theory for #liter]
-
-#todo[reword below]
-
-Refinement #tref($Γ$, rwsys, $a$, $b$, $A$) is a _directed_ analogue of
-equivalence: a preorder, rather than an equivalence relation, generated by a
-rewrite system #rwsys.
-Its congruence rules are given in @fig-expr-ref-cong.
-Two terms are _R-equivalent_, #treqr($Γ$, rwsys, $a$, $b$, $A$), when each
-refines the other -- that is, when $a ↠ b$ and $b ↠ a$ -- as in
-@fig-expr-ref-equiv.
-Every equational axiom lifts to such a two-way refinement; the theory's only
-genuinely _directed_ rule is directed substitution (#msc[let-β]), given in
-@fig-expr-ref.
-It is gated on two conditions: that the substituted effect $ε$ is a _mover_
-over the body's effect $η$ (so reordering it past $b$ adds no behaviour), and
-that $ε$ has _unrestricted_ quantity $elin(ε) = topq$ (so it may be freely
-dropped or duplicated as $x$'s occurrences in $b$ demand).
-The latter is a blunt instrument: replacing it with a precise account of _how
-many times_ $x$ is used -- affine effects to drop, relevant effects to
-duplicate -- is exactly what motivates the substructural type system.
-#todo[forward-reference the substructural type system chapter here]
 
 #todo[explain congruence rules, rewrite systems]
 
