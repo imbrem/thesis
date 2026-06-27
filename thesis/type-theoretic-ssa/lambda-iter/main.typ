@@ -730,24 +730,46 @@ We give the rules for this judgement in @fig-expr-typing-eff.
 ) <fig-expr-ref-equiv>
 
 #todo[
-  Explain directed substitution: the headline directed law, gated on movers and
-  on effect quantity.
+  Explain the polarity convention $tref(Γ, rwsys, a, b, A)^p$ for $p ∈ {+, -}$:
+  $↠^+$ is the refinement $a ↠ b$ and $↠^-$ is its reverse $b ↠ a$, so a single
+  rule stated at $↠^p$ packages a directed law together with its dual. Tie this
+  to the mover polarity $⇀^p$ (a right-mover at $+$, a left-mover at $-$) that
+  gates each rule.
 ]
 
 #todo[
-  Discuss how to present it -- as an option, a derived theorem, or omitted for
-  now -- and decide before finalizing.
+  Explain directed substitution: rather than one headline law gated on movers and
+  effect quantity, we break it into per-former #emph[directed let-distribution]
+  rules -- one per case of single-variable substitution, mirroring the pure
+  let-distribution of @fig-expr-eqv-push. Splitting a let across a pair
+  duplicates the bound expression, dropping it past a unit discards it; each rule
+  carries exactly the side conditions licensing that move.
 ]
 
 #todo[
-  Break down directed substitution into individual, single-step rules;
-  with the actual $β$-rule as a theorem again
+  Explain the two side conditions, kept deliberately simple here: the bound
+  effect $ε$ must be a $p$-mover over the continuation ($rmovep(ε, η, p)$), and
+  must have unrestricted quantity $elin(ε) = topq$. Flag #emph[effect quantity]
+  $elin(·)$ as a teaser -- replacing the blanket $ω$ with the exact multiplicity
+  of $x$ is the job of the substructural type system, still to be designed.
 ]
 
 #figure(
   rules-block(ref-directed-rules),
-  caption: [Directed substitution for the refinement theory of #liter.],
+  caption: [Directed let-distribution for the refinement theory of #liter,
+    parametrized by polarity $p ∈ {+, -}$.],
 ) <fig-expr-ref>
+
+#todo[
+  State the payoff, exactly as for the equational theory: the per-former rules
+  together derive directed substitution (let-$β$) as the admissible rule below,
+  so substitution never appears as a primitive of the refinement theory.
+]
+
+#lemma("Directed Substitution (let-β)")[
+  The following rule is admissible:
+  #align(center, prooftree(ref-let-beta))
+]
 
 #todo[
   One line: the same structural lemmas hold for the refinement judgement.

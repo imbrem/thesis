@@ -826,14 +826,140 @@
 )
 #let ref-equiv-rules = (ref-equiv,)
 
-// --- Directed substitution -------------------------------------------------
+// --- Directed let-distribution (splitting let across each former) ----------
+// The directed analogue of the pure `eqv-push-rules`: instead of demanding a
+// PURE bound expression, `let x = e; -` distributes through every former for a
+// (possibly effectful) `e` of effect ε, in the direction selected by p ∈ {+, -}
+// via `↠^p` (↠^+ = ↠, ↠^- the reverse). Two simple, deliberately UNIFORM side
+// conditions gate every rule:
+//   * ε is a p-mover over the continuation's effect η (`ε ⇀^p η`), so the
+//     binding may be reordered past the body in direction p; and
+//   * ε has unrestricted quantity αl(ε) = ω (`topq`), so it may be freely
+//     dropped (the `let-nil`/`let-ne` cases) and duplicated (the `pair`/`case`
+//     cases) as x's occurrences demand.
+// These conditions are over-strong on purpose -- keeping the rules simple while
+// we work out the right per-former *effect quantity*. Replacing the blanket
+// αl(ε) = ω with the exact multiplicity of x in the body (affine to drop,
+// relevant to duplicate) is the job of the substructural type system.
 
-// The headline directed law. Substitute a (possibly effectful) `a` for `x`,
-// provided a's effect ε is a p-mover over the body's effect η (p = + pushes the
-// binding inward, a ↠ [a/x]b; p = - is the reverse) AND ε has unrestricted
-// quantity αl(ε) = ω, so it may be dropped or duplicated as x's occurrences in b
-// demand. Tracking the *exact* multiplicity of x (affine to drop, relevant to
-// duplicate) instead of demanding ω is the job of the substructural type system.
+// Variable (miss): drop a binding the body does not use.
+#let ref-push-var = rule(
+  label: msc("let-ne"),
+  hastye($Γ$, $ε$, $e$, $A$),
+  hasty($Γ$, $y$, $B$),
+  $x ≠ y$,
+  $elin(ε) = topq$,
+  trefp($Γ$, rwsys, letx($x$, $e$, $y$), $y$, $B$, $p$),
+)
+#let ref-push-op = rule(
+  label: msc("let-op"),
+  hastye($Γ$, $ε$, $e$, $A$),
+  insttye($f$, $B$, $η$, $C$),
+  hastye($Γ, x : A$, $η$, $a$, $B$),
+  rmovep($ε$, $η$, $p$),
+  $elin(ε) = topq$,
+  trefp($Γ$, rwsys, letx($x$, $e$, $f med a$), $f med (#letx($x$, $e$, $a$))$, $C$, $p$),
+)
+#let ref-push-nil = rule(
+  label: msc("let-nil"),
+  hastye($Γ$, $ε$, $e$, $A$),
+  $elin(ε) = topq$,
+  trefp($Γ$, rwsys, letx($x$, $e$, $()$), $()$, $tyunit$, $p$),
+)
+#let ref-push-pair = rule(
+  label: msc("let-pair"),
+  hastye($Γ$, $ε$, $e$, $A$),
+  hastye($Γ, x : A$, $η$, $a$, $B$),
+  hastye($Γ, x : A$, $η$, $b$, $C$),
+  rmovep($ε$, $η$, $p$),
+  $elin(ε) = topq$,
+  trefp($Γ$, rwsys,
+    letx($x$, $e$, $(a, b)$),
+    $(#letx($x$, $e$, $a$), #letx($x$, $e$, $b$))$,
+    $B tytensor C$, $p$),
+)
+#let ref-push-inl = rule(
+  label: msc("let-inl"),
+  hastye($Γ$, $ε$, $e$, $A$),
+  hastye($Γ, x : A$, $η$, $a$, $B$),
+  rmovep($ε$, $η$, $p$),
+  $elin(ε) = topq$,
+  trefp($Γ$, rwsys, letx($x$, $e$, linl($a$)), linl($(#letx($x$, $e$, $a$))$), $B tysum C$, $p$),
+)
+#let ref-push-inr = rule(
+  label: msc("let-inr"),
+  hastye($Γ$, $ε$, $e$, $A$),
+  hastye($Γ, x : A$, $η$, $b$, $C$),
+  rmovep($ε$, $η$, $p$),
+  $elin(ε) = topq$,
+  trefp($Γ$, rwsys, letx($x$, $e$, linr($b$)), linr($(#letx($x$, $e$, $b$))$), $B tysum C$, $p$),
+)
+#let ref-push-let = rule(
+  label: msc("let"),
+  hastye($Γ$, $ε$, $e$, $A$),
+  hastye($Γ, x : A$, $η$, $a$, $B$),
+  hastye($Γ, x : A, y : B$, $η$, $b$, $C$),
+  rmovep($ε$, $η$, $p$),
+  $elin(ε) = topq$,
+  trefp($Γ$, rwsys,
+    letx($x$, $e$, letx($y$, $a$, $b$)),
+    letx($y$, $(#letx($x$, $e$, $a$))$, letx($x$, $e$, $b$)),
+    $C$, $p$),
+)
+#let ref-push-let-pair = rule(
+  label: msc("let-pair"),
+  hastye($Γ$, $ε$, $e$, $A$),
+  hastye($Γ, x : A$, $η$, $a$, $B tytensor C$),
+  hastye($Γ, x : A, y : B, z : C$, $η$, $b$, $D$),
+  rmovep($ε$, $η$, $p$),
+  $elin(ε) = topq$,
+  trefp($Γ$, rwsys,
+    letx($x$, $e$, letx($(y, z)$, $a$, $b$)),
+    letx($(y, z)$, $(#letx($x$, $e$, $a$))$, letx($x$, $e$, $b$)),
+    $D$, $p$),
+)
+#let ref-push-case = rule(
+  label: msc("case"),
+  hastye($Γ$, $ε$, $e$, $A$),
+  hastye($Γ, x : A$, $η$, $a$, $B tysum C$),
+  hastye($Γ, x : A, y : B$, $η$, $b$, $D$),
+  hastye($Γ, x : A, z : C$, $η$, $c$, $D$),
+  rmovep($ε$, $η$, $p$),
+  $elin(ε) = topq$,
+  trefp($Γ$, rwsys,
+    letx($x$, $e$, casex($a$, $y$, $b$, $z$, $c$)),
+    casex($(#letx($x$, $e$, $a$))$, $y$, letx($x$, $e$, $b$), $z$, letx($x$, $e$, $c$)),
+    $D$, $p$),
+)
+#let ref-push-abort = rule(
+  label: msc("abort"),
+  hastye($Γ$, $ε$, $e$, $A$),
+  hastye($Γ, x : A$, $η$, $a$, $tyempty$),
+  rmovep($ε$, $η$, $p$),
+  $elin(ε) = topq$,
+  trefp($Γ$, rwsys, letx($x$, $e$, labort($a$)), labort($(#letx($x$, $e$, $a$))$), $C$, $p$),
+)
+#let ref-push-iter = rule(
+  label: msc("iter"),
+  hastye($Γ$, $ε$, $e$, $A$),
+  hastye($Γ, x : A$, $η$, $a$, $B$),
+  hastye($Γ, x : A, y : B$, $η$, $b$, $C tysum B$),
+  rmovep($ε$, $η$, $p$),
+  $elin(ε) = topq$,
+  trefp($Γ$, rwsys,
+    letx($x$, $e$, iterx($a$, $y$, $b$)),
+    iterx($(#letx($x$, $e$, $a$))$, $y$, letx($x$, $e$, $b$)),
+    $C$, $p$),
+)
+
+// --- Directed substitution (let-β as a theorem) ----------------------------
+
+// The headline directed law, recovered from the per-former distribution rules
+// above exactly as `eqv-let-beta` is recovered from `eqv-push-rules`: substitute
+// a (possibly effectful) `a` for `x`, provided a's effect ε is a p-mover over
+// the body's effect η (p = + pushes the binding inward, a ↠ [a/x]b; p = - is the
+// reverse) AND ε has unrestricted quantity αl(ε) = ω, so it may be dropped or
+// duplicated as x's occurrences in b demand.
 #let ref-let-beta = rule(
   label: msc("let-β"),
   hastye($Γ$, $ε$, $a$, $A$),
@@ -916,9 +1042,16 @@
   ref-op, ref-let, ref-pair, ref-let-pair,
   ref-inl, ref-inr, ref-case, ref-abort, ref-iter,
 )
-// Refinement adds a single directed rule -- directed substitution (let-β);
-// every other rule of the theory is equational (a two-way refinement).
-#let ref-directed-rules = (ref-let-beta,)
+// Refinement's directed core: the per-former let-distribution rules, one per
+// case of `subvar`, each parametrized by the polarity p ∈ {+, -}. They mirror
+// the pure `eqv-push-rules` and together derive directed substitution (let-β),
+// floated out as the `Directed Substitution` lemma (`ref-let-beta`) -- exactly
+// as `eqv-let-beta` is derived from `eqv-push-rules` in the equational theory.
+#let ref-directed-rules = (
+  ref-push-var, ref-push-op, ref-push-nil, ref-push-pair,
+  ref-push-inl, ref-push-inr, ref-push-let, ref-push-let-pair,
+  ref-push-case, ref-push-abort, ref-push-iter,
+)
 
 // Lay an array of rules out as a single `rule-set` of proof trees.
 #let rules-block(rules) = rule-set(..rules.map(prooftree))
