@@ -23,6 +23,13 @@
 
 // The interaction-tree monad over the fixed event signature of instructions I.
 #let itree(a) = $sans("ITree") med #a$
+// Interaction trees quotiented by weak bisimulation ≈ -- the type on which the
+// Elgot-monad axioms hold strictly. The ≈ subscript distinguishes it cleanly
+// from the raw `itree`.
+#let qitree(a) = $attach(sans("ITree"), br: ≈) med #a$
+// The quotient/lifting map ⌊-⌋ : ITree A → ITree_≈ A sending a raw tree to its
+// bisimulation class.
+#let qlift(t) = $lr(⌊ #t ⌋)$
 // Interaction-tree constructors: return a value, a silent step, an event node.
 #let iret(a) = $sans("Ret") med #a$
 #let itau(t) = $sans("Tau") med #t$

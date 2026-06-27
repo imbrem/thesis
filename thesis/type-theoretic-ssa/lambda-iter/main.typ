@@ -870,32 +870,48 @@ without leaving the monad.
   caption: [Return, bind ($≫=$), and iteration for interaction trees.],
 ) <fig-itree-monad>
 
+#definition("Strong Elgot monad")[
+  A strong monad $T$ is a _strong Elgot monad_ if it is equipped with an
+  _iteration operator_ $(-)^†$ sending each Kleisli arrow $f : A → T(B tysum A)$
+  to a map $f^† : A → T med B$, such that, writing $f ⨾ g := λ a. med f med a ≫= g$
+  for Kleisli composition and $[f, g]$ for case-analysis (copairing) on a
+  coproduct, the following hold:
+  - _Fixpoint_: $f^† = f ⨾ [sans("ret"), f^†]$;
+  - _Naturality_: for $g : B → T med C$,
+    $(f ⨾ (g tysum A))^† = f^† ⨾ g$;
+  - _Codiagonal_: for $f : A → T((B tysum A) tysum A)$,
+    $(f^†)^† = (f ⨾ [ms("id"), linr(med)])^†$;
+  - _Uniformity_: for $g : X → T(B tysum X)$ and a _pure_ $h : X → A$ with
+    $h^↑ ⨾ f = g ⨾ (B tysum h^↑)$, we have $h^↑ ⨾ f^† = g^†$, where
+    $h^↑ := sans("ret") ∘ h$;
+  - _Strength_: for $f : A → T(B tysum A)$,
+    $X tytensor f^† = (X tytensor f ⨾ δ^(-1))^†$, where $δ$ is the canonical
+    distributor.
+] <def-elgot-monad>
+
 #todo[
-  Define an _Elgot monad_ abstractly: a monad $T$ equipped with an iteration
-  operator $(-)^*$ taking a Kleisli arrow $f : A → T(B tysum A)$ to its fixpoint
-  $f^* : A → T med B$, satisfying the Conway/Elgot axioms -- fixpoint unfolding,
-  naturality, dinaturality, codiagonal -- plus uniformity. State these as the
-  monadic counterparts of the categorical axioms of the next chapter, and cite
-  the source~@xia2020itrees.
+  Frame the definition: these are the monadic counterparts of the categorical
+  Conway/Elgot axioms of the next chapter (naturality and codiagonal correspond
+  to #rle[let-iter] and #rle[codiag]; dinaturality is derivable). Note that for
+  interaction trees the iteration operator $(-)^†$ is realized by the #kiter of
+  @fig-itree-monad, and cite the source~@xia2020itrees.
 ]
 
 #todo[
   Flag the central subtlety: the raw datatype #itree($A$) of @fig-itree with the
-  #ms[Tau]-guarded #kiter of @fig-itree-monad does _not_ satisfy the Elgot axioms
-  on the nose. The extra #ms[Tau] steps mean, e.g., that fixpoint unfolding and
-  codiagonal hold only _up to weak bisimulation_ ($≈$), since the two sides emit
-  different numbers of silent steps.
+  #ms[Tau]-guarded #kiter of @fig-itree-monad does _not_ satisfy the axioms of
+  @def-elgot-monad on the nose. The extra #ms[Tau] steps mean, e.g., that
+  fixpoint unfolding and codiagonal hold only _up to weak bisimulation_ ($≈$),
+  since the two sides emit different numbers of silent steps.
 ]
 
 #todo[
-  Introduce the quotient explicitly, and distinguish it _syntactically_ from the
-  raw type: write #itree($A$) for the raw coinductive trees and, say,
-  $#itree($A$) slash ≈$ (or $bar.v.double #itree($A$) bar.v.double$) for the type
-  quotiented by weak bisimulation. Give the quotient/lifting map
-  $⌊ - ⌋ : #itree($A$) → #itree($A$) slash ≈$ a name, and define return, bind,
-  and iterate on the quotient by lifting the raw operations of @fig-itree-monad
-  and checking each respects $≈$. It is on the _quotient_ that the Elgot axioms
-  hold strictly.
+  Introduce the quotient and rely on the notation of @fig-itree-monad's lifting:
+  the raw coinductive trees #itree($A$) versus the bisimulation quotient
+  #qitree($A$), with the quotient map $#qlift($-$) : #itree($A$) → #qitree($A$)$.
+  Define return, bind, and iterate on #qitree($A$) by lifting the raw operations
+  of @fig-itree-monad through $#qlift($-$)$ and checking each respects $≈$; it is
+  on #qitree($A$) that the axioms of @def-elgot-monad hold strictly.
 ]
 
 #todo[
@@ -950,10 +966,10 @@ recorded structurally, as the #ms[Vis] nodes of the tree it returns.
 
 #todo[
   Make explicit that the interpretation lands in the _quotient_ Elgot monad
-  $#itree($-$) slash ≈$, not the raw trees: $#sem($a$)$ is a Kleisli arrow
-  $#sem($Γ$) → #itree($-$) slash ≈ thin #sem($A$)$. This is what lets the
-  iteration clause appeal to the (strict) Elgot axioms, and what makes the
-  soundness statement below well-posed.
+  #qitree($-$), not the raw trees: $#sem($a$)$ is a Kleisli arrow
+  $#sem($Γ$) → #qitree($#sem($A$)$)$. This is what lets the iteration clause
+  appeal to the (strict) axioms of @def-elgot-monad, and what makes the soundness
+  statement below well-posed.
 ]
 
 #todo[state soundness: $#eqat($Γ$, $a$, $b$, $A$)$ implies $#sem($a$) = #sem($b$)$]
@@ -962,9 +978,9 @@ recorded structurally, as the #ms[Vis] nodes of the tree it returns.
 
 #todo[
   Refine the monad to an _ordered_ (poset-enriched) Elgot monad: equip each
-  $#itree($A$) slash ≈$ with a partial order (e.g. the divergence/observation
-  order in which a more-defined tree refines a less-defined one) for which bind
-  and iterate are monotone.
+  #qitree($A$) with a partial order (e.g. the divergence/observation order in
+  which a more-defined tree refines a less-defined one) for which bind and
+  iterate are monotone.
 ]
 
 #todo[
