@@ -247,26 +247,74 @@ whenever the premises hold, the conclusion is derivable
 hence, we can soundly use this rule when proving something is derivable.
 
 Nonetheless, a rule being admissible is a weaker condition than a rule being
-_derivable_ by simple composition of other rules, e.g., in the way that
+_derivable_ by simple composition of other rules, e.g., the way @fig-pair-deriv
+derives #hasty($Γ$, $(a, (b, c))$, $A tytensor (B tytensor C)$) from the
+assumptions #hasty($Γ$, $a$, $A$), #hasty($Γ$, $b$, $B$), and #hasty($Γ$, $c$, $C$)
+by two applications of #rle[pair]
+--
+since, while every derivable rule is trivially admissible, not every admissible
+rule is derivable.
 
-#todo[show how $(a, (b, c)) : A ⊗ (B ⊗ C)$ being well-typed is derivable under the obvious assumptions as a proof tree]
-
-since while every derivable rule is trivially admissible, not every admissible rule
-is derivable.
+#figure(
+  prooftree(rule(
+    label: msc("pair"),
+    hasty($Γ$, $a$, $A$),
+    rule(
+      label: msc("pair"),
+      hasty($Γ$, $b$, $B$),
+      hasty($Γ$, $c$, $C$),
+      hasty($Γ$, $(b, c)$, $B tytensor C$),
+    ),
+    hasty($Γ$, $(a, (b, c))$, $A tytensor (B tytensor C)$),
+  )),
+  caption: [Deriving #hasty($Γ$, $(a, (b, c))$, $A tytensor (B tytensor C)$) from
+    #hasty($Γ$, $a$, $A$), #hasty($Γ$, $b$, $B$), and #hasty($Γ$, $c$, $C$) by two
+    applications of #rle[pair].],
+) <fig-pair-deriv>
 
 In particular, if we _extend_ the set of typing rules by adding a new rule,
 every derivable rule stays derivable, but admissible rules may stop being admissible
 --
-for example, adding the rule
+for example, adding the #rle[nodeps] rule of @fig-nodeps, which types
+#hasty($·$, $ms("nodeps")(a)$, $A$) in the empty context for every closed
+#hasty($·$, $a$, $A$), would make weakening false.
+Indeed, as @fig-nodeps-wk shows, both premises of #rle[Wk] hold
+--
+#hasty($·$, $ms("nodeps")(a)$, $A$) is derivable, and $x : A$ weakens the empty
+context, #wkns($x : A$, $·$)
+--
+yet the conclusion #hasty($x : A$, $ms("nodeps")(a)$, $A$) is _not_ derivable,
+since #rle[nodeps] requires the empty context, even though the set of derivable
+judgements has strictly expanded.
 
-#todo[in the _empty_ context, $ms("nodeps")(a) : A$ for all $a : A$]
+#figure(
+  prooftree(rule(
+    label: msc("nodeps"),
+    hasty($·$, $a$, $A$),
+    hasty($·$, $ms("nodeps")(a)$, $A$),
+  )),
+  caption: [A hypothetical rule #rle[nodeps] typing #ms("nodeps")-terms only in
+    the empty context.],
+) <fig-nodeps>
 
-which requires an empty context,
-would make weakening false, since
-
-#todo[$x : A$ weakens the empty context, but $ms("nodeps")(a)$ is not well-typed]
-
-even though the set of derivable judgements has strictly expanded.
+#figure(
+  prooftree(rule(
+    label: msc("Wk"),
+    rule(
+      label: msc("nodeps"),
+      hasty($·$, $a$, $A$),
+      hasty($·$, $ms("nodeps")(a)$, $A$),
+    ),
+    rule(
+      label: msc("drop"),
+      rule(label: msc("nil"), wkns($·$, $·$)),
+      wkns($x : A$, $·$),
+    ),
+    $cancel(hasty(x : A, ms("nodeps")(a), A))$,
+  )),
+  caption: [With #rle[nodeps] added, #rle[Wk] is no longer admissible: both
+    premises are derivable, yet the struck-through conclusion is not.],
+) <fig-nodeps-wk>
 
 Weakening allows us to _transport_ a judgement we've proved in a local context
 --
@@ -372,6 +420,12 @@ allowing us to state the _(syntactic, simultaneous) substitution lemma_ as follo
 ]
 
 == Effects
+
+We want to build to an _equational theory_ for #liter
+-- in particular, by defining a judgement
+$
+  ...
+$
 
 #todo[
   give a slightly better intro to the explanation of why we want an effect system
