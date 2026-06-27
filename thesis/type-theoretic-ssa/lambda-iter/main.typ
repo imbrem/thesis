@@ -870,6 +870,41 @@ without leaving the monad.
   caption: [Return, bind ($≫=$), and iteration for interaction trees.],
 ) <fig-itree-monad>
 
+#todo[
+  Define an _Elgot monad_ abstractly: a monad $T$ equipped with an iteration
+  operator $(-)^*$ taking a Kleisli arrow $f : A → T(B tysum A)$ to its fixpoint
+  $f^* : A → T med B$, satisfying the Conway/Elgot axioms -- fixpoint unfolding,
+  naturality, dinaturality, codiagonal -- plus uniformity. State these as the
+  monadic counterparts of the categorical axioms of the next chapter, and cite
+  the source~@xia2020itrees.
+]
+
+#todo[
+  Flag the central subtlety: the raw datatype #itree($A$) of @fig-itree with the
+  #ms[Tau]-guarded #kiter of @fig-itree-monad does _not_ satisfy the Elgot axioms
+  on the nose. The extra #ms[Tau] steps mean, e.g., that fixpoint unfolding and
+  codiagonal hold only _up to weak bisimulation_ ($≈$), since the two sides emit
+  different numbers of silent steps.
+]
+
+#todo[
+  Introduce the quotient explicitly, and distinguish it _syntactically_ from the
+  raw type: write #itree($A$) for the raw coinductive trees and, say,
+  $#itree($A$) slash ≈$ (or $bar.v.double #itree($A$) bar.v.double$) for the type
+  quotiented by weak bisimulation. Give the quotient/lifting map
+  $⌊ - ⌋ : #itree($A$) → #itree($A$) slash ≈$ a name, and define return, bind,
+  and iterate on the quotient by lifting the raw operations of @fig-itree-monad
+  and checking each respects $≈$. It is on the _quotient_ that the Elgot axioms
+  hold strictly.
+]
+
+#todo[
+  Note this raw-vs-quotient split is a provisional, deliberately explicit
+  presentation chosen to make the bisimulation bookkeeping visible; we will
+  revise it (e.g. to a setoid- or coinduction-up-to-based account) once the
+  Elgot-monad interface is in place.
+]
+
 == Monadic Semantics
 
 /*
@@ -913,12 +948,103 @@ recorded structurally, as the #ms[Vis] nodes of the tree it returns.
   caption: [Monadic semantics of #liter terms, where $γ ∈ #sem($Γ$)$.],
 ) <fig-sem-tm>
 
+#todo[
+  Make explicit that the interpretation lands in the _quotient_ Elgot monad
+  $#itree($-$) slash ≈$, not the raw trees: $#sem($a$)$ is a Kleisli arrow
+  $#sem($Γ$) → #itree($-$) slash ≈ thin #sem($A$)$. This is what lets the
+  iteration clause appeal to the (strict) Elgot axioms, and what makes the
+  soundness statement below well-posed.
+]
+
 #todo[state soundness: $#eqat($Γ$, $a$, $b$, $A$)$ implies $#sem($a$) = #sem($b$)$]
 
 == Refinement
 
-#todo[this -- define ordered monads, etc.]
+#todo[
+  Refine the monad to an _ordered_ (poset-enriched) Elgot monad: equip each
+  $#itree($A$) slash ≈$ with a partial order (e.g. the divergence/observation
+  order in which a more-defined tree refines a less-defined one) for which bind
+  and iterate are monotone.
+]
+
+#todo[
+  State soundness of refinement against this order: $#tref($Γ$, rwsys, $a$, $b$, $A$)$
+  implies $#sem($a$) ≤ #sem($b$)$, with equivalence (hence equational soundness)
+  falling out of antisymmetry. Note the order is the Kleisli shadow of the
+  poset-enrichment of the categorical model in the next chapter.
+]
 
 = Categorical Semantics
 
-#todo[this]
+#todo[
+  Frame the chapter: a _model_ fixes a category $cal(C)$, interprets each type
+  $A$ and context $Γ$ as objects $#sem($A$)$, $#sem($Γ$)$, and each well-typed
+  term $#hasty($Γ$, $a$, $A$)$ as a morphism $#sem($a$) ∈ cal(C)(#sem($Γ$), #sem($A$))$.
+  State the goal: pick categorical structure that corresponds one-to-one to the
+  formers of #liter, so the interpretation is compositional and the equational /
+  refinement laws become universal properties. We follow
+  `papers/isotope/complete-refinement-ssa.tex`, specialized to the
+  _non-substructural_ case (no effect-graded subcategories, no duplication /
+  discard families).
+]
+
+#todo[
+  Poset-enrichment (for refinement): define a poset-enriched category -- each
+  hom-set $cal(C)(A, B)$ carries a partial order compatible with composition.
+  Interpret $↠$ as $≤$ on morphisms, so soundness of refinement is monotonicity
+  and soundness of equivalence is antisymmetry. Remark that every category is
+  trivially poset-enriched under equality, so no generality is lost.
+]
+
+#todo[
+  Premonoidal structure (for sequencing / binding): define binoidal categories,
+  _central_ morphisms and the _sliding_ equation, then a symmetric premonoidal
+  category (identity object, central natural associators / unitors / symmetry;
+  triangle, pentagon, hexagon). Motivate via the Kleisli-of-a-strong-monad
+  analogy -- sequencing $=$ bind, and sliding fails exactly when effect order
+  matters (the $ms("print")$ example). State the premonoidal coherence theorem.
+]
+
+#todo[
+  Coproducts + distributivity (for branching): take chosen coproducts $A + B$
+  with $[f, g]$ modelling #ms[case]; require the injections central and the
+  canonical $δ : (A tytensor B) + (A tytensor C) → A tytensor (B + C)$ an
+  isomorphism. Note the empty type $tyempty$ is the initial object, modelling
+  #ms[abort].
+]
+
+#todo[
+  Conway iteration (for loops): define a pre-iterative category (fixpoint
+  operator $(-)^dagger : cal(C)(A, B + A) → cal(C)(A, B)$ with the unrolling
+  law), then a _Conway_ operator adding naturality, dinaturality (note: later
+  shown derivable), and codiagonal; tie naturality / codiagonal back to the
+  #rle[let-iter] and #rle[codiag] rules. Add _strength_, compatibility of
+  $(-)^dagger$ with the premonoidal product, justified by the thread-a-value
+  equivalence.
+]
+
+#todo[
+  Freyd structure (the pure / value layer): isolate the wide subcategory of
+  _central_ (pure) morphisms -- a Cartesian category -- with an
+  identity-on-objects inclusion into the premonoidal $cal(C)$. This is the
+  non-substructural specialization of the paper's effectful category: a single
+  pure subcategory $cal(C)_⊥$ in place of the effect-graded family $cal(C)_ε$.
+]
+
+#todo[
+  (Directed) uniformity, giving the Elgot/Freyd--Elgot category: require
+  $(-)^dagger$ to be uniform with respect to the pure subcategory (in both
+  polarities $p ∈ {+, -}$, matching $↠^p$), which is what licenses moving a pure
+  morphism into a loop body -- the categorical content of substituting into
+  #ms[iter].
+]
+
+#todo[
+  Assemble the definition: a _premonoidal Freyd--Elgot category_ is a
+  poset-enriched, distributive, symmetric premonoidal category with a pure
+  Cartesian Freyd subcategory and a strong Conway iteration operator uniform over
+  it. Then give $#sem($-$)$ on types, contexts, and terms, and state soundness
+  and completeness of the equational and refinement theories against this class
+  of models, with the (ordered) interaction-tree Elgot monad of the previous
+  section as the leading instance.
+]
