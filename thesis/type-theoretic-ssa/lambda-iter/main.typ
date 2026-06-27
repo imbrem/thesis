@@ -859,7 +859,7 @@ Crucially, they also support _iteration_: given a loop body
 $f : A → itree(B tysum A)$, the operator #kiter($f$) runs $f$ repeatedly,
 emitting a #ms[Tau] step on each #emph[continue] ($iota_r$) and returning on
 the first #emph[exit] ($iota_l$).
-This makes #itree($-$) a strong _Elgot monad_~@xia2020itrees, which is precisely
+This makes #itree($-$) an _Elgot monad_~@xia2020itrees, which is precisely
 the structure we need to interpret every former of #liter -- including loops --
 without leaving the monad.
 
@@ -870,8 +870,8 @@ without leaving the monad.
   caption: [Return, bind ($≫=$), and iteration for interaction trees.],
 ) <fig-itree-monad>
 
-#definition("Strong Elgot monad")[
-  A strong monad $T$ is a _strong Elgot monad_ if it is equipped with an
+#definition("Elgot monad")[
+  A monad $T$ on $bold("Set")$ is an _Elgot monad_ if it is equipped with an
   _iteration operator_ $(-)^†$ sending each Kleisli arrow $f : A → T(B tysum A)$
   to a map $f^† : A → T med B$, such that, writing $f ⨾ g := λ a. med f med a ≫= g$
   for Kleisli composition and $[f, g]$ for case-analysis (copairing) on a
@@ -883,10 +883,7 @@ without leaving the monad.
     $(f^†)^† = (f ⨾ [ms("id"), linr(med)])^†$;
   - _Uniformity_: for $g : X → T(B tysum X)$ and a _pure_ $h : X → A$ with
     $h^↑ ⨾ f = g ⨾ (B tysum h^↑)$, we have $h^↑ ⨾ f^† = g^†$, where
-    $h^↑ := sans("ret") ∘ h$;
-  - _Strength_: for $f : A → T(B tysum A)$,
-    $X tytensor f^† = (X tytensor f ⨾ δ^(-1))^†$, where $δ$ is the canonical
-    distributor.
+    $h^↑ := sans("ret") ∘ h$.
 ] <def-elgot-monad>
 
 #todo[
@@ -895,6 +892,16 @@ without leaving the monad.
   to #rle[let-iter] and #rle[codiag]; dinaturality is derivable). Note that for
   interaction trees the iteration operator $(-)^†$ is realized by the #kiter of
   @fig-itree-monad, and cite the source~@xia2020itrees.
+]
+
+#todo[
+  Remark on strength: working over $bold("Set")$, every monad is canonically
+  strong (well-pointedness), so no _strong_ qualifier is needed; moreover the
+  strength law for iteration, $X tytensor f^† = (X tytensor f ⨾ δ^(-1))^†$,
+  follows from uniformity -- for each $x ∈ X$ the map $(x, -) : A → X tytensor A$
+  is pure, and uniformity applied to it yields the law pointwise. We will need
+  strength explicitly only in the next chapter, where the category is no longer
+  assumed well-pointed.
 ]
 
 #todo[

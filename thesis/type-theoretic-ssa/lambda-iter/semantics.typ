@@ -6,7 +6,7 @@
 //
 // The semantics interprets every type as a set, every context as a product of
 // sets, and every term-in-context Γ ⊢ a : A as a function ⟦Γ⟧ → ITree ⟦A⟧ into
-// the interaction-tree monad (a strong Elgot monad). The presentation is the
+// the interaction-tree monad (an Elgot monad). The presentation is the
 // Kleisli reading of the categorical semantics; the category theory is the
 // subject of the next chapter.
 
