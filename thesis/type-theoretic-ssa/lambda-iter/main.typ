@@ -104,9 +104,23 @@ This language is intentionally very minimal -- in particular:
     )
   $
 
-#todo[
-  Add note about locally-nameless syntax
-]
+In this chapter, we will freely identify $alpha$-equivalent terms
+--
+that is, we will treat
+$letx(x, a, b)$
+and
+$letx(y, a, subvar(y, x, b))$
+as the same term whenever it is convenient to do so,
+where $subvar(y, x, b)$ denotes replacing all occurences of $x$
+in $b$ with $y$.
+In particular, we may therefore treat all bound variables 
+-- e.g. $x$ in $letx(x, a, b)$ -- as _fresh symbols_.
+
+This can be formalized by using _locally nameless_ syntax, 
+in which free variables remain names like $x, y, z$ 
+while bound variables are represented as de-Bruijn indices;
+more information may be found in the Appendix #todo[write this or remove it]
+or in #todo[locally nameless tutorial citation]
 
 == Typing
 
