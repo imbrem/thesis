@@ -204,15 +204,11 @@ In particular:
   caption: [Typing rules for #liter, including subtyping and weakening.],
 ) <fig-expr-typing>
 
-As a basic sanity check, we note that the rules given in @fig-expr-typing
-satisfy _syntactic weakening_, as stated below: 
+== Syntactic Metatheory
 
-#lemma("Weakening")[
-  If #wkns($Γ$, $Δ$), #subty($A$, $B$), and #hasty($Δ$, $a$, $A$),
-  then #hasty($Γ$, $a$, $B$).
-]
+#todo[move equational theory a bit down, and just state metatheory?]
 
-== Substitution
+We can now begin to state some of the basic syntactic metatheory of #liter.
 
 Recall that our high-level goal here is to develop a syntactic equational theory to reason about compiler optimizations on #liter -- that means, we want to be able to introduce a judgement
 
@@ -220,31 +216,86 @@ $
   #eqat($Γ$, $a_1$, $a_2$, $A$)
 $
 
-meaning that replacing $a_1$ with $a_2$ shouldn't change observable program behaviour.
+meaning that replacing $a_1$ with $a_2$ 
+shouldn't change externally observable program behaviour.
 
-In particular, this means that we want $a_1$ and $a_2$ to be indistinguishable in any _program context_ -- that is, we want, for all $#hasty($Γ, x : A$, $b$, $B$)$
-$
-  eqat(Γ, subvar(a_1, x, b), subvar(a_2, x, b), B)
-$
-
-where $subvar(a, x, b)$ denotes replacing all occurrences of $x$ in $b$ with $a$
+We therefore want our equational theory, 
+and eventually our program semantics, to be _compositional_:
+if $a_1$ is observationally indistinguishable from $a_2$,
+then we shouldn't be able to distinguish 
+$subvar(a_1, x, b)$ and $subvar(a_2, x, b)$ either
 --
-as shown in the figure below:
-
-#rule-set(..subst-var-eqns)
-
-The first question we need to ask, therefore, 
-is whether both sides of this equation are well-typed at all
+where $subvar(a, x, b)$ denotes _capture-avoiding substition_ of $a$ for $x$ in $b$
 --
-this is one of the primary motivations for proving _syntactic substitution_ for #liter,
-which we state as follows:
+as otherwise we could use the program $b$ to distinguish $a_1$ from $a_2$.
+
+To do this, however, we need to be able to 
+_translate_ results proven using only the local environment
+into the environment present at the point-of-use
+--
+for example, if
+$
+  #eqat($x : X, y : Y, z : Z$, $a_1$, $a_2$, $A$)
+$
+we should be able to use this result in a context containing an extra variable $w : W$
+--
+i.e., to conclude
+$
+  #eqat($x : X, y : Y, z : Z, w : W$, $a_1$, $a_2$, $A$)
+$
+Likewise, we'd like to be able to use this result in a context where 
+$a_1, a_2$ are interpreted in a supertype $A'$
+--
+i.e., to conclude
+$
+  ∀ A' . #subty($A$, $A'$) ==> #eqat($x : X, y : Y, z : Z$, $a_1$, $a_2$, $A'$)
+$
+
+For the above equation to even be well-formed, 
+however, we first need it to be well-typed!
+
+Thankfully, this follows directly from the 
+_(syntactic) weakening lemma_
+which we state below:
+
+#lemma("Syntactic Weakening")[
+  The following rule is _admissible_:
+  #todo[write below as a rule]
+  If #wkns($Γ$, $Δ$), #subty($A$, $B$), and #hasty($Δ$, $a$, $A$),
+  then #hasty($Γ$, $a$, $B$).
+]
+
+
+
+
+#figure(
+  rules-block(eqv-congruence-rules),
+  caption: [Congruence rules for the equational theory of #liter.],
+) <fig-expr-eqv-cong>
+
+defined formally by induction on terms in @fig-expr-subst-def
+
+#figure(
+  rule-set(..subst-var-eqns),
+  caption: [Definition of single-variable substitution $subvar(a, x, b)$.]
+) <fig-expr-subst-def>
+
+To be able to ask this question, 
+we need both sides of the equations to be well-typed
+--
+in general, what we want is for the following typing rule to be _admissible_:
+
+#todo[segue]
 
 #lemma("Substitution")[
+  #todo[write as admissible rule]
   If #issub($Γ$, $a$, $A$) and #hasty($Γ, x : A$, $b$, $B$),
   then #hasty($Γ$, $subvar(a, x, b)$, $B$).
 ]
 
-#todo[segue straight to effects, leaving parallel substitution to later?]
+/*
+
+#todo[pull out to separate section later -- consider also renaming, exchange...]
 
 It is straightforward to generalize this to _parallel substitution_ 
 in the usual manner:
@@ -275,7 +326,11 @@ yielding the usual parallel substitution lemma;
   then #hasty($Γ'$, subap($σ$, $a$), $A$).
 ]
 
+*/
+
 == Effects
+
+#todo[segue -- start equational theory before...]
 
 We note that, by substitution, 
 given $hasty(Γ, a, A)$ and #hasty($Γ, x : A$, $b$, $B$), 
@@ -414,10 +469,6 @@ We give the rules for this judgement in @fig-expr-typing-eff.
 
 #todo[explain congruence variables]
 
-#figure(
-  rules-block(eqv-congruence-rules),
-  caption: [Congruence rules for the equational theory of #liter.],
-) <fig-expr-eqv-cong>
 
 #todo[relate to single variable substitution]
 
