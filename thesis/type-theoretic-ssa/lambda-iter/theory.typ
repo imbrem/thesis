@@ -239,6 +239,28 @@
   hastye($Γ$, effiter($ε$), iterx($a$, $x$, $b$), $B$),
 )
 
+// --- Admissible structural rules -------------------------------------------
+// Neither weakening nor substitution is primitive: each is *admissible* —
+// every instance of its conclusion is derivable from the syntax-directed
+// typing rules whenever its premises are. They are proved by induction on the
+// typing derivation of the term being weakened / substituted into.
+
+// Weakening: a derivation in the smaller context Δ at the smaller type A can be
+// replayed in any larger context Γ ⊒ Δ at any supertype A <: B.
+#let adm-weakening = rule(
+  label: msc("weakening"),
+  wkns($Γ$, $Δ$), subty($A$, $B$), hasty($Δ$, $a$, $A$),
+  hasty($Γ$, $a$, $B$),
+)
+// Single-variable substitution: a well-typed `a : A` may be substituted for a
+// free variable `x : A` of the body, yielding a derivation in the smaller
+// context Γ.
+#let adm-subst = rule(
+  label: msc("subst"),
+  hasty($Γ$, $a$, $A$), hasty($Γ, x : A$, $b$, $B$),
+  hasty($Γ$, subvar($a$, $x$, $b$), $B$),
+)
+
 // ===========================================================================
 //  SUBSTITUTION
 // ===========================================================================
@@ -794,7 +816,11 @@
 )
 // The equational axioms, split by former: let rules, case (+ empty/abort)
 // rules, and the fixpoint (Conway iteration) rules.
-#let eqv-let-rules = (eqv-let-beta, eqv-let-eta, eqv-unit, eqv-pair-beta)
+// let-β is NOT included here: it is the one let-rule whose statement mentions
+// substitution, so it is floated out as an admissible rule (the `Pure
+// Substitution` lemma), leaving every rule in this group a simple symbol
+// manipulation. It is derived from `eqv-push-rules` + `let-η`.
+#let eqv-let-rules = (eqv-let-eta, eqv-unit, eqv-pair-beta)
 #let eqv-case-rules = (eqv-case-betal, eqv-case-betar, eqv-case-eta, eqv-init)
 #let eqv-fixpoint-rules = (
   eqv-iter-beta, eqv-iter-nat, eqv-iter-codiag, eqv-uniformity,

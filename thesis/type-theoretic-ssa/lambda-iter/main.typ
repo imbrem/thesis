@@ -204,129 +204,75 @@ In particular:
   caption: [Typing rules for #liter, including subtyping and weakening.],
 ) <fig-expr-typing>
 
-== Syntactic Metatheory
+== Metatheory
 
-#todo[move equational theory a bit down, and just state metatheory?]
+#todo[
+  Open the section: #liter's structural metatheory comes down to two operations,
+  weakening and substitution.
+]
 
-We can now begin to state some of the basic syntactic metatheory of #liter.
+#todo[
+  Weakening moves a derivation into a larger context or a supertype; substitution
+  plugs one well-typed term into another. State that both preserve typing.
+]
 
-Recall that our high-level goal here is to develop a syntactic equational theory to reason about compiler optimizations on #liter -- that means, we want to be able to introduce a judgement
+#todo[
+  Motivate doing this now: these are exactly the lemmas the equational and
+  refinement theories below rely on, so we establish them once, up front.
+]
 
-$
-  #eqat($Γ$, $a_1$, $a_2$, $A$)
-$
-
-meaning that replacing $a_1$ with $a_2$ 
-shouldn't change externally observable program behaviour.
-
-We therefore want our equational theory, 
-and eventually our program semantics, to be _compositional_:
-if $a_1$ is observationally indistinguishable from $a_2$,
-then we shouldn't be able to distinguish 
-$subvar(a_1, x, b)$ and $subvar(a_2, x, b)$ either
---
-where $subvar(a, x, b)$ denotes _capture-avoiding substition_ of $a$ for $x$ in $b$
---
-as otherwise we could use the program $b$ to distinguish $a_1$ from $a_2$.
-
-To do this, however, we need to be able to 
-_translate_ results proven using only the local environment
-into the environment present at the point-of-use
---
-for example, if
-$
-  #eqat($x : X, y : Y, z : Z$, $a_1$, $a_2$, $A$)
-$
-we should be able to use this result in a context containing an extra variable $w : W$
---
-i.e., to conclude
-$
-  #eqat($x : X, y : Y, z : Z, w : W$, $a_1$, $a_2$, $A$)
-$
-Likewise, we'd like to be able to use this result in a context where 
-$a_1, a_2$ are interpreted in a supertype $A'$
---
-i.e., to conclude
-$
-  ∀ A' . #subty($A$, $A'$) ==> #eqat($x : X, y : Y, z : Z$, $a_1$, $a_2$, $A'$)
-$
-
-For the above equation to even be well-formed, 
-however, we first need it to be well-typed!
-
-Thankfully, this follows directly from the 
-_(syntactic) weakening lemma_
-which we state below:
-
-#lemma("Syntactic Weakening")[
-  The following rule is _admissible_:
-  #todo[write below as a rule]
-  If #wkns($Γ$, $Δ$), #subty($A$, $B$), and #hasty($Δ$, $a$, $A$),
+#lemma("Weakening")[
+  If #hasty($Δ$, $a$, $A$), #wkns($Γ$, $Δ$), and #subty($A$, $B$),
   then #hasty($Γ$, $a$, $B$).
 ]
 
+#todo[
+  Define single-variable substitution $subvar(a, x, b)$ as replacing the free
+  variable $x$ by $a$ throughout $b$, by recursion on $b$ (@fig-expr-subst-def).
+]
 
-
-
-#figure(
-  rules-block(eqv-congruence-rules),
-  caption: [Congruence rules for the equational theory of #liter.],
-) <fig-expr-eqv-cong>
-
-defined formally by induction on terms in @fig-expr-subst-def
+#todo[
+  Remark on the binder cases: under the variable convention bound variables are
+  fresh for $x$ and $a$, so no capture-avoidance side conditions are needed.
+]
 
 #figure(
   rule-set(..subst-var-eqns),
   caption: [Definition of single-variable substitution $subvar(a, x, b)$.]
 ) <fig-expr-subst-def>
 
-To be able to ask this question, 
-we need both sides of the equations to be well-typed
---
-in general, what we want is for the following typing rule to be _admissible_:
-
-#todo[segue]
-
-#lemma("Substitution")[
-  #todo[write as admissible rule]
-  If #issub($Γ$, $a$, $A$) and #hasty($Γ, x : A$, $b$, $B$),
+#lemma("Single-Variable Substitution")[
+  If #hasty($Γ$, $a$, $A$) and #hasty($Γ, x : A$, $b$, $B$),
   then #hasty($Γ$, $subvar(a, x, b)$, $B$).
 ]
 
-/*
+#todo[
+  Introduce simultaneous substitution: $issub(Γ', σ, Γ)$ assigns to each
+  variable of $Γ$ a term well-typed in $Γ'$; give the typing in @fig-expr-subst.
+]
 
-#todo[pull out to separate section later -- consider also renaming, exchange...]
-
-It is straightforward to generalize this to _parallel substitution_ 
-in the usual manner:
-we begin by defining a _substition_ 
-$issub(Γ, σ, Δ)$ as an ordered mapping from variables
-$#wkns($Δ$, $x : A$)$ to well-typed values $hasty(Γ, a, A)$
--- as described in @fig-expr-subst.
+#todo[
+  Describe its action $subap(σ, a)$ (@fig-expr-subst-act), noting binders extend
+  $σ$ with the identity mapping to stay capture-avoiding.
+]
 
 #figure(
   rule-set(
     prooftree(sub-nil),
     prooftree(sub-cons),
   ),
-  caption: [Substitution rules for #liter.],
+  caption: [Typing of simultaneous substitutions $issub(Γ', σ, Γ)$.],
 ) <fig-expr-subst>
 
-We can then define parallel substitution 
-on #liter expressions as a partial function 
-from pairs $σ, a$ to terms $subap(σ, a)$
-in the usual manner as follows:
+#figure(
+  rule-set(..subst-par-eqns),
+  caption: [Action $subap(σ, a)$ of a simultaneous substitution on a term.],
+) <fig-expr-subst-act>
 
-#rule-set(..subst-par-eqns)
-
-yielding the usual parallel substitution lemma;
-
-#lemma("Parallel Substitution")[
+#lemma("Simultaneous Substitution")[
   If #issub($Γ'$, $σ$, $Γ$) and #hasty($Γ$, $a$, $A$),
-  then #hasty($Γ'$, subap($σ$, $a$), $A$).
+  then #hasty($Γ'$, $subap(σ, a)$, $A$).
 ]
-
-*/
 
 == Effects
 
@@ -463,55 +409,175 @@ We give the rules for this judgement in @fig-expr-typing-eff.
   caption: [Effectful typing rules for #liter.],
 ) <fig-expr-typing-eff>
 
+#todo[
+  State that all three structural lemmas replay verbatim for the effectful
+  judgement #hastye($Γ$, $ε$, $a$, $A$).
+]
+
+#todo[
+  Highlight the one new degree of freedom: weakening may now also raise the
+  effect bound $ε$ upward along the lattice order $≤$, since a looser bound is
+  always sound.
+]
+
+#lemma("Effect Weakening")[
+  If #hastye($Δ$, $ε$, $a$, $A$), #wkns($Γ$, $Δ$), #subty($A$, $B$),
+  and $ε ≤ ε'$, then #hastye($Γ$, $ε'$, $a$, $B$).
+]
+
+#lemma("Effectful Single-Variable Substitution")[
+  If #hastye($Γ$, $ε$, $a$, $A$) and #hastye($Γ, x : A$, $ε$, $b$, $B$),
+  then #hastye($Γ$, $ε$, $subvar(a, x, b)$, $B$).
+]
+
+#lemma("Effectful Simultaneous Substitution")[
+  If $σ$ assigns to each variable of $Γ$ a term that is $ε$-bounded in $Γ'$,
+  and #hastye($Γ$, $ε$, $a$, $A$), then #hastye($Γ'$, $ε$, $subap(σ, a)$, $A$).
+]
+
 == Equational Theory
 
-#todo[give equational theory for #liter]
+#todo[
+  Open: introduce the equivalence judgement $eqat(Γ, a_1, a_2, A)$, read as
+  "$a_1$ and $a_2$ are interchangeable at type $A$ in context $Γ$".
+]
 
-#todo[explain congruence variables]
+#todo[
+  Describe the shape of the theory: a congruence -- one rule per former, plus
+  reflexivity, symmetry, and transitivity -- closed under the βη and commuting
+  axioms that follow.
+]
 
+#todo[
+  Explain congruence variables: which metavariables range over what, and that
+  congruence is what lets us rewrite a subterm anywhere inside a term.
+]
 
-#todo[relate to single variable substitution]
+#figure(
+  rules-block(eqv-congruence-rules),
+  caption: [Congruence rules for the equational theory of #liter.],
+) <fig-expr-eqv-cong>
 
-#todo[explain each let-rule]
+#todo[
+  Introduce the let-rules: these are pure symbol manipulations on
+  $#letx($x$, $a$, $b$)$ -- the η-collapse, the unit law, and pair-β -- none of
+  which mention substitution.
+]
+
+#todo[
+  Flag the deliberate omission: let-β is kept out of the primitive rules, since
+  its statement involves substitution; it is recovered as an admissible law below.
+]
 
 #figure(
   rules-block(eqv-let-rules),
   caption: [Let rules for the equational theory of #liter.],
 ) <fig-expr-eqv-let>
 
-#todo[pure let rules]
+#todo[
+  Introduce the pure let-distribution rules: when the bound expression is pure, a
+  let pushes through every former, one case per syntactic constructor.
+]
+
+#todo[
+  Note that these cases mirror the clauses of single-variable substitution
+  (@fig-expr-subst-def) exactly.
+]
 
 #figure(
   rules-block(eqv-push-rules),
   caption: [Pure let-distribution for #liter],
 ) <fig-expr-eqv-push>
 
-#todo[explain each case-rule]
+#todo[
+  State the payoff: together with let-η, the distribution rules derive the
+  substitution law as the admissible rule below, so substitution never appears as
+  a primitive of the theory.
+]
+
+#lemma("Pure Substitution (let-β)")[
+  The following rule is admissible:
+  #align(center, prooftree(eqv-let-beta))
+]
+
+#todo[
+  Explain the case-rules: the two β-reductions that select a branch, the
+  η-expansion, and the dead-code law for the empty type $tyempty$.
+]
 
 #figure(
   rules-block(eqv-case-rules),
   caption: [Case rules for the equational theory of #liter.],
 ) <fig-expr-eqv-case>
 
-#todo[explain each fixpoint-rule; uniformity is primitive -- independent of the Conway axioms (Simpson & Plotkin, LICS 2000) -- and stated only for pure comparison maps $h$]
+#todo[
+  Explain the fixpoint rules: unfolding, naturality, and codiagonal are the
+  Conway iteration axioms.
+]
+
+#todo[
+  Call out uniformity separately: it is primitive -- independent of the Conway
+  axioms (Simpson & Plotkin, LICS 2000) -- and is stated only for pure comparison
+  maps $h$.
+]
 
 #figure(
   rules-block(eqv-fixpoint-rules),
   caption: [Fixpoint rules for the equational theory of #liter.],
 ) <fig-expr-eqv-fixpoint>
 
+#todo[
+  One line: the same structural lemmas hold for the equational judgement.
+]
+
+#lemma("Equational Weakening")[
+  If #eqat($Δ$, $a$, $b$, $A$), #wkns($Γ$, $Δ$), and #subty($A$, $B$),
+  then #eqat($Γ$, $a$, $b$, $B$).
+]
+
+#lemma("Equational Single-Variable Substitution")[
+  If #hasty($Γ$, $a$, $A$) and #eqat($Γ, x : A$, $b$, $b'$, $B$),
+  then #eqat($Γ$, $subvar(a, x, b)$, $subvar(a, x, b')$, $B$).
+]
+
+#lemma("Equational Simultaneous Substitution")[
+  If #issub($Γ'$, $σ$, $Γ$) and #eqat($Γ$, $a$, $b$, $A$),
+  then #eqat($Γ'$, $subap(σ, a)$, $subap(σ, b)$, $A$).
+]
+
 == Refinement Theory
 
-#todo[give refinement theory for #liter]
+#todo[
+  Open: introduce the refinement judgement $tref(Γ, rwsys, a, b, A)$, a directed
+  preorder ("$a$ is refined by $b$") indexed by a rewrite system #rwsys.
+]
 
-#todo[explain congruence rules, rewrite systems]
+#todo[
+  Contrast with equivalence: refinement is directed, so it drops symmetry; the
+  base rewrites of #rwsys seed it and congruence closes it under every former.
+]
+
+#todo[
+  Walk through the congruence rules, noting they mirror the equational congruence
+  one-for-one with $≈$ replaced by $↠$.
+]
 
 #figure(
   rules-block(ref-congruence-rules),
   caption: [Congruence rules for the refinement theory of #liter.],
 ) <fig-expr-ref-cong>
 
-#todo[explain equivalence -- note we don't use a rewrite system above since an equivalence system is a rewrite system but _not_ vice-versa! Note that #rwsys includes effect commutativity -- versus "pure" which always commutes with everything even at the empty #rwsys]
+#todo[
+  Define R-equivalence as mutual refinement ($a ↠ b$ and $b ↠ a$); explain why
+  this is not the same as the effect-free equational $≈$.
+]
+
+#todo[
+  Note we did not present the theory above as a rewrite system, since an
+  equivalence is a rewrite system but not vice versa. Note also that #rwsys may
+  include effect commutativity, whereas "pure" commutes with everything even at
+  the empty #rwsys.
+]
 
 #figure(
   rules-block(ref-equiv-rules),
@@ -519,12 +585,39 @@ We give the rules for this judgement in @fig-expr-typing-eff.
     #rwsys.],
 ) <fig-expr-ref-equiv>
 
-#todo[explain directed substitution; discuss as an option/a theorem/etc. -- or leave out for now!]
+#todo[
+  Explain directed substitution: the headline directed law, gated on movers and
+  on effect quantity.
+]
+
+#todo[
+  Discuss how to present it -- as an option, a derived theorem, or omitted for
+  now -- and decide before finalizing.
+]
 
 #figure(
   rules-block(ref-directed-rules),
   caption: [Directed substitution for the refinement theory of #liter.],
 ) <fig-expr-ref>
+
+#todo[
+  One line: the same structural lemmas hold for the refinement judgement.
+]
+
+#lemma("Refinement Weakening")[
+  If #tref($Δ$, rwsys, $a$, $b$, $A$), #wkns($Γ$, $Δ$), and #subty($A$, $B$),
+  then #tref($Γ$, rwsys, $a$, $b$, $B$).
+]
+
+#lemma("Refinement Single-Variable Substitution")[
+  If #hasty($Γ$, $a$, $A$) and #tref($Γ, x : A$, rwsys, $b$, $b'$, $B$),
+  then #tref($Γ$, rwsys, $subvar(a, x, b)$, $subvar(a, x, b')$, $B$).
+]
+
+#lemma("Refinement Simultaneous Substitution")[
+  If #issub($Γ'$, $σ$, $Γ$) and #tref($Γ$, rwsys, $a$, $b$, $A$),
+  then #tref($Γ'$, rwsys, $subap(σ, a)$, $subap(σ, b)$, $A$).
+]
 
 = Semantics
 
