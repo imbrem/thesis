@@ -24,7 +24,12 @@
 #let mc(body) = $cal(body)$
 #let mt(body) = $mono(body)$
 #let mb(body) = $bold(body)$
-#let msc = smallcaps
+#let msc(body) = $#[
+  #show smallcaps: set text(font: "libertinus serif")
+  #smallcaps(body)
+]$
+
+#let rle(body) = msc(body)
 
 #let seq = $\; med$
 #let lexp(x, a, e) = $ms("let") med #x = #a seq #e$
@@ -42,7 +47,7 @@ $
 $
 
 // Default sets
-#let vars = $N$
+#let vars = $ms("Var")$
 #let ops = $O$
 #let vals = $V$
 #let types = $cal(T)$
