@@ -260,6 +260,36 @@
   hasty($Γ$, $a$, $A$), hasty($Γ, x : A$, $b$, $B$),
   hasty($Γ$, subvar($a$, $x$, $b$), $B$),
 )
+// Simultaneous substitution: a well-typed substitution σ ▷ Δ may be applied to
+// a term typed in Δ, transporting it to the source context Γ.
+#let adm-subst-par = rule(
+  label: msc("subst"),
+  issub($Γ'$, $σ$, $Γ$), hasty($Γ$, $a$, $A$),
+  hasty($Γ'$, subap($σ$, $a$), $A$),
+)
+
+// Effectful substitution typing Γ' ⊢_ε σ ▷ Γ: every term of σ is ε-bounded in
+// Γ'. The effectful analogue of `issub`, used by `adm-subst-par-eff`.
+#let issube(g, e, s, d) = $#g attach(⊢, br: #e) #s ▷ #d$
+
+// The same three structural rules replay verbatim for the effectful judgement
+// Γ ⊢_ε a : A, with one extra degree of freedom: weakening may also raise the
+// effect bound ε upward along the lattice order, since a looser bound is sound.
+#let adm-weakening-eff = rule(
+  label: msc("weakening"),
+  hastye($Δ$, $ε$, $a$, $A$), wkns($Γ$, $Δ$), subty($A$, $B$), $ε ≤ ε'$,
+  hastye($Γ$, $ε'$, $a$, $B$),
+)
+#let adm-subst-eff = rule(
+  label: msc("subst"),
+  hastye($Γ$, $ε$, $a$, $A$), hastye($Γ, x : A$, $ε$, $b$, $B$),
+  hastye($Γ$, $ε$, subvar($a$, $x$, $b$), $B$),
+)
+#let adm-subst-par-eff = rule(
+  label: msc("subst"),
+  issube($Γ'$, $ε$, $σ$, $Γ$), hastye($Γ$, $ε$, $a$, $A$),
+  hastye($Γ'$, $ε$, subap($σ$, $a$), $A$),
+)
 
 // ===========================================================================
 //  SUBSTITUTION
@@ -690,6 +720,26 @@
     $C$),
 )
 
+// --- Admissible structural rules (equivalence) -----------------------------
+// The three structural lemmas hold for the equational judgement as well:
+// weakening transports an equation along ⊑ and <:, and substitution is a
+// congruence (substituting into both sides of an equation preserves it).
+#let adm-weakening-eqv = rule(
+  label: msc("weakening"),
+  eqat($Δ$, $a$, $b$, $A$), wkns($Γ$, $Δ$), subty($A$, $B$),
+  eqat($Γ$, $a$, $b$, $B$),
+)
+#let adm-subst-eqv = rule(
+  label: msc("subst"),
+  hasty($Γ$, $a$, $A$), eqat($Γ, x : A$, $b$, $b'$, $B$),
+  eqat($Γ$, subvar($a$, $x$, $b$), subvar($a$, $x$, $b'$), $B$),
+)
+#let adm-subst-par-eqv = rule(
+  label: msc("subst"),
+  issub($Γ'$, $σ$, $Γ$), eqat($Γ$, $a$, $b$, $A$),
+  eqat($Γ'$, subap($σ$, $a$), subap($σ$, $b$), $A$),
+)
+
 // ===========================================================================
 //  REFINEMENT THEORY  (directed; a preorder — no `symm`)
 // ===========================================================================
@@ -791,6 +841,26 @@
   rmovep($ε$, $η$, $p$),
   $elin(ε) = topq$,
   trefp($Γ$, rwsys, letx($x$, $a$, $b$), subvar($a$, $x$, $b$), $B$, $p$),
+)
+
+// --- Admissible structural rules (refinement) ------------------------------
+// The three structural lemmas hold for the refinement judgement too: weakening
+// transports a refinement along ⊑ and <:, and substitution is monotone in both
+// sides.
+#let adm-weakening-ref = rule(
+  label: msc("weakening"),
+  tref($Δ$, rwsys, $a$, $b$, $A$), wkns($Γ$, $Δ$), subty($A$, $B$),
+  tref($Γ$, rwsys, $a$, $b$, $B$),
+)
+#let adm-subst-ref = rule(
+  label: msc("subst"),
+  hasty($Γ$, $a$, $A$), tref($Γ, x : A$, rwsys, $b$, $b'$, $B$),
+  tref($Γ$, rwsys, subvar($a$, $x$, $b$), subvar($a$, $x$, $b'$), $B$),
+)
+#let adm-subst-par-ref = rule(
+  label: msc("subst"),
+  issub($Γ'$, $σ$, $Γ$), tref($Γ$, rwsys, $a$, $b$, $A$),
+  tref($Γ'$, rwsys, subap($σ$, $a$), subap($σ$, $b$), $A$),
 )
 
 // ===========================================================================

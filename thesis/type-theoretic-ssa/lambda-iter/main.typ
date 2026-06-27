@@ -111,7 +111,7 @@ $letx(x, a, b)$
 and
 $letx(y, a, subvar(y, x, b))$
 as the same term whenever it is convenient to do so,
-where $subvar(y, x, b)$ denotes replacing all occurences of $x$
+where $subvar(y, x, b)$ denotes replacing all occurrences of $x$
 in $b$ with $y$.
 In particular, we may therefore treat all bound variables 
 -- e.g. $x$ in $letx(x, a, b)$ -- as _fresh symbols_.
@@ -236,8 +236,8 @@ Formally, we can state the _(syntactic) weakening lemma_ as follows:
   If #hasty($Γ$, $a$, $A$), #wkns($Γ'$, $Γ$), and #subty($A$, $A'$),
   then #hasty($Γ'$, $a$, $A'$)
   --
-  i.e. the following is admissible
-  #todo[admissible rule #rle("Wk") for weakening]
+  i.e. the following rule is admissible:
+  #align(center, prooftree(adm-weakening))
 ]
 
 In general, we say that a rule like #rle("Wk") is _admissible_ 
@@ -272,7 +272,7 @@ Weakening allows us to _transport_ a judgement we've proved in a local context
 --
 for example, proving an expression is well-typed given the types of the variables appearing in that expression
 --
-intro a broader program context which may, as an example, contain many more variables,
+into a broader program context which may, as an example, contain many more variables,
 or assign those variables more specific types.
 
 In general, we want to promote _compositional_ reasoning, 
@@ -298,8 +298,8 @@ We may then state the _substitution lemma_ as follows
   If #hasty($Γ$, $a$, $A$) and #hasty($Γ, x : A$, $b$, $B$),
   then #hasty($Γ$, $subvar(a, x, b)$, $B$)
   --
-  i.e., the following rule is admissible
-  #todo[admissible rule for substitution #$#rle("Subst")_1$]
+  i.e., the following rule is admissible:
+  #align(center, prooftree(adm-subst))
 ]
 
 There still remain two important gaps in our syntactic metatheory.
@@ -368,7 +368,7 @@ allowing us to state the _(syntactic, simultaneous) substitution lemma_ as follo
   then #hasty($Γ'$, $subap(σ, a)$, $A$)
   --
   that is, the following rule is admissible:
-  #todo[admissible rule #rle("Subst")]
+  #align(center, prooftree(adm-subst-par))
 ]
 
 == Effects
@@ -377,6 +377,26 @@ allowing us to state the _(syntactic, simultaneous) substitution lemma_ as follo
   give a slightly better intro to the explanation of why we want an effect system
   --
   go back to the typing rules for let vs. the admissible rule for substitution
+]
+
+#todo[
+  Tighten the opening: lead with the gap between #rle("let") and substitution
+  (both well-typed, but not equal), then motivate effects as the discipline that
+  says *when* the two coincide. The current run of examples (panic, the
+  values-only fix, the algebraic-rewrite/GVN motivation) is the right material
+  but reads as a list -- restructure into one through-line.
+]
+
+#todo[
+  Cut or fold the "values $v ∈ vals$" digression down to a sentence: it is a
+  foil for the effect-based approach, not a design we adopt, so it should not get
+  equal billing.
+]
+
+#todo[
+  Pull the divergent-#emph[iter] example (#loopx) up as the climax of the
+  motivation: it is the one effect that arises with no effectful instruction, and
+  it is what forces the fixpoint operator $(-)^↺$ into the effect signature.
 ]
 
 We note that, by substitution, 
@@ -525,19 +545,29 @@ We give the rules for this judgement in @fig-expr-typing-eff.
 
 #lemma("Weakening")[
   If #hastye($Δ$, $ε$, $a$, $A$), #wkns($Γ$, $Δ$), #subty($A$, $B$),
-  and $ε ≤ ε'$, then #hastye($Γ$, $ε'$, $a$, $B$).
+  and $ε ≤ ε'$, then #hastye($Γ$, $ε'$, $a$, $B$)
+  --
+  i.e., the following rule is admissible:
+  #align(center, prooftree(adm-weakening-eff))
 ]
 
 #todo[Single-variable substitution and simultaneous substitution generalize straightforwardly:]
 
 #lemma("Single-Variable Substitution")[
   If #hastye($Γ$, $ε$, $a$, $A$) and #hastye($Γ, x : A$, $ε$, $b$, $B$),
-  then #hastye($Γ$, $ε$, $subvar(a, x, b)$, $B$).
+  then #hastye($Γ$, $ε$, $subvar(a, x, b)$, $B$)
+  --
+  i.e., the following rule is admissible:
+  #align(center, prooftree(adm-subst-eff))
 ]
 
 #lemma("Simultaneous Substitution")[
-  If $σ$ assigns to each variable of $Γ$ a term that is $ε$-bounded in $Γ'$,
-  and #hastye($Γ$, $ε$, $a$, $A$), then #hastye($Γ'$, $ε$, $subap(σ, a)$, $A$).
+  If $σ$ assigns to each variable of $Γ$ a term that is $ε$-bounded in $Γ'$
+  (written #issube($Γ'$, $ε$, $σ$, $Γ$)),
+  and #hastye($Γ$, $ε$, $a$, $A$), then #hastye($Γ'$, $ε$, $subap(σ, a)$, $A$)
+  --
+  i.e., the following rule is admissible:
+  #align(center, prooftree(adm-subst-par-eff))
 ]
 
 == Equational Theory
@@ -622,9 +652,7 @@ We give the rules for this judgement in @fig-expr-typing-eff.
 
 #todo[
   Call out uniformity separately: it is primitive -- independent of the Conway
-  axioms (Simpson & Plotkin, LICS 2000) 
-  #todo[Add a citation for `papers/cited/Complete_axioms_for_categorical_fixed-point_operators.pdf`]
-  -- and is stated only for pure comparison
+  axioms~@simpson2000fixpoint -- and is stated only for pure comparison
   maps $h$.
 ]
 
@@ -639,17 +667,26 @@ We give the rules for this judgement in @fig-expr-typing-eff.
 
 #lemma("Weakening")[
   If #eqat($Δ$, $a$, $b$, $A$), #wkns($Γ$, $Δ$), and #subty($A$, $B$),
-  then #eqat($Γ$, $a$, $b$, $B$).
+  then #eqat($Γ$, $a$, $b$, $B$)
+  --
+  i.e., the following rule is admissible:
+  #align(center, prooftree(adm-weakening-eqv))
 ]
 
 #lemma("Single-Variable Substitution")[
   If #hasty($Γ$, $a$, $A$) and #eqat($Γ, x : A$, $b$, $b'$, $B$),
-  then #eqat($Γ$, $subvar(a, x, b)$, $subvar(a, x, b')$, $B$).
+  then #eqat($Γ$, $subvar(a, x, b)$, $subvar(a, x, b')$, $B$)
+  --
+  i.e., the following rule is admissible:
+  #align(center, prooftree(adm-subst-eqv))
 ]
 
 #lemma("Simultaneous Substitution")[
   If #issub($Γ'$, $σ$, $Γ$) and #eqat($Γ$, $a$, $b$, $A$),
-  then #eqat($Γ'$, $subap(σ, a)$, $subap(σ, b)$, $A$).
+  then #eqat($Γ'$, $subap(σ, a)$, $subap(σ, b)$, $A$)
+  --
+  i.e., the following rule is admissible:
+  #align(center, prooftree(adm-subst-par-eqv))
 ]
 
 == Refinement Theory
@@ -716,19 +753,28 @@ We give the rules for this judgement in @fig-expr-typing-eff.
   One line: the same structural lemmas hold for the refinement judgement.
 ]
 
-#lemma("Refinement Weakening")[
+#lemma("Weakening")[
   If #tref($Δ$, rwsys, $a$, $b$, $A$), #wkns($Γ$, $Δ$), and #subty($A$, $B$),
-  then #tref($Γ$, rwsys, $a$, $b$, $B$).
+  then #tref($Γ$, rwsys, $a$, $b$, $B$)
+  --
+  i.e., the following rule is admissible:
+  #align(center, prooftree(adm-weakening-ref))
 ]
 
-#lemma("Refinement Single-Variable Substitution")[
+#lemma("Substitution")[
   If #hasty($Γ$, $a$, $A$) and #tref($Γ, x : A$, rwsys, $b$, $b'$, $B$),
-  then #tref($Γ$, rwsys, $subvar(a, x, b)$, $subvar(a, x, b')$, $B$).
+  then #tref($Γ$, rwsys, $subvar(a, x, b)$, $subvar(a, x, b')$, $B$)
+  --
+  i.e., the following rule is admissible:
+  #align(center, prooftree(adm-subst-ref))
 ]
 
-#lemma("Refinement Simultaneous Substitution")[
+#lemma("Simultaneous Substitution")[
   If #issub($Γ'$, $σ$, $Γ$) and #tref($Γ$, rwsys, $a$, $b$, $A$),
-  then #tref($Γ'$, rwsys, $subap(σ, a)$, $subap(σ, b)$, $A$).
+  then #tref($Γ'$, rwsys, $subap(σ, a)$, $subap(σ, b)$, $A$)
+  --
+  i.e., the following rule is admissible:
+  #align(center, prooftree(adm-subst-par-ref))
 ]
 
 = Semantics
