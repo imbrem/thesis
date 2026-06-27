@@ -218,7 +218,7 @@ In particular:
   caption: [Typing rules for #liter, including subtyping and weakening.],
 ) <fig-expr-typing>
 
-== Metatheory
+== Metatheory  <syntactic-metatheory>
 
 We can now begin to lay out some of the metatheoretic results that we'll need to develop
 an equational theory for #liter. Probably the most important of these is _weakening_, 
@@ -421,11 +421,20 @@ allowing us to state the _(syntactic, simultaneous) substitution lemma_ as follo
 
 == Effects
 
-We want to build to an _equational theory_ for #liter
--- in particular, by defining a judgement
+We now want to build an _equational theory_ for #liter
+-- that is, a judgement
 $
-  ...
+  eqat(Γ, a_1, a_2, A)
 $
+read "in the context $Γ$, the terms $a_1$, $a_2$ are _equivalent_ at the type $A$"
+--
+where we say that $a_1$ and $a_2$ are equivalent if their behaviour is indistinguishable
+_when interpreted as values of type $A$_
+-- that is, the type $A$ can be viewed as _carrying_ 
+the information of what can and cannot be observed about $a_i$.
+
+To be able to develop our equational theory, 
+we need to be able to distinguish between _pure_ and _impure_ programs...
 
 #todo[
   give a slightly better intro to the explanation of why we want an effect system
@@ -584,18 +593,12 @@ We give the rules for this judgement in @fig-expr-typing-eff.
   caption: [Effectful typing rules for #liter.],
 ) <fig-expr-typing-eff>
 
-#todo[
-  State that all three structural lemmas replay verbatim for the effectful
-  judgement #hastye($Γ$, $ε$, $a$, $A$).
-]
-
-#todo[In particular, weakening...]
-
-#todo[
-  Highlight the one new degree of freedom: weakening may now also raise the
-  effect bound $ε$ upward along the lattice order $≤$, since a looser bound is
-  always sound.
-]
+Weakening is essentially the same for the effectful judgement,
+except that whenever
+#hastye($Γ$, $ε$, $a$, $A$),
+we have that
+#hastye($Γ$, $ε'$, $a$, $A$)
+for all $ε ≤ ε'$
 
 #lemma("Weakening")[
   If #hastye($Δ$, $ε$, $a$, $A$), #wkns($Γ$, $Δ$), #subty($A$, $B$),
@@ -605,7 +608,7 @@ We give the rules for this judgement in @fig-expr-typing-eff.
   #align(center, prooftree(adm-weakening-eff))
 ]
 
-#todo[Single-variable substitution and simultaneous substitution generalize straightforwardly:]
+Likewise, single-variable substitution replays verbatim:
 
 #lemma("Single-Variable Substitution")[
   If #hastye($Γ$, $ε$, $a$, $A$) and #hastye($Γ, x : A$, $ε$, $b$, $B$),
@@ -613,6 +616,15 @@ We give the rules for this judgement in @fig-expr-typing-eff.
   --
   i.e., the following rule is admissible:
   #align(center, prooftree(adm-subst-eff))
+]
+
+To state simultaneous substitution, we can introduce an effectful
+typing judgement on substitutions in the straightforward manner:
+
+#todo[
+  insert effectful judgement on substitutions 
+  -- 
+  just the obvious one, since we haven't discussed commutativity yet
 ]
 
 #lemma("Simultaneous Substitution")[

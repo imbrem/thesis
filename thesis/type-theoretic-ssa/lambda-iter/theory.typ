@@ -248,7 +248,7 @@
 // Weakening: a derivation in the smaller context Δ at the smaller type A can be
 // replayed in any larger context Γ ⊒ Δ at any supertype A <: B.
 #let adm-weakening = rule(
-  label: msc("weakening"),
+  label: msc("wk"),
   wkns($Γ$, $Δ$), subty($A$, $B$), hasty($Δ$, $a$, $A$),
   hasty($Γ$, $a$, $B$),
 )
@@ -276,7 +276,7 @@
 // Γ ⊢_ε a : A, with one extra degree of freedom: weakening may also raise the
 // effect bound ε upward along the lattice order, since a looser bound is sound.
 #let adm-weakening-eff = rule(
-  label: msc("weakening"),
+  label: msc("wk"),
   hastye($Δ$, $ε$, $a$, $A$), wkns($Γ$, $Δ$), subty($A$, $B$), $ε ≤ ε'$,
   hastye($Γ$, $ε'$, $a$, $B$),
 )
