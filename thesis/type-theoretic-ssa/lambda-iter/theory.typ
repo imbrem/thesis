@@ -1026,13 +1026,16 @@
   eqv-op, eqv-let, eqv-pair, eqv-let-pair,
   eqv-inl, eqv-inr, eqv-case, eqv-abort, eqv-iter,
 )
-// The equational axioms, split by former: let rules, case (+ empty/abort)
-// rules, and the fixpoint (Conway iteration) rules.
-// let-β is NOT included here: it is the one let-rule whose statement mentions
-// substitution, so it is floated out as an admissible rule (the `Pure
-// Substitution` lemma), leaving every rule in this group a simple symbol
-// manipulation. It is derived from `eqv-push-rules` + `let-η`.
-#let eqv-let-rules = (eqv-let-eta, eqv-unit, eqv-pair-beta)
+// The equational axioms, split by former and framed as universal properties:
+//   * let rules (sequencing) -- just let-η; let-β is the admissible lemma below
+//   * pair/unit rules -- the universal properties of the product ⊗ and terminal 1
+//   * coproduct/abort rules -- the universal properties of the sum + and initial 0
+//   * fixpoint rules -- the Conway iteration axioms
+// let-β is NOT among the let rules: it is the one let-rule whose statement
+// mentions substitution, so it is floated out as an admissible rule (the `Pure
+// Substitution` lemma). It is derived from `eqv-push-rules` + `let-η`.
+#let eqv-let-rules = (eqv-let-eta,)
+#let eqv-pair-rules = (eqv-unit, eqv-pair-beta, eqv-pair-eta)
 #let eqv-case-rules = (eqv-case-betal, eqv-case-betar, eqv-case-eta, eqv-init)
 #let eqv-fixpoint-rules = (
   eqv-iter-beta, eqv-iter-nat, eqv-iter-codiag, eqv-uniformity,
@@ -1045,12 +1048,12 @@
   eqv-push-case, eqv-push-abort, eqv-push-iter,
 )
 
-// Commuting conversions / η / bind laws, kept available but not part of the
-// core βη presentation above.
+// Commuting conversions / bind laws, kept available but not part of the core βη
+// presentation above. (pair-η now lives with the pair/unit rules.)
 #let eqv-binding-rules = (
   eqv-let-op, eqv-let-let, eqv-let-let-pair,
   eqv-let-case, eqv-let-pair-bind, eqv-case-bind,
-  eqv-pair-eta, eqv-iter-bind,
+  eqv-iter-bind,
 )
 
 #let ref-congruence-rules = (

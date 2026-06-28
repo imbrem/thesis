@@ -655,19 +655,22 @@ We begin with basic structural rules, given in @fig-expr-eqv-cong:
 ) <fig-expr-eqv-cong>
 
 #todo[
-  Introduce the let-rules: these are pure symbol manipulations on
-  $#letx($x$, $a$, $b$)$ -- the η-collapse, the unit law, and pair-β -- none of
-  which mention substitution.
+  Overview: present the βη axioms former by former, each as the _universal
+  property_ of the structure that types it -- starting with let (sequencing),
+  then pair/unit (the product and terminal), then coproduct/abort (the sum and
+  initial), and finally iteration.
 ]
 
 #todo[
-  Flag the deliberate omission: let-β is kept out of the primitive rules, since
-  its statement involves substitution; it is recovered as an admissible law below.
+  Start with let: #rle[let-η] collapses a trivial binding,
+  $#letx($x$, $a$, $x$) ≈ a$ -- the one primitive let rule. Its computation law,
+  let-β, is kept out of the primitives (its statement mentions substitution) and
+  recovered as the admissible law below.
 ]
 
 #figure(
   rules-block(eqv-let-rules),
-  caption: [Let rules for the equational theory of #liter.],
+  caption: [The let rules for the equational theory of #liter.],
 ) <fig-expr-eqv-let>
 
 #todo[
@@ -697,18 +700,34 @@ We begin with basic structural rules, given in @fig-expr-eqv-cong:
 ]
 
 #todo[
-  Explain the case-rules: the two β-reductions that select a branch, the
-  η-expansion, and the dead-code law for the empty type $tyempty$.
+  Now pair and unit, as the universal properties of the product $tytensor$ and
+  terminal $tyunit$: #rle[pair-β] is the product's computation law (destructuring
+  a built pair) and #rle[pair-η] its uniqueness law (a pair rebuilt from its
+  projections is itself), while #rle[unit] is the terminal object's law (every
+  unit-typed result is the trivial one).
+]
+
+#figure(
+  rules-block(eqv-pair-rules),
+  caption: [Pair and unit rules for the equational theory of #liter.],
+) <fig-expr-eqv-pair>
+
+#todo[
+  Likewise coproduct and abort, as the universal properties of the sum $tysum$
+  and initial $tyempty$: #rle[case-βl] and #rle[case-βr] are the coproduct's
+  computation laws (selecting a branch), #rle[case-η] its uniqueness law, and
+  #rle[init] the initial object's law (any two continuations after an
+  #rle[abort] agree, since nothing inhabits $tyempty$).
 ]
 
 #figure(
   rules-block(eqv-case-rules),
-  caption: [Case rules for the equational theory of #liter.],
+  caption: [Coproduct and abort rules for the equational theory of #liter.],
 ) <fig-expr-eqv-case>
 
 #todo[
-  Explain the fixpoint rules: unfolding, naturality, and codiagonal are the
-  Conway iteration axioms.
+  Finally iteration: #rle[iter-β] (fixpoint unfolding), #rle[let-iter]
+  (naturality), and #rle[codiag] (codiagonal) are the Conway iteration axioms.
 ]
 
 #todo[
