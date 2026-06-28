@@ -122,7 +122,7 @@ while bound variables are represented as de-Bruijn indices;
 more information may be found in the Appendix #todo[write this or remove it]
 or in #todo[locally nameless tutorial citation]
 
-== Typing
+== Typing <typing-rules>
 
 Our typing judgement is #hasty($Γ$, $a$, $A$),
 having the standard reading "in the context $Γ$, the expression $a$ has type $A$".
@@ -433,60 +433,36 @@ _when interpreted as values of type $A$_
 -- that is, the type $A$ can be viewed as _carrying_ 
 the information of what can and cannot be observed about $a_i$.
 
-To be able to develop our equational theory, 
-we need to be able to distinguish between _pure_ and _impure_ programs...
-
-#todo[
-  give a slightly better intro to the explanation of why we want an effect system
-  --
-  go back to the typing rules for let vs. the admissible rule for substitution
-]
-
-#todo[
-  Tighten the opening: lead with the gap between #rle("let") and substitution
-  (both well-typed, but not equal), then motivate effects as the discipline that
-  says *when* the two coincide. The current run of examples (panic, the
-  values-only fix, the algebraic-rewrite/GVN motivation) is the right material
-  but reads as a list -- restructure into one through-line.
-]
-
-#todo[
-  Cut or fold the "values $v ∈ vals$" digression down to a sentence: it is a
-  foil for the effect-based approach, not a design we adopt, so it should not get
-  equal billing.
-]
-
-#todo[
-  Pull the divergent-#emph[iter] example (#loopx) up as the climax of the
-  motivation: it is the one effect that arises with no effectful instruction, and
-  it is what forces the fixpoint operator $(-)^↺$ into the effect signature.
-]
-
-We note that, by substitution, 
-given $hasty(Γ, a, A)$ and #hasty($Γ, x : A$, $b$, $B$), 
-we have that both 
-
-- $hasty(Γ, letx(x, a, b), B)$.
-
-- $hasty(Γ, subvar(a, x, b), B)$.
-
-In general, however, we do not have that
-
+However, to be able to support optimizations like _common subexpression elimination_,
+which in this setting looks like the substitution
 $
   eqat(Γ, letx(x, a, b), subvar(a, x, b), B)
 $
+we need to be able to distinguish between _pure_ and _impure_ terms.
 
--- for example, it is obvious that
+In particular, while syntactic substitution means that 
+both sides are well-typed given the same preconditions
+--
+namely, whenever $hasty(Γ, a, A)$ and #hasty($Γ, x : A$, $b$, $B$).
+--
+they aren't in general interchangeble, even without taking instructions
+into account.
+
+For example, defining the _infinite loop_
+$hasty(Γ, loopx = iterx((), x, linr(x)), A)$
+--
+note this is well-typed for arbitrary $A$
+--
+we have that
 
 $
   neat(Γ, 
-    letx(ms("panic")(), a, ()), 
-    subvar(ms("panic")(), x, ()), 
+    letx(x, loopx, subvar(x, x, ())), 
+    subvar(loopx, x, ()), 
     ()
-  )
+  )  
 $
-since the left-hand side crashes, 
-while the right-hand side (hopefully) does not.
+since the former diverges while the latter does not.
 
 The typical way that this is handled is by distinguishing 
 a _syntactic_ category of _values_ $v ∈ vals$, like $3$ or $5$,
@@ -505,51 +481,33 @@ as well as, eventually, optimizations
 like _global value numbering_ and _common subexpression elimination_
 in the context of SSA.
 
-So we need some way to distinguish between 
-_pure_ values and general effectful _computations_
-so that $x + y$ and $sin(x)$ are recognized as _pure_
-while $ms("panic")()$ and $ms("print")(#`"hello"`)$
-remain correctly recognized as having side-effects.
-
-One particularly thorny case we'll need to consider is that of _iteration_
--- since unlike the other examples of effects we've considered,
-it can be introduced without any explicitly effectful instructions.
-
-For example, defining the _infinite loop_
-$hasty(Γ, loopx = iterx((), x, linr(x)), A)$
---
-note this is well-typed for arbitrary $A$
---
-we have that
-
+Instead, therefore, we will introduce an _effectful_ variant of our typing judgement,
 $
-  neat(Γ, 
-    letx(x, loopx, subvar(x, x, ())), 
-    subvar(loopx, x, ()), 
-    ()
-  )  
+  hastye(Γ, ε, a, A)
 $
+with reading "in the context $Γ$, the term $a$ has type $A$ and effect _at most_ $ε$."
 
-since the former diverges while the latter does not.
-
-To handle all this, we introduce the concept of an _effect signature_ #effs, 
-consisting of:
+Here, we draw $ε$ from an _effect signature_ #effs:
 
 - a _bounded_ lattice
   --
   that is, a partially ordered set #effs
   having a top $⊤$, bottom $⊥$, 
   meets (infima) $⊓$, and joins (suprema) $⊔$
+  --
+  equipped with:
 
 - a _fixpoint operator_ 
   #effiter($ε$) which is
   - _extensive_: $∀ ε, ε ≤ effiter(ε)$
   - _idempotent_: $∀ ε, effiter((effiter(ε))) = effiter(ε)$
   representing the effect obtained by iterating $ε$ 
-  an unbounded (potentially infinite) number of times
-  
-  We say an effect signature is _complete_ if $∀ ε, effiter(ε) = ε$
-  -- i.e. $effiter(·)$ is the identity.
+  an unbounded (potentially infinite) number of times.
+
+  We say an effect is _iterative_ if $effiter(ε) = ε$
+  -- this is true if and only if there exists $ε'$ s.t. $effiter(ε') = ε$.
+
+  We say an effect signature is _complete_ if every effect is iterative.
 
 The most basic example of an effect signature 
 is the _boolean effect signature_: 
@@ -561,7 +519,6 @@ We will also make use of:
 
 - The _complete boolean effect signature_: 
   the boolean lattice ${⊥, ⊤}$ equipped with $effiter(ε) = ε$
-
 
 We can now extend our signature $cal(S)$ with
 
@@ -593,12 +550,41 @@ We give the rules for this judgement in @fig-expr-typing-eff.
   caption: [Effectful typing rules for #liter.],
 ) <fig-expr-typing-eff>
 
-Weakening is essentially the same for the effectful judgement,
-except that whenever
-#hastye($Γ$, $ε$, $a$, $A$),
-we have that
+For the most part, these rules are the same as those given @fig-expr-typing,
+except that the effect of an expression is determined by the effect of its components.
+In particular:
+
+- Pure expressions like variables $x$ and units $()$ can be typed with an _arbitrary_ effect
+  $hastye(Γ, ε, x, A)$ (#rle("var")), $hastye(Γ, ε, (), mb(1))$ (#rle("unit"))
+
+- An application $f med a$ can be typed with any effect $ε$ which types $a$
+  such that $ieff(f) ≤ ε$ (#rle("inst"), #rle("op"))
+
+- The effect $ε$ of an iteration expression $iterx(a, x, b)$ is restricted to be iterative
+
+It is straightforward to derive that
+$
+  ∀ ε . hastye(Γ, ε, a, A) ==> hasty(Γ, a, A)
+$
+
+On the other hand, we note in particular that $⊤$ must be iterative, 
+since $⊤ ≤ effiter(⊤) ==> ⊤ = effiter(⊤)$ by the definition of a top element.
+It follows that, since every $ieff(f) ≤ ⊤$, we have that
+
+$
+  hasty(Γ, a, A) ==> hastye(Γ, ⊤, a, A)
+$
+and hence, by the above,
+$
+  
+  hasty(Γ, a, A) <==> hastye(Γ, ⊤, a, A)
+$
+
+Likewise, we can derive by a straightforward induction that
 #hastye($Γ$, $ε'$, $a$, $A$)
 for all $ε ≤ ε'$
+--
+in particular, our weakening lemma becomes:
 
 #lemma("Weakening")[
   If #hastye($Δ$, $ε$, $a$, $A$), #wkns($Γ$, $Δ$), #subty($A$, $B$),
@@ -619,13 +605,18 @@ Likewise, single-variable substitution replays verbatim:
 ]
 
 To state simultaneous substitution, we can introduce an effectful
-typing judgement on substitutions in the straightforward manner:
+typing judgement on substitutions in the straightforward manner,
+given in @fig-expr-subst-eff:
 
-#todo[
-  insert effectful judgement on substitutions 
-  -- 
-  just the obvious one, since we haven't discussed commutativity yet
-]
+#figure(
+  rule-set(
+    prooftree(sube-nil),
+    prooftree(sube-cons),
+  ),
+  caption: [Effectful typing of simultaneous substitutions #issube($Γ$, $ε$, $σ$, $Δ$).],
+) <fig-expr-subst-eff>
+
+Simultaneous substitution then becomes:
 
 #lemma("Simultaneous Substitution")[
   If $σ$ assigns to each variable of $Γ$ a term that is $ε$-bounded in $Γ'$
@@ -638,21 +629,25 @@ typing judgement on substitutions in the straightforward manner:
 
 == Equational Theory
 
-#todo[
-  Open: introduce the equivalence judgement $eqat(Γ, a_1, a_2, A)$, read as
-  "$a_1$ and $a_2$ are interchangeable at type $A$ in context $Γ$".
-]
+We've now got everything we need to define an equivalence judgement
+$eqat(Γ, a_1, a_2, A)$.
+We begin with basic structural rules, given in @fig-expr-eqv-cong:
 
-#todo[
-  Describe the shape of the theory: a congruence -- one rule per former, plus
-  reflexivity, symmetry, and transitivity -- closed under the βη and commuting
-  axioms that follow.
-]
+- #rle("refl"), #rle("symm"), and #rle("trans")
+  state that $eqat(Γ, a_1, a_2, A)$
+  is in fact an equivalence relation at each $Γ, A$
 
-#todo[
-  Explain congruence variables: which metavariables range over what, and that
-  congruence is what lets us rewrite a subterm anywhere inside a term.
-]
+- We want our equivalence to be a _congruence_ 
+  with respect to each of our type formers 
+  -- that is, if $a_1 ≈ a_2$,
+  then $subvar(a_1, x, b) ≈ subvar(a_2, x, b)$
+  for all well-typed $b$.
+
+  Therefore, the rest of the rules in @fig-expr-eqv-cong 
+  correspond one to one with the typing rules for each type former from @fig-expr-typing,
+  stating that our equivalence relation is in fact a _congruence_ with respect to them.
+
+
 
 #figure(
   rules-block(eqv-congruence-rules),

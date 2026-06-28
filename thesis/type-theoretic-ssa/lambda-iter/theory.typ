@@ -236,7 +236,8 @@
   label: msc("iter"),
   hastye($Γ$, $ε$, $a$, $A$),
   hastye($Γ, x : A$, $ε$, $b$, $B tysum A$),
-  hastye($Γ$, effiter($ε$), iterx($a$, $x$, $b$), $B$),
+  $effiter(ε) = ε$,
+  hastye($Γ$, $ε$, iterx($a$, $x$, $b$), $B$),
 )
 
 // --- Admissible structural rules -------------------------------------------
@@ -305,6 +306,20 @@
   label: msc("cons"),
   issub($Γ$, $σ$, $Δ$), hasty($Γ$, $a$, $A$), $x ∉ σ$,
   issub($Γ$, $σ, x ↦ a$, $Δ, x : A$),
+)
+
+// --- Effectful substitution typing Γ ⊢_ε σ ▷ Δ -----------------------------
+// The "obvious" effectful version of `sub-nil`/`sub-cons`: every term of σ is
+// ε-bounded under the *same* ε. No commutativity or per-variable effects yet --
+// those arrive with the substructural type system.
+#let sube-nil = rule(
+  label: msc("nil"),
+  issube($Γ$, $ε$, $·$, $·$),
+)
+#let sube-cons = rule(
+  label: msc("cons"),
+  issube($Γ$, $ε$, $σ$, $Δ$), hastye($Γ$, $ε$, $a$, $A$), $x ∉ σ$,
+  issube($Γ$, $ε$, $σ, x ↦ a$, $Δ, x : A$),
 )
 
 // --- Single-variable substitution action [a/x]b ----------------------------
@@ -1004,6 +1019,7 @@
   te-inl, te-inr, te-abort, te-case, te-iter,
 )
 #let subst-typing-rules = (sub-nil, sub-cons)
+#let subst-typing-eff-rules = (sube-nil, sube-cons)
 
 #let eqv-congruence-rules = (
   eqv-refl, eqv-symm, eqv-trans,
