@@ -647,6 +647,79 @@ We begin with basic structural rules, given in @fig-expr-eqv-cong:
   correspond one to one with the typing rules for each type former from @fig-expr-typing,
   stating that our equivalence relation is in fact a _congruence_ with respect to them.
 
+#todo[
+  1. Remove #rle[refl] -- replacing it with #rle[var], and rework discussion below
+     -- doesn't need to be perfect, will probably be moved later
+
+  2. Discuss _briefly_ how we either have #rle[symm] or doubled-rules
+     -- how we solve this is to not solve it and do refinement
+     (which uses doubled rules -- but then this is factored into a subrelation
+      as a base case and a single "bounded symm" application)
+    -- move this later
+
+  3. Transitivity is essential
+]
+
+At this point, we have the _uninterpreted_ theory of our syntax
+--
+it is relatively straightforward to show that
+
+$
+  hasty(Γ, a, A) <==> eqat(Γ, a, a, A)
+$
+
+#todo[
+  So here discuss _metatheorems_ which we wish to _preserve_:
+
+  - _reflexivity_ -- so the discussion above should be reworked
+    to have the attitude of defining a _PER_ at every type,
+    which should _coincide_ with the well-typedness relation
+
+  - if and only if, and in fact: 
+    left well-typedness _and_ right well-typedness
+
+  - So... rework bullets to have a PER attitude;
+    sets the stage for later levels where we:
+
+    - take a syntactic PER, restrict it to well-typed things,
+      then extend it via congruence + equivalence
+
+    - take a _family_ of PERs closed under weakening,
+      do the same thing -- note that both the syntactic
+      and regular version of the PERs are _not_ closed under
+      substitution
+      --
+      in fact, neither is this theory, _exactly_,
+      due to iteration!
+      --
+      which gives us a natural way to introduce _effects_!
+
+  - So pull this discussion down...
+]
+
+since the first direction holds by #rle[refl], 
+while the second direction holds by induction,
+since the congruence rules mirror our typing rules exactly.
+
+Indeed 
+-- while we state #rle[refl] and #rle[symm] as _axioms_,
+it would also be possible to _derive_ them from more primitive
+atoms. We can in fact straightforwardly replace #rle[refl] with
+the rule
+
+#todo[rule: var: if #wkns($Γ$, $x : A$), then #eqat($Γ$, $x$, $x$, $A$)]
+
+#rle[symm], on the other hand, is a little less 
+--
+removing it at this point would have no effect,
+but once we add other axioms, having no #rle[symm]
+would require us to have two copies of every axiom,
+one for each direction of the equivalence.
+
+This can make some inductions easier 
+(since #rle[symm] can be a particularly unpleasant rule to do induction on!)
+while making many inductions much harder
+(since we now have twice as many cases to consider).
 
 
 #figure(
@@ -751,6 +824,10 @@ We begin with basic structural rules, given in @fig-expr-eqv-cong:
   --
   i.e., the following rule is admissible:
   #align(center, prooftree(adm-weakening-eqv))
+]
+
+#todo[
+  NOT TRUE IF NOT PURE: -- hence discuss effects
 ]
 
 #lemma("Single-Variable Substitution")[
