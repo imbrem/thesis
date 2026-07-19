@@ -421,6 +421,42 @@ allowing us to state the _(syntactic, simultaneous) substitution lemma_ as follo
 
 == Effects
 
+#todo[
+  Open: for $Γ = x : ℤ, y : ℤ$, surely $eqat(Γ, x + y, y + x, ℤ)$.
+]
+
+#todo[
+  But this fails _substitution_: with a counter starting at $0$ and
+  instructions $mono("get"), mono("incr") : mb(1) → ℤ$ ($mono("incr")$
+  returning the _old_ value), substituting $mono("incr") med ()$ for $x$
+  and $mono("get") med ()$ for $y$ yields $0 + 1 = 1$ on the left but
+  $0 + 0 = 0$ on the right.
+]
+
+#todo[
+  sentence: substitution reorders (in general duplicates or drops) effects.
+]
+
+#todo[
+  sentence: requiring stability under _every_ substitution is sound but
+  kills almost every useful equation.
+]
+
+#todo[
+  sentence: resolution -- substitute _pure_ terms only; hence track purity.
+]
+
+#todo[
+  sentence: forward-ref the refinement calculus' generalization
+  #todo[cite refinement paper]: substituted effect $ε$ commutes with
+  ambient effect $η$ + compatible usage counts.
+]
+
+#todo[
+  Merge below: CSE + the infinite loop become further instances of the
+  same failure, not the lead.
+]
+
 We now want to build an _equational theory_ for #liter
 -- that is, a judgement
 $
@@ -633,99 +669,78 @@ We've now got everything we need to define an equivalence judgement
 $eqat(Γ, a_1, a_2, A)$.
 We begin with basic structural rules, given in @fig-expr-eqv-cong:
 
-- #rle("refl"), #rle("symm"), and #rle("trans")
-  state that $eqat(Γ, a_1, a_2, A)$
-  is in fact an equivalence relation at each $Γ, A$
+- #rle("var") is our base case: a variable is equivalent to itself
+  whenever it is well-typed.
 
-- We want our equivalence to be a _congruence_ 
-  with respect to each of our type formers 
+  #todo[
+    sentence: contrast with primitive reflexivity
+    ($hasty(Γ, a, A) ==> eqat(Γ, a, a, A)$), which we instead _derive_.
+  ]
+
+- #rle("symm") and #rle("trans") state that $eqat(Γ, a_1, a_2, A)$
+  is a _partial equivalence relation_ (PER) at each $Γ, A$.
+
+  #todo[
+    sentence: gloss "PER" -- an equivalence on the terms it relates to
+    themselves, here exactly the well-typed ones.
+  ]
+
+  #todo[
+    sentence: #rle("trans") is essential, unlike #rle("symm") (see below).
+  ]
+
+- We want our equivalence to be a _congruence_
+  with respect to each of our type formers
   -- that is, if $a_1 ≈ a_2$,
   then $subvar(a_1, x, b) ≈ subvar(a_2, x, b)$
   for all well-typed $b$.
 
-  Therefore, the rest of the rules in @fig-expr-eqv-cong 
+  Therefore, the rest of the rules in @fig-expr-eqv-cong
   correspond one to one with the typing rules for each type former from @fig-expr-typing,
   stating that our equivalence relation is in fact a _congruence_ with respect to them.
-
-#todo[
-  1. Remove #rle[refl] -- replacing it with #rle[var], and rework discussion below
-     -- doesn't need to be perfect, will probably be moved later
-
-  2. Discuss _briefly_ how we either have #rle[symm] or doubled-rules
-     -- how we solve this is to not solve it and do refinement
-     (which uses doubled rules -- but then this is factored into a subrelation
-      as a base case and a single "bounded symm" application)
-    -- move this later
-
-  3. Transitivity is essential
-]
-
-At this point, we have the _uninterpreted_ theory of our syntax
---
-it is relatively straightforward to show that
-
-$
-  hasty(Γ, a, A) <==> eqat(Γ, a, a, A)
-$
-
-#todo[
-  So here discuss _metatheorems_ which we wish to _preserve_:
-
-  - _reflexivity_ -- so the discussion above should be reworked
-    to have the attitude of defining a _PER_ at every type,
-    which should _coincide_ with the well-typedness relation
-
-  - if and only if, and in fact: 
-    left well-typedness _and_ right well-typedness
-
-  - So... rework bullets to have a PER attitude;
-    sets the stage for later levels where we:
-
-    - take a syntactic PER, restrict it to well-typed things,
-      then extend it via congruence + equivalence
-
-    - take a _family_ of PERs closed under weakening,
-      do the same thing -- note that both the syntactic
-      and regular version of the PERs are _not_ closed under
-      substitution
-      --
-      in fact, neither is this theory, _exactly_,
-      due to iteration!
-      --
-      which gives us a natural way to introduce _effects_!
-
-  - So pull this discussion down...
-]
-
-since the first direction holds by #rle[refl], 
-while the second direction holds by induction,
-since the congruence rules mirror our typing rules exactly.
-
-Indeed 
--- while we state #rle[refl] and #rle[symm] as _axioms_,
-it would also be possible to _derive_ them from more primitive
-atoms. We can in fact straightforwardly replace #rle[refl] with
-the rule
-
-#todo[rule: var: if #wkns($Γ$, $x : A$), then #eqat($Γ$, $x$, $x$, $A$)]
-
-#rle[symm], on the other hand, is a little less 
---
-removing it at this point would have no effect,
-but once we add other axioms, having no #rle[symm]
-would require us to have two copies of every axiom,
-one for each direction of the equivalence.
-
-This can make some inductions easier 
-(since #rle[symm] can be a particularly unpleasant rule to do induction on!)
-while making many inductions much harder
-(since we now have twice as many cases to consider).
-
 
 #figure(
   rules-block(eqv-congruence-rules),
   caption: [Congruence rules for the equational theory of #liter.],
 ) <fig-expr-eqv-cong>
+
+At this point, we have the _uninterpreted_ theory of our syntax
+--
+
+#todo[
+  sentence: reflexivity is derivable
+]
+
+#todo[
+  sentence: well-typedness of LHS and RHS are derivable
+]
+
+#todo[
+  sentence: metatheorems to _preserve_ as the theory grows: a PER whose
+  reflexivity domain is exactly well-typedness.
+]
+
+#todo[
+  paragraph: later levels reuse the recipe -- close a syntactic PER
+  (resp. a weakening-closed _family_ of PERs), restricted to well-typed
+  terms, under the structural rules.
+]
+
+#todo[
+  paragraph: neither construction -- nor this theory, exactly, due to
+  iteration -- is closed under _substitution_; hence the effect discipline
+  and the pure-substituend restriction below.
+]
+
+#todo[
+  paragraph: #rle("symm") vs doubling every axiom (some inductions easier,
+  many harder); resolved by the refinement theory, which drops symmetry
+  and recovers it as a base subrelation + one bounded application.
+]
+
+#todo[
+  transition to the axioms.
+]
 
 #todo[
   Overview: present the βη axioms former by former, each as the _universal
@@ -827,7 +842,9 @@ while making many inductions much harder
 ]
 
 #todo[
-  NOT TRUE IF NOT PURE: -- hence discuss effects
+  sentence: the substituend must be _pure_ -- the unrestricted statement is
+  _false_ ($mono("incr")$/$mono("get")$); the effectful generalization is
+  deferred to the refinement theory.
 ]
 
 #lemma("Single-Variable Substitution")[

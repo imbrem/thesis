@@ -375,12 +375,14 @@
 // `let-β` is absent here -- substitution is sound only up to the effect/mover
 // conditions of the refinement theory, so it lives there as `ref-let-beta`.
 
-// --- Congruence (reflexivity, symmetry, transitivity + one rule per former) --
+// --- Congruence (variables, symmetry, transitivity + one rule per former) ---
+// Reflexivity is NOT primitive: `var` is the base case, and full reflexivity
+// Γ ⊢ a : A ==> Γ ⊢ a ≈ a : A is derived by induction on typing.
 
-#let eqv-refl = rule(
-  label: msc("refl"),
-  hasty($Γ$, $a$, $A$),
-  eqat($Γ$, $a$, $a$, $A$),
+#let eqv-var = rule(
+  label: msc("var"),
+  wkns($Γ$, $x : A$),
+  eqat($Γ$, $x$, $x$, $A$),
 )
 #let eqv-symm = rule(
   label: msc("symm"),
@@ -1022,7 +1024,7 @@
 #let subst-typing-eff-rules = (sube-nil, sube-cons)
 
 #let eqv-congruence-rules = (
-  eqv-refl, eqv-symm, eqv-trans,
+  eqv-var, eqv-symm, eqv-trans,
   eqv-op, eqv-let, eqv-pair, eqv-let-pair,
   eqv-inl, eqv-inr, eqv-case, eqv-abort, eqv-iter,
 )
