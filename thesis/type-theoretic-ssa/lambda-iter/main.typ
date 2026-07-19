@@ -7,13 +7,13 @@
   The definition of insanity is -- doing the same thing over and over and expecting a different result.
 ]
 
-SSA is a useful IR because it enables complex, 
-whole-procedure transformation of code, 
-but its block-statement-value hierarchy 
-makes it difficult to uniformly formulate the allowed transformations 
-as an (in)equational theory. 
-Instead, therefore, we will start by studying a simple, 
-first-order language of expressions, 
+SSA is a useful IR because it enables complex,
+whole-procedure transformation of code,
+but its block-statement-value hierarchy
+makes it difficult to uniformly formulate the allowed transformations
+as an (in)equational theory.
+Instead, therefore, we will start by studying a simple,
+first-order language of expressions,
 #liter,
 equipped with an _iteration operator_
 --
@@ -40,11 +40,11 @@ Mirroring this, expressions $a, b, c$ consist of
 
 - _Pairs_ $(a, b)$ and the unique empty tuple $()$ (_nil_).
 
-- _Let-bindings_ $#letx($x$, $a$, $b$)$ 
-  and _destructuring let-bindings_ $#letx($(x, y)$, $a$, $b$)$. 
-  
+- _Let-bindings_ $#letx($x$, $a$, $b$)$
+  and _destructuring let-bindings_ $#letx($(x, y)$, $a$, $b$)$.
+
   We write $a seq b$ as syntactic sugar for
-  $#letx($·$, $a$, $b$)$ 
+  $#letx($·$, $a$, $b$)$
   (i.e., a let-binding where the bound variable is not used in $b$).
 
 - _Case-expressions_ $#casex($e$, $x$, $a$, $y$, $b$)$,
@@ -64,10 +64,9 @@ contexts in @fig-expr-syntax.
 
 #figure(
   grammar(
-    production($A, B, C$,
-      $X$, $A tytensor B$, $tyunit$, $A tysum B$, $tyempty$,
-    ),
-    production($a, b, c$,
+    production($A, B, C$, $X$, $A tytensor B$, $tyunit$, $A tysum B$, $tyempty$),
+    production(
+      $a, b, c$,
       $x$,
       $f med a$,
       letx($x$, $a$, $b$),
@@ -99,9 +98,7 @@ This language is intentionally very minimal -- in particular:
   $
   as syntactic sugar for left-associative nested destructures
   $
-    #letx($(x_(12), x_3)$, $a$, 
-      letx($(x_1, x_2)$, $x_(12)$, $b$)
-    )
+    #letx($(x_(12), x_3)$, $a$, letx($(x_1, x_2)$, $x_(12)$, $b$))
   $
 
 In this chapter, we will freely identify $alpha$-equivalent terms
@@ -113,11 +110,11 @@ $letx(y, a, subvar(y, x, b))$
 as the same term whenever it is convenient to do so,
 where $subvar(y, x, b)$ denotes replacing all occurrences of $x$
 in $b$ with $y$.
-In particular, we may therefore treat all bound variables 
+In particular, we may therefore treat all bound variables
 -- e.g. $x$ in $letx(x, a, b)$ -- as _fresh symbols_.
 
-This can be formalized by using _locally nameless_ syntax, 
-in which free variables remain names like $x, y, z$ 
+This can be formalized by using _locally nameless_ syntax,
+in which free variables remain names like $x, y, z$
 while bound variables are represented as de-Bruijn indices;
 more information may be found in the Appendix #todo[write this or remove it]
 or in #todo[locally nameless tutorial citation]
@@ -128,16 +125,16 @@ Our typing judgement is #hasty($Γ$, $a$, $A$),
 having the standard reading "in the context $Γ$, the expression $a$ has type $A$".
 The rules, given in @fig-expr-typing, are _syntax-directed_:
 there is one rule for each production in our grammar.
-As before, we work over a fixed _signature_ consisting of: 
+As before, we work over a fixed _signature_ consisting of:
 
-- A fixed set of _base types_ $X ∈ cal(X)$, 
+- A fixed set of _base types_ $X ∈ cal(X)$,
   equipped with a partial order $subty(X, Y)$
 
-- A fixed set of _instructions_ $f ∈ cal(I)$, 
+- A fixed set of _instructions_ $f ∈ cal(I)$,
   each of which has a _source type_ $isrc(f)$ and a _target type_ $itrg(f)$
 
-To state our typing rules, we rely on two auxiliary judgements: 
-_subtyping_ #subty($A$, $B$) 
+To state our typing rules, we rely on two auxiliary judgements:
+_subtyping_ #subty($A$, $B$)
 and _weakening_ #wkns($Γ$, $Δ$).
 In particular, the subtyping relation from the order on base types $X$ by:
 
@@ -163,11 +160,11 @@ In particular:
 - #rle[op] applies an instruction $f$ to an argument, using the
   instruction's signature given by #rle[inst]
   --
-  we note instructions are _contravariant_ in the source type 
+  we note instructions are _contravariant_ in the source type
   (i.e. if $f$ accepts an $A$ and $subty(A', A)$ then $f$ accepts an $A'$)
   and _covariant_ in the target type
-  (i.e. if $f$ returns a $B$ and $subty(B, B')$, 
-    then $f$'s return value may be interpreted as a $B'$)
+  (i.e. if $f$ returns a $B$ and $subty(B, B')$,
+  then $f$'s return value may be interpreted as a $B'$)
 
 - #rle[let] and #rle[let-pair] bind the result of $a$
   --
@@ -221,7 +218,7 @@ In particular:
 == Metatheory  <syntactic-metatheory>
 
 We can now begin to lay out some of the metatheoretic results that we'll need to develop
-an equational theory for #liter. Probably the most important of these is _weakening_, 
+an equational theory for #liter. Probably the most important of these is _weakening_,
 which says that, if we can type $a$ as $A$ in a given context, we can freely:
 
 - Add variables (with fresh names) to the context
@@ -230,7 +227,7 @@ which says that, if we can type $a$ as $A$ in a given context, we can freely:
 
 - Type $a : A'$ for any supertype $subty(A, A')$
 
-Formally, we can state the _(syntactic) weakening lemma_ as follows: 
+Formally, we can state the _(syntactic) weakening lemma_ as follows:
 
 #lemma("Weakening")[
   If #hasty($Γ$, $a$, $A$), #wkns($Γ'$, $Γ$), and #subty($A$, $A'$),
@@ -240,8 +237,8 @@ Formally, we can state the _(syntactic) weakening lemma_ as follows:
   #align(center, prooftree(adm-weakening))
 ]
 
-In general, we say that a rule like #rle("Wk") is _admissible_ 
-if we can prove (e.g. by induction on derivations) that, 
+In general, we say that a rule like #rle("Wk") is _admissible_
+if we can prove (e.g. by induction on derivations) that,
 whenever the premises hold, the conclusion is derivable
 --
 hence, we can soundly use this rule when proving something is derivable.
@@ -323,13 +320,13 @@ for example, proving an expression is well-typed given the types of the variable
 into a broader program context which may, as an example, contain many more variables,
 or assign those variables more specific types.
 
-In general, we want to promote _compositional_ reasoning, 
+In general, we want to promote _compositional_ reasoning,
 in which we prove properties about a small program
 fragment in isolation and then use those to prove properties about the larger program as a whole.
 
 The next piece in the puzzle here is _(syntactic)_ substitution, which states, in essence,
 that we can replace a variable $x : A$ with a program fragment $a : A$ and maintain well-typedness.
-In particular, we may define _single variable substitution_ $subvar(a, x, b)$ 
+In particular, we may define _single variable substitution_ $subvar(a, x, b)$
 --
 read "substitute $a$ for $x$ in $b$"
 --
@@ -337,7 +334,7 @@ by induction as follows:
 
 #figure(
   rule-set(..subst-var-eqns),
-  caption: [Definition of single-variable substitution $subvar(a, x, b)$.]
+  caption: [Definition of single-variable substitution $subvar(a, x, b)$.],
 ) <fig-expr-subst-def>
 
 We may then state the _substitution lemma_ as follows
@@ -371,7 +368,7 @@ which is obviously not equal to our expected $(y, x)$
 --
 forcing us in general to introduce temporary fresh variables
 $
-  subvar(x, t_y, subvar(y, t_x, subvar(y, t_y, subvar(x, t_x, (x, y))))) 
+  subvar(x, t_y, subvar(y, t_x, subvar(y, t_y, subvar(x, t_x, (x, y)))))
   = subvar(x, t_y, subvar(y, t_x, (t_x, t_y)))
   = (y, x)
 $
@@ -385,10 +382,10 @@ $
 
 with renaming falling out as the special case where every variable maps to a unique variable.
 
-To do this, we begin by defining a _substitution list_, or just _substitution_, 
+To do this, we begin by defining a _substitution list_, or just _substitution_,
 as a list $σ$ of (variable, term) pairs $x ↦ a$
 --
-we can then define _capture-avoiding simultaneous substitution_ as a _partial_ function 
+we can then define _capture-avoiding simultaneous substitution_ as a _partial_ function
 $ms("Subst") → ms("Term") → ms("Term")$
 by induction on terms as follows:
 
@@ -421,42 +418,6 @@ allowing us to state the _(syntactic, simultaneous) substitution lemma_ as follo
 
 == Effects
 
-#todo[
-  Open: for $Γ = x : ℤ, y : ℤ$, surely $eqat(Γ, x + y, y + x, ℤ)$.
-]
-
-#todo[
-  But this fails _substitution_: with a counter starting at $0$ and
-  instructions $mono("get"), mono("incr") : mb(1) → ℤ$ ($mono("incr")$
-  returning the _old_ value), substituting $mono("incr") med ()$ for $x$
-  and $mono("get") med ()$ for $y$ yields $0 + 1 = 1$ on the left but
-  $0 + 0 = 0$ on the right.
-]
-
-#todo[
-  sentence: substitution reorders (in general duplicates or drops) effects.
-]
-
-#todo[
-  sentence: requiring stability under _every_ substitution is sound but
-  kills almost every useful equation.
-]
-
-#todo[
-  sentence: resolution -- substitute _pure_ terms only; hence track purity.
-]
-
-#todo[
-  sentence: forward-ref the refinement calculus' generalization
-  #todo[cite refinement paper]: substituted effect $ε$ commutes with
-  ambient effect $η$ + compatible usage counts.
-]
-
-#todo[
-  Merge below: CSE + the infinite loop become further instances of the
-  same failure, not the lead.
-]
-
 We now want to build an _equational theory_ for #liter
 -- that is, a judgement
 $
@@ -466,56 +427,103 @@ read "in the context $Γ$, the terms $a_1$, $a_2$ are _equivalent_ at the type $
 --
 where we say that $a_1$ and $a_2$ are equivalent if their behaviour is indistinguishable
 _when interpreted as values of type $A$_
--- that is, the type $A$ can be viewed as _carrying_ 
+-- that is, the type $A$ can be viewed as _carrying_
 the information of what can and cannot be observed about $a_i$.
 
-However, to be able to support optimizations like _common subexpression elimination_,
-which in this setting looks like the substitution
-$
-  eqat(Γ, letx(x, a, b), subvar(a, x, b), B)
-$
-we need to be able to distinguish between _pure_ and _impure_ terms.
+An equational theory lets us do _algebraic reasoning_ on program syntax
+--
+for example, we may want to optimize $f med a_1$ to $f med a_2$;
+justified by the equation $eqat(Γ, a_1, a_2, A)$.
 
-In particular, while syntactic substitution means that 
+One important use-case is to be able to use
+"obvious" algebraic identities, like
+
+(1) $#eqat($x : ℤ, y : ℤ$, $x + y$, $y + x$, $ℤ$)$
+
+(2) $#eqat($y : ℤ$, $y + 0$, $y$, $ℤ$)$
+
+Let's say we wanted to use the above equations optimize $0 + x ≈ x$, however.
+Intuitively, we might:
+
+- Apply rule (1) under the substitution $x ↦ 0, y ↦ x$
+
+- Apply rule (2) under the substitution $x ↦ y$
+
+This is (or should be!) a perfectly valid derivation.
+Unfortunately, however, substitution is _not_, in general, 
+sound in the presence of _effects_:
+for example, assume we have operators
+
+- $ms("get")(p)$ -- which evaluates to the value pointed to by $p$
+
+- $ms("set")(p, x)$ 
+  -- which replaces the value pointed to by $p$ with $x$, returning the old value.
+
+It's easy to see that
+
+$
+  ms("get")(p) + ms("set")(p, 0) ≉ ms("set")(p, 0) + ms("get")(p)
+$
+
+-- for example, if $p ↦ 1$, 
+then the left-hand side evaluates to $1 + 1 = 2$ 
+while the right-hand side evaluates to $1 + 0 = 1$.
+So, to be able to apply algebraic identities, 
+we need some kind of way of distinguishing expressions which are safe
+to substitute (like $0$ or $x$) from those which are not.
+
+More generally, we need to be able to distinguish between
+_pure_ and _impure_ terms to be able to define the basic
+equational theory of, e.g., let-expressions.
+
+For example, consider the optimization of _common subexpression elimination_ (CSE)
+--
+which we might write as follows:
+$
+  eqat(Γ, subvar(a, x, b), letx(x, a, b), B)
+$
+While syntactic substitution means that
 both sides are well-typed given the same preconditions
 --
 namely, whenever $hasty(Γ, a, A)$ and #hasty($Γ, x : A$, $b$, $B$).
 --
-they aren't in general interchangeble, even without taking instructions
-into account.
-
-For example, defining the _infinite loop_
+they aren't in general interchangeable, 
+even _without_ any specific instructions being present:
+if we define the _infinite loop_
 $hasty(Γ, loopx = iterx((), x, linr(x)), A)$
 --
 note this is well-typed for arbitrary $A$
 --
+as follows,
 we have that
 
 $
-  neat(Γ, 
-    letx(x, loopx, subvar(x, x, ())), 
-    subvar(loopx, x, ()), 
+  neat(
+    Γ,
+    letx(x, loopx, subvar(x, x, ())),
+    subvar(loopx, x, ()),
     ()
-  )  
+  )
 $
 since the former diverges while the latter does not.
 
-The typical way that this is handled is by distinguishing 
-a _syntactic_ category of _values_ $v ∈ vals$, like $3$ or $5$,
-and then stating that
-$
-  eqat(Γ, letx(x, v, b), subvar(v, x, b), B)
-$
-only when we in fact have $v ∈ vals$.
+The typical way that this is handled is by distinguishing
+a _syntactic_ category of _values_ $v ∈ vals$, like $3$ or $5$
+--
+which we treat as pure, perhaps along with variables.
 
-The issue with this approach for our purposes is that 
-we would like to study _algebraic rewrites_ like
+However, this makes it challenging to perform 
+perfectly valid algebraic reasoning chains like
+
 $
-  eqat(Γ, letx(x, y + y, x + x), 4 * y, ℤ)
+  (1 + x) + (-x) ≈ 1 + (x + (-x)) ≈ 1 + 0 ≈ 1
 $
-as well as, eventually, optimizations 
-like _global value numbering_ and _common subexpression elimination_
-in the context of SSA.
+
+(
+  since applying associativity 
+  $(x + y) + z ≈ x + (y + z)$ 
+  would require substituting $z ↦ -x$
+)
 
 Instead, therefore, we will introduce an _effectful_ variant of our typing judgement,
 $
@@ -528,16 +536,16 @@ Here, we draw $ε$ from an _effect signature_ #effs:
 - a _bounded_ lattice
   --
   that is, a partially ordered set #effs
-  having a top $⊤$, bottom $⊥$, 
+  having a top $⊤$, bottom $⊥$,
   meets (infima) $⊓$, and joins (suprema) $⊔$
   --
   equipped with:
 
-- a _fixpoint operator_ 
+- a _fixpoint operator_
   #effiter($ε$) which is
   - _extensive_: $∀ ε, ε ≤ effiter(ε)$
   - _idempotent_: $∀ ε, effiter((effiter(ε))) = effiter(ε)$
-  representing the effect obtained by iterating $ε$ 
+  representing the effect obtained by iterating $ε$
   an unbounded (potentially infinite) number of times.
 
   We say an effect is _iterative_ if $effiter(ε) = ε$
@@ -545,24 +553,24 @@ Here, we draw $ε$ from an _effect signature_ #effs:
 
   We say an effect signature is _complete_ if every effect is iterative.
 
-The most basic example of an effect signature 
-is the _boolean effect signature_: 
+The most basic example of an effect signature
+is the _boolean effect signature_:
 the boolean lattice ${⊥, ⊤}$ equipped with $effiter(⊥) = effiter(⊤) = ⊤$.
 
 We will also make use of:
 
 - The _trivial effect signature_ ${⊤ = ⊥ = *}$
 
-- The _complete boolean effect signature_: 
+- The _complete boolean effect signature_:
   the boolean lattice ${⊥, ⊤}$ equipped with $effiter(ε) = ε$
 
 We can now extend our signature $cal(S)$ with
 
 - An effect signature #effs
 
-- For each instruction $f ∈ cal(I)$, 
+- For each instruction $f ∈ cal(I)$,
   an effect #ieff($f$)
-  
+
 We then likewise introduce an effectful version $hastye(Γ, ε, a, A)$
 of our typing judgement $hasty(Γ, a, A)$
 which bounds the effects of $a$ above by $ε$.
@@ -603,7 +611,7 @@ $
   ∀ ε . hastye(Γ, ε, a, A) ==> hasty(Γ, a, A)
 $
 
-On the other hand, we note in particular that $⊤$ must be iterative, 
+On the other hand, we note in particular that $⊤$ must be iterative,
 since $⊤ ≤ effiter(⊤) ==> ⊤ = effiter(⊤)$ by the definition of a top element.
 It follows that, since every $ieff(f) ≤ ⊤$, we have that
 
@@ -612,7 +620,6 @@ $
 $
 and hence, by the above,
 $
-  
   hasty(Γ, a, A) <==> hastye(Γ, ⊤, a, A)
 $
 
