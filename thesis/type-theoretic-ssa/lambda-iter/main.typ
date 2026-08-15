@@ -519,19 +519,41 @@ $
   (1 + x) + (-x) ≈ 1 + (x + (-x)) ≈ 1 + 0 ≈ 1
 $
 
-(
-  since applying associativity 
+(since applying associativity 
   $(x + y) + z ≈ x + (y + z)$ 
   would require substituting $z ↦ -x$
 )
 
-Instead, therefore, we will introduce an _effectful_ variant of our typing judgement,
+What we want instead, therefore, is a _semantic_ notion of effect,
+perhaps represented by a judgement,
 $
   hastye(Γ, ε, a, A)
 $
 with reading "in the context $Γ$, the term $a$ has type $A$ and effect _at most_ $ε$."
 
-Here, we draw $ε$ from an _effect signature_ #effs:
+The issue however is that the effect of a term $a$, in general, is _undecidable_
+--
+consider, for example, the term
+$
+  casex(ms("P")(a), x, (), y, ms("print")(y))
+$
+where it is undecidable in general whether $ms("P")(a)$ 
+always evaluates to $ms("inl")(a)$
+--
+so any decidable judgement $hastye(Γ, ε, a, A)$ will necessarily be incomplete.
+
+As a compromise, therefore, 
+we will define a _syntactic_ notion of effect via a function
+$teff(a)$ taking terms $a$ to effects $ε$ drawn from a lattice $cal(E)$
+--
+this can therefore not only be made computable, 
+but be given desirable properties, like:
+
+- The effect of a subterm is $≤$ the effect of the term itself
+
+- The effect of a _value_ is $⊥$ -- i.e., _values are pure_.
+
+In particular, we will $ε$ from an _effect signature_ #effs:
 
 - a _bounded_ lattice
   --
@@ -553,6 +575,23 @@ Here, we draw $ε$ from an _effect signature_ #effs:
 
   We say an effect signature is _complete_ if every effect is iterative.
 
+#todo[
+  We put the structure here because:
+
+  - Distinguishing whether infinite loops count as pure is already useful
+  --
+  in most models however they _don't_
+
+  Neel:
+  in domains,
+  we have
+  non-strict maps which are Cartesian closed
+  but have Elgot structure
+
+  - 
+
+]
+
 The most basic example of an effect signature
 is the _boolean effect signature_:
 the boolean lattice ${⊥, ⊤}$ equipped with $effiter(⊥) = effiter(⊤) = ⊤$.
@@ -570,6 +609,78 @@ We can now extend our signature $cal(S)$ with
 
 - For each instruction $f ∈ cal(I)$,
   an effect #ieff($f$)
+
+#todo[
+  Use this to define
+  $teff(a)$
+  by induction
+]
+
+#todo[
+  Define typing judgement
+  as
+  $
+    hastye(Γ, ε, a, A)
+    <==>
+    ∃ a'.
+    eqat(Γ, a, a', A)
+    ∧
+    teff(a') ≤ ε
+  $
+  --
+  subsumes _two_ possibly undecidable things:
+
+  1. What is $a'$ and are they actually equal
+
+  2. is $teff(a') ≤ ε$ -- may be undecidable for complex effect systems
+]
+
+#todo[
+  Give derived rules:
+  as necessary properties of both $teff(a)$
+  and
+  $≈$
+]
+
+#todo[
+  Neel:
+  You want to think in terms of what will be most familiar to your readers
+  --
+  defining
+  $teff(a)$
+  by induction will seem weird to them
+
+  Jad: why
+
+  Neel: remember virtually every type theorist thinks in terms of higher order functions, where induction on syntax doesn't work
+
+  Jad: ish
+
+  Here's how you would normally define it:
+
+  1. using the set of values --
+  we could _define_ values here
+
+  2. using a judgement like above -- but this judgement would be _incomplete_
+
+  As a compromise,
+  however,
+  since our language is
+  _first-order_,
+  it's convenient to define a computable _upper bound_ 
+  $teff(a)$
+  on the effect
+  of a term $a$.
+
+  We can then use this to define our judgement existentially using blah.
+
+  Then everything in the previous figure should be a _theorem_
+  -- which
+  constraints the properties of both $teff(a)$
+  and
+  $≈$
+  usefully.
+]
 
 We then likewise introduce an effectful version $hastye(Γ, ε, a, A)$
 of our typing judgement $hasty(Γ, a, A)$

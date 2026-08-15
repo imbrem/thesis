@@ -73,6 +73,8 @@
 #let effs = $cal(E)$
 #let effpure = $⊥$
 #let efftop = $⊤$
+// The _syntactic_ effect of a term a
+#let teff(a) = $sans("eff")(#a)$
 // The effect of an instruction f.
 #let ieff(f) = $sans("eff")(#f)$
 // The monotone operator E → E giving the effect of iterating an effect.
