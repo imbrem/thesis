@@ -576,20 +576,17 @@ In particular, we will $ε$ from an _effect signature_ #effs:
   We say an effect signature is _complete_ if every effect is iterative.
 
 #todo[
-  We put the structure here because:
+  Explain why iteration is part of the effect signature rather than being fixed
+  globally.  The key choice is whether divergence contributes an effect:
+  $effiter(⊥) = ⊥$ says that an otherwise pure infinite loop remains pure,
+  whereas $effiter(⊥) > ⊥$ records potential divergence.  The boolean and
+  complete-boolean signatures below exhibit the two choices.
 
-  - Distinguishing whether infinite loops count as pure is already useful
-  --
-  in most models however they _don't_
-
-  Neel:
-  in domains,
-  we have
-  non-strict maps which are Cartesian closed
-  but have Elgot structure
-
-  - 
-
+  Preserve Neel's example and check its precise formulation: domain-theoretic
+  models may use a Cartesian closed category of non-strict maps while still
+  carrying Elgot iteration.  Use this to stress that "pure" and "terminating"
+  are independent notions; Cartesian closure alone does not determine the
+  effect assigned to iteration.
 ]
 
 The most basic example of an effect signature
@@ -611,75 +608,76 @@ We can now extend our signature $cal(S)$ with
   an effect #ieff($f$)
 
 #todo[
-  Use this to define
-  $teff(a)$
-  by induction
+  Define the computable upper bound $teff(a)$ by structural recursion on this
+  first-order syntax.  Give one equation per constructor: variables and units
+  have effect $⊥$; instructions contribute $ieff(f)$ joined with the effect of
+  their argument; sequencing, pairing, destructuring, injections, abort, and
+  case take the join of their immediate subterms; iteration applies $effiter$
+  to the join of its initial state and body effects.
+
+  Check the iteration equation carefully: if the initial expression is
+  evaluated once and only the body is repeated, the sharp bound should be
+  $teff(a) ⊔ effiter(teff(b))$, not necessarily
+  $effiter(teff(a) ⊔ teff(b))$.
 ]
 
 #todo[
-  Define typing judgement
-  as
+  Decide and state the relationship between the syntax-directed bound and the
+  effect judgement.  The tempting equivalence-saturated definition
   $
     hastye(Γ, ε, a, A)
     <==>
     ∃ a'.
     eqat(Γ, a, a', A)
-    ∧
-    teff(a') ≤ ε
+    ∧ teff(a') ≤ ε
   $
-  --
-  subsumes _two_ possibly undecidable things:
+  captures terms equivalent to a low-effect representative, but cannot be used
+  naively here: the equational theory below itself uses effect judgements as
+  side conditions, so this would be circular.
 
-  1. What is $a'$ and are they actually equal
+  Use a syntax-directed judgement (equivalently, ordinary typing together with
+  $teff(a) ≤ ε$) as the decidable core.  If equivalence-saturated effectfulness
+  is needed, introduce it only after $≈$ has been generated, under a distinct
+  name, and prove explicitly which equational rules preserve the core bound.
 
-  2. is $teff(a') ≤ ε$ -- may be undecidable for complex effect systems
+  Record the two independent sources of undecidability in the saturated
+  relation: finding/proving $a ≈ a'$, and deciding $teff(a') ≤ ε$ when the
+  chosen effect order is not decidable.
 ]
 
 #todo[
-  Give derived rules:
-  as necessary properties of both $teff(a)$
-  and
-  $≈$
+  Present the rules in @fig-expr-typing-eff as derived rules for the
+  syntax-directed bound, not as an unrelated second definition.  Prove both
+  directions where they are valid, and identify any rule whose common-effect
+  presentation loses precision compared with joins of the premises.
+
+  State the invariants needed later: erasure to ordinary typing, upward closure
+  in $ε$, top-effect completeness, substitution, and purity of variables and
+  values.  Keep preservation under $≈$ separate: it is a theorem only for the
+  equations whose effect side conditions make it valid.
 ]
 
 #todo[
-  Neel:
-  You want to think in terms of what will be most familiar to your readers
-  --
-  defining
-  $teff(a)$
-  by induction will seem weird to them
+  Incorporate the reader-facing motivation from the discussion with Neel.
+  Type theorists may expect purity to be defined by a value grammar or an
+  effect judgement, especially for higher-order languages where a simple
+  recursion over surface syntax is not generally an adequate semantic account.
+  Explain that #liter is deliberately first-order, so a structural function
+  $teff(a)$ is useful here as a computable conservative upper bound, not as the
+  semantic effect of $a$.
 
-  Jad: why
+  Contrast the three notions explicitly:
 
-  Neel: remember virtually every type theorist thinks in terms of higher order functions, where induction on syntax doesn't work
+  - syntactic values, which are certainly pure but unnecessarily restrictive;
+  - the computable bound $teff(a)$, which supports checking and induction but
+    may overapproximate;
+  - an optional equivalence- or semantics-saturated effect relation, which is
+    more extensional but may be undecidable and must avoid circularity with
+    the equational theory.
 
-  Jad: ish
-
-  Here's how you would normally define it:
-
-  1. using the set of values --
-  we could _define_ values here
-
-  2. using a judgement like above -- but this judgement would be _incomplete_
-
-  As a compromise,
-  however,
-  since our language is
-  _first-order_,
-  it's convenient to define a computable _upper bound_ 
-  $teff(a)$
-  on the effect
-  of a term $a$.
-
-  We can then use this to define our judgement existentially using blah.
-
-  Then everything in the previous figure should be a _theorem_
-  -- which
-  constraints the properties of both $teff(a)$
-  and
-  $≈$
-  usefully.
+  End by explaining why the rules in the previous figure should be derived
+  from the chosen core definition: they become regression properties that
+  constrain both the effect computation and the equations admitted later.
 ]
 
 We then likewise introduce an effectful version $hastye(Γ, ε, a, A)$
