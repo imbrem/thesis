@@ -6,6 +6,7 @@
 // Conversion: prose preserved verbatim; LaTeX presentation translated mechanically to Typst.
 
 #import "/lib/prelude.typ": *
+#import "/lib/figures/refinement-factorial.typ": refinement-factorial-figure
 
 = Abstract
 
@@ -220,93 +221,7 @@ which are equivalent up to the placement of $sans(w h e r e)$-blocks
 have equivalent semantics, therefore justifying $lambda_(sans(S S A))$
 as being simply SSA with additional annotations.
 
-#figure([#figure([#block[
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-    minipage=1.2,scale=0.8 \$\$\\begin{aligned}
-          {\\ensuremath{\\mathsf{start}}}:\\quad  & \\textcolor{violet}{\\ensuremath{\\mathsf{let}}}\\;n = 10; \\\\
-                              & \\textcolor{violet}{\\ensuremath{\\mathsf{br}}}\\;\\ensuremath{\\mathsf{loop}} \\\\
-          {\\ensuremath{\\mathsf{loop}}}: \\quad  & \\begingroup \\color{red}
-                                \\textcolor{violet}{\\ensuremath{\\mathsf{let}}}\\;i\_0 = \\phi(\\ensuremath{\\mathsf{start}}: 1, \\ensuremath{\\mathsf{body}}: i\_1) 
-                              \\endgroup \\\\
-                              & \\begingroup \\color{blue}
-                                \\textcolor{violet}{\\ensuremath{\\mathsf{let}}}\\;a\_0 = \\phi(\\ensuremath{\\mathsf{start}}: 1, \\ensuremath{\\mathsf{body}}: a\_1) 
-                              \\endgroup \\\\
-                              & \\textcolor{violet}{\\ensuremath{\\mathsf{if}}}\\;i\_0 \< n\\;\\{\\;\\textcolor{violet}{\\ensuremath{\\mathsf{br}}}\\;{\\ensuremath{\\mathsf{body}}}\\;\\} \\\\
-                              & \\textcolor{violet}{\\ensuremath{\\mathsf{else}}}\\;\\{\\;\\textcolor{violet}{\\ensuremath{\\mathsf{ret}}}\\;a\_0\\;\\} \\\\
-          {\\ensuremath{\\mathsf{body}}}: \\quad  & \\textcolor{violet}{\\ensuremath{\\mathsf{let}}}\\;t = i\_0 + 1 \\\\
-                              & \\textcolor{violet}{\\ensuremath{\\mathsf{let}}}\\;a\_1 = a\_0 \* t \\\\
-                              & \\textcolor{violet}{\\ensuremath{\\mathsf{let}}}\\;i\_1 = i\_0 + 1 \\\\
-                              & \\textcolor{violet}{\\ensuremath{\\mathsf{br}}}\\;{\\ensuremath{\\mathsf{loop}}} \\\\ \\\\
-        
-    \\end{aligned}\$\$
-
-    ]],
-    caption: [
-      $phi.alt$-nodes
-    ]
-  )
-  <refall:fig:fact-phi>
-
-  #figure([#block[
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-    minipage=1.2,scale=0.8 \$\$\\begin{aligned}
-          {\\ensuremath{\\mathsf{start}}}:\\quad            & \\textcolor{violet}{\\ensuremath{\\mathsf{let}}}\\;n = 10; \\\\
-                                        & \\textcolor{violet}{\\ensuremath{\\mathsf{br}}}\\;
-                                            {\\ensuremath{\\mathsf{loop}}}(\\textcolor{red}{1}, \\textcolor{blue}{1}) \\\\
-          {\\ensuremath{\\mathsf{loop}}}(\\textcolor{red}{i\_0}, \\textcolor{blue}{a\_0}): \\quad  
-                                        & \\textcolor{violet}{\\ensuremath{\\mathsf{if}}}\\;i\_0 \< n\\; \\{\\;\\textcolor{violet}{\\ensuremath{\\mathsf{br}}}\\;{\\ensuremath{\\mathsf{body}}}\\;\\} \\\\
-                                        & \\textcolor{violet}{\\ensuremath{\\mathsf{else}}}\\;\\{\\;\\textcolor{violet}{\\ensuremath{\\mathsf{ret}}}\\;a\_0\\;\\} \\\\
-          {\\ensuremath{\\mathsf{body}}}: \\quad            & \\textcolor{violet}{\\ensuremath{\\mathsf{let}}}\\;t = i\_0 + 1 \\\\
-                                        & \\textcolor{violet}{\\ensuremath{\\mathsf{let}}}\\;a\_1 = a\_0 \* t \\\\
-                                        & \\textcolor{violet}{\\ensuremath{\\mathsf{let}}}\\;i\_1 = i\_0 + 1 \\\\
-                                        & \\textcolor{violet}{\\ensuremath{\\mathsf{br}}}\\;{\\ensuremath{\\mathsf{loop}}}
-                                          (\\textcolor{red}{i\_1}, \\textcolor{blue}{a\_1}) 
-                                        \\\\ \\\\ \\\\ \\\\
-        
-    \\end{aligned}\$\$
-
-    ]],
-    caption: [
-      Basic-blocks with arguments
-    ]
-  )
-  <refall:fig:fact-bba>
-
-  #figure([#block[
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-    minipage=,scale=0.8 \$\$\\begin{aligned}
-          & \\textcolor{violet}{\\ensuremath{\\mathsf{let}}}\\;n = 10; \\\\
-          & \\textcolor{violet}{\\ensuremath{\\mathsf{br}}}\\;{\\ensuremath{\\mathsf{loop}}}(\\textcolor{red}{1}, \\textcolor{blue}{1}) \\\\
-          & \\textcolor{violet}{\\ensuremath{\\mathsf{where}}}\\;{\\ensuremath{\\mathsf{loop}}}(\\textcolor{red}{i\_0}, \\textcolor{blue}{a\_0}): \\{ \\\\
-          & \\quad \\textcolor{violet}{\\ensuremath{\\mathsf{if}}}\\;i\_0 \< n\\;\\{\\;\\textcolor{violet}{\\ensuremath{\\mathsf{br}}}\\;{\\ensuremath{\\mathsf{body}}}\\;\\} \\\\
-          & \\quad \\textcolor{violet}{\\ensuremath{\\mathsf{else}}}\\;\\{\\;\\textcolor{violet}{\\ensuremath{\\mathsf{ret}}}\\;a\_0\\;\\} \\\\
-          & \\quad \\textcolor{violet}{\\ensuremath{\\mathsf{where}}}\\;{\\ensuremath{\\mathsf{body}}}: \\{\\\\ 
-          & \\qquad \\textcolor{violet}{\\ensuremath{\\mathsf{let}}}\\;t = i\_0 + 1 \\\\
-          & \\qquad \\textcolor{violet}{\\ensuremath{\\mathsf{let}}}\\;a\_1 = a\_0 \* t \\\\
-          & \\qquad \\textcolor{violet}{\\ensuremath{\\mathsf{let}}}\\;i\_1 = i\_0 + 1 \\\\
-          & \\qquad \\textcolor{violet}{\\ensuremath{\\mathsf{br}}}\\;{\\ensuremath{\\mathsf{loop}}}(\\textcolor{red}{i\_1}, \\textcolor{blue}{a\_1})  \\\\
-          & \\quad \\} \\\\
-          & \\}
-        
-    \\end{aligned}\$\$
-
-    ]
-    ],
-    caption: [
-      Lexical scoping
-    ]
-  )
-  ],
-  caption: [
-    A program to compute $10 !$ written in standard SSA (using $phi.alt$
-    nodes), like in LLVM @llvm, and using basic-blocks with arguments,
-    like in MLIR @mlir and Cranelift @cranelift, with both implicit
-    (dominance-based) and explicit (lexical) scoping. The arguments
-    $i_0 \, a_0$ corresponding to the $phi.alt$-nodes $i_0 \, a_0$ are
-    colored in red and blue, respectively.
-  ]
-)
-<refall:fig:fact-lex>
+#refinement-factorial-figure()
 
 #figure([#block[
   \<$o$\> ::= $x$ | $f #h(0em) x$ | $\( \)$ | $\( x \, y \)$ |
@@ -346,7 +261,7 @@ as being simply SSA with additional annotations.
 )
 <refall:fig:ssa-data>
 
-= $lambda_(sans(i t e r))$, an expression language for SSA 
+= $lambda_(sans(i t e r))$, an expression language for SSA
 <refall:lambda_ensuremathmathsfiter-an-expression-language-for-ssa>
 SSA is a useful IR because it enables complex, whole-procedure
 transformation of code, but its block-statement-value hierarchy makes it
@@ -497,7 +412,7 @@ $Gamma^(upright(bold(q))) mapsto Delta^(upright(bold(q))')$, pronounced
 “$Gamma^(upright(bold(q)))$ weakens $Delta^(upright(bold(q')))$,\" is
 #todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
 defined as follows: \$\$\\begin{gathered}
-  \\prftree\[r\]{{\\scriptsize\\textsf{nil}}}{\\cdot \\mapsto \\cdot} \\qquad 
+  \\prftree\[r\]{{\\scriptsize\\textsf{nil}}}{\\cdot \\mapsto \\cdot} \\qquad
   \\prftree\[r\]{{\\scriptsize\\textsf{cons}}}
     {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\mapsto \\Delta^{\\ensuremath{\\mathbf{q}}\'}}
     {q\' \* \\ensuremath{\\mathsf{q}}(A) \\leq q \* \\ensuremath{\\mathsf{q}}(A)}
@@ -703,9 +618,8 @@ grammar. In particular,
   minipage=1.1,scale=0.9 \$\$\\begin{gathered}
       \\prftree\[r\]{{\\scriptsize\\textsf{var}}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\mapsto x : A^1}
-          {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} x: {A}} 
+          {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} x: {A}}
         \\qquad
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
       \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$}}}{\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {A}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} b: {B}}
@@ -723,13 +637,12 @@ grammar. In particular,
         {f : A \\to\_\\epsilon B}
         \\\\
       \\prftree\[r\]{{\\scriptsize\\textsf{unit}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\mapsto \\cdot}{\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} (): {\\ensuremath{\\mathbf{1}}}} 
+        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\mapsto \\cdot}{\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} (): {\\ensuremath{\\mathbf{1}}}}
         \\qquad
       \\prftree\[r\]{{\\scriptsize\\textsf{pair}}}{\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l} \\vdash\_{\\epsilon} a: {A}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} b: {B}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} (a, b): {A \\otimes B}} \\\\
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
       \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$}}}{\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{} a: {A \\otimes B}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A, y : B \\vdash\_{\\epsilon} c: {C}}
@@ -740,7 +653,7 @@ grammar. In particular,
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\iota\_l\\;{a}: {A + B}} \\qquad
       \\prftree\[r\]{{\\scriptsize\\textsf{inr}}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} b: {B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\iota\_r\\;{b}: {A + B}} \\qquad    
+        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\iota\_r\\;{b}: {A + B}} \\qquad
       \\prftree\[r\]{{\\scriptsize\\textsf{abort}}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} a: {\\ensuremath{\\mathbf{0}}}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{abort}}\\;{a}: {C}}
@@ -757,7 +670,7 @@ grammar. In particular,
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {A}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} b: {B + A}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{iter}}\\;a\\;\\{ \\iota\_r\\;{x} :b \\}: {B}}
-    
+
   \\end{gathered}\$\$
 
   ]],
@@ -813,7 +726,7 @@ rules may be interpreted as follows:
 #todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
   minipage=1.1,scale=0.9 \$\$\\begin{gathered}
       \\prftree\[r\]{{\\scriptsize\\textsf{nil}}}{\\Gamma^{\\ensuremath{\\mathbf{q}}} \\mapsto \\cdot}
-                                {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\cdot \\rhd \\cdot} \\qquad 
+                                {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\cdot \\rhd \\cdot} \\qquad
       \\prftree\[r\]{{\\scriptsize\\textsf{zero}}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\sigma \\rhd \\Delta}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\sigma, x \\mapsto a \\rhd \\Delta^{\\ensuremath{\\mathbf{q}}\'}, x : A^0}
@@ -826,7 +739,7 @@ rules may be interpreted as follows:
         {\\epsilon\_l \\rightleftharpoons\\epsilon\_r}
         {\\epsilon\_l, \\epsilon\_r \\leq \\epsilon}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\sigma, x \\mapsto a \\rhd \\Delta^{\\ensuremath{\\mathbf{q}}\'}, x : A^q}
-    
+
   \\end{gathered}\$\$
 
   ]],
@@ -1038,7 +951,6 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : B \\vdash\_{\\epsilon} c: {C}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = f\\;a;\\;c} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = f\\;x;\\;c}} : {C}}
         \\\\
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
       \\prftree\[r\]{{\\scriptsize\\textsf{let-let\$\_1\$}}}
         {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_c + \\ensuremath{\\mathbf{q}}\_r}
         {\\Gamma \\vdash \\ensuremath{\\mathbf{q}}\_c = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_m}
@@ -1049,7 +961,6 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
           \\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = (\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;b});\\;c} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = b;\\;c}} : {C}
         }
         \\\\
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
       \\prftree\[r\]{{\\scriptsize\\textsf{let-let\$\_2\$}}}
         {
           \\prfStackPremises
@@ -1079,11 +990,11 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
           {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r}, z : C \\vdash\_{\\ensuremath{\\mathcal{R}}} d: {D}}
         }
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :a, \\iota\_r\\;{y} :b\\};\\;d} \\approx\\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = a;\\;d}, \\iota\_r\\;{y} :\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = b;\\;d}\\} : {D}
-        } 
-    
+        }
+
+  \\end{gathered}\$\$
 #todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  \\end{gathered}\$\$ \$\$\\begin{gathered}
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
+\$\$\\begin{gathered}
       \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$-bind}}}
         {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {A \\otimes B}}
@@ -1106,7 +1017,7 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {A}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} b: {B + A}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\mathsf{iter}}\\;a\\;\\{ \\iota\_r\\;{x} :b \\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = a;\\;\\ensuremath{\\mathsf{iter}}\\;y\\;\\{ \\iota\_r\\;{x} :b \\}} : {B}}
-    
+
   \\end{gathered}\$\$
 
   ]],
@@ -1137,13 +1048,11 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
         {
           \\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = \\ensuremath{\\mathsf{abort}}\\;{a};\\;b} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = \\ensuremath{\\mathsf{abort}}\\;{a};\\;b\'} : {B}
         } \\\\
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
       \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$-\$\\eta\$}}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} a: {A \\otimes B}}
         {
           \\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = a;\\;(x, y)} \\approx a : {A \\otimes B}
         } \\\\
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
       \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$-\$\\beta\$}}}
         {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
         {\\Gamma \\vdash \\ensuremath{\\mathbf{q}}\_l = \\ensuremath{\\mathbf{q}}\_a + \\ensuremath{\\mathbf{q}}\_b}
@@ -1153,7 +1062,6 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
         {
           \\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = (a, b);\\;c} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = b;\\;c}} : {C}
         } \\\\
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
       \\prftree\[r\]{{\\scriptsize\\textsf{case-\$\\beta\_l\$}}}
         {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\ensuremath{\\mathcal{R}}} e: {A}}
@@ -1161,7 +1069,6 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : B \\vdash\_{\\ensuremath{\\mathcal{R}}} b: {C}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\mathsf{case}}\\;\\iota\_l\\;{e}\\;\\{\\iota\_l\\;{x} :a, \\iota\_r\\;{y} :b\\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = e;\\;a} : {C}
         } \\\\
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
       \\prftree\[r\]{{\\scriptsize\\textsf{case-\$\\beta\_r\$}}}
         {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\ensuremath{\\mathcal{R}}} e: {B}}
@@ -1169,12 +1076,10 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : B \\vdash\_{\\ensuremath{\\mathcal{R}}} b: {C}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\mathsf{case}}\\;\\iota\_r\\;{e}\\;\\{\\iota\_l\\;{x} :a, \\iota\_r\\;{y} :b\\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = e;\\;b} : {C}
         } \\\\
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
       \\prftree\[r\]{{\\scriptsize\\textsf{case-\$\\eta\$}}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} e: {A + B}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :\\iota\_l\\;{x}, \\iota\_r\\;{y} :\\iota\_r\\;{y}\\} \\approx e : {A + B}
         } \\\\
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
       \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-\$\\beta^p\$}}}
         {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l} \\vdash\_{\\epsilon} a: {A}}
@@ -1184,7 +1089,7 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
         {
           \\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;b} \\twoheadrightarrow^{p} \[x/a\]b : {B}
         }
-    
+
   \\end{gathered}\$\$
 
   ]],
@@ -1197,7 +1102,6 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
 #figure([#block[
 #todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
   minipage=1.1,scale=0.9 \$\$\\begin{gathered}
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
       \\prftree\[r\]{{\\scriptsize\\textsf{iter-\$\\beta\$}}}
         {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
         {\\ensuremath{\\mathsf{q}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}) = \\top}
@@ -1242,17 +1146,17 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
       %   {
       %     % \\prfStackPremises
       %     % {\\Gamma^{\\mb{q}} \\vdash\_{\\mc{R}} (a, \\liter{b}{y}{c})}
-      %     % {\\approx \\liter{(a, b)}{(x, y)}{\\caseexpr{c}{z}{\\linl{(x, z)}}{w}{\\linr{(x, w)}}} 
+      %     % {\\approx \\liter{(a, b)}{(x, y)}{\\caseexpr{c}{z}{\\linl{(x, z)}}{w}{\\linr{(x, w)}}}
       %     % : A \\otimes C}
       %     \\tmeq{\\Gamma^{\\mb{q}}}{\\mc{R}}
       %       {(a, \\liter{b}{y}{c})}
       %       {\\liter{(a, b)}{(x, y)}{\\caseexpr{c}{z}{\\linl{(x, z)}}{w}{\\linr{(x, w)}}}}
       %       {A \\otimes C}
       %   }
-    
+
+  \\end{gathered}\$\$
 #todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  \\end{gathered}\$\$ \$\$\\begin{gathered}
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
+\$\$\\begin{gathered}
       \\prftree\[r\]{{\\scriptsize\\textsf{unif\$^p\$}}}
         {\\eta \\rightharpoonup\\epsilon}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_c}, x : A \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = s;\\;b} \\twoheadrightarrow^{p} \\ensuremath{\\mathsf{case}}\\;b\'\\;\\{\\iota\_l\\;{z} :\\iota\_l\\;{c}, \\iota\_r\\;{x} :\\iota\_r\\;{s}\\} : {C + S}}
@@ -1269,7 +1173,7 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
       \\qquad {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : S \\vdash\_{\\epsilon} b: {C + A}}
       \\qquad {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{} b\': {B + A}}
       \\qquad {\\Gamma^{\\ensuremath{\\mathbf{q}}\_c}, z : B \\vdash\_{} c: {C}}
-    
+
   \\end{gathered}\$\$
 
   ]],

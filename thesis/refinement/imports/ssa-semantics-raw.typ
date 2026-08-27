@@ -131,14 +131,12 @@ in Figure~@refall:fig:ssa-typing.
         {\\Gamma \\vdash \\ell(A)^{\\ensuremath{\\mathbf{q}}\_l} \\rightsquigarrow \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{br}}\\;\\ell\\;o \\rhd \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}}}
       \\\\
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
       \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$}}}
         {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} o: {A}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} t \\rhd \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}^\\uparrow}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = o; t} \\rhd \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}}}
       \\\\
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
       \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$}}}
         {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} o: {A \\otimes B}}
@@ -152,7 +150,6 @@ in Figure~@refall:fig:ssa-typing.
         {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : B \\vdash\_{\\epsilon} \\tau\_r \\rhd \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}^\\uparrow}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{case}}\\;o\\;\\{\\iota\_l\\;{x} :\\tau\_l, \\iota\_r\\;{y} :\\tau\_r\\} \\rhd \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}}}
       \\\\
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
       \\prftree\[r\]{{\\scriptsize\\textsf{where\$\_{\\ensuremath{\\mathsf{nonrec}}}\$}}}
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\kappa \\rhd \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}}, \\ensuremath{\\mathsf{R}}^{\\ensuremath{\\mathbf{Q}}\'}}
         {\\forall \\ell\_i(A\_i)^{\\ensuremath{\\mathbf{q}}\_i} \\in \\ensuremath{\\mathsf{R}}^{\\ensuremath{\\mathbf{Q}}\'} .
@@ -160,7 +157,6 @@ in Figure~@refall:fig:ssa-typing.
         }
         {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\kappa\\;\\ensuremath{\\mathsf{where}}\_{\\ensuremath{\\mathsf{nonrec}}}\\;(\\ell\_i(x\_i) :\\{t\_i\\},)\_i \\rhd \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}}}
       \\\\
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
       \\prftree\[r\]{{\\scriptsize\\textsf{where\$\_{\\ensuremath{\\mathsf{rec}}}\$}}}
       {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\kappa \\rhd \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}}, \\ensuremath{\\mathsf{R}}^{\\ensuremath{\\mathbf{Q}}\'}}
       {\\epsilon \\in \\ensuremath{\\mathcal{E}}^\\infty}
