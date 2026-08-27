@@ -79,9 +79,10 @@
 #let ieff(f) = $sans("eff")(#f)$
 // The monotone operator E → E giving the effect of iterating an effect.
 #let effiter(e) = $attach(#e, tr: ↺)$
-// Effectful typing Γ ⊢_ε a : A. The effect rides the bottom-right corner of
-// the turnstile (via `attach`) rather than tucking under it as a subscript.
-#let hastye(g, e, a, ty) = $#g attach(⊢, br: #e) #a : #ty$
+// Effectful typing Γ ⊢_ε a : A. `eff-typing` is defined in the shared SSA
+// notation module and positions the annotation to the lower-right of ⊢.
+#import "/lib/notation/ssa.typ": eff-typing
+#let hastye(g, e, a, ty) = eff-typing(g, e, a, ty)
 // Effectful instruction typing f : A →_ε B, effect on the arrow's bottom-right.
 #let insttye(f, a, e, b) = $#f : #a attach(->, br: #e) #b$
 

@@ -7,11 +7,11 @@
 // followed only by compile repairs and explicit TODO markers.
 
 #import "/lib/prelude.typ": *
-#show: chapter.with(title: "Models of lambda_iter (raw import)")
+#show: chapter.with(title: [Models of #liter])
 
 #todo[During thesis integration, identify which refinement-, effect-, and substructural-specific material should move to the refinement chapter, and specialize the remaining exposition to the unrefined Freyd-category narrative. Do not apply those cuts during the raw transcription pass.]
 
-== Models of $lambda_(sans("iter"))$
+== Models of #liter
 <models-of-lambda_ensuremathmathsfiter>
 A good categorical semantics is one in which the semantics of a term is
 constructed in a straightforward, compositional manner from the
@@ -19,7 +19,7 @@ semantics of its subterms. Furthermore, we would like the equational
 properties of our term formers to correspond closely to the universal
 properties of the categorical structure used to interpret them. Thus,
 our goal is to pick categorical structures which correspond one-to-one
-to the features of $lambda_(sans("iter"))$. In particular, we need to
+to the features of #liter. In particular, we need to
 find categorical structures to model our three primary structured
 control-flow constructs, which are:
 
@@ -252,13 +252,13 @@ $f ; \[ sans("id") \, f^dagger \] = f$
 ]
 Our goal is to have our fixpoint operator's properties correspond
 precisely to drawing a loop in a control-flow graph, as in the left-hand
-side of Figure~@fig:elgot-ax-string-diagrams, which corresponds to
+side of @fig:elgot-ax-string-diagrams, which corresponds to
 $f^dagger$. In particular, we should be able to reconfigure such
 diagrams up to isotopy (i.e., moving boxes and wires around without
 changing connectivity) without changing the meaning of our program. To
 be able to do so soundly, we will need to introduce some additional
 equations, which correspond to the graphical transformations in
-Figure~@fig:elgot-ax-string-diagrams; a fixpoint satisfying these
+@fig:elgot-ax-string-diagrams; a fixpoint satisfying these
 equations is called a #emph[Conway iteration operator], as defined
 below:
 
@@ -303,7 +303,7 @@ $ forall f : A arrow.r B + A \, \( C ⊗ f ; delta^(- 1) \)^dagger = C ⊗ f^dag
 
 ]
 We've now got almost everything we need to model pure and arbitrarily
-effectful $lambda_(sans("iter"))$ programs, but we still need to be
+effectful #liter programs, but we still need to be
 able to perform a more fine-grained classification of effects. To do so,
 we introduce a generalization of the notion of an #emph[effectful
 category], which in the literature (e.g. @promonad) only distinguishes
@@ -381,13 +381,13 @@ $Delta : A arrow.r A ⊗ A$, $! : A arrow.r I$ for this
 purpose. We can then handle relevant and affine #emph[effects] by
 requiring that the appropriate morphism families are #emph[natural]
 w.r.t. the subcategory corresponding to that effect. Following this
-idea, we can now define a $lambda_(sans("iter"))$-model as follows:
-$lambda_(sans("iter"))$:
+idea, we can now define a #liter;-model as follows:
+#liter:
 
 #block[
 A model
 $cal(M) = \( cal(C) \, \( dot.op \)^dagger \, ⟦ dot.op ⟧ \, Delta_() \, !_() \)$
-of a $lambda_(sans("iter"))$-signature
+of a #liter;-signature
 $cal(S) = \( cal(X) \, cal(I) \, cal(E) \)$ is:
 
 - An effectful Elgot category ($cal(C)$, $\( dot.op \)^dagger$) over
@@ -469,7 +469,7 @@ $⟦ Gamma^(upright(bold(q))) ⟧ : \| cal(C) \|$
 as $⟦ \[ Gamma^(upright(bold(q))) \] ⟧$.
 
 We can now define the semantics of our structural judgements, weakenings
-and context splitting, in Figure~@fig:struct-sem. In particular,
+and context splitting, in @fig:struct-sem. In particular,
 weakenings simply discard unused variables (which are guaranteed to be
 of affine type), while context splitting duplicates variables used in
 both the left and right component contexts (which are guaranteed to be
@@ -489,7 +489,7 @@ of relevant type).
 
   ]],
   caption: [
-    Denotational semantics for structural $lambda_(sans("iter"))$
+    Denotational semantics for structural #liter
     judgements
   ]
 )

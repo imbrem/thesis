@@ -4,11 +4,12 @@
 // Source sections: Type Theory and Syntactic Metatheory, lines 1222–1614
 
 #import "/lib/prelude.typ": *
-#show: chapter.with(title: $lambda_"SSA": "Type Theory"$)
+#import "theory.typ": *
+#show: chapter.with(title: [#lssa: Type Theory])
 
 = Type Theory
 <sec:typing>
-We now give a formal account of $lambda_(sans("SSA"))$, starting with
+We now give a formal account of #lssa, starting with
 the types. Our types are first order, and consists of binary sums
 $A + B$, products $A ⊗ B$, the unit type $upright(bold(1))$,
 and the empty type $upright(bold(0))$, all parameterised over a set of
@@ -20,7 +21,7 @@ hypotheses] $x : A$, where $x$ is a variable name and $A$ is the type of
 that variable. Similarly, we define a #emph[label-context] to be a list
 of #emph[labels] $ell \( A \)$, where $A$ is the parameter type that
 must be passed on a jump to the label $ell$. The grammar for types,
-contexts, and label-contexts is given in Figure~@fig:ssa-types.
+contexts, and label-contexts is given in @fig:ssa-types.
 
 #figure([#block[
   #block[
@@ -34,13 +35,13 @@ contexts, and label-contexts is given in Figure~@fig:ssa-types.
   ]
   ]],
   caption: [
-    Grammar for $lambda_(sans("SSA"))$ types, contexts, and
+    Grammar for #lssa types, contexts, and
     label-contexts
   ]
 )
 <fig:ssa-types>
 
-Our grammar in Figure~[fig:ssa-grammar] was implicitly parameterised over
+Our grammar in @fig:ssa-grammar was implicitly parameterised over
 a set of #emph[primitive instructions] $f in cal(I)$. In particular, for
 each pair $A \, B in sans("Ty") \( X \)$ we specify a set of primitive
 instructions $f in cal(I) \( A \, B \)$, with a subset of #emph[pure
@@ -53,10 +54,10 @@ and $cal(I) = union.big_epsilon.alt cal(I)_epsilon.alt$.
 
 We'll call a tuple $S g = \( cal(T) \, cal(I) \)$ of types and
 instructions over these types an
-#emph[$lambda_(sans("SSA"))$-signature], and, for the rest of this
+#emph[#lssa;-signature], and, for the rest of this
 section, work over a fixed signature.
 
-As shown in Figure~[fig:ssa-grammar], $lambda_(sans("SSA"))$ terms are
+As shown in @fig:ssa-grammar, #lssa terms are
 divided into two syntactic categories, each associated with a judgement:
 
 - #emph[Expressions] $a \, b \, c \, e$, which are typed with the
@@ -76,7 +77,7 @@ divided into two syntactic categories, each associated with a judgement:
   argument of type $A$.
 
 The typing rules for expressions are given in
-Figure~@fig:ssa-expr-rules. In particular, expressions may be built up
+@fig:ssa-expr-rules. In particular, expressions may be built up
 from the following fairly standard primitives:
 
 - A variable $x$ in the context $Gamma$, as typed by var.
@@ -114,43 +115,17 @@ $upright(bold(1)) + upright(bold(1))$. If-then-else is then a
 $sans("case")$ which ignores the unit payloads, so that
 $sans("if") #h(0em) e_1 #h(0em) { e_2 } #h(0em) sans("else") #h(0em) { e_3 } := sans("case") #h(0em) e_1 #h(0em) { iota_l #h(0em) \( \) : e_2 \, iota_r #h(0em) \( \) : e_3 }$.
 
-#todo[Translate the following preserved LaTeX expression-typing rules into native Typst proof trees without changing them.]
-#figure([\$\$\\begin{gathered}
-      \\boxed{\\Gamma \\vdash\_{\\epsilon} a: {A}} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{var}}}{\\Gamma(x) = A}{\\Gamma \\vdash\_{\\epsilon} x: {A}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{op}}}{f \\in \\ensuremath{\\mathcal{I}}\_{\\epsilon}(A, B)}{\\Gamma \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma \\vdash\_{\\epsilon} f\\;a: {B}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$}}}
-        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma, x : A \\vdash\_{\\epsilon} b: {B}}
-        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;b}: {B}} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{unit}}}{\\Gamma \\vdash\_{\\epsilon} (): {\\ensuremath{\\mathbf{1}}}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{pair}}}{\\Gamma \\vdash\_{\\epsilon} a: {A}}{\\Gamma \\vdash\_{\\epsilon} b: {B}}
-        {\\Gamma \\vdash\_{\\epsilon} (a, b): {A \\otimes B}} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$}}}
-        {\\Gamma \\vdash\_{\\epsilon} e: {A \\otimes B}}
-        {\\Gamma, x : A, y : B \\vdash\_{\\epsilon} c: {C}}
-        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e;\\;c}: {C}} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{inl}}}{\\Gamma \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma \\vdash\_{\\epsilon} \\iota\_l\\;{a}: {A + B}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{inr}}}{\\Gamma \\vdash\_{\\epsilon} b: {B}}
-        {\\Gamma \\vdash\_{\\epsilon} \\iota\_r\\;{b}: {A + B}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{abort}}}{\\Gamma \\vdash\_{\\epsilon} a: {\\ensuremath{\\mathbf{0}}}}
-        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{abort}}\\;{a}: {A}} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{case}}}
-        {\\Gamma \\vdash\_{\\epsilon} e: {A + B}}
-        {\\Gamma, x : A \\vdash\_{\\epsilon} a: {C}}
-        {\\Gamma, y : A \\vdash\_{\\epsilon} b: {C}}
-        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :a, \\iota\_r\\;{y} :b\\}: {C}}
-    
-  \\end{gathered}\$\$
+#figure([
+  #align(center)[#box(stroke: 0.5pt, inset: 4pt)[#eff-typing($Gamma$, $epsilon$, $a$, $A$)]]
+  #v(0.8em)
+  #rule-set(
+    prooftree(expr-var), prooftree(expr-op), prooftree(expr-let1),
+    prooftree(expr-unit), prooftree(expr-pair), prooftree(expr-let2),
+    prooftree(expr-inl), prooftree(expr-inr), prooftree(expr-abort),
+    prooftree(expr-case),
+  )
+], caption: [Rules for typing #lssa expressions]) <fig:ssa-expr-rules>
 
-  ],
-  caption: [
-    Rules for typing $lambda_(sans("SSA"))$ expressions
-  ]
-)
-<fig:ssa-expr-rules>
 
 We now move on to #emph[regions], which can be typed as follows:
 
@@ -170,42 +145,20 @@ We now move on to #emph[regions], which can be typed as follows:
   $ell_i \( x_i \) : { t_i }$ and a #emph[terminator region] $r$ which
   may branch to one of $ell_i$ or an exit label.
 
-#todo[Translate the following preserved LaTeX region-typing rules into native Typst proof trees without changing them.]
-#figure([\$\$\\begin{gathered}
-      \\boxed{\\Gamma \\vdash r \\rhd \\ensuremath{\\mathsf{L}}} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{br}}}{\\Gamma \\vdash\_{\\bot} a: {A}}{\\ensuremath{\\mathsf{L}}\\;\\ell = A}
-        {\\Gamma \\vdash \\ensuremath{\\mathsf{br}}\\;\\ell\\;a \\rhd \\ensuremath{\\mathsf{L}}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-r}}}
-        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma, x : A \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a; r} \\rhd \\ensuremath{\\mathsf{L}}} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$-r}}}
-        {\\Gamma \\vdash\_{\\epsilon} e: {A \\otimes B}}
-        {\\Gamma, x : A, y : B \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e; r} \\rhd \\ensuremath{\\mathsf{L}}} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{case-r}}}
-        {\\Gamma \\vdash\_{\\epsilon} e: {A + B}}
-        {\\Gamma, x : A \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\Gamma, y : B \\vdash s \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :r, \\iota\_r\\;{y} :s\\} \\rhd \\ensuremath{\\mathsf{L}}} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{cfg}}}
-        {\\Gamma \\vdash r \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_i(A\_i),)\_{i \\in I}}
-        {\\forall i \\in I. \\Gamma, x\_i : A\_i \\vdash t\_i \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in I}}
-        {\\Gamma \\vdash r\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_i(x\_i) :\\{t\_i\\},)\_{i \\in I} \\rhd \\ensuremath{\\mathsf{L}}}
-    
-  \\end{gathered}\$\$
+#figure([
+  #align(center)[#box(stroke: 0.5pt, inset: 4pt)[#region-typing($Gamma$, $r$, $sans("L")$)]]
+  #v(0.8em)
+  #rule-set(
+    prooftree(region-br), prooftree(region-let1), prooftree(region-let2),
+    prooftree(region-case), prooftree(region-cfg),
+  )
+], caption: [Rules for typing #lssa regions]) <fig:ssa-reg-rules>
 
-  ],
-  caption: [
-    Rules for typing $lambda_(sans("SSA"))$ regions
-  ]
-)
-<fig:ssa-reg-rules>
 
 == Metatheory
 <metatheory>
 We can now begin to state the syntactic metatheory of
-$lambda_(sans("SSA"))$. One of the most important metatheorems, and a
+#lssa. One of the most important metatheorems, and a
 basic sanity check of our type theory, is #emph[weakening];
 essentially, if something typechecks in a context $Delta$, and $Gamma$
 contains all the variables of $Delta$ (written $Gamma lt.eq Delta$,
@@ -228,7 +181,7 @@ semantically dual to variable-weakening (projection from a product), and
 hence the order is flipped.
 
 We give the (standard) formal rules for weakening $Gamma lt.eq Delta$,
-and their duals, in the first part of Figure @fig:ssa-meta-rules.
+and their duals, in the first part of @fig:ssa-meta-rules.
 
 - wk-nil and lwk-nil say that the empty (label) context weakens itself,
 
@@ -276,39 +229,33 @@ that:
 ~◻
 
 ]
-#todo[Translate the following preserved LaTeX weakening and substitution rules into native Typst proof trees without changing them.]
-#figure([\$\$\\begin{gathered}
-      \\boxed{\\Gamma \\leq \\Delta} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{wk-nil}}}{}{\\cdot \\leq \\cdot} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{wk-skip}}}{\\Gamma \\leq \\Delta}{\\Gamma, x : A \\leq \\Delta} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{wk-cons}}}{\\Gamma \\leq \\Delta}
-        {\\Gamma, x : A \\leq \\Delta, x : A} \\\\
-      \\boxed{\\ensuremath{\\mathsf{L}} \\leq \\ensuremath{\\mathsf{K}}} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{lwk-nil}}}{}{\\cdot \\leq \\cdot} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{lwk-skip}}}{\\ensuremath{\\mathsf{L}} \\leq \\ensuremath{\\mathsf{K}}}{\\ensuremath{\\mathsf{L}} \\leq \\ensuremath{\\mathsf{K}}, \\ell(A)} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{lwk-cons}}}{\\ensuremath{\\mathsf{L}} \\leq \\ensuremath{\\mathsf{K}}}
-        {\\ensuremath{\\mathsf{L}}, \\ell(A) \\leq \\ensuremath{\\mathsf{K}}, \\ell(A)} \\\\
-      \\boxed{\\gamma: \\Gamma \\mapsto \\Delta} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{sb-nil}}}{}{\\cdot: \\Gamma \\mapsto \\cdot} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{sb-cons}}}{\\gamma: \\Gamma \\mapsto \\Delta}{\\Gamma \\vdash\_{\\bot} e: {A}}
-        {\\gamma, x \\mapsto e: \\Gamma \\mapsto \\Delta, x : A}
-         \\\\
-      \\boxed{\\Gamma \\vdash \\sigma: \\ensuremath{\\mathsf{L}} \\rightsquigarrow \\ensuremath{\\mathsf{K}}} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{ls-nil}}}{}{\\Gamma \\vdash \\cdot: \\cdot \\rightsquigarrow \\ensuremath{\\mathsf{K}}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{ls-cons}}}
-        {\\Gamma \\vdash \\sigma: \\ensuremath{\\mathsf{L}} \\rightsquigarrow \\ensuremath{\\mathsf{K}}}{\\Gamma, x : A \\vdash r \\rhd \\ensuremath{\\mathsf{K}}}
-        {\\Gamma \\vdash \\sigma: \\ensuremath{\\mathsf{L}} \\rightsquigarrow \\ensuremath{\\mathsf{K}}}
-        {\\Gamma \\vdash \\sigma, \\ell(x) \\mapsto r: \\ensuremath{\\mathsf{L}}, \\ell(A) \\rightsquigarrow \\ensuremath{\\mathsf{K}}}
-    
-  \\end{gathered}\$\$
+#figure([
+  #grid(
+    columns: 1,
+    row-gutter: 1.2em,
+    align(center)[
+      #box(stroke: 0.5pt, inset: 4pt)[$Gamma <= Delta$]
+      #v(0.5em)
+      #rule-set(prooftree(wk-nil), prooftree(wk-skip), prooftree(wk-cons))
+    ],
+    align(center)[
+      #box(stroke: 0.5pt, inset: 4pt)[$sans("L") <= sans("K")$]
+      #v(0.5em)
+      #rule-set(prooftree(lwk-nil), prooftree(lwk-skip), prooftree(lwk-cons))
+    ],
+    align(center)[
+      #box(stroke: 0.5pt, inset: 4pt)[#subst-typing($gamma$, $Gamma$, $Delta$)]
+      #v(0.5em)
+      #rule-set(prooftree(sb-nil), prooftree(sb-cons))
+    ],
+    align(center)[
+      #box(stroke: 0.5pt, inset: 4pt)[#label-subst-typing($Gamma$, $sigma$, $sans("L")$, $sans("K")$)]
+      #v(0.5em)
+      #rule-set(prooftree(ls-nil), prooftree(ls-cons))
+    ],
+  )
+], caption: [Rules for weakening and substitution in #lssa]) <fig:ssa-meta-rules>
 
-  ],
-  caption: [
-    Rules for typing $lambda_(sans("SSA"))$ weakening and substitution
-  ]
-)
-<fig:ssa-meta-rules>
 
 The validity of variable weakening hinges on the fact that all the
 variables in $Delta$ are also available with the same type in $Gamma$,
@@ -399,7 +346,7 @@ substituting #emph[labels] for #emph[(parametrized) regions] via
 $sigma tack.r Gamma : sans(L) arrow.r.squiggly sans(K)$ maps every label
 $ell \( A \) in sans(L)$ to a region
 $Gamma \, x : A tack.r r gt.closed sans(K)$ parametrized by $x : A$. As
-shown in Figure @fig:ssa-label-subst-def, we may then define
+shown in @fig:ssa-label-subst-def, we may then define
 label-substitution recursively in the obvious manner, mapping
 $sans("br") #h(0em) ell #h(0em) a$ to $\[ a \/ x \] r$ as a base case.
 Composition of label-substitutions is pointwise. This allows us to state
@@ -449,7 +396,7 @@ for single-label substitutions.
 
   ],
   caption: [
-    Capture-avoiding label substititon for $lambda_(sans("SSA"))$
+    Capture-avoiding label substititon for #lssa
     regions and label substitutions; in particular, we assume bound
     variables and labels are $alpha$-converted so as not to appear in
     $sigma$.

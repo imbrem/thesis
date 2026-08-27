@@ -132,7 +132,7 @@ for Standard ML can be viewed as a relaxation of ANF (and hence, of SSA)
 to get a nicer substitution principle. Benton and Kennedy then use this
 flexibility to build up an equational theory justified by their
 operational semantics. One interesting feature is that, unlike Moggi's
-equational metalanguage @moggi-91-monad (and like our $lambda_(sans("SSA"))$ calculus), MIL
+equational metalanguage @moggi-91-monad (and like our #lssa calculus), MIL
 enforces a stratification of #emph[values] and #emph[computations],
 without supporting "computations of computations" (corresponding to
 nested monad types $sans("T")(sans("T")(A))$). This hints at Freyd
@@ -164,7 +164,7 @@ programs to SSA form may also be viewed as a mechanism for transforming
 programs in a functional language with unstructured control flow into
 equivalent expressions.
 
-Similarly to $lambda_(sans("SSA"))$, they extend the lambda calculus with a mutually recursive
+Similarly to #lssa, they extend the lambda calculus with a mutually recursive
 `where`-binding, which allows them to directly translate unstructured
 SSA control flow. However, their calculus uses only a single syntactic
 category of expressions, whereas we attempt to model (generalized) SSA

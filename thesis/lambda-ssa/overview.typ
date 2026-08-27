@@ -4,7 +4,7 @@
 // Source sections: Static Single Assignment Form, lines 407–1221
 
 #import "/lib/prelude.typ": *
-#show: chapter.with(title: $lambda_"SSA": "Static Single Assignment Form"$)
+#show: chapter.with(title: [#lssa: Static Single Assignment Form])
 
 = Static Single Assignment Form
 <static-single-assignment-form>
@@ -26,7 +26,7 @@ sequence of #emph[instructions] $x = f \( y \, z \)$ (hence the name
 #emph[3-address code], referring to the typical three variables
 $x \, y \, z$) followed by a #emph[terminator] $tau$, which can be a
 (conditional) branch to another basic block. We give a grammar for
-3-address code in Figure~@fig:3addr-grammar, with some slight
+3-address code in @fig:3addr-grammar, with some slight
 adjustments to the usual presentation:
 
 - #emph[Constants] $c$ are interpreted as nullary instructions
@@ -68,8 +68,8 @@ adjustments to the usual presentation:
 <fig:3addr-grammar>
 
 As a concrete example, consider the simple imperative program to compute
-$10 !$ given in Figure~@fig:fact-program. We can normalize our code into
-3-address code, as in Figure~@fig:fact-3addr, by:
+$10 !$ given in @fig:fact-program. We can normalize our code into
+3-address code, as in @fig:fact-3addr, by:
 
 - Converting structured control flow (e.g., $sans("while")$) into
   unstructured jumps between basic blocks.
@@ -154,22 +154,26 @@ strictly dominates $P$.
 A given basic block can be converted to SSA form by numbering each
 definition of a variable, effectively changing references to $x$ to
 references to $x_t$, i.e. "$x$ at time $t$." For example, we could
-#todo[Translate the following preserved LaTeX array into native Typst math without changing its contents.]
-rewrite \$\$\\begin{array}{lcl}
-  x = 3y + 5; & & \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x\_0 = 3y + 5;\\;}  \\\\
-  x = 3x + 2; & \\qquad \\approx \\qquad & \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x\_1 = 3x\_0 + 2;\\;\\\\}
-  \\ensuremath{\\mathsf{ret}}\\;(3x + 1) & & \\ensuremath{\\mathsf{ret}}\\;(3x\_1 + 1)
-\\end{array}\$\$ This transformation enables algebraic reasoning about
+rewrite
+#align(center, grid(
+  columns: (auto, auto, auto),
+  column-gutter: 1.5em,
+  row-gutter: 0.25em,
+  $x = 3y + 5;$, [], $sans("let") med x_0 = 3y + 5;$,
+  $x = 3x + 2;$, $approx$, $sans("let") med x_1 = 3x_0 + 2;$,
+  $sans("ret") med (3x + 1)$, [], $sans("ret") med (3x_1 + 1)$,
+))
+This transformation enables algebraic reasoning about
 expressions involving each $x_t$. However, since we can only define a
 variable once in SSA form, expressing programs with loops and branches
 becomes challenging. For example, naïvely trying to lower the program in
-Figure~@fig:fact-3addr into SSA form would not work, since the reference
+@fig:fact-3addr into SSA form would not work, since the reference
 to $i$ in the right-hand-side of the statement $i = i + 1$ can refer to
 #emph[either] the previous value of $i$ from the last iteration of the
 loop #emph[or] the original value $i = 1$. The classical solution is to
 introduce #emph[$phi.alt$-nodes], which select a value based on the
 predecessor block from which control arrived. We give the lowering of
-our program into SSA with $phi.alt$-nodes in Figure~@fig:fact-ssa.
+our program into SSA with $phi.alt$-nodes in @fig:fact-ssa.
 
 #cite(<cytron-ssa-intro-91>, form: "prose") introduced the first
 efficient algorithm to lower a program in 3-address code to valid SSA
@@ -180,7 +184,7 @@ semantics.
 
 Additionally, they require us to adopt more complex scoping rules than
 simple dominance-based scoping. For example, in the basic block
-$sans("loop")$ in Figure~@fig:fact-ssa, $i_0$ evaluates to 1 if we came
+$sans("loop")$ in @fig:fact-ssa, $i_0$ evaluates to 1 if we came
 from the entry block and to $i_1$ if we came from $sans("body")$.
 Similarly, $a_0$ evaluates to either 1 or $a_1$ based on the predecessor
 block. This does not obey dominance-based scoping, since $i_0$ and $i_1$
@@ -232,7 +236,7 @@ rather than only those paths which also go through $S$.
   ],
   caption: [
     Conversion of three address code for the program in
-    Figure~@fig:fact-program to SSA form, requring the insertion of
+    @fig:fact-program to SSA form, requring the insertion of
     $phi.alt$-nodes for $i$ and $a$ due to control-flow dependent
     updates. Note how SSA-form can be viewed as "three address code in
     which all $sans("let")$-bindings are immutable."
@@ -247,7 +251,7 @@ source block, rather than the block in which the $phi.alt$-node itself
 appears, hints at a possible solution. By #emph[moving] the expression
 in each branch to the #emph[call-site], we can transition to an
 isomorphic syntax called basic blocks with arguments (BBA), as
-illustrated in Figure @fig:fact-bba. In this approach, each
+illustrated in @fig:fact-bba. In this approach, each
 $phi.alt$-node -- since it lacks side effects and has scoping rules
 independent of its position in the basic block, depending only on the
 source of each branch -- can be moved to the top of the block. This
@@ -260,7 +264,7 @@ the $phi.alt$-node, add an argument to the jump instruction from the
 appropriate source block.
 
 We give a formal grammar for basic blocks-with-arguments SSA in
-Figure~@fig:bba-grammar #footnote[Many variants of SSA do not allow
+@fig:bba-grammar #footnote[Many variants of SSA do not allow
 variables to appear alone on the right-hand side of assignments, such as
 $x = y ; beta$. We do not incorporate this restriction, though we could
 by normalizing even further and substituting $\[ y \/ x \] beta$
@@ -306,7 +310,7 @@ for $phi.alt$-nodes. When considering basic blocks, this means that a
 variable is visible within the block $D$ where it is defined, starting
 from the point of its definition. It continues to be visible in all
 subsequent blocks $P$ that are strictly dominated by $D$ in the
-control-flow graph (CFG). For example, in Figure~@fig:fact-bba:
+control-flow graph (CFG). For example, in @fig:fact-bba:
 
 - The entry block strictly dominates all other blocks by definition;
   thus, the variable $n$ is visible in $sans("loop")$ and
@@ -320,58 +324,49 @@ control-flow graph (CFG). For example, in Figure~@fig:fact-bba:
   since there is a path from the entry block to $sans("loop")$ that
   does not pass through $sans("body")$.
 
-#todo[Translate the following two preserved LaTeX program listings into native Typst math without changing their contents or colour annotations.]
-#figure([#figure([\$\$\\begin{aligned}
-          %\\ms{entry}:\\quad  
-                            & \\ensuremath{\\mathsf{let}}\\;n = 10; \\\\
-                            & \\ensuremath{\\mathsf{br}}\\;\\ensuremath{\\mathsf{loop}}; \\\\
-          \\ensuremath{\\mathsf{loop}}: \\quad  & \\begingroup \\color{red}
-                              \\ensuremath{\\mathsf{let}}\\;i\_0 = \\phi(\\ensuremath{\\mathsf{entry}}: 1, \\ensuremath{\\mathsf{body}}: i\_1);
-                              \\endgroup \\\\
-                            & \\begingroup \\color{blue}
-                              \\ensuremath{\\mathsf{let}}\\;a\_0 = \\phi(\\ensuremath{\\mathsf{entry}}: 1, \\ensuremath{\\mathsf{body}}: a\_1); 
-                              \\endgroup \\\\
-                            & \\ensuremath{\\mathsf{if}}\\;i\_0 \< n\\;\\{\\;\\ensuremath{\\mathsf{br}}\\;\\ensuremath{\\mathsf{body}}\\;\\} \\\\
-                            & \\ensuremath{\\mathsf{else}}\\;\\{\\;\\ensuremath{\\mathsf{ret}}\\;a\_0\\;\\}; \\\\
-          \\ensuremath{\\mathsf{body}}: \\quad  & \\ensuremath{\\mathsf{let}}\\;t = i\_0 + 1 \\\\
-                            & \\ensuremath{\\mathsf{let}}\\;a\_1 = a\_0 \* t \\\\
-                            & \\ensuremath{\\mathsf{let}}\\;i\_1 = i\_0 + 1 \\\\
-                            & \\ensuremath{\\mathsf{br}}\\;\\ensuremath{\\mathsf{loop}}
-        
-    \\end{aligned}\$\$
-
-    ],
+#figure([#grid(
+  columns: (1fr, 1fr),
+  column-gutter: 1em,
+  [#figure([#text(size: 8.5pt)[#grid(
+      columns: (auto, auto),
+      column-gutter: 0.7em,
+      row-gutter: 0.18em,
+      [], $sans("let") med n = 10;$,
+      [], $sans("br") med sans("loop");$,
+      [$sans("loop"):$], text(fill: red)[$sans("let") med i_0 = phi.alt(sans("entry"): 1, sans("body"): i_1);$],
+      [], text(fill: blue)[$sans("let") med a_0 = phi.alt(sans("entry"): 1, sans("body"): a_1);$],
+      [], $sans("if") med i_0 < n med {sans("br") med sans("body")}$,
+      [], $sans("else") med {sans("ret") med a_0};$,
+      [$sans("body"):$], $sans("let") med t = i_0 + 1$,
+      [], $sans("let") med a_1 = a_0 times t$,
+      [], $sans("let") med i_1 = i_0 + 1$,
+      [], $sans("br") med sans("loop")$,
+    )]],
     caption: [
       With $phi.alt$-nodes
     ]
-  )
-  <fig:fact-phi>
+  ) <fig:fact-phi>],
 
-  #figure([\$\$\\begin{aligned}
-          %\\ms{entry}:\\quad            
-                                      & \\ensuremath{\\mathsf{let}}\\;n = 10; \\\\
-                                      & \\ensuremath{\\mathsf{br}}\\;\\ensuremath{\\mathsf{loop}}(\\textcolor{red}{1}, \\textcolor{blue}{1}); \\\\
-          \\ensuremath{\\mathsf{loop}}(\\textcolor{red}{i\_0}, \\textcolor{blue}{a\_0}): \\quad  
-                                      & \\ensuremath{\\mathsf{if}}\\;i\_0 \< n\\; \\{\\;\\ensuremath{\\mathsf{br}}\\;\\ensuremath{\\mathsf{body}}\\;\\} \\\\
-                                      & \\ensuremath{\\mathsf{else}}\\;\\{\\;\\ensuremath{\\mathsf{ret}}\\;a\_0\\;\\}; \\\\
-          \\ensuremath{\\mathsf{body}}: \\quad            & \\ensuremath{\\mathsf{let}}\\;t = i\_0 + 1 \\\\
-                                      & \\ensuremath{\\mathsf{let}}\\;a\_1 = a\_0 \* t \\\\
-                                      & \\ensuremath{\\mathsf{let}}\\;i\_1 = i\_0 + 1 \\\\
-                                      & \\ensuremath{\\mathsf{br}}\\;\\ensuremath{\\mathsf{loop}}(\\textcolor{red}{i\_1}, \\textcolor{blue}{a\_1})
-                                      \\\\ \\\\
-        
-    \\end{aligned}\$\$
-
-    ],
+  [#figure([#text(size: 8.5pt)[#grid(
+      columns: (auto, auto),
+      column-gutter: 0.7em,
+      row-gutter: 0.18em,
+      [], $sans("let") med n = 10;$,
+      [], [$sans("br") med sans("loop")(#text(fill: red)[$1$], #text(fill: blue)[$1$]);$],
+      [#box[$sans("loop")(#text(fill: red)[$i_0$], #text(fill: blue)[$a_0$]):$]], $sans("if") med i_0 < n med {sans("br") med sans("body")}$,
+      [], $sans("else") med {sans("ret") med a_0};$,
+      [$sans("body"):$], $sans("let") med t = i_0 + 1$,
+      [], $sans("let") med a_1 = a_0 times t$,
+      [], $sans("let") med i_1 = i_0 + 1$,
+      [], [$sans("br") med sans("loop")(#text(fill: red)[$i_1$], #text(fill: blue)[$a_1$])$],
+    )]],
     caption: [
       Basic-blocks with arguments
     ]
-  )
-  <fig:fact-bba>
-
-  ],
+  ) <fig:fact-bba>],
+)],
   caption: [
-    The program in Figure @fig:fact-program written in standard SSA
+    The program in @fig:fact-program written in standard SSA
     (using $phi.alt$ nodes), like in LLVM @llvm, and in basic-blocks
     with arguments SSA, like in MLIR @mlir and Cranelift @cranelift. The
     arguments $i_0 \, a_0$ corresponding to the $phi.alt$-nodes
@@ -405,7 +400,7 @@ $P$.
 So if we make the dominance tree explicit in the syntax and tie the
 binding of variables to this tree structure, then lexical and
 dominance-based scoping become one and the same. We use this observation
-to introduce #emph[lexical SSA] in Figure~@fig:lex-ssa. The key idea of
+to introduce #emph[lexical SSA] in @fig:lex-ssa. The key idea of
 this syntax is to, rather than treating the control-flow graph $G$ as a
 flat collection of basic blocks (with a distinguished block), to instead
 consider (subtrees of) the dominance tree $r$, with the root of the tree
@@ -426,18 +421,19 @@ $t_i$ (which can only be reached through $r$). The data of a region $r$
 is thus exactly the data contained in a basic block $beta$ (its
 instructions and terminator) together with a set of subregions dominated
 by $r$; in C++-like pseudocode, we might represent a region as in
-Figure~@fig:ssa-data.
+@fig:ssa-data.
 
 Regions allow us to enforce dominance-based scoping simply by making the
 variables defined in $r$ visible only in the $t_i$, which, as previously
 stated, #emph[must] be dominated by $r$; i.e., dominance based scoping
 becomes lexical scoping of $sans("where")$-blocks. It is easy to see
-(we demonstrate this more rigorously in Section~[ssec:ssa-normal]) that,
+(we demonstrate this more rigorously in
+#todo[the future subsection `ssec:ssa-normal`]) that,
 given a CFG $G$, there exists some way to annotate its topological sort
 w.r.t. the dominance relation with $sans("where")$-blocks to obtain a
 region $r$ which is lexically well-scoped if and only if $C$ is a valid
 SSA program; we illustrate this process on our running example in
-Figure~@fig:dominance-to-lexical. Conversely, erasing the
+@fig:dominance-to-lexical. Conversely, erasing the
 $sans("where")$-blocks from a region $r$ and giving the root a name
 trivially yields a (topologically sorted!) SSA program, establishing an
 isomorphism between lexical SSA and standard SSA.
@@ -479,7 +475,7 @@ isomorphism between lexical SSA and standard SSA.
 
   ],
   caption: [
-    Data encoded by the grammar in Figure @fig:lex-ssa
+    Data encoded by the grammar in @fig:lex-ssa
   ]
 )
 <fig:ssa-data>
@@ -563,14 +559,15 @@ To help achieve this, we will slightly generalize our syntax by:
   "$sans("case") #h(0em) a #h(0em) { iota_l #h(0em) x : b \, iota_r #h(0em) y : c }$"
   #metadata(none) <ssa-change-expr>
 
-This leaves us with our final language, $lambda_(sans("SSA"))$, the
-resulting grammar for which is given in Figure~@fig:ssa-grammar. It is
+This leaves us with our final language, #lssa, the
+resulting grammar for which is given in @fig:ssa-grammar. It is
 easy to see that these changes add no expressive power to lexical SSA:
 we can desugar #link(<ssa-change-val>)[1] by introducing names for anonymous
 sub-expressions, #link(<ssa-change-reg>)[2] by introducing names for anonymous
 sub-regions, and #link(<ssa-change-expr>)[3] by floating out let-bindings and
 case-statements in the obvious manner, introducing labels as necessary;
-we discuss this in more detail in Section~[ssec:ssa-normal].
+we discuss this in more detail in
+#todo[the future subsection `ssec:ssa-normal`].
 
 Change #link(<ssa-change-val>)[1] allows us to effectively reason about
 #emph[substitution]: replacing the value of a variable (which is a
@@ -619,7 +616,7 @@ dramatically simplifies the form of the rules themselves.
   ]
   ]],
   caption: [
-    Grammar for $lambda_(sans("SSA"))$
+    Grammar for #lssa
   ]
 )
 <fig:ssa-grammar>
