@@ -11,7 +11,7 @@
 <refall:ssa-typing-and-semantics>
 == Typing Rules
 <refall:typing-rules-1>
-We now turn back to the promises at the end of Section~@refall:sec:ssa-intro
+We now turn back to the promises at the end of Section~#todo[Cross-reference: `refall:sec:ssa-intro`]
 and attempt to give typing rules and denotational semantics for
 $lambda_(sans(S S A))$. Recall that the primitive syntactic element of
 an $lambda_(sans(S S A))$ program is a #emph[region] $r$, which can be
@@ -231,7 +231,7 @@ $⟦ Gamma^(upright(bold(q))) ⟧_(sans(T h) \( dot.op \)) = \[ Gamma^(upright(b
 we may simply define
 $sans(E x p r) \( Gamma^(upright(bold(q))) tack.r_epsilon.alt r gt.tri sans(L)^(upright(bold(Q))) \) := sans(l e t) #h(0em) Gamma = x ; #h(0em) a$
 where the unpacking of a value $c : \[ Gamma^(upright(bold(q))) \]$ is
-defined in the obvious recursive manner (see Appendix~@refall:apx:packing for
+defined in the obvious recursive manner (see Appendix~#todo[Cross-reference: `refall:apx:packing`] for
 details). On the other hand, the function $sans(S S A)$ is just standard
 expression compilation presented inductively (the details are in
-Appendix~@refall:apx:ssa-roundtrip).
+Appendix~#todo[Cross-reference: `refall:apx:ssa-roundtrip`]).

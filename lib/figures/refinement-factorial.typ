@@ -52,8 +52,8 @@
   )
 ], caption: [
   A program to compute $10 !$ written in standard SSA (using $phi.alt$
-  nodes), like in LLVM @llvm, and using basic-blocks with arguments,
-  like in MLIR @mlir and Cranelift @cranelift, with both implicit
+  nodes), like in LLVM #cite(<llvm>), and using basic-blocks with arguments,
+  like in MLIR #cite(<mlir>) and Cranelift #cite(<cranelift>), with both implicit
   (dominance-based) and explicit (lexical) scoping. The arguments
   $i_0 \, a_0$ corresponding to the $phi.alt$-nodes $i_0 \, a_0$ are
   colored in red and blue, respectively.

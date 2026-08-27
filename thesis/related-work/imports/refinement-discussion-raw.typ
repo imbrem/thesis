@@ -42,7 +42,7 @@ concrete execution traces with an "effect handler" or free monad
 interpreter computing the effect of each memory action.
 #cite(<garbuzov-structural-cfg-2018>, form: "prose") exhibit a
 correspondence between an operational semantics for both SSA and a
-fragment of call-by-push-value~@cbpv, and then use the normal form
+fragment of call-by-push-value~#cite(<cbpv>), and then use the normal form
 bisimulations of #cite(<lassen-bisim>, form: "prose") to derive an
 equational theory for justifying optimizations. This work considers
 nontermination as the only effect, and studies equivalence rather than
@@ -68,3 +68,5 @@ by integrating the idea of linearity of effects with an old idea of
 #cite(<lipton-mover-75>, form: "prose"). By simply classifying effects
 by whether they can commute to the left or right of another effect, we
 gain a very rich (in)equational theory very cheaply.
+
+#hide(bibliography("/thesis/refs.bib", full: false))

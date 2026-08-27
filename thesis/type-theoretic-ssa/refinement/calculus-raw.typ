@@ -41,7 +41,7 @@ decades since its introduction, computers have become much less simple,
 and the optimizations that compiler writers want to do have become much
 more complicated. Modern hardware is highly concurrent, and exhibits
 user-visible non-sequentially-consistent behaviour: #emph[weak
-memory];~@batty-compositional-17. This means memory can no longer be
+memory];~#cite(<batty-compositional-17>). This means memory can no longer be
 correctly modelled as a global array of bytes. Furthermore, compilers
 like LLVM and GCC now perform very aggressive optimizations exploiting
 knowledge of memory aliasing and undefined behaviour. Because all these
@@ -110,7 +110,7 @@ effect that commutes with everything, like the empty effect $tack.t$, is
 called #emph[central].
 
 The question of what rewrites are permitted in the presence of effects
-is one that compiler writers struggle with~@llvm-github, because the
+is one that compiler writers struggle with~#cite(<llvm-github>), because the
 less conservative they are, the faster the code they can generate, but
 the more dependent the are on having a clear understanding of each
 effectful operation's semantics and interactions.
@@ -171,7 +171,7 @@ assignment], or #emph[SSA], IR enforces the restriction that every
 variable has precisely one definition. Just as in functional programs,
 this raises the question of how to handle control-flow dependent
 variables such as loop induction variables. The answer is the same
-@appel-ssa: each basic block (or tail-recursive function!) takes a list
+#cite(<appel-ssa>): each basic block (or tail-recursive function!) takes a list
 of control-flow dependent variables as #emph[arguments]. Traditionally,
 these arguments are represented “inside out\" using
 #emph[$phi.alt$-functions], which are assignments whose value depends
@@ -278,7 +278,7 @@ expression-oriented variant of SSA. Essentially, it is a simple
 first-order expression language with support for binding/sequencing,
 branching, and loops. $lambda_(sans(i t e r))$ looks very different from
 traditional presentations of SSA, but we later prove in
-Subsection~@refall:ssec:interconversion that the two syntaxes are completely
+Subsection~#todo[Cross-reference: `refall:ssec:interconversion`] that the two syntaxes are completely
 equivalent to one another. The main novelty of $lambda_(sans(i t e r))$
 is in its type system and equational theory. It has a rich substructural
 type and effect system, which enables us to give a complete inequational
@@ -734,7 +734,7 @@ property~#link(<refall:item:includes-rewrites>)[1], by the following rules:
   prooftree(rule(label: msc("refl"), $Gamma^(upright(bold(q))) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))) tack.r cal(R) a arrow.r.twohead a : A$)),
   prooftree(rule(label: msc("trans"), $Gamma^(upright(bold(q))) tack.r cal(R) a arrow.r.twohead b : A$, $Gamma^(upright(bold(q))) tack.r cal(R) b arrow.r.twohead c : A$, $Gamma^(upright(bold(q))) tack.r cal(R) a arrow.r.twohead c : A$)),
 ) The other congruence rules (in the appendix in
-Figure~@refall:fig:congruence-refinement) correspond one-to-one with our term
+Figure~#todo[Cross-reference: `refall:fig:congruence-refinement`]) correspond one-to-one with our term
 formers to ensure property~#link(<refall:item:is-congruence>)[2].
 Property~#link(<refall:item:is-congruence>)[2] means that the induced equivalence $approx$
 is also a congruence.
@@ -913,3 +913,5 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
   ]
 )
 <refall:fig:unif-cfg>
+
+#hide(bibliography("/thesis/refs.bib", full: false))

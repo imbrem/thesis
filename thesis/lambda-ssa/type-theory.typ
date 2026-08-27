@@ -41,7 +41,7 @@ contexts, and label-contexts is given in @fig:ssa-types.
 )
 <fig:ssa-types>
 
-Our grammar in @fig:ssa-grammar was implicitly parameterised over
+Our grammar in #todo[Figure `fig:ssa-grammar`] was implicitly parameterised over
 a set of #emph[primitive instructions] $f in cal(I)$. In particular, for
 each pair $A \, B in sans("Ty") \( X \)$ we specify a set of primitive
 instructions $f in cal(I) \( A \, B \)$, with a subset of #emph[pure
@@ -57,7 +57,7 @@ instructions over these types an
 #emph[#lssa;-signature], and, for the rest of this
 section, work over a fixed signature.
 
-As shown in @fig:ssa-grammar, #lssa terms are
+As shown in #todo[Figure `fig:ssa-grammar`], #lssa terms are
 divided into two syntactic categories, each associated with a judgement:
 
 - #emph[Expressions] $a \, b \, c \, e$, which are typed with the
