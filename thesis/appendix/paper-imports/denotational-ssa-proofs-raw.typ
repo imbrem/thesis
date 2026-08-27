@@ -217,8 +217,7 @@ every basic block dominated by $beta_i$ must be dominated via either
 some $t_(rho_(i \, j))$ or some child of $t_i$. Since by induction
 $sans(r e g) \( sans(c f g) \( r_i \) \) approx r_i$, and by the
 previous lemma
-#todo[Port the following preserved source equation to native Typst.]
-\$\\ensuremath{\\mathsf{reg}}(\\tocfg\_r\_i) \\approx\\ensuremath{\\mathsf{reg}}(G\_i)\$,
+$sans("reg")(sans("cfg")_r_i) approx sans("reg")(G_i)$,
 it follows that
 $ sans(r e g) \( sans(c f g) \( r \) \) approx sans(b b) \( beta \, \( kappa_i \( y_i \) : { r_i } \, \)_i \) $
 Define

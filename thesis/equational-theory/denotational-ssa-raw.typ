@@ -569,10 +569,11 @@ $ sans(c f g s) #h(0em) { \( ell_i \( x_i \) : { t_i } \, \)_i } #h(0em) kappa #
 In general, we may derive, for any label-context $sans(L)$ (assuming
 $sans(c f g s) #h(0em) { dot.op }$ acts uniformly on the labels $kappa$
 in $sans(L)$ as described above), the following rule:
-#todo[Port the following preserved source equation or proof-tree display to native Typst.]
-\$\$\\prftree\[r\]{{\\scriptsize\\textsf{cfgs}}}
-    {\\forall i \\in I. \\Gamma, x\_i : A\_i \\vdash t\_i \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in I}}
-    {\\Gamma \\vdash \\ensuremath{\\mathsf{cfgs}}\\;\\{(\\ell\_i(x\_i) :\\{t\_i\\},)\_{i \\in I}\\}: \\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in I} \\rightsquigarrow \\ensuremath{\\mathsf{L}}}\$\$
+#align(center, prooftree(rule(
+  label: msc("cfgs"),
+  $forall i in I. Gamma, x_i : A_i tack.r t_i gt.tri sans("L"), (ell_j(A_j),)_(j in I)$,
+  $Gamma tack.r sans("cfgs") {(ell_i(x_i) : {t_i},)_(i in I)} : sans("L"), (ell_j(A_j),)_(j in I) arrow.r.squiggly sans("L")$,
+)))
 Our $eta$-rule, cfg-$eta$, says that any $sans(w h e r e)$-block of the
 form
 $r #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i$
@@ -587,16 +588,15 @@ $ sans(l e t) #h(0em) y = a ; #h(0em) r #h(0em) sans(w h e r e) #h(0em) \( ell_i
  & approx sans(l e t) #h(0em) y = a ; #h(0em) r #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { sans(b r) #h(0em) ell_j #h(0em) a_j } \, \)_i $
 One particularly important application of the $eta$-rule for
 control-flow graphs is in validating the rewrite
-#todo[Port the following preserved source equation or proof-tree display to native Typst.]
-\$\$\\prftree\[r\]{{\\scriptsize\\textsf{case2cfg}}}
-    {\\Gamma \\vdash\_{\\epsilon} a: {A + B}}
-    {\\Gamma, x : A \\vdash s \\rhd \\ensuremath{\\mathsf{L}}}
-    {\\Gamma, y : B \\vdash t \\rhd \\ensuremath{\\mathsf{L}}}
-    {
-      \\prfStackPremises{\\Gamma \\vdash \\ensuremath{\\mathsf{case}}\\;a\\;\\{\\iota\_l\\;{x} :s, \\iota\_r\\;{y} :t\\}
-        \\approx(\\ensuremath{\\mathsf{case}}\\;a\\;\\{\\iota\_l\\;{x} :\\ensuremath{\\mathsf{br}}\\;\\ell\\;x, \\iota\_r\\;{y} :\\ensuremath{\\mathsf{br}}\\;\\ell\'\\;y\\})}{
-        \\hspace{16em}\\;\\ensuremath{\\mathsf{where}}\\;\\ell(x) :\\{s\\}, \\ell\'(y) :\\{t\\} \\rhd \\ensuremath{\\mathsf{L}}}
-    }\$\$ In addition, we also add as an axiom the ability to get rid of
+#align(center, prooftree(rule(
+  label: msc("case2cfg"),
+  eff-typing($Gamma$, $epsilon$, $a$, $A + B$),
+  region-typing($Gamma, x : A$, $s$, $sans("L")$),
+  region-typing($Gamma, y : B$, $t$, $sans("L")$),
+  $Gamma tack.r sans("case") a {iota_l x : s, iota_r y : t}
+    approx (sans("case") a {iota_l x : sans("br") ell x, iota_r y : sans("br") ell' y})
+    sans("where") ell(x) : {s}, ell'(y) : {t} gt.tri sans("L")$,
+))) In addition, we also add as an axiom the ability to get rid of
 a single, trivially nested $sans(w h e r e)$-block; this is given as the
 rule codiag.
 
@@ -703,18 +703,13 @@ uniformity rule is that impure expressions do not necessarily commute
 with infinite loops, even if they commute with any finite number of
 iterations of the loop. For example, if $sans(h i)$ is some effectful
 operation (say, printing "hello"), it is quite obvious that,
-#todo[Port the following preserved source equation or proof-tree display to native Typst.]
-\$\$\\begin{aligned}
-  \\ensuremath{\\mathsf{hi}} ; x = x + 1 ; \\ensuremath{\\mathsf{if}}\\;x = y\\;\\{\\ensuremath{\\mathsf{ret}}\\;y\\}
-  & \\approx
-  x = x + 1
-  ; \\ensuremath{\\mathsf{if}}\\;x = y\\;\\{\\ensuremath{\\mathsf{hi}} ; \\ensuremath{\\mathsf{ret}}\\;y\\}
-  ;  \\ensuremath{\\mathsf{hi}} \\\\
-  \\intertext{whereas}
-  \\ensuremath{\\mathsf{hi}} ; \\ensuremath{\\mathsf{loop}} \\{ x = x + 1 ; \\ensuremath{\\mathsf{if}}\\;x = y\\;\\{\\ensuremath{\\mathsf{ret}}\\;y\\} \\}
-  &\\not\\approx
-  \\ensuremath{\\mathsf{loop}} \\{ x = x + 1 ;  \\ensuremath{\\mathsf{if}}\\;x = y\\;\\{\\ensuremath{\\mathsf{hi}} ; \\ensuremath{\\mathsf{ret}}\\;y\\} \\} ; \\ensuremath{\\mathsf{hi}}
-\\end{aligned}\$\$ since, in particular, we may have $y lt.eq x$, in
+#align(center, $
+  sans("hi") ; x = x + 1 ; sans("if") x = y {sans("ret") y}
+    & approx x = x + 1 ; sans("if") x = y {sans("hi") ; sans("ret") y} ; sans("hi") \
+  & upright("whereas") \
+  sans("hi") ; sans("loop") {x = x + 1 ; sans("if") x = y {sans("ret") y}}
+    & not approx sans("loop") {x = x + 1 ; sans("if") x = y {sans("hi") ; sans("ret") y}} ; sans("hi")
+$) since, in particular, we may have $y lt.eq x$, in
 which case the loop will never exit and hence $sans(h i)$ will never be
 executed.
 
@@ -923,30 +918,16 @@ relate unary and $n$-ary $sans(w h e r e)$-blocks and, in particular,
 use this relationship to interconvert between data-flow and
 control-flow. This means we now have enough equations to derive the
 flattening of nested $sans(w h e r e)$-blocks:
-#todo[Port the following preserved source equation or proof-tree display to native Typst.]
-\$\$\\prftree\[r\]{{\\scriptsize\\textsf{cfg-fuse}}}
-    {\\Gamma \\vdash r \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_i(A\_i),)\_{i \\in I}, (\\kappa\_j(B\_j),)\_{j \\in I}}
-    {
-      \\prfStackPremises{
-        \\forall i \\in I. \\Gamma, x\_i : A\_i \\vdash t\_i \\rhd
-        \\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in I}
-      }{
-        \\forall i \\in I. \\Gamma, y\_i : B\_i \\vdash s\_i \\rhd
-        \\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in J}, (\\kappa\_k(B\_k),)\_{k \\in K}
-      }
-    }
-    {
-      \\prfStackPremises{
-        \\Gamma \\vdash
-          (r\\;\\ensuremath{\\mathsf{where}}\\;(\\kappa\_k(y\_k) :\\{s\_k\\}),)\_{k \\in K}\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_i(x\_i) :\\{t\_i\\}),)\_{i \\in I}
-      }{
-        \\hspace{8em}
-        \\approx r\\;\\ensuremath{\\mathsf{where}}\\;(\\kappa\_k(y\_k) :\\{s\_k\\},)\_{k \\in K},
-                (\\ell\_i(x\_i) :\\{t\_i\\}),)\_{i \\in I}
-        \\rhd \\ensuremath{\\mathsf{L}}
-      }
-    }
-    \\label{eqn:where-fusion-1}\$\$ Rather than directly giving
+#align(center, prooftree(rule(
+  label: msc("cfg-fuse"),
+  $Gamma tack.r r gt.tri sans("L"), (ell_i(A_i),)_(i in I), (kappa_j(B_j),)_(j in I)$,
+  $forall i in I. Gamma, x_i : A_i tack.r t_i gt.tri sans("L"), (ell_j(A_j),)_(j in I)$,
+  $forall i in I. Gamma, y_i : B_i tack.r s_i gt.tri sans("L"), (ell_j(A_j),)_(j in J), (kappa_k(B_k),)_(k in K)$,
+  $Gamma tack.r (r sans("where") (kappa_k(y_k) : {s_k}),)_(k in K)
+    sans("where") (ell_i(x_i) : {t_i}),)_(i in I)
+    approx r sans("where") (kappa_k(y_k) : {s_k},)_(k in K),
+      (ell_i(x_i) : {t_i}),)_(i in I) gt.tri sans("L")$,
+))) <eqn:where-fusion-1> Rather than directly giving
 derivation trees for such auxilliary rules, it is more convenient to
 give a denotational proof. However, the completeness of our equational
 theory (proved in Section~#todo[Resolve source reference `ssec:completeness` during integration.]) means that the semantic
@@ -960,12 +941,14 @@ derivable from our existing set. For example, while re-ordering labels
 in a $sans(w h e r e)$-block looks like a no-op in our named syntax, to
 rigorously justify the following rule actually requires dinaturality
 (with the permutation done via a label-substitution):
-#todo[Port the following preserved source equation or proof-tree display to native Typst.]
-\$\$\\prftree\[r\]{{\\scriptsize\\textsf{perm-cfg}}}
-    {\\Gamma \\vdash r \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_i(A\_i),)\_{i \\in I}}
-    {\\forall i \\in I. \\Gamma, x\_i : A\_i \\vdash t\_i \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in I}}
-    {\\sigma\\;\\text{permutation}}
-    {\\Gamma \\vdash r\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_i(x\_i) :\\{t\_i\\},)\_{i \\in I} \\approx r\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_{\\sigma\_i}(x\_{\\sigma\_i}) :\\{t\_{\\sigma\_i}\\},)\_{i \\in I} \\rhd {\\ensuremath{\\mathsf{L}}}}\$\$
+#align(center, prooftree(rule(
+  label: msc("perm-cfg"),
+  $Gamma tack.r r gt.tri sans("L"), (ell_i(A_i),)_(i in I)$,
+  $forall i in I. Gamma, x_i : A_i tack.r t_i gt.tri sans("L"), (ell_j(A_j),)_(j in I)$,
+  $sigma upright("permutation")$,
+  $Gamma tack.r r sans("where") (ell_i(x_i) : {t_i},)_(i in I)
+    approx r sans("where") (ell_(sigma_i)(x_(sigma_i)) : {t_(sigma_i)},)_(i in I) gt.tri sans("L")$,
+)))
 Note the implicit use of the fact that if some region $r$ typechecks in
 some label-context $sans(L)$, then it typechecks in any permutation of
 $sans(L)$, which is again proven by label-substitution.
@@ -1317,12 +1300,11 @@ sans(c h i l d r e n) \( sans(l e t) #h(0em) \( x \, y \) = a ; r \) & = sans(c 
 sans(c h i l d r e n) \( tau #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i \) & = \[ ell_i \( x_i \) : { t_i } \, \]_i $
 We can similarly define a function to construct a lexical SSA program
 from a basic block $beta$ and a set of children as follows:
-#todo[Port the following preserved source equation or proof-tree display to native Typst.]
-\$\$\\begin{aligned}
-  \\ensuremath{\\mathsf{bb}}(\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a; \\beta}, L) &= \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a; \\adddom{\\beta}}{L} \\\\
-  \\ensuremath{\\mathsf{bb}}(\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = a; \\beta}, L) &= \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = a; \\adddom{\\beta}}{L} \\\\
-  \\ensuremath{\\mathsf{bb}}(\\tau, L) &= \\tau\\;\\ensuremath{\\mathsf{where}}\\;L
-  \\end{aligned}\$\$ It is easy to see that these functions are mutually
+#align(center, $
+  sans("bb")(sans("let") x = a; beta, L) &= sans("let") x = a; sans("adddom")(beta)(L) \
+  sans("bb")(sans("let") (x, y) = a; beta, L) &= sans("let") (x, y) = a; sans("adddom")(beta)(L) \
+  sans("bb")(tau, L) &= tau sans("where") L
+$) It is easy to see that these functions are mutually
 inverse: for any lexical SSA region $r$, we have
 $ r = sans(b b) \( sans(e n t r y) \( r \) \, sans(c h i l d r e n) \( r \) \) $
 Some other useful facts about $sans(b b) \( dot.op \, dot.op \)$
