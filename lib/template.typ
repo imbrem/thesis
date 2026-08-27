@@ -14,13 +14,12 @@
 
 /// Bibliography emitted at the end of a standalone (top-level) part/chapter,
 /// so that `@key` citations resolve when a leaf file is compiled on its own.
-/// Only rendered when the document actually contains citations, to avoid a
-/// stray "Bibliography" heading on chapters that cite nothing.
-#let _standalone-bibliography() = context {
-  if query(ref).any(r => r.element == none) {
-    pagebreak(weak: true)
-    bibliography("/thesis/refs.bib")
-  }
+/// Typst suppresses an empty bibliography automatically. Do not condition its
+/// insertion on `query(ref)`: that creates a layout-introspection feedback loop
+/// which can prevent citations and bibliographies from converging.
+#let _standalone-bibliography() = {
+  pagebreak(weak: true)
+  bibliography("/thesis/refs.bib")
 }
 
 /// Standalone wrapper for a part (e.g. type-theoretic-ssa/main.typ).
