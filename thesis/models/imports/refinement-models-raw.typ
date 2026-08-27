@@ -73,22 +73,11 @@ which are given in Figure~@refall:fig:ub-rewrites.
 <refall:fig:ub-submonads>
 
 #figure([#block[
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  minipage=1.1,scale=0.9 \$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{ub-then}}}
-        {\\Gamma, x : A \\vdash\_{\\epsilon} b: {B}}
-        {\\Gamma \\vdash\_{} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = \\lightning;\\;b} \\approx\\lightning : {B}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{ub-left}}}
-        {\\Gamma \\vdash\_{\\epsilon} a: {A + B}}
-        {\\Gamma, x : A \\vdash\_{\\epsilon} c: {C}}
-        {\\Gamma \\vdash\_{} \\ensuremath{\\mathsf{case}}\\;a\\;\\{\\iota\_l\\;{x} :c, \\iota\_r\\;{y} :\\lightning\\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = \\rho\_l\\;a;\\;c} : {C}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{ub-right}}}
-        {\\Gamma \\vdash\_{\\epsilon} a: {A + B}}
-        {\\Gamma, y : B \\vdash\_{\\epsilon} c: {C}}
-        {\\Gamma \\vdash\_{} \\ensuremath{\\mathsf{case}}\\;a\\;\\{\\iota\_l\\;{x} :\\lightning, \\iota\_r\\;{y} :c\\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = \\rho\_r\\;a;\\;c} : {C}}
-    
-  \\end{gathered}\$\$
+#rule-set(
+  prooftree(rule(label: msc("ub-then"), $Gamma \, x : A tack.r epsilon.alt b : B$, $Gamma tack.r sans(l e t) #h(0em) x = arrow.zigzag ; #h(0em) b approx arrow.zigzag : B$)),
+  prooftree(rule(label: msc("ub-left"), $Gamma tack.r epsilon.alt a : A + B$, $Gamma \, x : A tack.r epsilon.alt c : C$, $Gamma tack.r sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : c \, iota_r #h(0em) y : arrow.zigzag } approx sans(l e t) #h(0em) x = rho_l #h(0em) a ; #h(0em) c : C$)),
+  prooftree(rule(label: msc("ub-right"), $Gamma tack.r epsilon.alt a : A + B$, $Gamma \, y : B tack.r epsilon.alt c : C$, $Gamma tack.r sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : arrow.zigzag \, iota_r #h(0em) y : c } approx sans(l e t) #h(0em) y = rho_r #h(0em) a ; #h(0em) c : C$)),
+)
 
   ]],
   caption: [
@@ -123,39 +112,14 @@ Figure~@refall:fig:heap-eqns), as well as that allocation is central, reads and
 writes are relevant, and reads are eliminable and commutative.
 
 #figure([#block[
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  minipage=1.1,scale=0.9 \$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{st-ld}}}
-        {\\Gamma \\vdash\_{\\bot} p: {\\mathbb{N}}}
-        {\\Gamma \\vdash\_{\\bot} a: {\\mathbb{N}}}
-        {\\Gamma \\vdash\_{} \\ensuremath{\\mathsf{st}}\\;(p, a) ; \\ensuremath{\\mathsf{ld}}\\;p \\approx\\ensuremath{\\mathsf{st}}\\;(p, a) ; a : {\\mathbb{N}}}
-      \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{mk-ld}}}
-        {\\Gamma \\vdash\_{\\bot} a: {\\mathbb{N}}}
-        {\\Gamma \\vdash\_{} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;p = \\ensuremath{\\mathsf{mk}}\\;a;\\;(p, \\ensuremath{\\mathsf{ld}}\\;p)} \\approx(\\ensuremath{\\mathsf{mk}}\\;a; a) : {\\mathbb{N}\\otimes \\mathbb{N}}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{st-st}}}
-        {\\Gamma \\vdash\_{\\bot} p: {\\mathbb{N}}}
-        {\\Gamma \\vdash\_{\\bot} a: {\\mathbb{N}}}
-        {\\Gamma \\vdash\_{\\bot} b: {\\mathbb{N}}}
-        {\\Gamma \\vdash\_{} \\ensuremath{\\mathsf{st}}\\;(p, a) ; \\ensuremath{\\mathsf{st}}\\;(p, b) \\approx\\ensuremath{\\mathsf{st}}\\;(p, b) : {\\ensuremath{\\mathbf{1}}}}
-      \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{mk-st}}}
-        {\\Gamma \\vdash\_{\\bot} a: {\\mathbb{N}}}
-        {\\Gamma \\vdash\_{\\bot} b: {\\mathbb{N}}}
-        {\\Gamma \\vdash\_{} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;p = \\ensuremath{\\mathsf{mk}}\\;a;\\;\\ensuremath{\\mathsf{st}}\\;(p, b) ; p} \\approx\\ensuremath{\\mathsf{mk\\;b}} : {\\mathbb{N}}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{mk-rm}}}
-        {\\Gamma \\vdash\_{\\bot} a: {\\mathbb{N}}}
-        {\\Gamma \\vdash\_{} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;p = \\ensuremath{\\mathsf{mk}}\\;a;\\;\\ensuremath{\\mathsf{rm}}\\;p} \\approx() : {\\ensuremath{\\mathbf{1}}}}
-      \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{st-rm}}}
-        {\\Gamma \\vdash\_{\\bot} p: {\\mathbb{N}}}
-        {\\Gamma \\vdash\_{\\bot} a: {\\mathbb{N}}}
-        {\\Gamma \\vdash\_{} \\ensuremath{\\mathsf{st}}\\;(p, a) ; \\ensuremath{\\mathsf{rm}}\\;p \\approx\\ensuremath{\\mathsf{rm}}\\;p : {\\ensuremath{\\mathbf{1}}}}
-      \\\\
-    
-  \\end{gathered}\$\$
+#rule-set(
+  prooftree(rule(label: msc("st-ld"), $Gamma tack.r tack.t p : bb(N)$, $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r sans(s t) #h(0em) \( p \, a \) ; sans(l d) #h(0em) p approx sans(s t) #h(0em) \( p \, a \) ; a : bb(N)$)),
+  prooftree(rule(label: msc("mk-ld"), $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r sans(l e t) #h(0em) p = sans(m k) #h(0em) a ; #h(0em) \( p \, sans(l d) #h(0em) p \) approx \( sans(m k) #h(0em) a ; a \) : bb(N) ⊗ bb(N)$)),
+  prooftree(rule(label: msc("st-st"), $Gamma tack.r tack.t p : bb(N)$, $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r tack.t b : bb(N)$, $Gamma tack.r sans(s t) #h(0em) \( p \, a \) ; sans(s t) #h(0em) \( p \, b \) approx sans(s t) #h(0em) \( p \, b \) : upright(bold(1))$)),
+  prooftree(rule(label: msc("mk-st"), $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r tack.t b : bb(N)$, $Gamma tack.r sans(l e t) #h(0em) p = sans(m k) #h(0em) a ; #h(0em) sans(s t) #h(0em) \( p \, b \) ; p approx sans(m k #h(0em) b) : bb(N)$)),
+  prooftree(rule(label: msc("mk-rm"), $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r sans(l e t) #h(0em) p = sans(m k) #h(0em) a ; #h(0em) sans(r m) #h(0em) p approx \( \) : upright(bold(1))$)),
+  prooftree(rule(label: msc("st-rm"), $Gamma tack.r tack.t p : bb(N)$, $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r sans(s t) #h(0em) \( p \, a \) ; sans(r m) #h(0em) p approx sans(r m) #h(0em) p : upright(bold(1))$)),
+)
 
   ]],
   caption: [
@@ -212,31 +176,11 @@ effect is not only eliminable, but also #emph[introducable], since we
 do not have UB.
 
 #figure([#block[
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  minipage=1.1,scale=0.9 \$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{st-ld}}}
-        {\\Gamma \\vdash\_{\\bot} p: {\\mathbb{N}}}
-        {\\Gamma \\vdash\_{\\bot} a: {\\mathbb{N}}}
-        {\\Gamma \\vdash\_{} \\ensuremath{\\mathsf{st}}\\;(p, a) ; \\ensuremath{\\mathsf{ld}}\\;p \\twoheadrightarrow\\ensuremath{\\mathsf{st}}\\;(p, a) ; a : {\\mathbb{N}}}
-        \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{st-st}}}
-        {\\Gamma \\vdash\_{\\bot} p: {\\mathbb{N}}}
-        {\\Gamma \\vdash\_{\\bot} a: {\\mathbb{N}}}
-        {\\Gamma \\vdash\_{\\bot} b: {\\mathbb{N}}}
-        {\\Gamma \\vdash\_{} \\ensuremath{\\mathsf{st}}\\;(p, a) ; \\ensuremath{\\mathsf{st}}\\;(p, b) \\twoheadrightarrow\\ensuremath{\\mathsf{st}}\\;(p, b) : {\\ensuremath{\\mathbf{1}}}}
-      \\\\
-      % \\prftree\[r\]{\\rle{st-faa}}
-      %   {\\hasty{\\Gamma}{\\bot}{p}{\\nats}}
-      %   {\\hasty{\\Gamma}{\\bot}{a}{\\nats}}
-      %   {\\hasty{\\Gamma}{\\bot}{b}{\\nats}}
-      %   {\\tmle{\\Gamma}{}{\\ms{st}\\;(p, a) ; \\ms{faa}\\;(p, b)}{\\ms{st}\\;(p, a + b) ; a}{\\nats}}
-      % \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{ld-st}}}
-        {\\Gamma \\vdash\_{\\bot} p: {\\mathbb{N}}}
-        {\\Gamma \\vdash\_{\\bot} a: {\\mathbb{N}}}
-        {\\Gamma \\vdash\_{} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = \\ensuremath{\\mathsf{ld}}\\;p;\\;\\ensuremath{\\mathsf{st}}\\;p\\;(x + a) ; x} \\twoheadrightarrow\\ensuremath{\\mathsf{faa}}\\;(p, a) : {\\mathbb{N}}}
-    
-  \\end{gathered}\$\$
+#rule-set(
+  prooftree(rule(label: msc("st-ld"), $Gamma tack.r tack.t p : bb(N)$, $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r sans(s t) #h(0em) \( p \, a \) ; sans(l d) #h(0em) p arrow.r.twohead sans(s t) #h(0em) \( p \, a \) ; a : bb(N)$)),
+  prooftree(rule(label: msc("st-st"), $Gamma tack.r tack.t p : bb(N)$, $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r tack.t b : bb(N)$, $Gamma tack.r sans(s t) #h(0em) \( p \, a \) ; sans(s t) #h(0em) \( p \, b \) arrow.r.twohead sans(s t) #h(0em) \( p \, b \) : upright(bold(1))$)),
+  prooftree(rule(label: msc("ld-st"), $Gamma tack.r tack.t p : bb(N)$, $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r sans(l e t) #h(0em) x = sans(l d) #h(0em) p ; #h(0em) sans(s t) #h(0em) p #h(0em) \( x + a \) ; x arrow.r.twohead sans(f a a) #h(0em) \( p \, a \) : bb(N)$)),
+)
 
   ]],
   caption: [

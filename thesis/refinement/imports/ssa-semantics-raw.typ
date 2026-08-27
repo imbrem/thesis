@@ -101,19 +101,11 @@ in Figure~@refall:fig:ssa-typing.
 <refall:fig:label-grammar>
 
 #figure([#block[
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  minipage=1.1,scale=0.9 \$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{nil}}}{\\Gamma \\vdash \\cdot \\rightsquigarrow \\cdot} \\qquad 
-      \\prftree\[r\]{{\\scriptsize\\textsf{cons}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}} \\rightsquigarrow \\ensuremath{\\mathsf{K}}^{\\ensuremath{\\mathbf{Q}}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\'} \\mapsto \\Gamma^{\\ensuremath{\\mathbf{q}}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}}, \\ell(A)^{\\ensuremath{\\mathbf{q}}} \\rightsquigarrow \\ensuremath{\\mathsf{K}}^{\\ensuremath{\\mathbf{Q}}}, \\ell(A)^{\\ensuremath{\\mathbf{q}}\'}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{skip}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}} \\rightsquigarrow \\ensuremath{\\mathsf{K}}^{\\ensuremath{\\mathbf{Q}}}}
-        {|\\Gamma| = |\\ensuremath{\\mathbf{q}}|}
-        {\\Gamma \\vdash \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}} \\rightsquigarrow \\ensuremath{\\mathsf{K}}^{\\ensuremath{\\mathbf{Q}}}, \\ell(A)^{\\ensuremath{\\mathbf{q}}}}
-    
-  \\end{gathered}\$\$
+#rule-set(
+  prooftree(rule(label: msc("nil"), $Gamma tack.r dot.op arrow.r.squiggly dot.op$)),
+  prooftree(rule(label: msc("cons"), $Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(K)^(upright(bold(Q)))$, $Gamma^(upright(bold(q))') mapsto Gamma^(upright(bold(q)))$, $Gamma tack.r sans(L)^(upright(bold(Q))) \, ell \( A \)^(upright(bold(q))) arrow.r.squiggly sans(K)^(upright(bold(Q))) \, ell \( A \)^(upright(bold(q))')$)),
+  prooftree(rule(label: msc("skip"), $Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(K)^(upright(bold(Q)))$, $\| Gamma \| = \| upright(bold(q)) \|$, $Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(K)^(upright(bold(Q))) \, ell \( A \)^(upright(bold(q)))$)),
+)
 
   ]],
   caption: [
@@ -123,50 +115,14 @@ in Figure~@refall:fig:ssa-typing.
 <refall:fig:label-wk>
 
 #figure([#block[
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  minipage=1.1,scale=0.9 \$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{br}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\bot} o: {A}}
-        {\\Gamma \\vdash \\ell(A)^{\\ensuremath{\\mathbf{q}}\_l} \\rightsquigarrow \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{br}}\\;\\ell\\;o \\rhd \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} o: {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} t \\rhd \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}^\\uparrow}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = o; t} \\rhd \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} o: {A \\otimes B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A, y : B \\vdash\_{\\epsilon} t \\rhd \\ensuremath{\\mathsf{L}}^{(\\ensuremath{\\mathbf{Q}}^\\uparrow)^\\uparrow}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = o; t} \\rhd \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{case}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\bot} o: {A + B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} \\tau\_l \\rhd \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}^\\uparrow}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : B \\vdash\_{\\epsilon} \\tau\_r \\rhd \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}^\\uparrow}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{case}}\\;o\\;\\{\\iota\_l\\;{x} :\\tau\_l, \\iota\_r\\;{y} :\\tau\_r\\} \\rhd \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{where\$\_{\\ensuremath{\\mathsf{nonrec}}}\$}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\kappa \\rhd \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}}, \\ensuremath{\\mathsf{R}}^{\\ensuremath{\\mathbf{Q}}\'}}
-        {\\forall \\ell\_i(A\_i)^{\\ensuremath{\\mathbf{q}}\_i} \\in \\ensuremath{\\mathsf{R}}^{\\ensuremath{\\mathbf{Q}}\'} .
-          \\Gamma^{\\ensuremath{\\mathbf{q}}\_i}, x\_i : A\_i \\vdash\_{\\epsilon} t\_i \\rhd \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}^\\uparrow}
-        }
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\kappa\\;\\ensuremath{\\mathsf{where}}\_{\\ensuremath{\\mathsf{nonrec}}}\\;(\\ell\_i(x\_i) :\\{t\_i\\},)\_i \\rhd \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{where\$\_{\\ensuremath{\\mathsf{rec}}}\$}}}
-      {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\kappa \\rhd \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}}, \\ensuremath{\\mathsf{R}}^{\\ensuremath{\\mathbf{Q}}\'}}
-      {\\epsilon \\in \\ensuremath{\\mathcal{E}}^\\infty}
-      {\\forall \\ell\_i(A\_i)^{\\ensuremath{\\mathbf{q}}\_i} \\in \\ensuremath{\\mathsf{R}}^{\\ensuremath{\\mathbf{Q}}\'} .
-        \\Gamma^{\\ensuremath{\\mathbf{q}}\_i}, x\_i : A\_i \\vdash\_{\\epsilon} t\_i \\rhd 
-          \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}^\\uparrow}, \\ensuremath{\\mathsf{R}}^{\\ensuremath{\\mathbf{Q}}\'^\\uparrow}
-      }
-      {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\kappa\\;\\ensuremath{\\mathsf{where}}\_{\\ensuremath{\\mathsf{rec}}}\\;(\\ell\_i(x\_i) :\\{t\_i\\},)\_i \\rhd \\ensuremath{\\mathsf{L}}^{\\ensuremath{\\mathbf{Q}}}}
-    
-  \\end{gathered}\$\$
+#rule-set(
+  prooftree(rule(label: msc("br"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r tack.t o : A$, $Gamma tack.r ell \( A \)^(upright(bold(q))_l) arrow.r.squiggly sans(L)^(upright(bold(Q)))$, $Gamma^(upright(bold(q))) tack.r epsilon.alt sans(b r) #h(0em) ell #h(0em) o gt.tri sans(L)^(upright(bold(Q)))$)),
+  prooftree(rule(label: msc("let1"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt o : A$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt t gt.tri sans(L)^(upright(bold(Q))^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt sans(l e t) #h(0em) x = o ; t gt.tri sans(L)^(upright(bold(Q)))$)),
+  prooftree(rule(label: msc("let2"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt o : A ⊗ B$, $Gamma^(upright(bold(q))_l) \, x : A \, y : B tack.r epsilon.alt t gt.tri sans(L)^(\( upright(bold(Q))^arrow.t \)^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt sans(l e t) #h(0em) \( x \, y \) = o ; t gt.tri sans(L)^(upright(bold(Q)))$)),
+  prooftree(rule(label: msc("case"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r tack.t o : A + B$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt tau_l gt.tri sans(L)^(upright(bold(Q))^arrow.t)$, $Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt tau_r gt.tri sans(L)^(upright(bold(Q))^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt sans(c a s e) #h(0em) o #h(0em) { iota_l #h(0em) x : tau_l \, iota_r #h(0em) y : tau_r } gt.tri sans(L)^(upright(bold(Q)))$)),
+  prooftree(rule(label: msc("wheremathsfnonrec"), $Gamma^(upright(bold(q))) tack.r epsilon.alt kappa gt.tri sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))')$, $forall ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))') . Gamma^(upright(bold(q))_i) \, x_i : A_i tack.r epsilon.alt t_i gt.tri sans(L)^(upright(bold(Q))^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt kappa #h(0em) sans(w h e r e)_sans(n o n r e c) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q)))$)),
+  prooftree(rule(label: msc("wheremathsfrec"), $Gamma^(upright(bold(q))) tack.r epsilon.alt kappa gt.tri sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))')$, $epsilon.alt in cal(E)^oo$, $forall ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))') . Gamma^(upright(bold(q))_i) \, x_i : A_i tack.r epsilon.alt t_i gt.tri sans(L)^(upright(bold(Q))^arrow.t) \, sans(R)^(upright(bold(Q))'^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt kappa #h(0em) sans(w h e r e)_sans(r e c) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q)))$)),
+)
 
   ]],
   caption: [

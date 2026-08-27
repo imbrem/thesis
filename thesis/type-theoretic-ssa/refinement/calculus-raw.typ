@@ -410,18 +410,11 @@ determine how variables may be left unused or apportioned between
 subcontexts, respectively. In particular, the judgement
 $Gamma^(upright(bold(q))) mapsto Delta^(upright(bold(q))')$, pronounced
 “$Gamma^(upright(bold(q)))$ weakens $Delta^(upright(bold(q')))$,\" is
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-defined as follows: \$\$\\begin{gathered}
-  \\prftree\[r\]{{\\scriptsize\\textsf{nil}}}{\\cdot \\mapsto \\cdot} \\qquad
-  \\prftree\[r\]{{\\scriptsize\\textsf{cons}}}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\mapsto \\Delta^{\\ensuremath{\\mathbf{q}}\'}}
-    {q\' \* \\ensuremath{\\mathsf{q}}(A) \\leq q \* \\ensuremath{\\mathsf{q}}(A)}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}}, x : A^q \\mapsto \\Delta^{\\ensuremath{\\mathbf{q}}\'}, x : A^{q\'}} \\qquad
-  \\prftree\[r\]{{\\scriptsize\\textsf{skip}}}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\mapsto \\Delta^{\\ensuremath{\\mathbf{q}}\'}}
-    {0\\leq q \* \\ensuremath{\\mathsf{q}}(A)}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}}, x : A^q \\mapsto \\Delta^{\\ensuremath{\\mathbf{q}}\'}}
-\\end{gathered}\$\$ To define weakening, we extend the meet on $Q$ to a
+defined as follows: #rule-set(
+  prooftree(rule(label: msc("nil"), $dot.op mapsto dot.op$)),
+  prooftree(rule(label: msc("cons"), $Gamma^(upright(bold(q))) mapsto Delta^(upright(bold(q))')$, $q' \* sans(q) \( A \) lt.eq q \* sans(q) \( A \)$, $Gamma^(upright(bold(q))) \, x : A^q mapsto Delta^(upright(bold(q))') \, x : A^(q')$)),
+  prooftree(rule(label: msc("skip"), $Gamma^(upright(bold(q))) mapsto Delta^(upright(bold(q))')$, $0 lt.eq q \* sans(q) \( A \)$, $Gamma^(upright(bold(q))) \, x : A^q mapsto Delta^(upright(bold(q))')$)),
+) To define weakening, we extend the meet on $Q$ to a
 #emph[product] of quantities $q \, q' in Q^0$ as follows:
 $ q \* q' = cases(delim: "{", 0 & upright("if ") q = 0 upright(" or ") q' = 0, q ∩ q' & upright("if ") q \, q' in Q) $
 The rule skip says affine variables are discarable, which it encodes via
@@ -435,22 +428,12 @@ induces a #emph[preorder] on contexts, with two contexts equivalent if
 their component variables can be used the same way. We now define
 #emph[context splitting]
 $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-as follows: \$\$\\begin{gathered}
-  \\prftree\[r\]{{\\scriptsize\\textsf{nil}}}
-    {\\cdot \\vdash \\cdot = \\cdot + \\cdot} \\qquad
-  \\prftree\[r\]{{\\scriptsize\\textsf{both}}}
-    {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-    {\\omega^+\\leq q \\sqcap \\ensuremath{\\mathsf{q}}(A)}
-    {\\Gamma, x : A \\vdash (\\ensuremath{\\mathbf{q}}, q) = (\\ensuremath{\\mathbf{q}}\_l, q) + (\\ensuremath{\\mathbf{q}}\_r, q)}
-    \\\\
-  \\prftree\[r\]{{\\scriptsize\\textsf{left}}}
-    {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-    {\\Gamma, x : A \\vdash (\\ensuremath{\\mathbf{q}}, q) = (\\ensuremath{\\mathbf{q}}\_l, q) + (\\ensuremath{\\mathbf{q}}\_r, 0)} \\qquad
-  \\prftree\[r\]{{\\scriptsize\\textsf{right}}}
-    {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-    {\\Gamma, x : A \\vdash (\\ensuremath{\\mathbf{q}}, q) = (\\ensuremath{\\mathbf{q}}\_l, 0) + (\\ensuremath{\\mathbf{q}}\_r, q)}
-\\end{gathered}\$\$ The rules left and right allow us to use a variable,
+as follows: #rule-set(
+  prooftree(rule(label: msc("nil"), $dot.op tack.r dot.op = dot.op + dot.op$)),
+  prooftree(rule(label: msc("both"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $omega^(+) lt.eq q ∩ sans(q) \( A \)$, $Gamma \, x : A tack.r \( upright(bold(q)) \, q \) = \( upright(bold(q))_l \, q \) + \( upright(bold(q))_r \, q \)$)),
+  prooftree(rule(label: msc("left"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma \, x : A tack.r \( upright(bold(q)) \, q \) = \( upright(bold(q))_l \, q \) + \( upright(bold(q))_r \, 0 \)$)),
+  prooftree(rule(label: msc("right"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma \, x : A tack.r \( upright(bold(q)) \, q \) = \( upright(bold(q))_l \, 0 \) + \( upright(bold(q))_r \, q \)$)),
+) The rules left and right allow us to use a variable,
 regardless of quantity, in either subexpression, whereas the rule both
 states that it must be relevant to be used in both branches.
 
@@ -614,64 +597,20 @@ grammar. In particular,
   iterative effect.
 
 #figure([#block[
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  minipage=1.1,scale=0.9 \$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{var}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\mapsto x : A^1}
-          {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} x: {A}}
-        \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$}}}{\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} b: {B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;b}: {B}}
-        \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{op}}}{f : A \\to\_\\epsilon B}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} f\\;a: {B}}
-        \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{inst}}}
-        {f \\in \\ensuremath{\\mathcal{I}}}
-        {\\ensuremath{\\mathsf{src}}(f) = A}
-        {\\ensuremath{\\mathsf{trg}}(f) = B}
-        {\\ensuremath{\\mathsf{eff}}(f) \\leq \\epsilon}
-        {f : A \\to\_\\epsilon B}
-        \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{unit}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\mapsto \\cdot}{\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} (): {\\ensuremath{\\mathbf{1}}}}
-        \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{pair}}}{\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l} \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} b: {B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} (a, b): {A \\otimes B}} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$}}}{\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{} a: {A \\otimes B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A, y : B \\vdash\_{\\epsilon} c: {C}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = a;\\;c}: {C}}
-        \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{inl}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\iota\_l\\;{a}: {A + B}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{inr}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} b: {B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\iota\_r\\;{b}: {A + B}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{abort}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} a: {\\ensuremath{\\mathbf{0}}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{abort}}\\;{a}: {C}}
-        \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{case}}}{\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} e: {A + B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} a: {C}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : B \\vdash\_{\\epsilon} b: {C}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :a, \\iota\_r\\;{y} :b\\}: {C}} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{iter}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\ensuremath{\\mathsf{q}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}) = \\omega}
-        {\\epsilon \\in \\ensuremath{\\mathcal{E}}^\\infty}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} b: {B + A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{iter}}\\;a\\;\\{ \\iota\_r\\;{x} :b \\}: {B}}
-
-  \\end{gathered}\$\$
+#rule-set(
+  prooftree(rule(label: msc("var"), $Gamma^(upright(bold(q))) mapsto x : A^1$, $Gamma^(upright(bold(q))) tack.r epsilon.alt x : A$)),
+  prooftree(rule(label: msc("let1"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B$, $Gamma^(upright(bold(q))) tack.r sans(l e t) #h(0em) x = a ; #h(0em) b : B$)),
+  prooftree(rule(label: msc("op"), $f : A arrow.r_epsilon.alt B$, $Gamma^(upright(bold(q))) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))) tack.r epsilon.alt f #h(0em) a : B$)),
+  prooftree(rule(label: msc("inst"), $f in cal(I)$, $sans(s r c) \( f \) = A$, $sans(t r g) \( f \) = B$, $sans(e f f) \( f \) lt.eq epsilon.alt$, $f : A arrow.r_epsilon.alt B$)),
+  prooftree(rule(label: msc("unit"), $Gamma^(upright(bold(q))) mapsto dot.op$, $Gamma^(upright(bold(q))) tack.r epsilon.alt \( \) : upright(bold(1))$)),
+  prooftree(rule(label: msc("pair"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_l) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt b : B$, $Gamma^(upright(bold(q))) tack.r epsilon.alt \( a \, b \) : A ⊗ B$)),
+  prooftree(rule(label: msc("let2"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r a : A ⊗ B$, $Gamma^(upright(bold(q))_l) \, x : A \, y : B tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))) tack.r epsilon.alt sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) c : C$)),
+  prooftree(rule(label: msc("inl"), $Gamma^(upright(bold(q))) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))) tack.r epsilon.alt iota_l #h(0em) a : A + B$)),
+  prooftree(rule(label: msc("inr"), $Gamma^(upright(bold(q))) tack.r epsilon.alt b : B$, $Gamma^(upright(bold(q))) tack.r epsilon.alt iota_r #h(0em) b : A + B$)),
+  prooftree(rule(label: msc("abort"), $Gamma^(upright(bold(q))) tack.r epsilon.alt a : upright(bold(0))$, $Gamma^(upright(bold(q))) tack.r epsilon.alt sans(a b o r t) #h(0em) a : C$)),
+  prooftree(rule(label: msc("case"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt e : A + B$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt a : C$, $Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt b : C$, $Gamma^(upright(bold(q))) tack.r epsilon.alt sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } : C$)),
+  prooftree(rule(label: msc("iter"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $sans(q) \( Gamma^(upright(bold(q))_l) \) = omega$, $epsilon.alt in cal(E)^oo$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B + A$, $Gamma^(upright(bold(q))) tack.r epsilon.alt sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } : B$)),
+)
 
   ]],
   caption: [
@@ -723,24 +662,11 @@ rules may be interpreted as follows:
   ($epsilon.alt_r$) must commute.
 
 #figure([#block[
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  minipage=1.1,scale=0.9 \$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{nil}}}{\\Gamma^{\\ensuremath{\\mathbf{q}}} \\mapsto \\cdot}
-                                {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\cdot \\rhd \\cdot} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{zero}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\sigma \\rhd \\Delta}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\sigma, x \\mapsto a \\rhd \\Delta^{\\ensuremath{\\mathbf{q}}\'}, x : A^0}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{cons}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q\_l}}} \\vdash\_{\\epsilon\_l} \\sigma \\rhd \\Delta^{\\ensuremath{\\mathbf{q}}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon\_r} a: {A}}
-        {q \\leq \\ensuremath{\\mathsf{q}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_r})}
-        {\\epsilon\_l \\rightleftharpoons\\epsilon\_r}
-        {\\epsilon\_l, \\epsilon\_r \\leq \\epsilon}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\sigma, x \\mapsto a \\rhd \\Delta^{\\ensuremath{\\mathbf{q}}\'}, x : A^q}
-
-  \\end{gathered}\$\$
+#rule-set(
+  prooftree(rule(label: msc("nil"), $Gamma^(upright(bold(q))) mapsto dot.op$, $Gamma^(upright(bold(q))) tack.r epsilon.alt dot.op gt.tri dot.op$)),
+  prooftree(rule(label: msc("zero"), $Gamma^(upright(bold(q))) tack.r epsilon.alt sigma gt.tri Delta$, $Gamma^(upright(bold(q))) tack.r epsilon.alt sigma \, x mapsto a gt.tri Delta^(upright(bold(q))') \, x : A^0$)),
+  prooftree(rule(label: msc("cons"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q_l))) tack.r epsilon.alt_l sigma gt.tri Delta^(upright(bold(q)))$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt_r a : A$, $q lt.eq sans(q) \( Gamma^(upright(bold(q))_r) \)$, $epsilon.alt_l harpoons.rtlb epsilon.alt_r$, $epsilon.alt_l \, epsilon.alt_r lt.eq epsilon.alt$, $Gamma^(upright(bold(q))) tack.r epsilon.alt sigma \, x mapsto a gt.tri Delta^(upright(bold(q))') \, x : A^q$)),
+)
 
   ]],
   caption: [
@@ -776,11 +702,9 @@ $ Gamma^(upright(bold(q))) tack.r_(cal(R)) a arrow.r.twohead^(+) b : A arrow.l.r
 A #emph[rewrite system] $cal(R)$ consists of a set judgments of the form
 $Gamma^(upright(bold(q))) tack.r_() a arrow.r.twohead b : A$ closed
 under pure substitution. That is, given a pure substitution $sigma$, we
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-have that \$\$\\prftree\[r\]{}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\bot} \\sigma \\rhd \\Delta^{\\ensuremath{\\mathbf{q}}\'}}
-    {(\\Delta^{\\ensuremath{\\mathbf{q}}\'} \\vdash\_{} a \\twoheadrightarrow b : {A}) \\in \\ensuremath{\\mathcal{R}}}
-    {(\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{} \[\\sigma\]a \\twoheadrightarrow\[\\sigma\]b : {A}) \\in \\ensuremath{\\mathcal{R}}}\$\$
+have that #rule-set(
+  prooftree(rule(label: msc("rule"), $Gamma^(upright(bold(q))) tack.r tack.t sigma gt.tri Delta^(upright(bold(q))')$, $\( Delta^(upright(bold(q))') tack.r a arrow.r.twohead b : A \) in cal(R)$, $\( Gamma^(upright(bold(q))) tack.r \[ sigma \] a arrow.r.twohead \[ sigma \] b : A \) in cal(R)$)),
+)
 We will often describe a rewrite system as that #emph[generated] by a
 set of equations with free variables; e.g., the system generated by
 $x : bb(N) \, y : bb(N) tack.r_() sans(a d d) #h(0em) \( x \, y \) arrow.r.twohead sans(a d d) #h(0em) \( y \, x \) : bb(N)$.
@@ -805,20 +729,11 @@ satisfying the following properties:
 We guarantree that $arrow.r.twohead$ contains the (reflexive, transitive
 closure of) $cal(R)$, and therefore satisfies
 property~#link(<refall:item:includes-rewrites>)[1], by the following rules:
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-\$\$\\begin{gathered}
-  \\prftree\[r\]{{\\scriptsize\\textsf{base}}}
-    {(\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{} a \\twoheadrightarrow b : {A}) \\in \\ensuremath{\\mathcal{R}}}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} a \\twoheadrightarrow b : {A}} \\qquad
-  \\prftree\[r\]{{\\scriptsize\\textsf{refl}}}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} a: {A}}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} a \\twoheadrightarrow a : {A}}
-  \\qquad
-  \\prftree\[r\]{{\\scriptsize\\textsf{trans}}}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} a \\twoheadrightarrow b : {A}}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} b \\twoheadrightarrow c : {A}}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} a \\twoheadrightarrow c : {A}}
-\\end{gathered}\$\$ The other congruence rules (in the appendix in
+#rule-set(
+  prooftree(rule(label: msc("base"), $\( Gamma^(upright(bold(q))) tack.r a arrow.r.twohead b : A \) in cal(R)$, $Gamma^(upright(bold(q))) tack.r cal(R) a arrow.r.twohead b : A$)),
+  prooftree(rule(label: msc("refl"), $Gamma^(upright(bold(q))) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))) tack.r cal(R) a arrow.r.twohead a : A$)),
+  prooftree(rule(label: msc("trans"), $Gamma^(upright(bold(q))) tack.r cal(R) a arrow.r.twohead b : A$, $Gamma^(upright(bold(q))) tack.r cal(R) b arrow.r.twohead c : A$, $Gamma^(upright(bold(q))) tack.r cal(R) a arrow.r.twohead c : A$)),
+) The other congruence rules (in the appendix in
 Figure~@refall:fig:congruence-refinement) correspond one-to-one with our term
 formers to ensure property~#link(<refall:item:is-congruence>)[2].
 Property~#link(<refall:item:is-congruence>)[2] means that the induced equivalence $approx$
@@ -856,16 +771,9 @@ $a$.
 
 In particular, this means that the following more standard typing rule
 is #emph[derivable]:
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-\$\$\\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-\$\\beta\$}}}
-  {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-  {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l} \\vdash\_{\\epsilon} a: {A}}
-  {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r}, x : A^q \\vdash\_{\\eta} b: {B}}
-  {\\epsilon \\rightleftharpoons\\eta}
-  {q \\leq \\ensuremath{\\mathsf{q}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_r}) \\sqcap \\ensuremath{\\mathsf{q}}(\\epsilon)}
-  {
-    \\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;b} \\approx\[x/a\]b : {B}
-  }\$\$ In particular, this obviously holds for pure expressions with
+#rule-set(
+  prooftree(rule(label: msc("let1-beta"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_l) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_r) \, x : A^q tack.r eta b : B$, $epsilon.alt harpoons.rtlb eta$, $q lt.eq sans(q) \( Gamma^(upright(bold(q))_r) \) ∩ sans(q) \( epsilon.alt \)$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) x = a ; #h(0em) b approx \[ x \/ a \] b : B$)),
+) In particular, this obviously holds for pure expressions with
 $epsilon.alt = tack.t$ (modulo linearity of
 $Gamma^(upright(bold(q))_r)$), as we would normally expect in an
 effectful language.
@@ -942,83 +850,17 @@ that $sans(T h) \( dot.op \)$ is monotonic, idempotent, and satisfies
 $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
 
 #figure([#block[
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  minipage=1.1,scale=0.9 \$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{let-op}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {f : A \\to\_\\epsilon B}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : B \\vdash\_{\\epsilon} c: {C}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = f\\;a;\\;c} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = f\\;x;\\;c}} : {C}}
-        \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let-let\$\_1\$}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_c + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}}\_c = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_m}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_m}, x : A \\vdash\_{\\epsilon} b: {B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : B \\vdash\_{\\epsilon} c: {C}}
-        {
-          \\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = (\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;b});\\;c} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = b;\\;c}} : {C}
-        }
-        \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let-let\$\_2\$}}}
-        {
-          \\prfStackPremises
-          {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_c + \\ensuremath{\\mathbf{q}}\_r}
-          {\\Gamma \\vdash \\ensuremath{\\mathbf{q}}\_c = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_m}
-        }
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {A \\otimes B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_m}, x : A, y : B \\vdash\_{\\epsilon} c: {C}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, z : C \\vdash\_{\\epsilon} d: {D}}
-        {
-          \\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = a;\\;c});\\;d} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = a;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = c;\\;d}} : {D}
-        }
-        \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let-case}}}
-        {
-          \\prfStackPremises
-          {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_c + \\ensuremath{\\mathbf{q}}\_r}
-          {\\Gamma \\vdash \\ensuremath{\\mathbf{q}}\_c = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_m}
-        }
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_m} \\vdash\_{\\ensuremath{\\mathcal{R}}} e: {A + B}}
-        {
-          \\prfStackPremises
-          {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\ensuremath{\\mathcal{R}}} a: {C}}
-          {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : B \\vdash\_{\\ensuremath{\\mathcal{R}}} b: {C}}
-        }
-        {
-          {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r}, z : C \\vdash\_{\\ensuremath{\\mathcal{R}}} d: {D}}
-        }
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :a, \\iota\_r\\;{y} :b\\};\\;d} \\approx\\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = a;\\;d}, \\iota\_r\\;{y} :\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = b;\\;d}\\} : {D}
-        }
-
-  \\end{gathered}\$\$
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-\$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$-bind}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {A \\otimes B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A, y : B \\vdash\_{\\epsilon} c: {C}}
-        {
-          \\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = a;\\;c} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = a;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = z;\\;c}} : {C}
-        } \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{case-bind}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\ensuremath{\\mathcal{R}}} e: {A + B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\ensuremath{\\mathcal{R}}} a: {C}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : B \\vdash\_{\\ensuremath{\\mathcal{R}}} b: {C}}
-        {
-          \\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :a, \\iota\_r\\;{y} :b\\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = e;\\;\\ensuremath{\\mathsf{case}}\\;z\\;\\{\\iota\_l\\;{x} :a, \\iota\_r\\;{y} :b\\}} : {C}
-        } \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{iter-bind}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\ensuremath{\\mathsf{q}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}) = \\top}
-        {\\epsilon \\in \\ensuremath{\\mathcal{E}}^\\infty}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} b: {B + A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\mathsf{iter}}\\;a\\;\\{ \\iota\_r\\;{x} :b \\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = a;\\;\\ensuremath{\\mathsf{iter}}\\;y\\;\\{ \\iota\_r\\;{x} :b \\}} : {B}}
-
-  \\end{gathered}\$\$
+#rule-set(
+  prooftree(rule(label: msc("let-op"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $f : A arrow.r_epsilon.alt B$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) y = f #h(0em) a ; #h(0em) c approx sans(l e t) #h(0em) x = a ; #h(0em) sans(l e t) #h(0em) y = f #h(0em) x ; #h(0em) c : C$)),
+  prooftree(rule(label: msc("let-let1"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_c + upright(bold(q))_r$, $Gamma tack.r upright(bold(q))_c = upright(bold(q))_l + upright(bold(q))_m$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_m) \, x : A tack.r epsilon.alt b : B$, $Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) y = \( sans(l e t) #h(0em) x = a ; #h(0em) b \) ; #h(0em) c approx sans(l e t) #h(0em) x = a ; #h(0em) sans(l e t) #h(0em) y = b ; #h(0em) c : C$)),
+  prooftree(rule(label: msc("let-let2"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_c + upright(bold(q))_r Gamma tack.r upright(bold(q))_c = upright(bold(q))_l + upright(bold(q))_m$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A ⊗ B$, $Gamma^(upright(bold(q))_m) \, x : A \, y : B tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))_l) \, z : C tack.r epsilon.alt d : D$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) z = \( sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) c \) ; #h(0em) d approx sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) sans(l e t) #h(0em) z = c ; #h(0em) d : D$)),
+  prooftree(rule(label: msc("let-case"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_c + upright(bold(q))_r Gamma tack.r upright(bold(q))_c = upright(bold(q))_l + upright(bold(q))_m$, $Gamma^(upright(bold(q))_m) tack.r cal(R) e : A + B$, $Gamma^(upright(bold(q))_l) \, x : A tack.r cal(R) a : C Gamma^(upright(bold(q))_l) \, y : B tack.r cal(R) b : C$, $Gamma^(upright(bold(q))_r) \, z : C tack.r cal(R) d : D$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) z = sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } ; #h(0em) d approx sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : sans(l e t) #h(0em) z = a ; #h(0em) d \, iota_r #h(0em) y : sans(l e t) #h(0em) z = b ; #h(0em) d } : D$)),
+)
+#rule-set(
+  prooftree(rule(label: msc("let2-bind"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A ⊗ B$, $Gamma^(upright(bold(q))_l) \, x : A \, y : B tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) c approx sans(l e t) #h(0em) z = a ; #h(0em) sans(l e t) #h(0em) \( x \, y \) = z ; #h(0em) c : C$)),
+  prooftree(rule(label: msc("case-bind"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r cal(R) e : A + B$, $Gamma^(upright(bold(q))_l) \, x : A tack.r cal(R) a : C$, $Gamma^(upright(bold(q))_l) \, y : B tack.r cal(R) b : C$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } approx sans(l e t) #h(0em) z = e ; #h(0em) sans(c a s e) #h(0em) z #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } : C$)),
+  prooftree(rule(label: msc("iter-bind"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $sans(q) \( Gamma^(upright(bold(q))_l) \) = top$, $epsilon.alt in cal(E)^oo$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B + A$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } approx sans(l e t) #h(0em) y = a ; #h(0em) sans(i t e r) #h(0em) y #h(0em) { iota_r #h(0em) x : b } : B$)),
+)
 
   ]],
   caption: [
@@ -1028,69 +870,17 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
 <refall:fig:binding-rules>
 
 #figure([#block[
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  minipage=1.1,scale=0.9 \$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{term}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} a: {\\ensuremath{\\mathbf{1}}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;()} \\approx a : {\\ensuremath{\\mathbf{1}}}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{elim}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l} \\vdash\_{\\epsilon} a: {\\ensuremath{\\mathbf{1}}}}
-        {0 \\leq \\ensuremath{\\mathsf{q}}^p(\\epsilon)}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\eta} b: {B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;b} \\twoheadrightarrow^{p} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = ();\\;b} : {B}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{init}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {\\ensuremath{\\mathbf{0}}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} b: {B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} b\': {B}}
-        {
-          \\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = \\ensuremath{\\mathsf{abort}}\\;{a};\\;b} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = \\ensuremath{\\mathsf{abort}}\\;{a};\\;b\'} : {B}
-        } \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$-\$\\eta\$}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} a: {A \\otimes B}}
-        {
-          \\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = a;\\;(x, y)} \\approx a : {A \\otimes B}
-        } \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$-\$\\beta\$}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}}\_l = \\ensuremath{\\mathbf{q}}\_a + \\ensuremath{\\mathbf{q}}\_b}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_a} \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_b} \\vdash\_{\\epsilon} b: {B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r}, x : A, y : B \\vdash\_{\\epsilon} c: {C}}
-        {
-          \\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = (a, b);\\;c} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = b;\\;c}} : {C}
-        } \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{case-\$\\beta\_l\$}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\ensuremath{\\mathcal{R}}} e: {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\ensuremath{\\mathcal{R}}} a: {C}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : B \\vdash\_{\\ensuremath{\\mathcal{R}}} b: {C}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\mathsf{case}}\\;\\iota\_l\\;{e}\\;\\{\\iota\_l\\;{x} :a, \\iota\_r\\;{y} :b\\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = e;\\;a} : {C}
-        } \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{case-\$\\beta\_r\$}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\ensuremath{\\mathcal{R}}} e: {B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\ensuremath{\\mathcal{R}}} a: {C}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : B \\vdash\_{\\ensuremath{\\mathcal{R}}} b: {C}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\mathsf{case}}\\;\\iota\_r\\;{e}\\;\\{\\iota\_l\\;{x} :a, \\iota\_r\\;{y} :b\\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = e;\\;b} : {C}
-        } \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{case-\$\\eta\$}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} e: {A + B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :\\iota\_l\\;{x}, \\iota\_r\\;{y} :\\iota\_r\\;{y}\\} \\approx e : {A + B}
-        } \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-\$\\beta^p\$}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l} \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r}, x : A^q \\vdash\_{\\eta} b: {B}}
-        {\\epsilon \\rightharpoonup\\eta}
-        {q \\leq \\ensuremath{\\mathsf{q}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_r}) \\sqcap \\ensuremath{\\mathsf{q}}^p(\\epsilon)}
-        {
-          \\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;b} \\twoheadrightarrow^{p} \[x/a\]b : {B}
-        }
-
-  \\end{gathered}\$\$
+#rule-set(
+  prooftree(rule(label: msc("term"), $Gamma^(upright(bold(q))) tack.r epsilon.alt a : upright(bold(1))$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) x = a ; #h(0em) \( \) approx a : upright(bold(1))$)),
+  prooftree(rule(label: msc("elim"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))$, $Gamma^(upright(bold(q))_l) tack.r epsilon.alt a : upright(bold(1))$, $0 lt.eq sans(q)^p \( epsilon.alt \)$, $Gamma^(upright(bold(q))) tack.r eta b : B$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) x = a ; #h(0em) b arrow.r.twohead^p sans(l e t) #h(0em) x = \( \) ; #h(0em) b : B$)),
+  prooftree(rule(label: msc("init"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : upright(bold(0))$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b' : B$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) x = sans(a b o r t) #h(0em) a ; #h(0em) b approx sans(l e t) #h(0em) x = sans(a b o r t) #h(0em) a ; #h(0em) b' : B$)),
+  prooftree(rule(label: msc("let2-eta"), $Gamma^(upright(bold(q))) tack.r epsilon.alt a : A ⊗ B$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) \( x \, y \) approx a : A ⊗ B$)),
+  prooftree(rule(label: msc("let2-beta"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma tack.r upright(bold(q))_l = upright(bold(q))_a + upright(bold(q))_b$, $Gamma^(upright(bold(q))_a) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_b) tack.r epsilon.alt b : B$, $Gamma^(upright(bold(q))_r) \, x : A \, y : B tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) \( x \, y \) = \( a \, b \) ; #h(0em) c approx sans(l e t) #h(0em) x = a ; #h(0em) sans(l e t) #h(0em) y = b ; #h(0em) c : C$)),
+  prooftree(rule(label: msc("case-betal"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r cal(R) e : A$, $Gamma^(upright(bold(q))_l) \, x : A tack.r cal(R) a : C$, $Gamma^(upright(bold(q))_l) \, y : B tack.r cal(R) b : C$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(c a s e) #h(0em) iota_l #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } approx sans(l e t) #h(0em) x = e ; #h(0em) a : C$)),
+  prooftree(rule(label: msc("case-betar"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r cal(R) e : B$, $Gamma^(upright(bold(q))_l) \, x : A tack.r cal(R) a : C$, $Gamma^(upright(bold(q))_l) \, y : B tack.r cal(R) b : C$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(c a s e) #h(0em) iota_r #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } approx sans(l e t) #h(0em) y = e ; #h(0em) b : C$)),
+  prooftree(rule(label: msc("case-eta"), $Gamma^(upright(bold(q))) tack.r cal(R) e : A + B$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : iota_l #h(0em) x \, iota_r #h(0em) y : iota_r #h(0em) y } approx e : A + B$)),
+  prooftree(rule(label: msc("let1-beta^p"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_l) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_r) \, x : A^q tack.r eta b : B$, $epsilon.alt harpoon.rt eta$, $q lt.eq sans(q) \( Gamma^(upright(bold(q))_r) \) ∩ sans(q)^p \( epsilon.alt \)$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) x = a ; #h(0em) b arrow.r.twohead^p \[ x \/ a \] b : B$)),
+)
 
   ]],
   caption: [
@@ -1100,81 +890,14 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
 <refall:fig:reduction-rules>
 
 #figure([#block[
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  minipage=1.1,scale=0.9 \$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{iter-\$\\beta\$}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\ensuremath{\\mathsf{q}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}) = \\top}
-        {\\epsilon \\in \\ensuremath{\\mathcal{E}}^\\infty}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} b: {B + A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\mathsf{iter}}\\;a\\;\\{ \\iota\_r\\;{x} :b \\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;\\ensuremath{\\mathsf{case}}\\;b\\;\\{\\iota\_l\\;{y} :y, \\iota\_r\\;{z} :\\ensuremath{\\mathsf{iter}}\\;z\\;\\{ \\iota\_r\\;{x} :b \\}\\}} : {B}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let-iter}}}
-        {
-        \\prfStackPremises
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_c}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}}\_c = \\ensuremath{\\mathbf{q}}\_m + \\ensuremath{\\mathbf{q}}\_r}
-        }
-        {
-        \\prfStackPremises
-        {\\ensuremath{\\mathsf{q}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}) = \\top}
-        {\\ensuremath{\\mathsf{q}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_m}) = \\top}
-        }
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_m}, x : A \\vdash\_{\\epsilon} b: {B + A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : B \\vdash\_{\\epsilon} c: {C}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = \\ensuremath{\\mathsf{iter}}\\;a\\;\\{ \\iota\_r\\;{x} :b \\};\\;c} \\approx\\ensuremath{\\mathsf{iter}}\\;a\\;\\{ \\iota\_r\\;{x} :\\ensuremath{\\mathsf{case}}\\;b\\;\\{\\iota\_l\\;{y} :\\iota\_l\\;{c}, \\iota\_r\\;{z} :\\iota\_r\\;{z}\\} \\} : {C}
-        } \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{codiag}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\ensuremath{\\mathsf{q}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}) = \\top}
-        {\\epsilon \\in \\ensuremath{\\mathcal{E}}^\\infty}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : A \\vdash\_{\\epsilon} b: {(B + A) + A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\mathsf{iter}}\\;a\\;\\{ \\iota\_r\\;{x} :\\ensuremath{\\mathsf{iter}}\\;x\\;\\{ \\iota\_r\\;{y} :b \\} \\} \\approx\\ensuremath{\\mathsf{iter}}\\;a\\;\\{ \\iota\_r\\;{y} :\\ensuremath{\\mathsf{case}}\\;b\\;\\{\\iota\_l\\;{x} :x, \\iota\_r\\;{y} :\\iota\_r\\;{y}\\} \\} : {B}} \\\\
-      % \\prftree\[r\]{\\rle{dist}}
-      %   {
-      %   \\prfStackPremises
-      %   {\\qsp{\\Gamma}{\\mb{q}}{\\mb{q}\_l}{\\mb{q}\_c}}
-      %   {\\qsp{\\Gamma}{\\mb{q}\_c}{\\mb{q}\_m}{\\mb{q}\_r}}
-      %   }
-      %   {\\alquant(\\Gamma^{\\mb{q}\_m}) = \\top}
-      %   {\\hasty{\\Gamma^{\\mb{q}\_l}}{\\epsilon}{a}{A}}
-      %   {\\hasty{\\Gamma^{\\mb{q}\_r}}{\\epsilon}{b}{B}}
-      %   {\\hasty{\\Gamma^{\\mb{q}\_m}, y : B}{\\epsilon}{c}{C + B}}
-      %   {
-      %     % \\prfStackPremises
-      %     % {\\Gamma^{\\mb{q}} \\vdash\_{\\mc{R}} (a, \\liter{b}{y}{c})}
-      %     % {\\approx \\liter{(a, b)}{(x, y)}{\\caseexpr{c}{z}{\\linl{(x, z)}}{w}{\\linr{(x, w)}}}
-      %     % : A \\otimes C}
-      %     \\tmeq{\\Gamma^{\\mb{q}}}{\\mc{R}}
-      %       {(a, \\liter{b}{y}{c})}
-      %       {\\liter{(a, b)}{(x, y)}{\\caseexpr{c}{z}{\\linl{(x, z)}}{w}{\\linr{(x, w)}}}}
-      %       {A \\otimes C}
-      %   }
-
-  \\end{gathered}\$\$
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-\$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{unif\$^p\$}}}
-        {\\eta \\rightharpoonup\\epsilon}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_c}, x : A \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = s;\\;b} \\twoheadrightarrow^{p} \\ensuremath{\\mathsf{case}}\\;b\'\\;\\{\\iota\_l\\;{z} :\\iota\_l\\;{c}, \\iota\_r\\;{x} :\\iota\_r\\;{s}\\} : {C + S}}
-        {
-          \\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;\\ensuremath{\\mathsf{iter}}\\;s\\;\\{ \\iota\_r\\;{y} :b \\}} \\twoheadrightarrow^{p} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = \\ensuremath{\\mathsf{iter}}\\;a\\;\\{ \\iota\_r\\;{x} :b\' \\};\\;c} : {C}
-        } \\\\
-      \\text{where} \\qquad {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_c + \\ensuremath{\\mathbf{q}}\_r} \\qquad
-      {\\Gamma \\vdash \\ensuremath{\\mathbf{q}}\_c = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_c} \\qquad
-      \\ensuremath{\\mathsf{q}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}) = \\top \\qquad
-      \\epsilon \\in \\ensuremath{\\mathcal{E}}^\\infty \\qquad
-      {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {A}}
-      \\\\
-      \\qquad {\\Gamma^{\\ensuremath{\\mathbf{q}}\_c}, x : A \\vdash\_{\\eta} s: {S}}
-      \\qquad {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : S \\vdash\_{\\epsilon} b: {C + A}}
-      \\qquad {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{} b\': {B + A}}
-      \\qquad {\\Gamma^{\\ensuremath{\\mathbf{q}}\_c}, z : B \\vdash\_{} c: {C}}
-
-  \\end{gathered}\$\$
+#rule-set(
+  prooftree(rule(label: msc("iter-beta"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $sans(q) \( Gamma^(upright(bold(q))_l) \) = top$, $epsilon.alt in cal(E)^oo$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B + A$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } approx sans(l e t) #h(0em) x = a ; #h(0em) sans(c a s e) #h(0em) b #h(0em) { iota_l #h(0em) y : y \, iota_r #h(0em) z : sans(i t e r) #h(0em) z #h(0em) { iota_r #h(0em) x : b } } : B$)),
+  prooftree(rule(label: msc("let-iter"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_c Gamma tack.r upright(bold(q))_c = upright(bold(q))_m + upright(bold(q))_r$, $sans(q) \( Gamma^(upright(bold(q))_l) \) = top sans(q) \( Gamma^(upright(bold(q))_m) \) = top$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_m) \, x : A tack.r epsilon.alt b : B + A$, $Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) y = sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } ; #h(0em) c approx sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : sans(c a s e) #h(0em) b #h(0em) { iota_l #h(0em) y : iota_l #h(0em) c \, iota_r #h(0em) z : iota_r #h(0em) z } } : C$)),
+  prooftree(rule(label: msc("codiag"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $sans(q) \( Gamma^(upright(bold(q))_l) \) = top$, $epsilon.alt in cal(E)^oo$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_l) \, y : A tack.r epsilon.alt b : \( B + A \) + A$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : sans(i t e r) #h(0em) x #h(0em) { iota_r #h(0em) y : b } } approx sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) y : sans(c a s e) #h(0em) b #h(0em) { iota_l #h(0em) x : x \, iota_r #h(0em) y : iota_r #h(0em) y } } : B$)),
+)
+#rule-set(
+  prooftree(rule(label: msc("unif^p"), $eta harpoon.rt epsilon.alt$, $Gamma^(upright(bold(q))_c) \, x : A tack.r cal(R) sans(l e t) #h(0em) y = s ; #h(0em) b arrow.r.twohead^p sans(c a s e) #h(0em) b' #h(0em) { iota_l #h(0em) z : iota_l #h(0em) c \, iota_r #h(0em) x : iota_r #h(0em) s } : C + S$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) x = a ; #h(0em) sans(i t e r) #h(0em) s #h(0em) { iota_r #h(0em) y : b } arrow.r.twohead^p sans(l e t) #h(0em) z = sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b' } ; #h(0em) c : C$)),
+)
 
   ]],
   caption: [

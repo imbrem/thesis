@@ -25,23 +25,13 @@ notational conventions:
 
 Recall that we define $a ; b := sans(l e t) #h(0em) x = a ; #h(0em) b$
 for $x in.not sans(f v) \( b \)$. The following typing rule is hence
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-trivially derivable: \$\$\\prftree\[r\]{{\\scriptsize\\textsf{seq}}}
-    {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l} \\vdash\_{\\epsilon} a: {A}}
-    {0 \\leq \\ensuremath{\\mathsf{q}}(A)}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} b: {B}}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} a ; b: {B}}\$\$
+trivially derivable: #rule-set(
+  prooftree(rule(label: msc("seq"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_l) tack.r epsilon.alt a : A$, $0 lt.eq sans(q) \( A \)$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt b : B$, $Gamma^(upright(bold(q))) tack.r epsilon.alt a ; b : B$)),
+)
 We can easily convince ourselves that this satisfies some of the basic
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-properties of sequencing; for example, we have \$\$\\prftree\[r\]{}
-    {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_c}
-    {\\Gamma \\vdash \\ensuremath{\\mathbf{q}}\_c = \\ensuremath{\\mathbf{q}}\_r + \\ensuremath{\\mathbf{q}}\_m}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l} \\vdash\_{\\epsilon} a: {A}}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}\_m} \\vdash\_{\\epsilon} b: {B}}
-    {0 \\leq \\ensuremath{\\mathsf{q}}(A), \\ensuremath{\\mathsf{q}}(B)}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} c: {C}}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} (a ; b) ; c \\approx a ; (b ; c) : {C}}\$\$
+properties of sequencing; for example, we have #rule-set(
+  prooftree(rule(label: msc("rule"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_c$, $Gamma tack.r upright(bold(q))_c = upright(bold(q))_r + upright(bold(q))_m$, $Gamma^(upright(bold(q))_l) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_m) tack.r epsilon.alt b : B$, $0 lt.eq sans(q) \( A \) \, sans(q) \( B \)$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))) tack.r cal(R) \( a ; b \) ; c approx a ; \( b ; c \) : C$)),
+)
 
 As stated in Section~@refall:ssec:refinement-theory, binding rules for the rest
 of our calculus are derivable from the rest of
@@ -53,23 +43,9 @@ left-hand side $a$ executes before $b$, while on the right-hand side $b$
 executes before $a$, hence the requirement that their effects commute.
 We can also derive a simplified rule for uniformity, given below, by
 simply choosing $q_l = q_c$ and $c = z$ in unif$""^p$:
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-\$\$\\begin{gathered}
-    \\prftree\[r\]{{\\scriptsize\\textsf{simp-unif\$^p\$}}}
-      {\\eta \\rightharpoonup\\epsilon}
-      {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = s;\\;b} \\twoheadrightarrow^{p} \\ensuremath{\\mathsf{case}}\\;b\'\\;\\{\\iota\_l\\;{x} :\\iota\_l\\;{x}, \\iota\_r\\;{x} :\\iota\_r\\;{s}\\} : {B + S}}
-      {
-        \\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;\\ensuremath{\\mathsf{iter}}\\;s\\;\\{ \\iota\_r\\;{y} :b \\}} \\twoheadrightarrow^{p} \\ensuremath{\\mathsf{iter}}\\;a\\;\\{ \\iota\_r\\;{x} :b\' \\} : {B}
-      } \\\\
-    \\text{where} \\qquad {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r} \\qquad
-    \\ensuremath{\\mathsf{q}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}) = \\top \\qquad
-    \\epsilon \\in \\ensuremath{\\mathcal{E}}^\\infty \\qquad {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {A}}
-    \\\\
-    \\qquad {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\eta} s: {S}}
-    \\qquad {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : S \\vdash\_{\\epsilon} b: {B + A}}
-    \\qquad {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{} b\': {B + A}}
-
-\\end{gathered}\$\$
+#rule-set(
+  prooftree(rule(label: msc("simp-unif^p"), $eta harpoon.rt epsilon.alt$, $Gamma^(upright(bold(q))_l) \, x : A tack.r cal(R) sans(l e t) #h(0em) y = s ; #h(0em) b arrow.r.twohead^p sans(c a s e) #h(0em) b' #h(0em) { iota_l #h(0em) x : iota_l #h(0em) x \, iota_r #h(0em) x : iota_r #h(0em) s } : B + S$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) x = a ; #h(0em) sans(i t e r) #h(0em) s #h(0em) { iota_r #h(0em) y : b } arrow.r.twohead^p sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b' } : B$)),
+)
 
 We define #emph[pattern binding] $sans(l e t) #h(0em) P = a ; #h(0em) b$
 of patterns $P : := x divides \( P \, P' \)$ inductively as follows
@@ -80,10 +56,9 @@ sans(l e t) #h(0em) \( x \, P \) = a ; #h(0em) b & := sans(l e t) #h(0em) \( x \
 sans(l e t) #h(0em) \( P \, P' \) = a ; #h(0em) b & := sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) sans(l e t) #h(0em) P = x ; #h(0em) sans(l e t) #h(0em) P' = y ; #h(0em) b & upright("for ") P \, P' in.not sans(V a r) $
 By a straightforward case analysis, we may show that the following rule
 is admissible:
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-\$\$\\prftree\[r\]{{\\scriptsize\\textsf{pattern-pair\'}}}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(P, P\') = x;\\;a}: {B}}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(P, P\') = a;\\;b} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = a;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;P = x;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;P\' = y;\\;b}}} : {B}}\$\$
+#rule-set(
+  prooftree(rule(label: msc("pattern-pair'"), $Gamma^(upright(bold(q))) tack.r epsilon.alt sans(l e t) #h(0em) \( P \, P' \) = x ; #h(0em) a : B$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) \( P \, P' \) = a ; #h(0em) b approx sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) sans(l e t) #h(0em) P = x ; #h(0em) sans(l e t) #h(0em) P' = y ; #h(0em) b : B$)),
+)
 We extend pattern binding to other binding forms, for
 $P in.not sans(V a r)$, in the obvious manner:
 $ sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) P : b \, iota_r #h(0em) y : c } & := sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : sans(l e t) #h(0em) P = x ; #h(0em) b \, iota_r #h(0em) y : c } & upright("for ") x in.not sans(f v) \( b \)\
@@ -91,65 +66,23 @@ sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : b \, iota_r #h(0em) P : c }
 sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) P : b } & := sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : sans(l e t) #h(0em) P = x ; #h(0em) b } & upright("for ") x in.not sans(f v) \( b \) $
 
 #figure([#block[
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  minipage=1.1,scale=0.9 \$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{var}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\mapsto x : A^q\_\\epsilon}
-        {1 \\leq q}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} x \\twoheadrightarrow x : {A}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{op}}}
-        {f : A \\to\_\\epsilon B}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} a \\twoheadrightarrow a\' : {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} f\\;a \\twoheadrightarrow f\\;a\' : {B}} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\ensuremath{\\mathcal{R}}} a \\twoheadrightarrow a\' : {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\ensuremath{\\mathcal{R}}} b \\twoheadrightarrow b\' : {B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;b} \\twoheadrightarrow\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a\';\\;b\'} : {B}} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{unit}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\mapsto \\cdot}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} () \\twoheadrightarrow() : {\\ensuremath{\\mathbf{1}}}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{pair}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l} \\vdash\_{\\ensuremath{\\mathcal{R}}} a \\twoheadrightarrow a\' : {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\ensuremath{\\mathcal{R}}} b \\twoheadrightarrow b\' : {B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} (a, b) \\twoheadrightarrow(a\', b\') : {A \\otimes B}} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\ensuremath{\\mathcal{R}}} a \\twoheadrightarrow a\' : {A \\otimes B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A, y : B \\vdash\_{\\ensuremath{\\mathcal{R}}} c \\twoheadrightarrow c\' : {C}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = a;\\;c} \\twoheadrightarrow\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = a\';\\;c\'} : {C}}
-
-  \\end{gathered}\$\$
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-\$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{inl}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} a \\twoheadrightarrow a\' : {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\iota\_l\\;{a} \\twoheadrightarrow\\iota\_l\\;{a\'} : {A + B}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{inr}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} b \\twoheadrightarrow b\' : {B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\iota\_r\\;{b} \\twoheadrightarrow\\iota\_r\\;{b\'} : {A + B}} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{case}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\ensuremath{\\mathcal{R}}} e \\twoheadrightarrow e\' : {A + B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\ensuremath{\\mathcal{R}}} a \\twoheadrightarrow a\' : {C}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : B \\vdash\_{\\ensuremath{\\mathcal{R}}} b \\twoheadrightarrow b\' : {C}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :a, \\iota\_r\\;{y} :b\\} \\twoheadrightarrow\\ensuremath{\\mathsf{case}}\\;e\'\\;\\{\\iota\_l\\;{x} :a\', \\iota\_r\\;{y} :b\'\\} : {C}} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{abort}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} a \\twoheadrightarrow a\' : {\\ensuremath{\\mathbf{0}}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\mathsf{abort}}\\;{a} \\twoheadrightarrow\\ensuremath{\\mathsf{abort}}\\;{a\'} : {C}}
-
-  \\end{gathered}\$\$
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-\$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{iter}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\ensuremath{\\mathsf{q}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}) = \\top}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\ensuremath{\\mathcal{R}}} a \\twoheadrightarrow a\' : {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\ensuremath{\\mathcal{R}}} b \\twoheadrightarrow b\' : {B + A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\mathsf{iter}}\\;a\\;\\{ \\iota\_r\\;{x} :b \\} \\twoheadrightarrow\\ensuremath{\\mathsf{iter}}\\;a\'\\;\\{ \\iota\_r\\;{x} :b\' \\} : {B}}
-
-  \\end{gathered}\$\$
+#rule-set(
+  prooftree(rule(label: msc("var"), $Gamma^(upright(bold(q))) mapsto x : A^q_epsilon.alt$, $1 lt.eq q$, $Gamma^(upright(bold(q))) tack.r cal(R) x arrow.r.twohead x : A$)),
+  prooftree(rule(label: msc("op"), $f : A arrow.r_epsilon.alt B$, $Gamma^(upright(bold(q))) tack.r cal(R) a arrow.r.twohead a' : A$, $Gamma^(upright(bold(q))) tack.r cal(R) f #h(0em) a arrow.r.twohead f #h(0em) a' : B$)),
+  prooftree(rule(label: msc("let1"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r cal(R) a arrow.r.twohead a' : A$, $Gamma^(upright(bold(q))_l) \, x : A tack.r cal(R) b arrow.r.twohead b' : B$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) x = a ; #h(0em) b arrow.r.twohead sans(l e t) #h(0em) x = a' ; #h(0em) b' : B$)),
+  prooftree(rule(label: msc("unit"), $Gamma^(upright(bold(q))) mapsto dot.op$, $Gamma^(upright(bold(q))) tack.r cal(R) \( \) arrow.r.twohead \( \) : upright(bold(1))$)),
+  prooftree(rule(label: msc("pair"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_l) tack.r cal(R) a arrow.r.twohead a' : A$, $Gamma^(upright(bold(q))_r) tack.r cal(R) b arrow.r.twohead b' : B$, $Gamma^(upright(bold(q))) tack.r cal(R) \( a \, b \) arrow.r.twohead \( a' \, b' \) : A ⊗ B$)),
+  prooftree(rule(label: msc("let2"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r cal(R) a arrow.r.twohead a' : A ⊗ B$, $Gamma^(upright(bold(q))_l) \, x : A \, y : B tack.r cal(R) c arrow.r.twohead c' : C$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) c arrow.r.twohead sans(l e t) #h(0em) \( x \, y \) = a' ; #h(0em) c' : C$)),
+)
+#rule-set(
+  prooftree(rule(label: msc("inl"), $Gamma^(upright(bold(q))) tack.r cal(R) a arrow.r.twohead a' : A$, $Gamma^(upright(bold(q))) tack.r cal(R) iota_l #h(0em) a arrow.r.twohead iota_l #h(0em) a' : A + B$)),
+  prooftree(rule(label: msc("inr"), $Gamma^(upright(bold(q))) tack.r cal(R) b arrow.r.twohead b' : B$, $Gamma^(upright(bold(q))) tack.r cal(R) iota_r #h(0em) b arrow.r.twohead iota_r #h(0em) b' : A + B$)),
+  prooftree(rule(label: msc("case"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r cal(R) e arrow.r.twohead e' : A + B$, $Gamma^(upright(bold(q))_l) \, x : A tack.r cal(R) a arrow.r.twohead a' : C$, $Gamma^(upright(bold(q))_l) \, y : B tack.r cal(R) b arrow.r.twohead b' : C$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } arrow.r.twohead sans(c a s e) #h(0em) e' #h(0em) { iota_l #h(0em) x : a' \, iota_r #h(0em) y : b' } : C$)),
+  prooftree(rule(label: msc("abort"), $Gamma^(upright(bold(q))) tack.r cal(R) a arrow.r.twohead a' : upright(bold(0))$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(a b o r t) #h(0em) a arrow.r.twohead sans(a b o r t) #h(0em) a' : C$)),
+)
+#rule-set(
+  prooftree(rule(label: msc("iter"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $sans(q) \( Gamma^(upright(bold(q))_l) \) = top$, $Gamma^(upright(bold(q))_r) tack.r cal(R) a arrow.r.twohead a' : A$, $Gamma^(upright(bold(q))_l) \, x : A tack.r cal(R) b arrow.r.twohead b' : B + A$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } arrow.r.twohead sans(i t e r) #h(0em) a' #h(0em) { iota_r #h(0em) x : b' } : B$)),
+)
 
   ]],
   caption: [
@@ -159,45 +92,15 @@ sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) P : b } & := sans(i t e r) #h(0
 <refall:fig:congruence-refinement>
 
 #figure([#block[
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  minipage=1.1,scale=0.9 \$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{op-bind}}}
-        {f : A \\to B}
-        {\\Gamma \\vdash\_{} a: {A}}
-        {\\Gamma \\vdash\_{\\ensuremath{\\mathcal{R}}} f\\;a \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;f\\;x} : {B}}
-        \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{pair-bind}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l} \\vdash\_{} a: {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{} b: {B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} (a, b) \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = b;\\;(x, y)}} : {A \\otimes B}}
-        \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{pair-left-bind}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l} \\vdash\_{} a: {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{} b: {B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} (a, b) \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;(x, b)} : {A \\otimes B}}
-        \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{pair-right-bind}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l} \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\eta} b: {B}}
-        {\\epsilon \\rightleftharpoons\\eta}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} (a, b) \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = b;\\;(a, y)} : {A \\otimes B}}
-        \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{inl-bind}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{} a: {A}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\iota\_l\\;{a} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;\\iota\_l\\;{x}} : {A + B}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{inr-bind}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{} b: {B}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\iota\_r\\;{b} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = b;\\;\\iota\_r\\;{y}} : {A + B}}
-        \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{abort-bind}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{} a: {\\ensuremath{\\mathbf{0}}}}
-        {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\mathsf{abort}}\\;{a} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;\\ensuremath{\\mathsf{abort}}\\;{x}} : {C}}
-        \\\\
-
-  \\end{gathered}\$\$
+#rule-set(
+  prooftree(rule(label: msc("op-bind"), $f : A arrow.r B$, $Gamma tack.r a : A$, $Gamma tack.r cal(R) f #h(0em) a approx sans(l e t) #h(0em) x = a ; #h(0em) f #h(0em) x : B$)),
+  prooftree(rule(label: msc("pair-bind"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_l) tack.r a : A$, $Gamma^(upright(bold(q))_r) tack.r b : B$, $Gamma^(upright(bold(q))) tack.r cal(R) \( a \, b \) approx sans(l e t) #h(0em) x = a ; #h(0em) sans(l e t) #h(0em) y = b ; #h(0em) \( x \, y \) : A ⊗ B$)),
+  prooftree(rule(label: msc("pair-left-bind"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_l) tack.r a : A$, $Gamma^(upright(bold(q))_r) tack.r b : B$, $Gamma^(upright(bold(q))) tack.r cal(R) \( a \, b \) approx sans(l e t) #h(0em) x = a ; #h(0em) \( x \, b \) : A ⊗ B$)),
+  prooftree(rule(label: msc("pair-right-bind"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_l) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_r) tack.r eta b : B$, $epsilon.alt harpoons.rtlb eta$, $Gamma^(upright(bold(q))) tack.r cal(R) \( a \, b \) approx sans(l e t) #h(0em) y = b ; #h(0em) \( a \, y \) : A ⊗ B$)),
+  prooftree(rule(label: msc("inl-bind"), $Gamma^(upright(bold(q))) tack.r a : A$, $Gamma^(upright(bold(q))) tack.r cal(R) iota_l #h(0em) a approx sans(l e t) #h(0em) x = a ; #h(0em) iota_l #h(0em) x : A + B$)),
+  prooftree(rule(label: msc("inr-bind"), $Gamma^(upright(bold(q))) tack.r b : B$, $Gamma^(upright(bold(q))) tack.r cal(R) iota_r #h(0em) b approx sans(l e t) #h(0em) y = b ; #h(0em) iota_r #h(0em) y : A + B$)),
+  prooftree(rule(label: msc("abort-bind"), $Gamma^(upright(bold(q))) tack.r a : upright(bold(0))$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(a b o r t) #h(0em) a approx sans(l e t) #h(0em) x = a ; #h(0em) sans(a b o r t) #h(0em) x : C$)),
+)
 
   ]],
   caption: [
@@ -359,21 +262,7 @@ We now verify that:
    & = \[ \( lambda \( x \, y \) . sans(c a s e) #h(0em) iota_l #h(0em) y #h(0em) { iota_l #h(0em) y : iota_l #h(0em) \( x \, y \) \, iota_r #h(0em) z : iota_r #h(0em) \( x \, z \) } \) \,\
    & quad #h(0em) #h(0em) \( lambda \( x \, z \) . sans(c a s e) #h(0em) iota_r #h(0em) z #h(0em) { iota_l #h(0em) y : iota_l #h(0em) \( x \, y \) \, iota_r #h(0em) z : iota_r #h(0em) \( x \, z \) } \) \]\
    & = \[ \( lambda \( x \, y \) . iota_l #h(0em) \( x \, y \) \) \, \( lambda \( x \, z \) . iota_r #h(0em) \( x \, z \) \) \] = \[ iota_l \, iota_r \] = sans(i d)_(\( X ⊗ Y \) + \( X ⊗ Z \)) $
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  and \$\$\\begin{aligned}
-      \\delta^{-1}\_{X, Y, Z} ; \\delta\_{X, Y, Z}
-      &= (\\lambda (x, w) .  \\ensuremath{\\mathsf{case}}\\;w\\;\\{\\iota\_l\\;{y} :\\iota\_l\\;{(x, y)}, \\iota\_r\\;{z} :\\iota\_r\\;{(x, z)}\\})
-        ; \[X \\otimes \\iota\_l, X \\otimes \\iota\_r\] \\\\
-      &= (\\lambda (x, w) . \\ensuremath{\\ensuremath{\\mathsf{let}}\\;w\' = \\ensuremath{\\mathsf{case}}\\;w\\;\\{\\iota\_l\\;{y} :\\iota\_l\\;{(x, y)}, \\iota\_r\\;{z} :\\iota\_r\\;{(x, z)}\\};\\;
-        \\\\ & \\quad\\;\\;
-        \\ensuremath{\\mathsf{case}}\\;w\'\\;\\{\\iota\_l\\;{(x, y)} :(x, \\iota\_l\\;{y}), \\iota\_r\\;{(x, z)} :(x, \\iota\_r\\;{z})\\}}) \\\\
-      &= (\\lambda (x, w) . \\ensuremath{\\mathsf{case}}\\;w\\;\\{\\iota\_l\\;{y} :\\ensuremath{\\mathsf{case}}\\;\\iota\_l\\;{(x, y)}\\;\\{\\iota\_l\\;{(x, y)} :(x, \\iota\_l\\;{y}), \\iota\_r\\;{(x, z)} :(x, \\iota\_r\\;{z})\\} \\\\ & \\quad\\;\\;, \\iota\_r\\;{z} :\\ensuremath{\\mathsf{case}}\\;\\iota\_r\\;{(x, z)}\\;\\{\\iota\_l\\;{(x, y)} :(x, \\iota\_l\\;{y}), \\iota\_r\\;{(x, z)} :(x, \\iota\_r\\;{z})\\}\\}
-      ) \\\\
-      &= (\\lambda (x, w) . \\ensuremath{\\mathsf{case}}\\;w\\;\\{\\iota\_l\\;{y} :(x, \\iota\_l\\;{y}), \\iota\_r\\;{z} :(x, \\iota\_r\\;{z})\\}) \\\\
-      &= (\\lambda (x, w) . (x, \\ensuremath{\\mathsf{case}}\\;w\\;\\{\\iota\_l\\;{y} :\\iota\_l\\;{y}, \\iota\_r\\;{z} :\\iota\_r\\;{z}\\}))
-      = (\\lambda (x, w) . (x, w)) = \\ensuremath{\\mathsf{id}}\_{X \\otimes (Y + Z)}
-
-  \\end{aligned}\$\$
+  and $delta^(- 1)_X \, Y \, Z ; delta_X \, Y \, Z = \( lambda \( x \, w \) . sans(c a s e) #h(0em) w #h(0em) { iota_l #h(0em) y : iota_l #h(0em) \( x \, y \) \, iota_r #h(0em) z : iota_r #h(0em) \( x \, z \) } \) ; \[ X ⊗ iota_l \, X ⊗ iota_r \] #h(2em) = \( lambda \( x \, w \) . sans(l e t) #h(0em) w' = sans(c a s e) #h(0em) w #h(0em) { iota_l #h(0em) y : iota_l #h(0em) \( x \, y \) \, iota_r #h(0em) z : iota_r #h(0em) \( x \, z \) } ; #h(0em) #h(2em) quad #h(0em) #h(0em) sans(c a s e) #h(0em) w' #h(0em) { iota_l #h(0em) \( x \, y \) : \( x \, iota_l #h(0em) y \) \, iota_r #h(0em) \( x \, z \) : \( x \, iota_r #h(0em) z \) } \) #h(2em) = \( lambda \( x \, w \) . sans(c a s e) #h(0em) w #h(0em) { iota_l #h(0em) y : sans(c a s e) #h(0em) iota_l #h(0em) \( x \, y \) #h(0em) { iota_l #h(0em) \( x \, y \) : \( x \, iota_l #h(0em) y \) \, iota_r #h(0em) \( x \, z \) : \( x \, iota_r #h(0em) z \) } #h(2em) quad #h(0em) #h(0em) \, iota_r #h(0em) z : sans(c a s e) #h(0em) iota_r #h(0em) \( x \, z \) #h(0em) { iota_l #h(0em) \( x \, y \) : \( x \, iota_l #h(0em) y \) \, iota_r #h(0em) \( x \, z \) : \( x \, iota_r #h(0em) z \) } } \) #h(2em) = \( lambda \( x \, w \) . sans(c a s e) #h(0em) w #h(0em) { iota_l #h(0em) y : \( x \, iota_l #h(0em) y \) \, iota_r #h(0em) z : \( x \, iota_r #h(0em) z \) } \) #h(2em) = \( lambda \( x \, w \) . \( x \, sans(c a s e) #h(0em) w #h(0em) { iota_l #h(0em) y : iota_l #h(0em) y \, iota_r #h(0em) z : iota_r #h(0em) z } \) \) = \( lambda \( x \, w \) . \( x \, w \) \) = sans(i d)_X ⊗ \( Y + Z \)$
 
 - $sans(T m)_epsilon.alt \( cal(R) \)$ has an iteration operator: we
   have that
@@ -493,12 +382,9 @@ manner:
 $ \( sans(l e t) #h(0em) dot.op = a ; #h(0em) b \) := \( a ; b \) #h(2em) \( sans(l e t) #h(0em) Gamma \, x : A = a ; #h(0em) b \) := \( sans(l e t) #h(0em) \( g \, x \) = a ; #h(0em) sans(l e t) #h(0em) Gamma = g ; #h(0em) b \) $
 We can show this satisfies the following typing rule by induction on
 $Delta^(upright(bold(q))')$.
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-\$\$\\prftree\[r\]{{\\scriptsize\\textsf{unpack}}}
-    {\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l} \\vdash\_{\\epsilon} a: {\[\\Delta^{\\ensuremath{\\mathbf{q}}\'}\]}}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r}, \\Delta^{\\ensuremath{\\mathbf{q}}\'} \\vdash\_{\\epsilon} b: {B}}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;\\Gamma = a;\\;b}: {B}}\$\$
+#rule-set(
+  prooftree(rule(label: msc("unpack"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_l) tack.r epsilon.alt a : \[ Delta^(upright(bold(q))') \]$, $Gamma^(upright(bold(q))_r) \, Delta^(upright(bold(q))') tack.r epsilon.alt b : B$, $Gamma^(upright(bold(q))) tack.r epsilon.alt sans(l e t) #h(0em) Gamma = a ; #h(0em) b : B$)),
+)
 In particular, we proceed as follows:
 
 - Given $a : \[ dot.op \]$, this follows directly from the derived rule
@@ -521,35 +407,24 @@ In particular, we proceed as follows:
     by weakening.
 
   By induction, we may hence derive
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  \$\$\\prftree\[r\]{{\\scriptsize\\textsf{unpack}}}
-      {\\Gamma^0, g: \[\\Delta^{\\ensuremath{\\mathbf{q}}\'}\], x : \[A^q\]^0 \\vdash\_{\\epsilon} g: {\[\\Delta^{\\ensuremath{\\mathbf{q}}\'}\]}}
-      {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, g: \[\\Delta^{\\ensuremath{\\mathbf{q}}\'}\]^0, x : \[A^q\], \\Delta^{\\ensuremath{\\mathbf{q}}\'} \\vdash\_{\\epsilon} b: {B}}
-      {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, g: \[\\Delta^{\\ensuremath{\\mathbf{q}}\'}\], x : \[A^q\] \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;\\Gamma = g;\\;b}: {B}}\$\$
+  #rule-set(
+  prooftree(rule(label: msc("unpack"), $Gamma^0 \, g : \[ Delta^(upright(bold(q))') \] \, x : \[ A^q \]^0 tack.r epsilon.alt g : \[ Delta^(upright(bold(q))') \]$, $Gamma^(upright(bold(q))_l) \, g : \[ Delta^(upright(bold(q))') \]^0 \, x : \[ A^q \] \, Delta^(upright(bold(q))') tack.r epsilon.alt b : B$, $Gamma^(upright(bold(q))_l) \, g : \[ Delta^(upright(bold(q))') \] \, x : \[ A^q \] tack.r epsilon.alt sans(l e t) #h(0em) Gamma = g ; #h(0em) b : B$)),
+)
   Therefore, since
   $\[ Delta^(upright(bold(q))') \, x : A^q \] = \[ Delta^(upright(bold(q))') \] ⊗ \[ A^q \]$,
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  we may derive \$\$\\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$}}}
-      {\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {\[\\Delta^{\\ensuremath{\\mathbf{q}}\'}, x : A^q\]}}
-      {\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, g: \[\\Delta^{\\ensuremath{\\mathbf{q}}\'}\], x : \[A^q\] \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;\\Gamma = g;\\;b}: {B}}
-      {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(g, x) = a;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;\\Gamma = g;\\;b}}: {B}}\$\$
+  we may derive #rule-set(
+  prooftree(rule(label: msc("let2"), $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : \[ Delta^(upright(bold(q))') \, x : A^q \]$, $Gamma^(upright(bold(q))_l) \, g : \[ Delta^(upright(bold(q))') \] \, x : \[ A^q \] tack.r epsilon.alt sans(l e t) #h(0em) Gamma = g ; #h(0em) b : B$, $Gamma^(upright(bold(q))) tack.r epsilon.alt sans(l e t) #h(0em) \( g \, x \) = a ; #h(0em) sans(l e t) #h(0em) Gamma = g ; #h(0em) b : B$)),
+)
   as desired.
 
 We prove that packing and unpacking are mutually inverse up to $approx$
 by induction:
 
 #block[
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-The following rules are derivable: \$\$\\begin{gathered}
-  \\prftree\[r\]{{\\scriptsize\\textsf{unpack-pack}}}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}}, \\Delta^{\\ensuremath{\\mathbf{q}}\'} \\vdash\_{\\epsilon} a: {A}}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}}, \\Delta^{\\ensuremath{\\mathbf{q}}\'} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;\\Delta = \\ensuremath{\\mathsf{pack}}(\\Delta^{\\ensuremath{\\mathbf{q}}\'});\\;a} \\approx a : {A}}
-    \\\\
-  \\prftree\[r\]{{\\scriptsize\\textsf{pack-unpack}}}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} b: {\[\\Delta^{\\ensuremath{\\mathbf{q}}\'}\]}}
-    {\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\ensuremath{\\mathcal{R}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;\\Delta = b;\\;\\ensuremath{\\mathsf{pack}}(\\Delta^{\\ensuremath{\\mathbf{q}}\'})} \\approx b : {\[\\Delta^{\\ensuremath{\\mathbf{q}}\'}\]}}
-
-\\end{gathered}\$\$
+The following rules are derivable: #rule-set(
+  prooftree(rule(label: msc("unpack-pack"), $Gamma^(upright(bold(q))) \, Delta^(upright(bold(q))') tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))) \, Delta^(upright(bold(q))') tack.r cal(R) sans(l e t) #h(0em) Delta = sans(p a c k) \( Delta^(upright(bold(q))') \) ; #h(0em) a approx a : A$)),
+  prooftree(rule(label: msc("pack-unpack"), $Gamma^(upright(bold(q))) tack.r epsilon.alt b : \[ Delta^(upright(bold(q))') \]$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) Delta = b ; #h(0em) sans(p a c k) \( Delta^(upright(bold(q))') \) approx b : \[ Delta^(upright(bold(q))') \]$)),
+)
 
 ]
 #block[
@@ -746,59 +621,7 @@ $Gamma^(upright(bold(q))) tack.r_() a : A$:
    & approx \( sans(l e t) #h(0em) x = sans(p a c k) \( Gamma^(upright(bold(q))_l) \) ; #h(0em) ⟦ Gamma^(upright(bold(q))_l) tack.r_() a : A ⟧ \( x \) \, sans(l e t) #h(0em) y = sans(p a c k) \( Gamma^(upright(bold(q))_r) \) ; #h(0em) ⟦ Gamma^(upright(bold(q))_r) tack.r_() b : B ⟧ \( y \) \) approx \( a \, b \) : A ⊗ B $
 
 - $\( Gamma^(upright(bold(q))) tack.r_() sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) c : C \)$:
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  we have that \$\$\\begin{aligned}
-      \\Gamma^{\\ensuremath{\\mathbf{q}}} &\\vdash\_\\bot
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = \\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}});\\;\\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = a;\\;c}: {C}}\\rrbracket(z)} \\\\
-        &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = \\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}});\\; \\\\ & \\qquad
-          (\\llbracket{\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}\\rrbracket
-          ; \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}}\\rrbracket \\otimes \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {A \\otimes B}}\\rrbracket
-          ; \\alpha
-          ; \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A, y : B \\vdash\_{\\epsilon} c: {C}}\\rrbracket
-          )(z)
-        } \\\\
-        &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), \\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_r}));\\;\\\\ & \\qquad (
-          \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}}\\rrbracket \\otimes \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {A \\otimes B}}\\rrbracket
-          ; \\alpha
-          ; \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A, y : B \\vdash\_{\\epsilon} c: {C}}\\rrbracket
-          )(z)
-        } \\\\
-        &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}),
-          \\ensuremath{\\ensuremath{\\mathsf{let}}\\;w = \\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_r});\\;
-              \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {A \\otimes B}(w)}\\rrbracket
-            }
-          )
-          ;\\;\\\\ & \\qquad (
-          \\alpha
-          ; \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A, y : B \\vdash\_{\\epsilon} c: {C}}\\rrbracket
-          )(z)
-        } \\\\
-        &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), a)
-          ;\\;(
-          \\alpha
-          ; \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A, y : B \\vdash\_{\\epsilon} c: {C}}\\rrbracket
-          )(z)
-        }\\\\
-        &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(z\_1, (z\_2, z\_3)) = (\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), a)
-          ;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = ((z\_1, z\_2), z\_3);\\;\\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A, y : B \\vdash\_{\\epsilon} c: {C}}\\rrbracket(z)}
-        } \\\\
-        &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(z\_2, z\_3) = a;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = ((\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), z\_2), z\_3);\\;\\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A, y : B \\vdash\_{\\epsilon} c: {C}}\\rrbracket(z)}
-        } \\\\
-        &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(z\_2, z\_3) = a;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = \\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, z\_2 : A, z\_3 : B);\\;\\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A, y : B \\vdash\_{\\epsilon} c: {C}}\\rrbracket(z)}
-        }\\\\
-        &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(z\_2, z\_3) = a;\\;\[z\_3/y\]\[z\_2/x\]c}
-        \\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = a;\\;c} : C
-
-  \\end{aligned}\$\$
+  we have that $Gamma^(upright(bold(q))) tack.r tack.t sans(l e t) #h(0em) z = sans(p a c k) \( Gamma^(upright(bold(q))) \) ; #h(0em) \[ \[ Gamma^(upright(bold(q))) tack.r sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) c : C \] \] \( z \) #h(2em) approx sans(l e t) #h(0em) z = sans(p a c k) \( Gamma^(upright(bold(q))) \) ; #h(0em) #h(2em) #h(2em) \( \[ \[ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r \] \] ; \[ \[ Gamma^(upright(bold(q))_l) \] \] ⊗ \[ \[ Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A ⊗ B \] \] ; alpha ; \[ \[ Gamma^(upright(bold(q))_l) \, x : A \, y : B tack.r epsilon.alt c : C \] \] \) \( z \) #h(2em) approx sans(l e t) #h(0em) z = \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, sans(p a c k) \( Gamma^(upright(bold(q))_r) \) \) ; #h(0em) #h(2em) #h(2em) \( \[ \[ Gamma^(upright(bold(q))_l) \] \] ⊗ \[ \[ Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A ⊗ B \] \] ; alpha ; \[ \[ Gamma^(upright(bold(q))_l) \, x : A \, y : B tack.r epsilon.alt c : C \] \] \) \( z \) #h(2em) approx sans(l e t) #h(0em) z = \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, sans(l e t) #h(0em) w = sans(p a c k) \( Gamma^(upright(bold(q))_r) \) ; #h(0em) \[ \[ Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A ⊗ B \( w \) \] \] \) ; #h(0em) #h(2em) #h(2em) \( alpha ; \[ \[ Gamma^(upright(bold(q))_l) \, x : A \, y : B tack.r epsilon.alt c : C \] \] \) \( z \) #h(2em) approx sans(l e t) #h(0em) z = \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, a \) ; #h(0em) \( alpha ; \[ \[ Gamma^(upright(bold(q))_l) \, x : A \, y : B tack.r epsilon.alt c : C \] \] \) \( z \) #h(2em) approx sans(l e t) #h(0em) \( z_1 \, \( z_2 \, z_3 \) \) = \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, a \) ; #h(0em) sans(l e t) #h(0em) z = \( \( z_1 \, z_2 \) \, z_3 \) ; #h(0em) \[ \[ Gamma^(upright(bold(q))_l) \, x : A \, y : B tack.r epsilon.alt c : C \] \] \( z \) #h(2em) approx sans(l e t) #h(0em) \( z_2 \, z_3 \) = a ; #h(0em) sans(l e t) #h(0em) z = \( \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, z_2 \) \, z_3 \) ; #h(0em) \[ \[ Gamma^(upright(bold(q))_l) \, x : A \, y : B tack.r epsilon.alt c : C \] \] \( z \) #h(2em) approx sans(l e t) #h(0em) \( z_2 \, z_3 \) = a ; #h(0em) sans(l e t) #h(0em) z = sans(p a c k) \( Gamma^(upright(bold(q))_l) \, z_2 : A \, z_3 : B \) ; #h(0em) \[ \[ Gamma^(upright(bold(q))_l) \, x : A \, y : B tack.r epsilon.alt c : C \] \] \( z \) #h(2em) approx sans(l e t) #h(0em) \( z_2 \, z_3 \) = a ; #h(0em) \[ z_3 \/ y \] \[ z_2 \/ x \] c approx sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) c : C$
 
 - $\( Gamma^(upright(bold(q))) tack.r_() iota_l #h(0em) a : A + B \)$:
   we have that
@@ -815,54 +638,7 @@ $Gamma^(upright(bold(q))) tack.r_() a : A$:
    & approx sans(l e t) #h(0em) x = b ; #h(0em) iota_r #h(0em) x approx iota_r #h(0em) b : A + B $
 
 - $\( Gamma^(upright(bold(q))) tack.r_() sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } : C \)$:
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  we have that \$\$\\begin{aligned}
-      \\Gamma^{\\ensuremath{\\mathbf{q}}} &\\vdash\_\\bot
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = \\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}});\\;\\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{} \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :a, \\iota\_r\\;{y} :b\\}: {C}}\\rrbracket(z)}
-        \\\\ &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = \\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}});\\;(\\llbracket{\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}\\rrbracket
-          ; \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}}\\rrbracket \\otimes \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} e: {A + B}}\\rrbracket
-          ; \\delta^{-1} \\\\ & \\qquad
-          ; \[
-            \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} a: {C}}\\rrbracket,
-            \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : B \\vdash\_{\\epsilon} b: {C}}\\rrbracket
-          \])(z)}
-        \\\\ &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), \\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_r}));\\;(
-          \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}}\\rrbracket \\otimes \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} e: {A + B}}\\rrbracket
-          ; \\delta^{-1} \\\\ & \\qquad
-          ; \[
-            \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} a: {C}}\\rrbracket,
-            \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : B \\vdash\_{\\epsilon} b: {C}}\\rrbracket
-          \])(z)}
-        \\\\ &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}),
-          \\ensuremath{\\ensuremath{\\mathsf{let}}\\;w = \\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_r});\\;
-            \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} e: {A + B}}\\rrbracket(w)});\\;(  \\\\ & \\qquad
-          \\delta^{-1}
-          ; \[
-            \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} a: {C}}\\rrbracket,
-            \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : B \\vdash\_{\\epsilon} b: {C}}\\rrbracket
-          \])(z)}
-        \\\\ &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), e);\\;(
-          \\delta^{-1}
-          ; \[
-            \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} a: {C}}\\rrbracket,
-            \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : B \\vdash\_{\\epsilon} b: {C}}\\rrbracket
-          \])(z)}
-        \\\\ &\\approx
-        \\ensuremath{\\mathsf{case}}\\;e \\\\ & \\qquad\\;\\;\\{\\iota\_l\\;{x} :\\ensuremath{\\ensuremath{\\mathsf{let}}\\;w = (\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), x);\\;
-            \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} a: {C}}\\rrbracket(w)} \\\\ & \\qquad, \\iota\_r\\;{y} :\\ensuremath{\\ensuremath{\\mathsf{let}}\\; = (\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), y);\\;
-            \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : B \\vdash\_{\\epsilon} b: {C}}\\rrbracket}\\}
-        \\\\ &\\approx
-        \\ensuremath{\\mathsf{case}}\\;e \\\\ & \\qquad\\;\\{\\iota\_l\\;{x} :\\ensuremath{\\ensuremath{\\mathsf{let}}\\;w = \\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A));\\;
-            \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} a: {C}}\\rrbracket(w)} \\\\ & \\qquad, \\iota\_r\\;{y} :\\ensuremath{\\ensuremath{\\mathsf{let}}\\; = \\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), y : B);\\;
-            \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : B \\vdash\_{\\epsilon} b: {C}}\\rrbracket}\\}
-        \\\\ &\\approx
-        \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :a, \\iota\_r\\;{y} :b\\} : C
-
-  \\end{aligned}\$\$
+  we have that $Gamma^(upright(bold(q))) tack.r tack.t sans(l e t) #h(0em) z = sans(p a c k) \( Gamma^(upright(bold(q))) \) ; #h(0em) \[ \[ Gamma^(upright(bold(q))) tack.r sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } : C \] \] \( z \) #h(2em) approx sans(l e t) #h(0em) z = sans(p a c k) \( Gamma^(upright(bold(q))) \) ; #h(0em) \( \[ \[ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r \] \] ; \[ \[ Gamma^(upright(bold(q))_l) \] \] ⊗ \[ \[ Gamma^(upright(bold(q))_r) tack.r epsilon.alt e : A + B \] \] ; delta^(- 1) #h(2em) #h(2em) ; \[ \[ \[ Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt a : C \] \] \, \[ \[ Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt b : C \] \] \] \) \( z \) #h(2em) approx sans(l e t) #h(0em) z = \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, sans(p a c k) \( Gamma^(upright(bold(q))_r) \) \) ; #h(0em) \( \[ \[ Gamma^(upright(bold(q))_l) \] \] ⊗ \[ \[ Gamma^(upright(bold(q))_r) tack.r epsilon.alt e : A + B \] \] ; delta^(- 1) #h(2em) #h(2em) ; \[ \[ \[ Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt a : C \] \] \, \[ \[ Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt b : C \] \] \] \) \( z \) #h(2em) approx sans(l e t) #h(0em) z = \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, sans(l e t) #h(0em) w = sans(p a c k) \( Gamma^(upright(bold(q))_r) \) ; #h(0em) \[ \[ Gamma^(upright(bold(q))_r) tack.r epsilon.alt e : A + B \] \] \( w \) \) ; #h(0em) \( #h(2em) #h(2em) delta^(- 1) ; \[ \[ \[ Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt a : C \] \] \, \[ \[ Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt b : C \] \] \] \) \( z \) #h(2em) approx sans(l e t) #h(0em) z = \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, e \) ; #h(0em) \( delta^(- 1) ; \[ \[ \[ Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt a : C \] \] \, \[ \[ Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt b : C \] \] \] \) \( z \) #h(2em) approx sans(c a s e) #h(0em) e #h(2em) #h(2em) #h(0em) #h(0em) { iota_l #h(0em) x : sans(l e t) #h(0em) w = \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, x \) ; #h(0em) \[ \[ Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt a : C \] \] \( w \) #h(2em) #h(2em) \, iota_r #h(0em) y : sans(l e t) #h(0em) = \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, y \) ; #h(0em) \[ \[ Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt b : C \] \] } #h(2em) approx sans(c a s e) #h(0em) e #h(2em) #h(2em) #h(0em) { iota_l #h(0em) x : sans(l e t) #h(0em) w = sans(p a c k) \( Gamma^(upright(bold(q))_l) \, x : A \) \) ; #h(0em) \[ \[ Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt a : C \] \] \( w \) #h(2em) #h(2em) \, iota_r #h(0em) y : sans(l e t) #h(0em) = sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, y : B \) ; #h(0em) \[ \[ Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt b : C \] \] } #h(2em) approx sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } : C$
 
 - $\( Gamma^(upright(bold(q))) tack.r_() sans(a b o r t) #h(0em) a : A \)$:
   we have that
@@ -872,212 +648,10 @@ $Gamma^(upright(bold(q))) tack.r_() a : A$:
    & approx sans(l e t) #h(0em) x = a ; #h(0em) sans(a b o r t) #h(0em) x approx sans(a b o r t) #h(0em) a : A $
 
 - $\( Gamma^(upright(bold(q))) tack.r_() sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } : B \)$:
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  we begin by noting that \$\$\\begin{aligned}
-      \\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : A &\\vdash\_\\bot
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;w = (\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), y);\\; \\\\ & \\qquad
-          (
-            \\llbracket{\\Gamma \\vdash \\ensuremath{\\mathbf{q}}\_l = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_l}\\rrbracket \\otimes A
-            ; \\alpha
-            ; \[\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}\]
-              \\otimes \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} b: {B + A}}\\rrbracket
-            ; \\delta^{-1}
-          )(w)
-        } \\\\
-        % &\\approx
-        % \\letexpr{w}{(\\letexpr{z}{(\\ms{pack}(\\Gamma^{\\mb{q}\_l}), y)}
-        %   {(\\dnt{\\qsp{\\Gamma}{\\mb{q}\_l}{\\mb{q}\_l}{\\mb{q}\_l}} \\otimes A)(z)})}{ \\\\ & \\qquad (
-        %   \\alpha
-        %   ; \[\\Gamma^{\\mb{q}\_l}\]
-        %     \\otimes \\dnt{\\hasty{\\Gamma^{\\mb{q}\_l}, x : A}{\\epsilon}{b}{B + A}}
-        %   ; \\delta^{-1}
-        % )(w)} \\\\
-        &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;w = ((\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), \\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l})), y);\\; (
-          \\alpha
-          ; \[\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}\]
-            \\otimes \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} b: {B + A}}\\rrbracket
-          ; \\delta^{-1}
-        )(w)} \\\\
-        &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;w = (\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), (\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), y));\\; (
-          \[\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}\] \\otimes \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} b: {B + A}}\\rrbracket
-          ; \\delta^{-1}
-        )(w)} \\\\
-        &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;w = (\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}),
-            \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), y);\\;\\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} b: {B + A}}\\rrbracket(z)}
-          );\\;\\delta^{-1}(w)} \\\\
-        &\\approx
-        \\ensuremath{\\mathsf{case}}\\;(\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), y);\\;\\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} b: {B + A}}\\rrbracket(z)}
-          )) \\\\ & \\qquad\\;\\{\\iota\_l\\;{w\_l} :\\iota\_l\\;{(\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), w\_l)}, \\iota\_r\\;{w\_r} :(\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), w\_r)\\} \\\\
-        &\\approx
-        \\ensuremath{\\mathsf{case}}\\;(\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, y : A^q);\\;\\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} b: {B + A}}\\rrbracket(z)}
-          )) \\\\ & \\qquad\\;\\{\\iota\_l\\;{w\_l} :\\iota\_l\\;{(\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), w\_l)}, \\iota\_r\\;{w\_r} :(\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), w\_r)\\} \\\\
-        &\\approx
-        \\ensuremath{\\mathsf{case}}\\;\[y/x\]b\\;\\{\\iota\_l\\;{w\_l} :\\iota\_l\\;{(\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), w\_l)}, \\iota\_r\\;{w\_r} :(\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), w\_r)\\}
-
-  \\end{aligned}\$\$ It follows by uniformity, since
+  we begin by noting that $Gamma^(upright(bold(q))_l) \, y : A tack.r tack.t sans(l e t) #h(0em) w = \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, y \) ; #h(0em) #h(2em) #h(2em) \( \[ \[ Gamma tack.r upright(bold(q))_l = upright(bold(q))_l + upright(bold(q))_l \] \] ⊗ A ; alpha ; \[ Gamma^(upright(bold(q))_l) \] ⊗ \[ \[ Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B + A \] \] ; delta^(- 1) \) \( w \) #h(2em) approx sans(l e t) #h(0em) w = \( \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \) \, y \) ; #h(0em) \( alpha ; \[ Gamma^(upright(bold(q))_l) \] ⊗ \[ \[ Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B + A \] \] ; delta^(- 1) \) \( w \) #h(2em) approx sans(l e t) #h(0em) w = \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, y \) \) ; #h(0em) \( \[ Gamma^(upright(bold(q))_l) \] ⊗ \[ \[ Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B + A \] \] ; delta^(- 1) \) \( w \) #h(2em) approx sans(l e t) #h(0em) w = \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, sans(l e t) #h(0em) z = \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, y \) ; #h(0em) \[ \[ Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B + A \] \] \( z \) \) ; #h(0em) delta^(- 1) \( w \) #h(2em) approx sans(c a s e) #h(0em) \( sans(l e t) #h(0em) z = \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, y \) ; #h(0em) \[ \[ Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B + A \] \] \( z \) \) \) #h(2em) #h(2em) #h(0em) { iota_l #h(0em) w_l : iota_l #h(0em) \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, w_l \) \, iota_r #h(0em) w_r : \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, w_r \) } #h(2em) approx sans(c a s e) #h(0em) \( sans(l e t) #h(0em) z = \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \, y : A^q \) ; #h(0em) \[ \[ Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B + A \] \] \( z \) \) \) #h(2em) #h(2em) #h(0em) { iota_l #h(0em) w_l : iota_l #h(0em) \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, w_l \) \, iota_r #h(0em) w_r : \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, w_r \) } #h(2em) approx sans(c a s e) #h(0em) \[ y \/ x \] b #h(0em) { iota_l #h(0em) w_l : iota_l #h(0em) \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, w_l \) \, iota_r #h(0em) w_r : \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, w_r \) }$ It follows by uniformity, since
   $\( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, y \)$ is pure,
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  that \$\$\\begin{aligned}
-        \\Gamma^{\\ensuremath{\\mathbf{q}}} &\\vdash\_\\bot
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = a;\\;\\ensuremath{\\mathsf{iter}}\\;(\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), y)\\;\\{ \\iota\_r\\;{w} : \\\\ & \\qquad
-          (
-            \\llbracket{\\Gamma \\vdash \\ensuremath{\\mathbf{q}}\_l = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_l}\\rrbracket \\otimes A
-            ; \\alpha
-            ; \[\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}\]
-              \\otimes \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} b: {B + A}}\\rrbracket
-            ; \\delta^{-1}
-          )(w)
-         \\}} \\\\
-        &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;u = \\ensuremath{\\mathsf{iter}}\\;a\\;\\{ \\iota\_r\\;{x} :b \\};\\;(\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), u)}
-
-  \\end{aligned}\$\$ and therefore that
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-\$\$\\begin{aligned}
-      \\Gamma^{\\ensuremath{\\mathbf{q}}} &\\vdash\_\\bot
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = \\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}});\\;\\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{} \\ensuremath{\\mathsf{iter}}\\;a\\;\\{ \\iota\_r\\;{x} :b \\}: {B}}\\rrbracket(x)}
-        \\\\ &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = \\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}});\\;(
-            \\llbracket{\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}\\rrbracket
-            ; \[\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}\] \\otimes \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {A}}\\rrbracket
-            ;
-        \\\\ & \\qquad
-          (
-            \\llbracket{\\Gamma \\vdash \\ensuremath{\\mathbf{q}}\_l = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_l}\\rrbracket \\otimes A
-            ; \\alpha
-            ; \[\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}\]
-              \\otimes \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} b: {B + A}}\\rrbracket
-            ; \\delta^{-1}
-          )^\\dagger
-          ;
-        \\\\ & \\qquad
-          \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l} \\mapsto \\cdot}\\rrbracket \\otimes B
-          ; \\rho
-        )(z)}
-        % \\\\ &\\approx
-        % \\letexpr{z}{
-        %     (\\letexpr{y}{\\ms{pack}(\\Gamma^{\\mb{q}})}
-        %        {\\dnt{\\qsp{\\Gamma}{\\mb{q}}{\\mb{q}\_l}{\\mb{q}\_r}}})}
-        %   {(
-        %     \[\\Gamma^{\\mb{q}\_l}\] \\otimes \\dnt{\\hasty{\\Gamma^{\\mb{q}\_r}}{\\epsilon}{a}{A}} ;
-        % \\\\ & \\qquad
-        %   (
-        %     \\dnt{\\qsp{\\Gamma}{\\mb{q}\_l}{\\mb{q}\_l}{\\mb{q}\_l}} \\otimes A
-        %     ; \\alpha
-        %     ; \[\\Gamma^{\\mb{q}\_l}\]
-        %       \\otimes \\dnt{\\hasty{\\Gamma^{\\mb{q}\_l}, x : A}{\\epsilon}{b}{B + A}}
-        %     ; \\delta^{-1}
-        %   )^\\dagger
-        %   ;
-        % \\\\ & \\qquad
-        %   \\dnt{\\cwk{\\Gamma^{\\mb{q}\_l}}{\\cdot}} \\otimes B
-        %   ; \\rho
-        % )(z)}
-        \\\\ &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z =
-            (\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), \\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_r}));\\;(
-            \[\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}\] \\otimes \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} a: {A}}\\rrbracket ;
-        \\\\ & \\qquad
-          (
-            \\llbracket{\\Gamma \\vdash \\ensuremath{\\mathbf{q}}\_l = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_l}\\rrbracket \\otimes A
-            ; \\alpha
-            ; \[\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}\]
-              \\otimes \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} b: {B + A}}\\rrbracket
-            ; \\delta^{-1}
-          )^\\dagger
-          ;
-        \\\\ & \\qquad
-          \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l} \\mapsto \\cdot}\\rrbracket \\otimes B
-          ; \\rho
-        )(z)}
-        % \\\\ &\\approx
-        % \\letexpr{z}{
-        %     (\\ms{pack}(\\Gamma^{\\mb{q}\_l}),
-        %       \\letexpr{y}{\\ms{pack}(\\Gamma^{\\mb{q}\_r})}
-        %         {\\dnt{\\hasty{\\Gamma^{\\mb{q}\_r}}{\\epsilon}{a}{A}}})}
-        %   {(
-        % \\\\ & \\qquad
-        %   (
-        %     \\dnt{\\qsp{\\Gamma}{\\mb{q}\_l}{\\mb{q}\_l}{\\mb{q}\_l}} \\otimes A
-        %     ; \\alpha
-        %     ; \[\\Gamma^{\\mb{q}\_l}\]
-        %       \\otimes \\dnt{\\hasty{\\Gamma^{\\mb{q}\_l}, x : A}{\\epsilon}{b}{B + A}}
-        %     ; \\delta^{-1}
-        %   )^\\dagger
-        %   ;
-        % \\\\ & \\qquad
-        %   \\dnt{\\cwk{\\Gamma^{\\mb{q}\_l}}{\\cdot}} \\otimes B
-        %   ; \\rho
-        % )(z)}
-        \\\\ &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z =
-            (\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), a);\\;(
-        \\\\ & \\qquad
-          (
-            \\llbracket{\\Gamma \\vdash \\ensuremath{\\mathbf{q}}\_l = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_l}\\rrbracket \\otimes A
-            ; \\alpha
-            ; \[\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}\]
-              \\otimes \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} b: {B + A}}\\rrbracket
-            ; \\delta^{-1}
-          )^\\dagger
-          ;
-        \\\\ & \\qquad
-          \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l} \\mapsto \\cdot}\\rrbracket \\otimes B
-          ; \\rho
-        )(z)}
-        \\\\ &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (
-            \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = (\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), a);\\;
-              \\\\ & \\qquad \\qquad
-              (
-                \\llbracket{\\Gamma \\vdash \\ensuremath{\\mathbf{q}}\_l = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_l}\\rrbracket \\otimes A
-                ; \\alpha
-                ; \[\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}\]
-                  \\otimes \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} b: {B + A}}\\rrbracket
-                ; \\delta^{-1}
-              )^\\dagger(y)
-            }
-          );\\; \\\\ & \\qquad (
-          \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l} \\mapsto \\cdot}\\rrbracket \\otimes B
-          ; \\rho
-        )(z)}
-        \\\\ &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (
-            \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = a;\\;\\ensuremath{\\mathsf{iter}}\\;(\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), y)\\;\\{ \\iota\_r\\;{w} : \\\\ & \\qquad \\qquad
-              (
-                \\llbracket{\\Gamma \\vdash \\ensuremath{\\mathbf{q}}\_l = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_l}\\rrbracket \\otimes A
-                ; \\alpha
-                ; \[\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}\]
-                  \\otimes \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}, x : A \\vdash\_{\\epsilon} b: {B + A}}\\rrbracket
-                ; \\delta^{-1}
-              )(w)
-             \\}}
-          );\\; \\\\ & \\qquad (
-          \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l} \\mapsto \\cdot}\\rrbracket \\otimes B
-          ; \\rho
-        )(z)}
-        \\\\ &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (
-            \\ensuremath{\\ensuremath{\\mathsf{let}}\\;u = \\ensuremath{\\mathsf{iter}}\\;a\\;\\{ \\iota\_r\\;{x} :b \\};\\;(\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), u)}
-          );\\;(
-          \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l} \\mapsto \\cdot}\\rrbracket \\otimes B
-          ; \\rho
-        )(z)}
-        \\\\ &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;u = \\ensuremath{\\mathsf{iter}}\\;a\\;\\{ \\iota\_r\\;{x} :b \\};\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (\\ensuremath{\\mathsf{pack}}(\\Gamma^{\\ensuremath{\\mathbf{q}}\_l}), u);\\;(
-          \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_l} \\mapsto \\cdot}\\rrbracket \\otimes B
-          ; \\rho
-        )(z)}}
-        \\\\ &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;u = \\ensuremath{\\mathsf{iter}}\\;a\\;\\{ \\iota\_r\\;{x} :b \\};\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = ((), u);\\;\\rho(z)}}
-        \\\\ &\\approx
-        \\ensuremath{\\ensuremath{\\mathsf{let}}\\;u = \\ensuremath{\\mathsf{iter}}\\;a\\;\\{ \\iota\_r\\;{x} :b \\};\\;u}
-        \\approx \\ensuremath{\\mathsf{iter}}\\;a\\;\\{ \\iota\_r\\;{x} :b \\} : B
-
-  \\end{aligned}\$\$ as desired.
+  that $Gamma^(upright(bold(q))) tack.r tack.t sans(l e t) #h(0em) y = a ; #h(0em) sans(i t e r) #h(0em) \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, y \) #h(0em) { iota_r #h(0em) w : #h(2em) #h(2em) \( \[ \[ Gamma tack.r upright(bold(q))_l = upright(bold(q))_l + upright(bold(q))_l \] \] ⊗ A ; alpha ; \[ Gamma^(upright(bold(q))_l) \] ⊗ \[ \[ Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B + A \] \] ; delta^(- 1) \) \( w \) } #h(2em) approx sans(l e t) #h(0em) u = sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } ; #h(0em) \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, u \)$ and therefore that
+$Gamma^(upright(bold(q))) tack.r tack.t sans(l e t) #h(0em) x = sans(p a c k) \( Gamma^(upright(bold(q))) \) ; #h(0em) \[ \[ Gamma^(upright(bold(q))) tack.r sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } : B \] \] \( x \) #h(2em) approx sans(l e t) #h(0em) z = sans(p a c k) \( Gamma^(upright(bold(q))) \) ; #h(0em) \( \[ \[ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r \] \] ; \[ Gamma^(upright(bold(q))_l) \] ⊗ \[ \[ Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A \] \] ; #h(2em) #h(2em) \( \[ \[ Gamma tack.r upright(bold(q))_l = upright(bold(q))_l + upright(bold(q))_l \] \] ⊗ A ; alpha ; \[ Gamma^(upright(bold(q))_l) \] ⊗ \[ \[ Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B + A \] \] ; delta^(- 1) \)^dagger ; #h(2em) #h(2em) \[ \[ Gamma^(upright(bold(q))_l) mapsto dot.op \] \] ⊗ B ; rho \) \( z \) #h(2em) approx sans(l e t) #h(0em) z = \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, sans(p a c k) \( Gamma^(upright(bold(q))_r) \) \) ; #h(0em) \( \[ Gamma^(upright(bold(q))_l) \] ⊗ \[ \[ Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A \] \] ; #h(2em) #h(2em) \( \[ \[ Gamma tack.r upright(bold(q))_l = upright(bold(q))_l + upright(bold(q))_l \] \] ⊗ A ; alpha ; \[ Gamma^(upright(bold(q))_l) \] ⊗ \[ \[ Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B + A \] \] ; delta^(- 1) \)^dagger ; #h(2em) #h(2em) \[ \[ Gamma^(upright(bold(q))_l) mapsto dot.op \] \] ⊗ B ; rho \) \( z \) #h(2em) approx sans(l e t) #h(0em) z = \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, a \) ; #h(0em) \( #h(2em) #h(2em) \( \[ \[ Gamma tack.r upright(bold(q))_l = upright(bold(q))_l + upright(bold(q))_l \] \] ⊗ A ; alpha ; \[ Gamma^(upright(bold(q))_l) \] ⊗ \[ \[ Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B + A \] \] ; delta^(- 1) \)^dagger ; #h(2em) #h(2em) \[ \[ Gamma^(upright(bold(q))_l) mapsto dot.op \] \] ⊗ B ; rho \) \( z \) #h(2em) approx sans(l e t) #h(0em) z = \( sans(l e t) #h(0em) y = \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, a \) ; #h(0em) #h(2em) #h(2em) #h(2em) \( \[ \[ Gamma tack.r upright(bold(q))_l = upright(bold(q))_l + upright(bold(q))_l \] \] ⊗ A ; alpha ; \[ Gamma^(upright(bold(q))_l) \] ⊗ \[ \[ Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B + A \] \] ; delta^(- 1) \)^dagger \( y \) \) ; #h(0em) #h(2em) #h(2em) \( \[ \[ Gamma^(upright(bold(q))_l) mapsto dot.op \] \] ⊗ B ; rho \) \( z \) #h(2em) approx sans(l e t) #h(0em) z = \( sans(l e t) #h(0em) y = a ; #h(0em) sans(i t e r) #h(0em) \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, y \) #h(0em) { iota_r #h(0em) w : #h(2em) #h(2em) #h(2em) \( \[ \[ Gamma tack.r upright(bold(q))_l = upright(bold(q))_l + upright(bold(q))_l \] \] ⊗ A ; alpha ; \[ Gamma^(upright(bold(q))_l) \] ⊗ \[ \[ Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B + A \] \] ; delta^(- 1) \) \( w \) } \) ; #h(0em) #h(2em) #h(2em) \( \[ \[ Gamma^(upright(bold(q))_l) mapsto dot.op \] \] ⊗ B ; rho \) \( z \) #h(2em) approx sans(l e t) #h(0em) z = \( sans(l e t) #h(0em) u = sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } ; #h(0em) \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, u \) \) ; #h(0em) \( \[ \[ Gamma^(upright(bold(q))_l) mapsto dot.op \] \] ⊗ B ; rho \) \( z \) #h(2em) approx sans(l e t) #h(0em) u = sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } ; #h(0em) sans(l e t) #h(0em) z = \( sans(p a c k) \( Gamma^(upright(bold(q))_l) \) \, u \) ; #h(0em) \( \[ \[ Gamma^(upright(bold(q))_l) mapsto dot.op \] \] ⊗ B ; rho \) \( z \) #h(2em) approx sans(l e t) #h(0em) u = sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } ; #h(0em) sans(l e t) #h(0em) z = \( \( \) \, u \) ; #h(0em) rho \( z \) #h(2em) approx sans(l e t) #h(0em) u = sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } ; #h(0em) u approx sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } : B$ as desired.
 
 ~◻
 
@@ -1134,20 +708,7 @@ note that we trivially have that, for any $a$,
 $sans(l e t)_(sans(A N F)) #h(0em) x = a ; x approx sans(l e t) #h(0em) x = a ; #h(0em) x approx a arrow.r.double.long sans(A N F) \( x \) approx a$
 by definition. We can now proceed to define
 $sans(l e t)_(sans(A N F)) #h(0em) x = a ; P$ by induction on terms $a$
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-as follows: \$\$\\begin{aligned}
-  (\\ensuremath{\\mathsf{let}}\_{\\ensuremath{\\mathsf{ANF}}}\\;x = o; P) &:= (\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = o;\\;P}) \\text{ where } o \\text{ is a valid instruction} \\\\
-  (\\ensuremath{\\mathsf{let}}\_{\\ensuremath{\\mathsf{ANF}}}\\;x = f\\;a; P) &:= (\\ensuremath{\\mathsf{let}}\_{\\ensuremath{\\mathsf{ANF}}}\\;x\_a = a; \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = f\\;x;\\;P}) \\\\
-  (\\ensuremath{\\mathsf{let}}\_{\\ensuremath{\\mathsf{ANF}}}\\;x = \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = a;\\;b}; P) &:= (\\ensuremath{\\mathsf{let}}\_{\\ensuremath{\\mathsf{ANF}}}\\;y = a; \\ensuremath{\\mathsf{let}}\_{\\ensuremath{\\mathsf{ANF}}}\\;x = b; P) \\\\
-  (\\ensuremath{\\mathsf{let}}\_{\\ensuremath{\\mathsf{ANF}}}\\;x = (a, b); P) &:= (\\ensuremath{\\mathsf{let}}\_{\\ensuremath{\\mathsf{ANF}}}\\;x\_a = a; \\ensuremath{\\mathsf{let}}\_{\\ensuremath{\\mathsf{ANF}}}\\;x\_b = b; \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = (a, b);\\;P}) \\\\
-  (\\ensuremath{\\mathsf{let}}\_{\\ensuremath{\\mathsf{ANF}}}\\;x = \\iota\_l\\;{a}; P) &:= (\\ensuremath{\\mathsf{let}}\_{\\ensuremath{\\mathsf{ANF}}}\\;x\_a = a; \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = \\iota\_l\\;{x\_a};\\;P}) \\\\
-  (\\ensuremath{\\mathsf{let}}\_{\\ensuremath{\\mathsf{ANF}}}\\;x = \\iota\_r\\;{a}; P) &:= (\\ensuremath{\\mathsf{let}}\_{\\ensuremath{\\mathsf{ANF}}}\\;x\_a = a; \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = \\iota\_r\\;{x\_a};\\;P}) \\\\
-  (\\ensuremath{\\mathsf{let}}\_{\\ensuremath{\\mathsf{ANF}}}\\;x = \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{y} :a, \\iota\_r\\;{z} :b\\}; P)
-    &:= (\\ensuremath{\\mathsf{let}}\_{\\ensuremath{\\mathsf{ANF}}}\\;x\_e = e; \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = \\ensuremath{\\mathsf{case}}\\;x\_e \\\\ & \\qquad\\;\\{\\iota\_l\\;{y} :\\ensuremath{\\mathsf{ANF}}(a), \\iota\_r\\;{z} :\\ensuremath{\\mathsf{ANF}}(b)\\};\\;P}) \\\\
-  (\\ensuremath{\\mathsf{let}}\_{\\ensuremath{\\mathsf{ANF}}}\\;x = \\ensuremath{\\mathsf{abort}}\\;{a}; P) &:= (\\ensuremath{\\mathsf{let}}\_{\\ensuremath{\\mathsf{ANF}}}\\;x\_a = a; \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = \\ensuremath{\\mathsf{abort}}\\;{x\_a};\\;P}) \\\\
-  (\\ensuremath{\\mathsf{let}}\_{\\ensuremath{\\mathsf{ANF}}}\\;x = \\ensuremath{\\mathsf{iter}}\\;a\\;\\{ \\iota\_r\\;{y} :b \\}; P)
-    &:= (\\ensuremath{\\mathsf{let}}\_{\\ensuremath{\\mathsf{ANF}}}\\;x\_a = a; \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = \\ensuremath{\\mathsf{iter}}\\;x\_a\\;\\{ \\iota\_r\\;{y} :\\ensuremath{\\mathsf{ANF}}(b) \\};\\;P})
-\\end{aligned}\$\$ We can trivially verify each case by simply applying
+as follows: $\( sans(l e t)_sans(A N F) #h(0em) x = o ; P \) := \( sans(l e t) #h(0em) x = o ; #h(0em) P \) upright(" where ") o upright(" is a valid instruction") #h(2em) \( sans(l e t)_sans(A N F) #h(0em) x = f #h(0em) a ; P \) := \( sans(l e t)_sans(A N F) #h(0em) x_a = a ; sans(l e t) #h(0em) x = f #h(0em) x ; #h(0em) P \) #h(2em) \( sans(l e t)_sans(A N F) #h(0em) x = sans(l e t) #h(0em) y = a ; #h(0em) b ; P \) := \( sans(l e t)_sans(A N F) #h(0em) y = a ; sans(l e t)_sans(A N F) #h(0em) x = b ; P \) #h(2em) \( sans(l e t)_sans(A N F) #h(0em) x = \( a \, b \) ; P \) := \( sans(l e t)_sans(A N F) #h(0em) x_a = a ; sans(l e t)_sans(A N F) #h(0em) x_b = b ; sans(l e t) #h(0em) x = \( a \, b \) ; #h(0em) P \) #h(2em) \( sans(l e t)_sans(A N F) #h(0em) x = iota_l #h(0em) a ; P \) := \( sans(l e t)_sans(A N F) #h(0em) x_a = a ; sans(l e t) #h(0em) x = iota_l #h(0em) x_a ; #h(0em) P \) #h(2em) \( sans(l e t)_sans(A N F) #h(0em) x = iota_r #h(0em) a ; P \) := \( sans(l e t)_sans(A N F) #h(0em) x_a = a ; sans(l e t) #h(0em) x = iota_r #h(0em) x_a ; #h(0em) P \) #h(2em) \( sans(l e t)_sans(A N F) #h(0em) x = sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) y : a \, iota_r #h(0em) z : b } ; P \) := \( sans(l e t)_sans(A N F) #h(0em) x_e = e ; sans(l e t) #h(0em) x = sans(c a s e) #h(0em) x_e #h(2em) #h(2em) #h(0em) { iota_l #h(0em) y : sans(A N F) \( a \) \, iota_r #h(0em) z : sans(A N F) \( b \) } ; #h(0em) P \) #h(2em) \( sans(l e t)_sans(A N F) #h(0em) x = sans(a b o r t) #h(0em) a ; P \) := \( sans(l e t)_sans(A N F) #h(0em) x_a = a ; sans(l e t) #h(0em) x = sans(a b o r t) #h(0em) x_a ; #h(0em) P \) #h(2em) \( sans(l e t)_sans(A N F) #h(0em) x = sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) y : b } ; P \) := \( sans(l e t)_sans(A N F) #h(0em) x_a = a ; sans(l e t) #h(0em) x = sans(i t e r) #h(0em) x_a #h(0em) { iota_r #h(0em) y : sans(A N F) \( b \) } ; #h(0em) P \)$ We can trivially verify each case by simply applying
 the binding rule for each term-former, followed by the inductive
 hypothesis. For example, we have that
 $ Gamma^(upright(bold(q))) & tack.r_tack.t sans(l e t) #h(0em) x = sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) y : b } ; #h(0em) P approx sans(l e t) #h(0em) x = \( sans(l e t) #h(0em) x_a = a ; #h(0em) sans(i t e r) #h(0em) x_a #h(0em) { iota_r #h(0em) y : b } \) ; #h(0em) P & \( sans("iter-bind") \)\
@@ -1283,15 +844,7 @@ $P$ as follows:
 
 - (Valid operations $o$): we define
   $\( sans(S S A)_ell \( o \) \) := sans(b r) #h(0em) ell #h(0em) o$.
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-  This has the desired semantics, since \$\$\\begin{aligned}
-      \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}} \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{br}}\\;\\ell\\;o \\rhd \\ell(A)^{\\ensuremath{\\mathbf{0}}}}\\rrbracket
-      & = \\llbracket{\\Gamma \\vdash \\ensuremath{\\mathbf{q}} = \\ensuremath{\\mathbf{q}}\_l + \\ensuremath{\\mathbf{q}}\_r}\\rrbracket
-        ; \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_r}}\\rrbracket \\otimes \\llbracket{\\Gamma^{\\ensuremath{\\mathbf{q}}\_r} \\vdash\_{\\epsilon} o: {A}}\\rrbracket
-        ; \\iota\_r
-        ; \\cancel{\\llbracket{\\Gamma \\vdash \\ell(A)^{\\ensuremath{\\mathbf{q}}\_l} \\rightsquigarrow \\ell(A)^{\\ensuremath{\\mathbf{q}}\_l}}\\rrbracket}
-
-  \\end{aligned}\$\$
+  This has the desired semantics, since $\[ \[ Gamma^(upright(bold(q))) tack.r epsilon.alt sans(b r) #h(0em) ell #h(0em) o gt.tri ell \( A \)^(upright(bold(0))) \] \] = \[ \[ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r \] \] ; \[ \[ Gamma^(upright(bold(q))_r) \] \] ⊗ \[ \[ Gamma^(upright(bold(q))_r) tack.r epsilon.alt o : A \] \] ; iota_r ; \[ \[ Gamma tack.r ell \( A \)^(upright(bold(q))_l) arrow.r.squiggly ell \( A \)^(upright(bold(q))_l) \] \]$
 
 - ($sans(l e t) #h(0em) x = o ; #h(0em) P$): we define
   $\( sans(S S A)_ell \( sans(l e t) #h(0em) x = o ; #h(0em) P \) \) := sans(l e t) #h(0em) x = o ; sans(S S A)_ell \( P \)$;
@@ -1422,11 +975,9 @@ follows:
 We say a monad $T$ over $upright(bold(S e t))$ is #emph[poset-enriched]
 if each $T \( A \)$ is equipped with a partial order $arrow.r.twohead$
 compatible with
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-\$\\cdot \\mathbin{\>\\!\\!\>\\mkern-6.7mu=}\_{T} \\cdot\$, i.e., such
+$dot.op upright(">>=")_T dot.op$, i.e., such
 that, for $a arrow.r.twohead b$ and $f arrow.r.twohead g$, we have
-#todo[Translate the adjacent exact-source LaTeX equation or figure fallback into native Typst; preserve its mathematical content.]
-\$a \\mathbin{\>\\!\\!\>\\mkern-6.7mu=}\_{T} f \\twoheadrightarrow b \\mathbin{\>\\!\\!\>\\mkern-6.7mu=}\_{T} g\$,
+$a upright(">>=")_T f arrow.r.twohead b upright(">>=")_T g$,
 where morphisms in the Kleisli category $f \, g : A arrow.r T \( B \)$
 are given the pointwise partial order.
 
