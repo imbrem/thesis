@@ -1,10 +1,28 @@
 // Verbatim mechanical transcription from:
 // papers/isotope/denotational-semantics-of-ssa.tex
 // Repository commit: afa82558acf643f53a3e038e635ed9520ace88c6
-// Source section: Introduction, lines 276–406
+// Source sections: Abstract, lines 223–235; dedication, lines 272–274; Introduction, lines 276–406
 
 #import "/lib/prelude.typ": *
 #show: chapter.with(title: "Introduction")
+
+= Abstract
+
+Static single assignment form, or SSA, has been the dominant
+compiler intermediate representation for decades. In this paper, we
+give a type theory for a variant of SSA, including its equational
+theory, which are strong enough to validate a variety of control and
+data flow transformations. We also give a categorical semantics for
+SSA, and show that the type theory is sound and complete with
+respect to the categorical axiomatization. We demonstrate the
+utility of our model by exhibiting a variety of concrete models
+satisfying our axioms, including in particular a model of TSO weak
+memory. The correctness of the syntactic metatheory, as well as the
+completeness proof has been mechanized in the Lean proof assistant.
+
+#emph[This paper is dedicated to the memory of Alan Jeffrey, who
+taught us about both premonoidal categories and the semantics of weak memory, and
+who never shied away from either theory or implementation.]
 
 <introduction>
 Static single assignment form, or SSA form, has been the dominant compiler intermediate representation since its introduction by #cite(<alpern-ssa-original-88>, form: "prose") and #cite(<rosen-gvn-1988>, form: "prose") in the late 1980s. Most major compilers -- GCC, Clang, MLIR, Cranelift -- use this representation, because it makes many optimizations much easier to do than traditional 3-address code IRs.

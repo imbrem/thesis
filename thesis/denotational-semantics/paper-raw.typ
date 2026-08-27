@@ -196,7 +196,7 @@ The power of string diagrams comes from the fact that many syntactically distinc
     Representations of the Elgot axioms as string diagrams
   ]
 )
-<fig:elgot-ax-string-diagrams>
+<dssa:fig:elgot-ax-string-diagrams>
 
 Unfortunately, unmodified string diagrams do not work for premonoidal categories, and hence for Freyd categories. The reason is because, since not all morphisms are central, premonoidal categories do not in general validate #emph[sliding]. However, this is easy enough to fix: we can postulate a (dashed red) "state" wire which all impure morphisms require as an input and output, as in Figure~#todo[Cross-reference: \@fig:premonoidal-string-diagram.] Since the state wire linearly threads through all impure boxes, it establishes a unique order in which they must be executed; this construction is shown to be sound in #cite(<promonad>, form: "prose"). Pure morphisms do not have a state wire, so a diagram representing a pure morphism will simply have a dashed red "stripe" on the side. This gives us a convenient way to distinguish between string diagrams using the monoidal structure induced by the coproduct and those using the premonoidal structure induced by the tensor product in a category having both (such as a distributive premonoidal category): the latter will have a state wire, while the former will not.
 
