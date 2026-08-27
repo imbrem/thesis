@@ -80,8 +80,8 @@ $10 !$ given in Figure~@fig:fact-program. We can normalize our code into
   $+ \( a \, b \)$.
 
 #figure([#figure([$  & sans("let") #h(0em) n = 10 ;\
-     & sans(l e t #h(0em) m u t) #h(0em) i = 1 ;\
-     & sans(l e t #h(0em) m u t) #h(0em) a = 1 ;\
+     & sans("let mut") #h(0em) i = 1 ;\
+     & sans("let mut") #h(0em) a = 1 ;\
      & sans("while") #h(0em) i < n #h(0em) {\
      & quad a = a \* \( i + 1 \)\
      & quad i = i + 1 ;\
