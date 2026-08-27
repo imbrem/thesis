@@ -366,8 +366,7 @@ captures the idea that executing two operations concurrently (i.e.,
 without specifying an order between them) is fundamentally different
 from executing them in some particular order. The most basic such data
 structure is a #emph[partially ordered multiset], or #emph[pomset],
-which we describe in the TSO weak-memory section of our paper
-@ghalayini-24-ssa-densem-arxiv. Pomsets can
+which we describe in Section~#todo[Restore the cross-reference to source label `ssec:tso` when the TSO subsection is imported.] of our paper. Pomsets can
 naturally model sequential consistency, and, like traces, can be
 augmented with additional structure to model relaxed memory models such
 as TSO weak memory, as in #cite(<sparky>, form: "prose").
