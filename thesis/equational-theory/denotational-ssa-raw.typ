@@ -1,0 +1,1422 @@
+// VERBATIM TRANSCRIPTION — markup translated from LaTeX to Typst.
+// Source: papers/isotope/denotational-semantics-of-ssa.tex @ afa82558acf643f53a3e038e635ed9520ace88c6
+// Coverage: lines 1615–3084, “Equational Theory”.
+#import "/lib/prelude.typ": *
+
+#set math.equation(numbering: "(1)")
+= Equational Theory
+<sec:equations>
+== Expressions
+<expressions>
+We can now give an equational theory for #lssa
+expressions. In particular, we will inductively define an equivalence
+relation $Gamma tack.r_epsilon.alt a approx a' : A$ on terms $a \, a'$
+for each context $Gamma$, effect $epsilon.alt$, and type $A$. For each
+of the rules we will present, we assume the rule is valid if and only if
+#emph[both sides] of the rule are well-typed. We also assume that
+variables are $alpha$-converted as appropriate to avoid shadowing; our
+formalization uses de Bruijn indices, but we stick with names in this
+exposition for simplicity.
+
+The rules for this relation can be roughly split into #emph[rewriting
+rules], which denote when two particular expressions have equivalent
+semantics, and #emph[congruence rules], which govern how rewrites can
+be composed to enable equational reasoning. In particular, our
+congruence rules, given in Figure~#todo[Resolve source reference `fig:ssa-expr-congr-rules` during integration.], consist of:
+
+- refl, symm, trans, which state that
+  $Gamma tack.r_epsilon.alt dot.op approx dot.op : A$ is reflexive,
+  transitive, and symmetric respectively for each choice of
+  $Gamma \, epsilon.alt \, A$, and therefore an equivalence relation.
+
+- let$""_1$, let$""_2$, pair, inl, inr, case, and abort, which state
+  that $Gamma tack.r_epsilon.alt dot.op approx dot.op : A$ is a
+  #emph[congruence] with respect to the corresponding expression
+  constructor, and, in particular, that the expression constructors are
+  well-defined functions on the quotient of expressions up to $approx$.
+
+We also include the following #emph[type-directed] rules as part of our
+congruence relation:
+
+- initial, which equates #emph[all] terms in a context containing the
+  empty type $upright(bold(0))$, since we will deem any such context to
+  be #emph[unreachable] by control flow. In particular, any instruction
+  or function call returning $upright(bold(0))$ is assumed to diverge.
+
+- terminal, which equates all #emph[pure] terms of unit type
+  $upright(bold(1))$. Note that #emph[impure] terms may be disequal,
+  since while their result values are the same, their side effects may
+  differ!
+
+#todo[Port the following preserved source proof-tree display to native Typst.]
+#figure([\$\$\\begin{gathered}
+      \\prftree\[r\]{{\\scriptsize\\textsf{refl}}}{\\Gamma \\vdash\_{\\epsilon} a: {A}}{\\Gamma \\vdash\_{\\epsilon} a \\approx a : {A}} \\qquad
+      \\prftree\[r\]{{\\scriptsize\\textsf{trans}}}
+        {\\Gamma \\vdash\_{\\epsilon} a \\approx b : {A}}
+        {\\Gamma \\vdash\_{\\epsilon} b \\approx c : {A}}
+        {\\Gamma \\vdash\_{\\epsilon} a \\approx c : {A}} \\qquad
+      \\prftree\[r\]{{\\scriptsize\\textsf{symm}}}
+        {\\Gamma \\vdash\_{\\epsilon} a \\approx b : {A}}
+        {\\Gamma \\vdash\_{\\epsilon} b \\approx a : {A}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$}}}
+        {\\Gamma \\vdash\_{\\epsilon} a \\approx a\' : {A}}
+        {\\Gamma, x : A \\vdash\_{\\epsilon} b \\approx b\' : {B}}
+        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;b} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a\';\\;b\'} : {B}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{pair}}}
+        {\\Gamma \\vdash\_{\\epsilon} a \\approx a\' : {A}}
+        {\\Gamma \\vdash\_{\\epsilon} b \\approx b\' : {B}}
+        {\\Gamma \\vdash\_{\\epsilon} (a, b) \\approx(a\', b) : {A \\otimes B}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$}}}
+        {\\Gamma \\vdash\_{\\epsilon} e \\approx e\' : {A \\otimes B}}
+        {\\Gamma, x : A, y : B \\vdash\_{\\epsilon} c \\approx c\' : {C}}
+        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e;\\;c} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e\';\\;c\'} : {C}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{inl}}}
+        {\\Gamma \\vdash\_{\\epsilon} a \\approx a\' : {A}}
+        {\\Gamma \\vdash\_{\\epsilon} \\iota\_l\\;{a} \\approx\\iota\_l\\;{a\'} : {A + B}} \\qquad
+      \\prftree\[r\]{{\\scriptsize\\textsf{inr}}}
+        {\\Gamma \\vdash\_{\\epsilon} b \\approx b\' : {B}}
+        {\\Gamma \\vdash\_{\\epsilon} \\iota\_r\\;{b} \\approx\\iota\_r\\;{b\'} : {A + B}} \\qquad
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{case}}}
+        {\\Gamma \\vdash\_{\\epsilon} e \\approx e\' : {A + B}}
+        {\\Gamma, x : A \\vdash\_{\\epsilon} a \\approx a\' : {C}}
+        {\\Gamma, y : B \\vdash\_{\\epsilon} b \\approx b\' : {C}}
+        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :a, \\iota\_r\\;{y} :b\\} \\approx\\ensuremath{\\mathsf{case}}\\;e\'\\;\\{\\iota\_l\\;{x} :a\', \\iota\_r\\;{y} :b\'\\} : {C}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{abort}}}
+        {\\Gamma \\vdash\_{\\epsilon} a \\approx a\' : {\\ensuremath{\\mathbf{0}}}}
+        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{abort}}\\;{a} \\approx\\ensuremath{\\mathsf{abort}}\\;{a\'} : {A}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{initial}}}
+        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
+        {\\Gamma \\vdash\_{\\epsilon} a\': {A}}
+        {\\Gamma \\vdash\_{\\bot} e: {\\ensuremath{\\mathbf{0}}}}
+        {\\Gamma \\vdash\_{\\epsilon} a \\approx a\' : {A}}
+        \\qquad
+      \\prftree\[r\]{{\\scriptsize\\textsf{terminal}}}
+        {\\Gamma \\vdash\_{\\bot} a: {\\ensuremath{\\mathbf{1}}}}
+        {\\Gamma \\vdash\_{\\bot} a\': {\\ensuremath{\\mathbf{1}}}}
+        {\\Gamma \\vdash\_{\\epsilon} a \\approx a\' : {\\ensuremath{\\mathbf{1}}}}
+
+  \\end{gathered}\$\$
+
+  ],
+  caption: [
+    Congruence rules for #lssa expressions
+  ]
+)
+<fig:ssa-expr-congr-rules>
+
+We may group the rest of our rules according to the relevant
+constructor, i.e. $sans(l e t)$ (unary and binary) and $sans(c a s e)$.
+In particular, for unary $sans(l e t)$, we have the following rules,
+summarized in Figure~#todo[Resolve source reference `fig:ssa-unary-let-expr:` during integration.]
+
+- let$""_1$-$beta$, which allows us to substitute the bound variable in
+  $x$ the let-statement $sans(l e t) #h(0em) x = a ; #h(0em) b$ with its
+  definition $a$, yielding $\[ a \/ x \] b$. Note that we require
+  $Gamma tack.r_tack.t a : A$; i.e., $a$ must be #emph[pure].
+
+- let$""_1$-$eta$, which is the standard $eta$-rule for $sans(l e t)$.
+  This is included as a separate rule since, while it follows trivially
+  from $beta$ for pure $a$, we also want to consider #emph[impure]
+  expressions.
+
+- Rules let$""_1$-op, let$""_1$-let$""_1$, let$""_1$-let$""_2$,
+  let$""_1$-abort, and let$""_1$-case which allow us to "pull" a
+  let-statement out of any of the other expression constructors;
+  operationally, this is saying that the bound expression we pull out is
+  evaluated before the rest of the $sans(l e t)$-binding.
+
+  For example, let$""_1$-case says that, if both
+  $sans(l e t) #h(0em) z = sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } ; #h(0em) d$
+  and
+  $sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : sans(l e t) #h(0em) z = a ; #h(0em) d \, iota_r #h(0em) y : sans(l e t) #h(0em) z = b ; #h(0em) d } y$,
+  are well typed, then both must have the same behaviour:
+
+  + Compute $e$
+
+  + If $e = iota_l #h(0em) e_l$, compute $\[ e_l \/ x \] a$, else, if
+    $e = iota_r #h(0em) e_r$, compute $\[ e_r \/ y \] b$; store this
+    value as $z$
+
+  + Compute $d$ given our value for $z$
+
+  Note in particular that, since both sides are well-typed, $d$ cannot
+  depend on either $x$ or $y$.
+
+#todo[Port the following preserved source proof-tree display to native Typst.]
+#figure([\$\$\\begin{gathered}
+      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-\$\\beta\$}}}
+        {\\Gamma \\vdash\_{\\bot} a: {A}}
+        {\\Gamma, x : A \\vdash\_{\\epsilon} b: {B}}
+        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;b} \\approx\[b/x\]a : {B}}
+      \\qquad
+      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-\$\\eta\$}}}
+        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
+        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;x} \\approx a : {A}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-op}}}
+        {f \\in \\ensuremath{\\mathcal{I}}\_{\\epsilon}(A, B)}
+        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
+        {\\Gamma, y : B \\vdash\_{\\epsilon} c: {C}}
+        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = f\\;a;\\;c} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = f\\;x;\\;c}} : {C}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-let\$\_1\$}}}
+        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
+        {\\Gamma, x : A \\vdash\_{\\epsilon} b: {B}}
+        {\\Gamma, y : B \\vdash\_{\\epsilon} c: {C}}
+        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = (\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;b});\\;c} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = b;\\;c}} : {C}}
+      \\\\
+      %
+      %
+      %
+      %
+      %
+      %
+      %
+      %
+      %
+      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-let\$\_2\$}}}
+        {\\Gamma \\vdash\_{\\epsilon} e: {A \\times B}}
+        {\\Gamma, x : A, y : C \\vdash\_{\\epsilon} c: {C}}
+        {\\Gamma, z : C \\vdash\_{\\epsilon} d: {D}}
+        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e;\\;c});\\;d} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = c;\\;d}} : {D}}
+      \\\\
+      %
+      %
+      %
+      %
+      %
+      %
+      %
+      %
+      %
+      %
+      %
+      %
+      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-abort}}}
+        {\\Gamma \\vdash\_{\\epsilon} a: {\\ensuremath{\\mathbf{0}}}}
+        {\\Gamma, y : A \\vdash\_{\\epsilon} b: {B}}
+        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = \\ensuremath{\\mathsf{abort}}\\;{b};\\;b} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = \\ensuremath{\\mathsf{abort}}\\;{x};\\;b}} : {B}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-case}}}
+        {\\Gamma \\vdash\_{\\epsilon} e: {A + B}}
+        {\\Gamma, x : A \\vdash\_{\\epsilon} a: {C}}
+        {\\Gamma, y : B \\vdash\_{\\epsilon} b: {C}}
+        {\\Gamma, z : C \\vdash\_{\\epsilon} d: {D}}
+        {
+          \\prfStackPremises
+          {\\Gamma \\vdash\_\\epsilon \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (\\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :a, \\iota\_r\\;{y} :b\\});\\;d}}
+          {\\hspace{6em} \\approx\\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = a;\\;d}, \\iota\_r\\;{y} :\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = b;\\;d}\\} : D}
+        }
+
+  \\end{gathered}\$\$
+
+  ],
+  caption: [
+    Rewriting rules for #lssa unary $sans(l e t)$
+    expressions
+  ]
+)
+<fig:ssa-unary-let-expr>
+
+Handling the other type constructors is a little simpler: by providing a
+"binding" rule, we generally only need to specify how to interact with
+$sans(l e t)_1$, as well as an $eta$ and $beta$ rule; interactions with
+the other constructors can then be derived. For example, consider the
+rules for $sans(l e t)_2$ given in #todo[Resolve source reference `fig:ssa-let2-case-expr` during integration.]; we have:
+
+- let$""_2$-$eta$, which is the standard $eta$-rule for binary
+  $sans(l e t)$-bindings
+
+- let$""_2$-pair, which acts like a slightly generalized $beta$-rule,
+  since we can derive $beta$ reduction as follows: given pure
+  $Gamma tack.r_tack.t a : A$ and $Gamma tack.r_tack.t b : B$, we have
+  $ \( sans(l e t) #h(0em) \( x \, y \) = \( a \, b \) ; #h(0em) c \) approx \( sans(l e t) #h(0em) x = a ; #h(0em) sans(l e t) #h(0em) y = b ; #h(0em) c \) approx \( \[ a \/ x \] \( sans(l e t) #h(0em) y = b ; #h(0em) c \) \) approx \( \[ a \/ x \] \[ b \/ y \] c \) $
+  We state the rule in a more general form to allow for impure $a$ and
+  $b$, as well as to simplify certain proofs.
+
+- let$""_2$-bind, which allows us to "pull" out the bound value of a
+  binary $sans(l e t)$-expression into its own unary
+  $sans(l e t)$-expression; operationally, this just says that we
+  execute the bound value before executing the binding itself.
+
+This is enough to allow us to define our interactions with the other
+expression constructors: for example, to show that we can lift an
+operation $f$ out of a binary $sans(l e t)$-binding, rather than adding
+a separate rule, we can instead derive (types omitted for simplicity) it
+from let$""_2$-bind and let$""_1$-op as follows:
+$ \( sans(l e t) #h(0em) \( x \, y \) = f #h(0em) a ; #h(0em) b \) & approx \( sans(l e t) #h(0em) z_f = f #h(0em) a ; #h(0em) sans(l e t) #h(0em) \( x \, y \) = z ; #h(0em) b \)\
+ & approx \( sans(l e t) #h(0em) z_a = a ; #h(0em) sans(l e t) #h(0em) z_f = f #h(0em) z_a ; #h(0em) sans(l e t) #h(0em) \( x \, y \) = z ; #h(0em) b \)\
+ & approx \( sans(l e t) #h(0em) z_a = a ; #h(0em) sans(l e t) #h(0em) \( x \, y \) = f #h(0em) z_a ; #h(0em) b \) $
+
+#todo[Port the following preserved source proof-tree display to native Typst.]
+#figure([\$\$\\begin{gathered}
+      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$-pair}}}
+        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
+        {\\Gamma \\vdash\_{\\epsilon} b: {B}}
+        {\\Gamma, x : A, y : B \\vdash\_{\\epsilon} c: {C}}
+        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = (a, b);\\;c} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = b;\\;c}} : {C}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$-\$\\eta\$}}}
+        {\\Gamma \\vdash\_{\\epsilon} e: {A \\otimes B}}
+        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e;\\;(x, y)} \\approx e : {A \\otimes B}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$-bind}}}
+        {\\Gamma \\vdash\_{\\epsilon} e: {A \\otimes B}}
+        {\\Gamma, x : A, y : B \\vdash\_{\\epsilon} c: {C}}
+        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e;\\;c} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = e;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = z;\\;c}} : {C}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{case-inl}}}
+        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
+        {\\Gamma, x : A \\vdash\_{\\epsilon} c: {C}}
+        {\\Gamma, y : B \\vdash\_{\\epsilon} d: {C}}
+        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{case}}\\;\\iota\_l\\;{a}\\;\\{\\iota\_l\\;{x} :c, \\iota\_r\\;{y} :d\\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;c} : {C}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{case-inr}}}
+        {\\Gamma \\vdash\_{\\epsilon} b: {B}}
+        {\\Gamma, x : A \\vdash\_{\\epsilon} c: {C}}
+        {\\Gamma, y : B \\vdash\_{\\epsilon} d: {C}}
+        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{case}}\\;\\iota\_r\\;{b}\\;\\{\\iota\_l\\;{x} :c, \\iota\_r\\;{y} :d\\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = b;\\;d} : {C}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{case-\$\\eta\$}}}
+        {\\Gamma \\vdash\_{\\epsilon} e: {A + B}}
+        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :\\iota\_l\\;{x}, \\iota\_r\\;{y} :\\iota\_r\\;{y}\\} \\approx e : {A + B}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{case-bind}}}
+        {\\Gamma \\vdash\_{\\epsilon} e: {A + B}}
+        {\\Gamma, x : A \\vdash\_{\\epsilon} c: {C}}
+        {\\Gamma, y : B \\vdash\_{\\epsilon} d: {C}}
+        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :c, \\iota\_r\\;{y} :d\\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = e;\\;\\ensuremath{\\mathsf{case}}\\;z\\;\\{\\iota\_l\\;{x} :c, \\iota\_r\\;{y} :d\\}} : {C}}
+
+  \\end{gathered}\$\$
+
+  ],
+  caption: [
+    Rewriting rules for #lssa binary $sans(l e t)$ and
+    $sans(c a s e)$ expressions
+  ]
+)
+<fig:ssa-let2-case-expr>
+
+Similarly, it is enough to give $eta$, $beta$, and binding rules for
+case expressions. In particular, we have that
+
+- case-inl and case-inr serve as $beta$-reduction rules, telling us that
+  $sans(c a s e)$-expressions given an injection as an argument have the
+  expected operational behaviour. Note that we reduce to a
+  $sans(l e t)$-expression rather than perform a substitution to allow
+  for impure discriminants.
+
+- case-$eta$ is the standard $eta$-rule for $sans(c a s e)$-expressions.
+
+- case-bind allows us to "pull" out the bound value of the discriminant
+  into it's own $sans(l e t)$-expression; again, operationally, this
+  just says that we need to evaluate the discriminant before executing
+  the $sans(c a s e)$-expression.
+
+It's interesting that this is enough, along with the let-case rule and
+friends, to derive the distributivity properties we would expect
+well-behaved $sans(c a s e)$-expressions to have. For example, we have
+that
+$ f \( sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } \) & approx \( sans(l e t) #h(0em) z = sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } ; #h(0em) f #h(0em) z \)\
+ & approx sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : sans(l e t) #h(0em) z = a ; #h(0em) f #h(0em) z \, iota_r #h(0em) y : sans(l e t) #h(0em) z = b ; #h(0em) f #h(0em) z }\
+ & approx sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : f #h(0em) a \, iota_r #h(0em) y : f #h(0em) b } $
+and likewise for more complicated distributivity properties involving,
+e.g., $sans(l e t)$-bindings.
+
+The case for the other constructors is even more convenient: no
+additional rules are required at all to handle operations, pairs, and
+injections. For example, we can derive the expected bind-rule for
+operations as follows:
+$ f #h(0em) a approx \( sans(l e t) #h(0em) y = f #h(0em) a ; #h(0em) y \) approx \( sans(l e t) #h(0em) x = a ; #h(0em) sans(l e t) #h(0em) y = f #h(0em) x ; #h(0em) y \) approx \( sans(l e t) #h(0em) x = a ; #h(0em) f #h(0em) x \) $
+
+This completes the equational theory for #lssa terms;
+in Section #todo[Resolve source reference `ssec:completeness` during integration.], we will show that this is enough to state
+a completeness theorem.
+
+== Regions
+<regions>
+We now come to the equational theory for regions, which is similar to
+that for terms, except that we also need to support control-flow graphs.
+As before, we will split our rules into a set of #emph[congruence rules]
+and, for each region constructor, #emph[rewriting rules] based on that
+constructor's semantics. Our congruence rules, given in
+Figure~#todo[Resolve source reference `fig:ssa-reg-congr-rules` during integration.], are quite standard; we have:
+
+- As for terms, refl, trans, and symm state that
+  $Gamma tack.r dot.op approx dot.op gt.tri sans(L)$ is an equivalence
+  relation for all $Gamma$, $sans(L)$.
+
+- Similarly, let$""_1$, let$""_2$, case, and cfg state that
+  $Gamma tack.r dot.op approx dot.op gt.tri sans(L)$ is a congruence
+  over the respective region constructors; #emph[as well as] the
+  equivalence relation on terms
+  $Gamma tack.r_epsilon.alt dot.op approx dot.op : A$.
+
+- initial states that any context containing the empty type
+  $upright(bold(0))$ equates all regions, by a similar reasoning to the
+  rules for terms. Note that we do not require an analogue to the
+  terminal rule (for example, for regions targeting
+  $sans(L) = ell \( upright(bold(1)) \)$), since it will follow from the
+  version for terms; this is good, since the concept of a "pure" region
+  has not yet been defined.
+
+Our rewriting rules for unary $sans(l e t)$-statements, given in
+Figure~#todo[Resolve source reference `fig:ssa-reg-unary-let` during integration.], are analogous to those for unary
+$sans(l e t)$-expressions:
+
+- let$""_1$-$beta$ allows us to perform $beta$-reduction of #emph[pure]
+  expressions into regions; unlike for terms, we do not need an
+  $eta$-rule
+
+- Exactly like for $sans(l e t)$-expressions, let$""_1$-op,
+  let$""_1$-let$""_1$, let$""_1$-let$""_2$, let$""_1$-abort, and
+  let$""_1$-case allow us to pull out nested subexpressions of the bound
+  value of a $sans(l e t)$-statement into their own unary
+  $sans(l e t)$-statement
+
+Similarly to expressions, binary $sans(l e t)$-statements and
+$sans(c a s e)$-statements need only the obvious $beta$ rule and binding
+rule, with all the interactions with other constructors derivable; these
+rules are given in Figure~#todo[Resolve source reference `fig:ssa-reg-let2-case-expr.` during integration.] Note in
+particular that $eta$-rules are not necessary, as these are derivable
+from binding and the $eta$-rules for expressions.
+
+#todo[Port the following preserved source proof-tree display to native Typst.]
+#figure([\$\$\\begin{gathered}
+      \\prftree\[r\]{{\\scriptsize\\textsf{refl}}}{\\Gamma \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}{\\Gamma \\vdash r \\approx r \\rhd {\\ensuremath{\\mathsf{L}}}} \\qquad
+      \\prftree\[r\]{{\\scriptsize\\textsf{trans}}}{\\Gamma \\vdash r \\approx s \\rhd {\\ensuremath{\\mathsf{L}}}}{\\Gamma \\vdash s \\approx t \\rhd {\\ensuremath{\\mathsf{L}}}}
+        {\\Gamma \\vdash r \\approx t \\rhd {\\ensuremath{\\mathsf{L}}}} \\qquad
+      \\prftree\[r\]{{\\scriptsize\\textsf{symm}}}{\\Gamma \\vdash r \\approx s \\rhd {\\ensuremath{\\mathsf{L}}}}{\\Gamma \\vdash s \\approx r \\rhd {\\ensuremath{\\mathsf{L}}}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{let}}\$\_1\$}
+        {\\Gamma \\vdash\_{\\epsilon} a \\approx a\' : {A}}
+        {\\Gamma, x : A \\vdash r \\approx r\' \\rhd {\\ensuremath{\\mathsf{L}}}}
+        {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a; r} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a\'; r\'} \\rhd {\\ensuremath{\\mathsf{L}}}}
+      \\qquad
+      \\prftree\[r\]{{\\scriptsize\\textsf{let}}\$\_2\$}
+        {\\Gamma \\vdash\_{\\epsilon} e \\approx e\' : {A \\otimes B}}
+        {\\Gamma, x : A, y : B \\vdash r \\approx r\' \\rhd {\\ensuremath{\\mathsf{L}}}}
+        {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e; r} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e\'; r\'} \\rhd {\\ensuremath{\\mathsf{L}}}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{case}}}
+        {\\Gamma \\vdash\_{\\epsilon} e \\approx e\' : {A + B}}
+        {\\Gamma, x : A \\vdash r \\approx r\' \\rhd {\\ensuremath{\\mathsf{L}}}}
+        {\\Gamma, y : B \\vdash s \\approx s\' \\rhd {\\ensuremath{\\mathsf{L}}}}
+        {\\Gamma \\vdash \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :r, \\iota\_r\\;{y} :s\\} \\approx\\ensuremath{\\mathsf{case}}\\;e\'\\;\\{\\iota\_l\\;{x} :r\', \\iota\_r\\;{y} :s\'\\} \\rhd {\\ensuremath{\\mathsf{L}}}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{cfg}}}
+        {\\Gamma \\vdash r \\approx r\' \\rhd {\\ensuremath{\\mathsf{L}}, (\\ell\_i(A\_i),)\_{i \\in I}}}
+        {\\forall i \\in I. \\Gamma, x\_i : A\_i \\vdash t\_i \\approx t\_i\' \\rhd {\\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in I}}}
+        {\\Gamma \\vdash r\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_i(x\_i: A\_i) :\\{t\_i\\},)\_{i \\in I} \\approx r\'\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_i(x\_i: A\_i) :\\{t\_i\'\\},)\_{i \\in I} \\rhd {\\ensuremath{\\mathsf{L}}}
+        }
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{initial}}}
+        {\\Gamma \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
+        {\\Gamma \\vdash s \\rhd \\ensuremath{\\mathsf{L}}}
+        {\\exists x, \\Gamma\\;x = \\ensuremath{\\mathbf{0}}}
+        {\\Gamma \\vdash r \\approx s \\rhd {\\ensuremath{\\mathsf{L}}}}
+
+  \\end{gathered}\$\$
+
+  ],
+  caption: [
+    Congruence rules for #lssa regions
+  ]
+)
+<fig:ssa-reg-congr-rules>
+
+#todo[Port the following preserved source proof-tree display to native Typst.]
+#figure([\$\$\\begin{gathered}
+      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-\$\\beta\$}}}
+        {\\Gamma \\vdash\_{\\bot} a: {A}}
+        {\\Gamma, x : A \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
+        {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a; r} \\approx\[a/x\]r \\rhd {\\ensuremath{\\mathsf{L}}}}
+      \\\\
+        \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-op}}}
+        {f \\in \\ensuremath{\\mathcal{I}}\_{\\epsilon}(A, B)}
+        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
+        {\\Gamma, y : B \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
+        {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = f\\;a; r} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a; \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = f\\;x; r}} \\rhd {\\ensuremath{\\mathsf{L}}}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_{1}\$-let\$\_1\$}}}
+        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
+        {\\Gamma, x : A \\vdash\_{\\epsilon} b: {B}}
+        {\\Gamma, y : B \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
+        {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = (\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;b}); r} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a; \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = b; r}} \\rhd {\\ensuremath{\\mathsf{L}}}}
+      \\\\
+      %
+      %
+      %
+      %
+      %
+      %
+      %
+      %
+      %
+      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_{1}\$-let\$\_2\$}}}
+        {\\Gamma \\vdash\_{\\epsilon} e: {A \\otimes B}}
+        {\\Gamma, x : A, y : B \\vdash\_{\\epsilon} c: {C}}
+        {\\Gamma, z : C \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
+        {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e;\\;c}); r} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e; \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = c; r}} \\rhd {\\ensuremath{\\mathsf{L}}}}
+      \\\\
+      %
+      %
+      %
+      %
+      %
+      %
+      %
+      %
+      %
+      %
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-case}}}
+        {\\Gamma \\vdash\_{\\epsilon} e: {A + B}}
+        {\\Gamma, x : A \\vdash\_{\\epsilon} a: {C}}
+        {\\Gamma, y : B \\vdash\_{\\epsilon} b: {C}}
+        {\\Gamma, z : C \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
+        {
+          \\prfStackPremises
+          {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (\\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :a, \\iota\_r\\;{y} :b\\}); r}}
+          {\\hspace{6em} \\approx\\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = a; r}, \\iota\_r\\;{y} :\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = b; r}\\} \\rhd \\ensuremath{\\mathsf{L}}}
+        }
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-abort}}}
+        {\\Gamma \\vdash\_{\\epsilon} a: {\\ensuremath{\\mathbf{0}}}}
+        {\\Gamma, y : A \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
+        {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = \\ensuremath{\\mathsf{abort}}\\;{a}; r} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a; \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = \\ensuremath{\\mathsf{abort}}\\;{x}; r}} \\rhd {\\ensuremath{\\mathsf{L}}}}
+
+  \\end{gathered}\$\$
+
+  ],
+  caption: [
+    Rewriting rules for #lssa unary
+    $sans(l e t)$-statements
+  ]
+)
+<fig:ssa-reg-unary-let>
+
+#todo[Port the following preserved source proof-tree display to native Typst.]
+#figure([\$\$\\begin{gathered}
+      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$-pair}}}
+        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
+        {\\Gamma \\vdash\_{\\epsilon} b: {B}}
+        {\\Gamma, x : A, y : B \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
+        {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = (a, b); r} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a; \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = b; r}} \\rhd {\\ensuremath{\\mathsf{L}}}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$-bind}}}
+        {\\Gamma \\vdash\_{\\epsilon} e: {A \\otimes B}}
+        {\\Gamma, x : A, y : B \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
+        {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e; r} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = e; \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = z; r}} \\rhd {\\ensuremath{\\mathsf{L}}}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{case-inl}}}
+        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
+        {\\Gamma, x : A \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
+        {\\Gamma, y : B \\vdash s \\rhd \\ensuremath{\\mathsf{L}}}
+        {\\Gamma \\vdash \\ensuremath{\\mathsf{case}}\\;\\iota\_l\\;{a}\\;\\{\\iota\_l\\;{x} :r, \\iota\_r\\;{y} :s\\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a; r} \\rhd {\\ensuremath{\\mathsf{L}}}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{case-inr}}}
+        {\\Gamma \\vdash\_{\\epsilon} b: {B}}
+        {\\Gamma, x : A \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
+        {\\Gamma, y : B \\vdash s \\rhd \\ensuremath{\\mathsf{L}}}
+        {\\Gamma \\vdash \\ensuremath{\\mathsf{case}}\\;\\iota\_r\\;{b}\\;\\{\\iota\_l\\;{x} :r, \\iota\_r\\;{y} :s\\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = b; s} \\rhd {\\ensuremath{\\mathsf{L}}}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{case-bind}}}
+      {\\Gamma \\vdash\_{\\epsilon} e: {A + B}}
+      {\\Gamma, x : A \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
+      {\\Gamma, y : B \\vdash s \\rhd \\ensuremath{\\mathsf{L}}}
+      {\\Gamma \\vdash \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :r, \\iota\_r\\;{y} :s\\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = e; \\ensuremath{\\mathsf{case}}\\;z\\;\\{\\iota\_l\\;{x} :r, \\iota\_r\\;{y} :s\\}} \\rhd {\\ensuremath{\\mathsf{L}}}}
+
+  \\end{gathered}\$\$
+
+  ],
+  caption: [
+    Rewriting rules for #lssa binary
+    $sans(l e t)$-statements and $sans(c a s e)$-statements
+  ]
+)
+<fig:ssa-reg-let2-case-expr>
+
+Dealing with $sans(w h e r e)$-blocks, on the other hand, is a little
+bit more complicated, as shown by the number of rules in
+Figure~#todo[Resolve source reference `fig:ssa-where-rules.` during integration.] One difficulty is that, unlike the other
+region constructors, we will need an $eta$-rule as well as #emph[two]
+$beta$-rules. The latter are simple enough to state:
+
+- For $ell_k$ defined in a $sans(w h e r e)$-block, cfg-$beta_1$ says
+  that we can replace a branch to $ell_k$ with argument $a$ with a
+  $sans(l e t)$-statement binding $a$ to the corresponding body $t_k$'s
+  argument $x_k$.
+
+- For $kappa$ #emph[not] defined in a $sans(w h e r e)$-block,
+  cfg-$beta_2$ says that a branch to $kappa$ within the
+  $sans(w h e r e)$-block has the same semantics as if the
+  $sans(w h e r e)$-block was not there; hence, it can be removed.
+
+To state our $eta$-rule, however, we will need to introduce some more
+machinery. Given a mapping from a set of labels $ell_i$ to associated
+regions $t_i$, we may define the #emph[control-flow graph substitution]
+$sans(c f g s) #h(0em) { \( ell_i \( x_i \) : { t_i } \, \)_i }$
+pointwise as follows:
+$ sans(c f g s) #h(0em) { \( ell_i \( x_i \) : { t_i } \, \)_i } #h(0em) kappa #h(0em) a := \( sans(b r) #h(0em) kappa #h(0em) a #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i \) $
+In general, we may derive, for any label-context $sans(L)$ (assuming
+$sans(c f g s) #h(0em) { dot.op }$ acts uniformly on the labels $kappa$
+in $sans(L)$ as described above), the following rule:
+#todo[Port the following preserved source equation or proof-tree display to native Typst.]
+\$\$\\prftree\[r\]{{\\scriptsize\\textsf{cfgs}}}
+    {\\forall i \\in I. \\Gamma, x\_i : A\_i \\vdash t\_i \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in I}}
+    {\\Gamma \\vdash \\ensuremath{\\mathsf{cfgs}}\\;\\{(\\ell\_i(x\_i) :\\{t\_i\\},)\_{i \\in I}\\}: \\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in I} \\rightsquigarrow \\ensuremath{\\mathsf{L}}}\$\$
+Our $eta$-rule, cfg-$eta$, says that any $sans(w h e r e)$-block of the
+form
+$r #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i$
+has the same semantics as the label-substitution
+$\[ sans(c f g s) #h(0em) { \( ell_i \( x_i \) : { t_i } \, \)_i } \] r$,
+which in effect propagates the where-block to the branches of $r$, if
+any. While we called this rule cfg-$eta$, it also functions similarly to
+a binding rule in that it allows us to derive many of the expected
+commutativity properties of $sans(w h e r e)$; for example, we have that
+$ sans(l e t) #h(0em) y = a ; #h(0em) r #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { sans(b r) #h(0em) ell_j #h(0em) a_j } \, \)_i & approx \[ sans(c f g s) #h(0em) { \( ell_i \( x_i \) : { sans(b r) #h(0em) ell_j #h(0em) a_j } \, \)_i } \] \( sans(l e t) #h(0em) y = a ; #h(0em) r \)\
+ & approx sans(l e t) #h(0em) y = a ; #h(0em) \[ sans(c f g s) #h(0em) { \( ell_i \( x_i \) : { sans(b r) #h(0em) ell_j #h(0em) a_j } \, \)_i } \] r\
+ & approx sans(l e t) #h(0em) y = a ; #h(0em) r #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { sans(b r) #h(0em) ell_j #h(0em) a_j } \, \)_i $
+One particularly important application of the $eta$-rule for
+control-flow graphs is in validating the rewrite
+#todo[Port the following preserved source equation or proof-tree display to native Typst.]
+\$\$\\prftree\[r\]{{\\scriptsize\\textsf{case2cfg}}}
+    {\\Gamma \\vdash\_{\\epsilon} a: {A + B}}
+    {\\Gamma, x : A \\vdash s \\rhd \\ensuremath{\\mathsf{L}}}
+    {\\Gamma, y : B \\vdash t \\rhd \\ensuremath{\\mathsf{L}}}
+    {
+      \\prfStackPremises{\\Gamma \\vdash \\ensuremath{\\mathsf{case}}\\;a\\;\\{\\iota\_l\\;{x} :s, \\iota\_r\\;{y} :t\\}
+        \\approx(\\ensuremath{\\mathsf{case}}\\;a\\;\\{\\iota\_l\\;{x} :\\ensuremath{\\mathsf{br}}\\;\\ell\\;x, \\iota\_r\\;{y} :\\ensuremath{\\mathsf{br}}\\;\\ell\'\\;y\\})}{
+        \\hspace{16em}\\;\\ensuremath{\\mathsf{where}}\\;\\ell(x) :\\{s\\}, \\ell\'(y) :\\{t\\} \\rhd \\ensuremath{\\mathsf{L}}}
+    }\$\$ In addition, we also add as an axiom the ability to get rid of
+a single, trivially nested $sans(w h e r e)$-block; this is given as the
+rule codiag.
+
+To be able to soundly perform equational rewriting, we will need the
+#emph[uniformity] property, which is described by the rule uni. In
+essence, this lets us commute pure expressions with loop bodies,
+enabling rewrites (in imperative style) like
+$ sans(l o o p) #h(0em) { x = x + 1 ; sans(i f) #h(0em) p #h(0em) 3 x #h(0em) { sans(r e t) #h(0em) 3 x } } #h(2em) approx #h(2em) y = 3 x ; sans(l o o p) #h(0em) { y = y + 3 ; sans(i f) #h(0em) p #h(0em) y #h(0em) { sans(r e t) #h(0em) y } } $<eqn:simple-loop-comm>
+Note that substitution alone would not allow us to derive
+Equation~#todo[Resolve source reference `eqn:simple-loop-comm` during integration.] above, since $x$ and $y$ change each
+iteration, and hence, in SSA, would need to become parameters as
+follows:
+$ sans(b r) #h(0em) ell #h(0em) x #h(0em) sans(w h e r e) #h(0em) ell \( y \) : { sans(l e t) #h(0em) x' = y + 1 ; sans(i f) #h(0em) p #h(0em) 3 x' #h(0em) { sans(r e t) #h(0em) 3 x' } #h(0em) sans(e l s e) #h(0em) { sans(b r) #h(0em) ell #h(0em) x' } }\
+approx sans(l e t) #h(0em) y = 3 x ; sans(b r) #h(0em) kappa #h(0em) y #h(0em) sans(w h e r e) #h(0em) kappa \( y \) : { sans(l e t) #h(0em) y' = y + 3 ; sans(i f) #h(0em) p #h(0em) y' #h(0em) { sans(r e t) #h(0em) y' } #h(0em) sans(e l s e) #h(0em) { sans(b r) #h(0em) kappa #h(0em) y' } } $<eqn:loop-comm-ssa>
+The actual rule is quite complicated, so let's break it down point by
+point. Assume we are given:
+
+- A region $Gamma \, y : B tack.r s gt.tri sans(L) \, kappa \( B \)$
+  taking "input" $y$ of type $B$ and, as "output," jumping to a label
+  $kappa$ with an argument of type $B$. We'll interpret branches to any
+  other label (i.e. any label in $sans(L)$) as a (divergent) "side
+  effect."
+
+- A region $Gamma \, x : A tack.r t gt.tri sans(L) \, ell \( A \)$
+  taking "input" $x$ of type $A$ and, as "output," jumping to a label
+  $ell$ with an argument of type $A$.
+
+- A #emph[pure] expression $Gamma \, x : A tack.r_tack.t e : B$
+  parameterised by a value $x$ of type $A$
+
+Suppose further that the following condition holds:
+$ Gamma \, x : A tack.r \[ e \/ y \] s approx t #h(0em) sans(w h e r e) #h(0em) ell \( x \) : { sans(b r) #h(0em) kappa #h(0em) e } gt.tri sans(L) \, kappa \( B \) $
+That is, the following two programs are equivalent:
+
++ Given input $x$, evaluate $e$ and, taking it's output to be input $y$,
+  evaluate $s$, (implicitly) yielding as output a new value of $y$. In
+  imperative pseudocode, $ y = e ; y = s $
+
++ Given input $x$, evaluate $t$ and, taking it's output to be the
+  #emph[new] value of $x$, evaluate $e$, (implicitly) yielding as output
+  a new value $y$. In imperative pseudocode, $ x = t ; y = e $
+
+#emph[Then], for any well-typed entry block
+$Gamma tack.r r gt.tri sans(L) \, ell \( A \)$ (which can produce an
+appropriate input $x : A$ at label $ell$), we have that
+$ Gamma tack.r \( r #h(0em) sans(w h e r e) #h(0em) ell \( x \) : { sans(b r) #h(0em) kappa #h(0em) e } \) #h(0em) sans(w h e r e) #h(0em) kappa \( y \) : { s } approx r #h(0em) sans(w h e r e) #h(0em) t gt.tri sans(L) $
+i.e., in imperative pseudocode,
+$ x = r ; y = e ; sans(l o o p) #h(0em) { y = s } & approx x = r ; sans(l o o p) #h(0em) { x = t } $
+since
+$ y = e ; y = s ; y = s ; dots.h #h(0em) #h(0em) approx #h(0em) #h(0em) x = t ; y = e ; y = s ; dots.h #h(0em) #h(0em) approx #h(0em) #h(0em) x = t ; x = t ; y = e ; dots.h #h(0em) #h(0em) approx #h(0em) #h(0em) dots.h.c $
+where $s$ and $t$ may branch out of the loop. Note that, due to
+let$""_1$-$beta$, cfg-$eta$, and cfg-$beta_1$, this is equivalent to the
+rule \$\$\\begin{gathered}
+\\prftree\[r\]{{\\scriptsize\\textsf{uni\'}}}
+{
+  \\Gamma, x : A \\vdash \[e/y\]s \\approx\[\\ell(x) \\mapsto \\ensuremath{\\mathsf{br}}\\;\\kappa\\;e\]t \\rhd {\\ensuremath{\\mathsf{L}}, \\kappa(B)}
+}
+{
+  \\Gamma \\vdash ((\[\\ell(x) \\mapsto \\ensuremath{\\mathsf{br}}\\;\\kappa\\;e\]r)\\;\\ensuremath{\\mathsf{where}}\\;\\kappa(y) :\\{s\\}) \\approx(r\\;\\ensuremath{\\mathsf{where}}\\;\\ell(x) :\\{t\\}) \\rhd {\\ensuremath{\\mathsf{L}}}
+} \\\\
+\\text{where} \\qquad
+{
+  \\Gamma \\vdash r \\rhd \\ensuremath{\\mathsf{L}}, \\ell(A)
+} \\qquad
+{
+  \\Gamma, x : A \\vdash\_{\\bot} e: {B}
+} \\qquad
+{
+  \\Gamma, y : B \\vdash s \\rhd \\ensuremath{\\mathsf{L}}, \\kappa(B)
+} \\qquad
+{
+  \\Gamma, x : A \\vdash t \\rhd \\ensuremath{\\mathsf{L}}, \\ell(A)
+}
+\\end{gathered}
+\\label{eqn:uni-variant}\$\$ Going back to our concrete example from
+Equation~#todo[Resolve source reference `eqn:loop-comm-ssa` during integration.], if we first substitute the let-binding
+$y = 3 x$ on the RHS, we get
+$ sans(b r) #h(0em) ell #h(0em) x #h(0em) sans(w h e r e) #h(0em) ell \( y \) : { sans(l e t) #h(0em) x' = y + 1 ; sans(i f) #h(0em) p #h(0em) 3 x' #h(0em) { sans(r e t) #h(0em) 3 x' } #h(0em) sans(e l s e) #h(0em) { sans(b r) #h(0em) ell #h(0em) x' } }\
+approx sans(b r) #h(0em) kappa #h(0em) 3 x #h(0em) sans(w h e r e) #h(0em) kappa \( y \) : { sans(l e t) #h(0em) y' = y + 3 ; sans(i f) #h(0em) p #h(0em) y' #h(0em) { sans(r e t) #h(0em) y' } #h(0em) sans(e l s e) #h(0em) { sans(b r) #h(0em) kappa #h(0em) y' } } $<eqn:loop-comm-red>
+Now, instantiate $sans("uni")'$ (Equation~#todo[Resolve source reference `eqn:uni-variant` during integration.]) by taking:
+
+- $s = sans(l e t) #h(0em) y' = y + 3 ; #h(0em) sans(i f) #h(0em) p #h(0em) y' #h(0em) { sans(r e t) #h(0em) y' } #h(0em) sans(e l s e) #h(0em) { sans(b r) #h(0em) kappa #h(0em) y' }$
+  to be the loop body on the RHS
+
+- $e = 3 x$
+
+- $r = sans(b r) #h(0em) ell #h(0em) x$
+
+- $t = sans(l e t) #h(0em) x' = y + 1 ; sans(i f) #h(0em) p #h(0em) 3 x' #h(0em) { sans(r e t) #h(0em) 3 x' } #h(0em) sans(e l s e) #h(0em) { sans(b r) #h(0em) ell #h(0em) x' }$
+  to be the loop body on the LHS
+
+It's easy to see that
+$\( \( \[ ell \( x \) mapsto sans(b r) #h(0em) kappa #h(0em) e \] r \) #h(0em) sans(w h e r e) #h(0em) kappa \( y \) : { s } \)$
+and $\( r #h(0em) sans(w h e r e) #h(0em) t \)$ are syntactically equal
+to the #emph[RHS] and #emph[LHS] of our desired result
+(Equation~#todo[Resolve source reference `eqn:loop-comm-red` during integration.]). So, it suffices to verify that
+$ Gamma \, x : A tack.r & \[ e \/ y \] s approx sans(l e t) #h(0em) y' = 3 x + 3 ; #h(0em) sans(i f) #h(0em) p #h(0em) y' #h(0em) { sans(r e t) #h(0em) y' } #h(0em) sans(e l s e) #h(0em) { sans(b r) #h(0em) kappa #h(0em) y' }\
+ & approx sans(l e t) #h(0em) y' = 3 \( x + 1 \) ; #h(0em) sans(i f) #h(0em) p #h(0em) y' #h(0em) { sans(r e t) #h(0em) y' } #h(0em) sans(e l s e) #h(0em) { sans(b r) #h(0em) kappa #h(0em) y' }\
+ & approx sans(l e t) #h(0em) x' = x + 1 ; #h(0em) sans(l e t) #h(0em) y' = 3 x' ; #h(0em) sans(i f) #h(0em) p #h(0em) y' #h(0em) { sans(r e t) #h(0em) y' } #h(0em) sans(e l s e) #h(0em) { sans(b r) #h(0em) kappa #h(0em) y' }\
+ & approx sans(l e t) #h(0em) x' = x + 1 ; #h(0em) sans(i f) #h(0em) p #h(0em) 3 x' #h(0em) { sans(r e t) #h(0em) 3 x' } #h(0em) sans(e l s e) #h(0em) { sans(b r) #h(0em) kappa #h(0em) 3 x' }\
+ & approx \[ ell \( x \) mapsto sans(b r) #h(0em) kappa #h(0em) e \] t $
+as desired. The reason why we require $e$ to be #emph[pure] in the
+uniformity rule is that impure expressions do not necessarily commute
+with infinite loops, even if they commute with any finite number of
+iterations of the loop. For example, if $sans(h i)$ is some effectful
+operation (say, printing "hello"), it is quite obvious that,
+#todo[Port the following preserved source equation or proof-tree display to native Typst.]
+\$\$\\begin{aligned}
+  \\ensuremath{\\mathsf{hi}} ; x = x + 1 ; \\ensuremath{\\mathsf{if}}\\;x = y\\;\\{\\ensuremath{\\mathsf{ret}}\\;y\\}
+  & \\approx
+  x = x + 1
+  ; \\ensuremath{\\mathsf{if}}\\;x = y\\;\\{\\ensuremath{\\mathsf{hi}} ; \\ensuremath{\\mathsf{ret}}\\;y\\}
+  ;  \\ensuremath{\\mathsf{hi}} \\\\
+  \\intertext{whereas}
+  \\ensuremath{\\mathsf{hi}} ; \\ensuremath{\\mathsf{loop}} \\{ x = x + 1 ; \\ensuremath{\\mathsf{if}}\\;x = y\\;\\{\\ensuremath{\\mathsf{ret}}\\;y\\} \\}
+  &\\not\\approx
+  \\ensuremath{\\mathsf{loop}} \\{ x = x + 1 ;  \\ensuremath{\\mathsf{if}}\\;x = y\\;\\{\\ensuremath{\\mathsf{hi}} ; \\ensuremath{\\mathsf{ret}}\\;y\\} \\} ; \\ensuremath{\\mathsf{hi}}
+\\end{aligned}\$\$ since, in particular, we may have $y lt.eq x$, in
+which case the loop will never exit and hence $sans(h i)$ will never be
+executed.
+
+#todo[Port the following preserved source proof-tree display to native Typst.]
+#figure([\$\$\\begin{gathered}
+        \\prftree\[r\]{{\\scriptsize\\textsf{cfg-\$\\beta\_1\$}}}
+          {\\Gamma \\vdash\_{\\bot} a: {A\_k}}
+          {\\forall i \\in I. \\Gamma, x\_i : A\_i \\vdash t\_i \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in I}}
+          {\\Gamma \\vdash \\ensuremath{\\mathsf{br}}\\;\\ell\_k\\;a\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_i(x\_i) :\\{t\_i\\},)\_{i \\in I} \\approx(\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x\_k = a; t\_k})\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_i(x\_i) :\\{t\_i\\},)\_{i \\in I} \\rhd {\\ensuremath{\\mathsf{L}}}}
+        \\\\
+        \\prftree\[r\]{{\\scriptsize\\textsf{cfg-\$\\beta\_2\$}}}
+          {\\Gamma \\vdash\_{\\bot} b: {B}}
+          {\\forall i \\in I. \\Gamma, x\_i : A\_i \\vdash t\_i \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in I}}
+          {\\ensuremath{\\mathsf{L}}\\;\\kappa = B}
+          {\\kappa \\notin \\{\\ell\_i \\mid i \\in I\\}}
+          {\\Gamma \\vdash \\ensuremath{\\mathsf{br}}\\;\\kappa\\;b\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_i(x\_i) :\\{t\_i\\},)\_{i \\in I} \\approx\\ensuremath{\\mathsf{br}}\\;\\kappa\\;b \\rhd {\\ensuremath{\\mathsf{L}}}}
+        \\\\
+          \\prftree\[r\]{{\\scriptsize\\textsf{cfg-\$\\eta\$}}}
+          {\\Gamma \\vdash r \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_i(A\_i),)\_{i \\in I}}
+          {\\forall i \\in I. \\Gamma, x\_i : A\_i \\vdash t\_i \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in I}}
+          {
+            \\Gamma \\vdash r\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_i(x\_i) :\\{t\_i\\},)\_{i \\in I} \\approx\[\\ensuremath{\\mathsf{cfgs}}\\;\\{(\\ell\_i(x\_i) :\\{t\_i\\},)\_{i \\in I}\\}\]r \\rhd {\\ensuremath{\\mathsf{L}}}
+          }
+        \\\\
+        \\prftree\[r\]{{\\scriptsize\\textsf{codiag}}}
+          {\\Gamma \\vdash r \\rhd \\ensuremath{\\mathsf{L}}, \\ell(A)}
+          {\\Gamma, y : A \\vdash s \\rhd \\ensuremath{\\mathsf{L}}, \\ell(A), \\kappa(A)}
+          {\\Gamma \\vdash r\\;\\ensuremath{\\mathsf{where}}\\;\\ell(x) :\\{\\ensuremath{\\mathsf{br}}\\;\\kappa\\;x\\;\\ensuremath{\\mathsf{where}}\\;\\kappa(y) :\\{s\\}\\} \\approx r\\;\\ensuremath{\\mathsf{where}}\\;\\ell(y) :\\{\[\\ell/\\kappa\]s\\} \\rhd {\\ensuremath{\\mathsf{L}}}}
+        \\\\
+        \\\\
+        \\prftree\[r\]{{\\scriptsize\\textsf{uni}}}
+          {
+            \\Gamma \\vdash r \\rhd \\ensuremath{\\mathsf{L}}, \\ell(A)
+          }
+          %
+          %
+          %
+          %
+          %
+          %
+          %
+          %
+          %
+          %
+          {
+            \\Gamma, x : A \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = e;\\;s} \\approx t\\;\\ensuremath{\\mathsf{where}}\\;\\ell(x) :\\{\\ensuremath{\\mathsf{br}}\\;\\kappa\\;e\\} \\rhd {\\ensuremath{\\mathsf{L}}, \\kappa(B)}
+          }
+          {
+            \\Gamma \\vdash (r\\;\\ensuremath{\\mathsf{where}}\\;\\ell(x) :\\{\\ensuremath{\\mathsf{br}}\\;\\kappa\\;e\\})\\;\\ensuremath{\\mathsf{where}}\\;\\kappa(y) :\\{s\\} \\approx r\\;\\ensuremath{\\mathsf{where}}\\;t \\rhd {\\ensuremath{\\mathsf{L}}}
+          }
+        \\\\
+        \\text{where} \\qquad
+        {\\Gamma, x : A \\vdash\_{\\bot} e: {B}}, \\quad
+        {\\Gamma, y : B \\vdash s \\rhd \\ensuremath{\\mathsf{L}}, \\kappa(B)}, \\quad \\text{and} \\quad
+        {\\Gamma, x : A \\vdash t \\rhd \\ensuremath{\\mathsf{L}}, \\ell(A)}
+        \\\\
+        \\\\
+        \\prftree\[r\]{{\\scriptsize\\textsf{dinat}}}
+          {\\prfStackPremises{
+            \\Gamma \\vdash r \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_i(A\_i),)\_{i \\in I}
+          }{
+            \\Gamma \\vdash \\sigma: (\\ell\_i(A\_i),)\_{i \\in I} \\rightsquigarrow (\\kappa\_j(B\_j),)\_{j \\in J}
+          }
+          }{
+            \\forall j \\in J. \\Gamma, x\_j : B\_j \\vdash t\_j \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_i(A\_i),)\_{i \\in I}
+          }{
+            \\prfStackPremises
+              {\\Gamma \\vdash (\[{\\sigma}^\\upharpoonleft\]r)\\;\\ensuremath{\\mathsf{where}}\\;(\\kappa\_j(x\_j) :\\{\[{\\sigma}^\\upharpoonleft\]t\_j\\},)\_{j \\in J}}
+              {\\hspace{8em} \\approx r\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_i(x\_i) :\\{\[{(\\kappa\_j(x\_j) \\mapsto t\_j,)\_{j \\in J}}^\\upharpoonleft\](\\sigma\\;\\ell\_i\\;x\_i)\\},)\_{i \\in I}}
+          }
+
+  \\end{gathered}\$\$
+
+  ],
+  caption: [
+    Rewriting rules for #lssa $sans(w h e r e)$-blocks
+  ]
+)
+<fig:ssa-where-rules>
+
+#figure([#block[
+  #figure([$  & sans(l e t) #h(0em) n = 10 ;\
+     & sans(b r) #h(0em) sans(l o o p) \( 1 \, 1 \)\
+     & sans(w h e r e) #h(0em) sans(l o o p) \( i_0 \, a_0 \) : {\
+     & quad sans(i f) #h(0em) i_0 < n #h(0em) {\
+     & #h(2em) sans(b r) #h(0em) sans(l o o p) \( i_0 + 1 \, a_0 \* \( i_0 + 1 \) \)\
+     & quad } #h(0em) sans(e l s e) #h(0em) {\
+     & #h(2em) sans(r e t) #h(0em) a_0\
+     & quad }\
+     & } $
+
+    ],
+    caption: [
+      Program from Figure #todo[Resolve source reference `fig:dominance-to-lexical` during integration.] after substituting
+      $sans(l e t)$s.
+    ]
+  )
+  <fig:fact-subst-2>
+
+  #figure([$  & sans(l e t) #h(0em) n = 10 ;\
+     & sans(b r) #h(0em) sans(l o o p) #h(0em) \( 0 \, 1 \)\
+     & sans(w h e r e) #h(0em) sans(l o o p) \( x \, y \) : {\
+     & quad sans(l e t) #h(0em) \( i_0 \, a_0 \) = \( x + 1 \, y \* \( x + 1 \) \) ;\
+     & quad sans(i f) #h(0em) i_0 < n #h(0em) {\
+     & #h(2em) sans(b r) #h(0em) sans(l o o p) \( i_0 \, a_0 \)\
+     & quad } #h(0em) sans(e l s e) #h(0em) {\
+     & #h(2em) sans(r e t) #h(0em) a_0\
+     & quad }\
+     & } $
+
+    ],
+    caption: [
+      Equivalent to Figure #todo[Resolve source reference `fig:fact-zero` during integration.] by #emph[dinaturality]
+    ]
+  )
+  <fig:fact-dinat>
+
+  ]
+  #figure([$  & sans(l e t) #h(0em) n = 10 ;\
+     & sans(b r) #h(0em) sans(l o o p) \(\
+     & quad sans(l e t) #h(0em) \( x \, y \) = \( 0 \, 1 \) ;\
+     & quad \( x + 1 \, y \* \( x + 1 \) \)\
+     & \)\
+     & sans(w h e r e) #h(0em) sans(l o o p) \( i_0 \, a_0 \) : {\
+     & quad sans(i f) #h(0em) i_0 < n #h(0em) {\
+     & #h(2em) sans(b r) #h(0em) sans(l o o p) \(\
+     & #h(2em) quad sans(l e t) #h(0em) \( x \, y \) = \( i_0 \, a_0 \) ;\
+     & #h(2em) quad \( x + 1 \, y \* \( x + 1 \) \)\
+     & #h(2em) \)\
+     & quad } #h(0em) sans(e l s e) #h(0em) {\
+     & #h(2em) sans(r e t) #h(0em) a_0\
+     & quad }\
+     & } $
+
+    ],
+    caption: [
+      Equivalent to Figure #todo[Resolve source reference `fig:fact-subst-2` during integration.] by congruence
+    ]
+  )
+  <fig:fact-zero>
+
+  ],
+  caption: [
+    Decomposing multi-block rewrites (from #todo[Resolve source reference `fig:fact-zero` during integration.] to
+    #todo[Resolve source reference `fig:fact-subst-2` during integration.], and therefore to the more optimal program
+    #todo[Resolve source reference `fig:fact-dinat` during integration.]) into simple algebraic steps. By verifying each
+    step, we can verify complex optimizations through decomposition.
+  ]
+)
+<fig:fact-dinat-rewrites>
+
+The derivable rule uni' (Equation~#todo[Resolve source reference `eqn:uni-variant` during integration.]) illuminates a very
+important potential use for uniformity; namely, formalizing rewrites
+like those in Figure~#todo[Resolve source reference `fig:fact-dinat-rewrites.` during integration.] In particular, consider a
+program of the form
+$ Gamma tack.r \( \[ ell \( x \) mapsto sans(b r) #h(0em) kappa #h(0em) e \] r \) #h(0em) sans(w h e r e) #h(0em) kappa \( y \) : { \[ ell \( x \) mapsto sans(b r) #h(0em) kappa #h(0em) e \] s } gt.tri sans(L) $
+where
+
+- $Gamma tack.r r gt.tri sans(L) \, ell \( A \)$
+
+- $Gamma \, y : B tack.r s gt.tri sans(L) \, ell \( A \)$
+
+- $Gamma \, x : A tack.r_tack.t e : B$ is pure
+
+Then we have that
+$ \[ e \/ y \] \[ ell \( x \) mapsto sans(b r) #h(0em) kappa #h(0em) \( e \) \] s\
+approx \[ ell \( x \) mapsto sans(b r) #h(0em) kappa #h(0em) \[ e \/ y \] \( e \) \] \[ e \/ y \] s\
+approx \[ ell \( x \) mapsto sans(b r) #h(0em) kappa #h(0em) \( e \) \] \[ e \/ y \] s $
+and therefore that
+$ Gamma tack.r \( \[ ell \( x \) mapsto sans(b r) #h(0em) kappa #h(0em) e \] r \) #h(0em) sans(w h e r e) #h(0em) kappa \( z \) : { \[ ell \( x \) mapsto sans(b r) #h(0em) kappa #h(0em) e \] s }\
+approx r #h(0em) sans(w h e r e) #h(0em) ell \( x \) : { \[ e \/ y \] s }\
+approx r #h(0em) sans(w h e r e) #h(0em) ell \( x \) : { sans(l e t) #h(0em) y = e ; s } $
+In particular, for example, we can then easily derive the rewrite from
+Figure~#todo[Resolve source reference `fig:fact-dinat` during integration.] to Figure~#todo[Resolve source reference `fig:fact-zero` during integration.] by noting the
+#emph[equalities] (an equivalence would be enough, of course)
+$  & sans(i f) #h(0em) i_0 < n #h(0em) {\
+ & quad sans(b r) #h(0em) sans(l o o p) \( sans(l e t) #h(0em) \( x \, y \) = \( i_0 \, a_0 \) ; #h(0em) \( x + 1 \, y \* x + 1 \) \)\
+ & } #h(0em) sans(e l s e) #h(0em) { sans(r e t) \( a_0 \) }\
+ & =\
+ & \[ sans(l o o p) \( i_0 \, a_0 \) mapsto sans(l e t) #h(0em) \( x \, y \) = \( i_0 \, a_0 \) ; #h(0em) \( x + 1 \, y \* x + 1 \) \] \( sans(i f) #h(0em) i_0 < n #h(0em) {\
+ & #h(2em) sans(b r) #h(0em) sans(l o o p) \( i_0 \, a_0 \)\
+ & quad } #h(0em) sans(e l s e) #h(0em) { sans(r e t) \( a_0 \) } \) $
+and
+$ sans(l e t) #h(0em) n = 10 ; sans(b r) #h(0em) sans(l o o p) \( sans(l e t) #h(0em) \( x \, y \) = \( 0 \, 1 \) ; \( x + 1 \, y \* \( x + 1 \) \) \)\
+= \[ sans(l o o p) \( i_0 \, a_0 \) mapsto sans(l e t) #h(0em) \( x \, y \) = \( i_0 \, a_0 \) ; #h(0em) \( x + 1 \, y \* x + 1 \) \] \( sans(l e t) #h(0em) n = 10 ; sans(b r) #h(0em) sans(l o o p) \( 0 \, 1 \) \) $
+Rewrites like this are an instance of the principle we call
+#emph[dinaturality], which, for structured control-flow, can be best
+expressed as an equivalence between the control-flow graphs in
+Figure~#todo[Resolve source reference `fig:dinat-struct-cfg.` during integration.] Unlike in the case of uniformity, however,
+this is true even when the program fragment $P$ is #emph[impure],
+since, unlike in the case of general uniformity, we do not commute $P$
+over an infinite number of iterations. Our final rewriting rule, dinat,
+generalises the above rewrite from sequential composition on a
+structured control-flow graph to label substitution on an arbitrary
+control-flow graph.
+
+#figure([],
+  caption: [
+    Dinaturality on a structured loop
+  ]
+)
+<fig:dinat-struct-cfg>
+
+We require a separate rule for impure dinaturality as it allows us to
+relate unary and $n$-ary $sans(w h e r e)$-blocks and, in particular,
+use this relationship to interconvert between data-flow and
+control-flow. This means we now have enough equations to derive the
+flattening of nested $sans(w h e r e)$-blocks:
+#todo[Port the following preserved source equation or proof-tree display to native Typst.]
+\$\$\\prftree\[r\]{{\\scriptsize\\textsf{cfg-fuse}}}
+    {\\Gamma \\vdash r \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_i(A\_i),)\_{i \\in I}, (\\kappa\_j(B\_j),)\_{j \\in I}}
+    {
+      \\prfStackPremises{
+        \\forall i \\in I. \\Gamma, x\_i : A\_i \\vdash t\_i \\rhd
+        \\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in I}
+      }{
+        \\forall i \\in I. \\Gamma, y\_i : B\_i \\vdash s\_i \\rhd
+        \\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in J}, (\\kappa\_k(B\_k),)\_{k \\in K}
+      }
+    }
+    {
+      \\prfStackPremises{
+        \\Gamma \\vdash
+          (r\\;\\ensuremath{\\mathsf{where}}\\;(\\kappa\_k(y\_k) :\\{s\_k\\}),)\_{k \\in K}\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_i(x\_i) :\\{t\_i\\}),)\_{i \\in I}
+      }{
+        \\hspace{8em}
+        \\approx r\\;\\ensuremath{\\mathsf{where}}\\;(\\kappa\_k(y\_k) :\\{s\_k\\},)\_{k \\in K},
+                (\\ell\_i(x\_i) :\\{t\_i\\}),)\_{i \\in I}
+        \\rhd \\ensuremath{\\mathsf{L}}
+      }
+    }
+    \\label{eqn:where-fusion-1}\$\$ Rather than directly giving
+derivation trees for such auxilliary rules, it is more convenient to
+give a denotational proof. However, the completeness of our equational
+theory (proved in Section~#todo[Resolve source reference `ssec:completeness` during integration.]) means that the semantic
+equality implies the existence of the requisite derivation tree. A proof
+can be found in Lemma~#todo[Resolve source reference `lem:where-fusion` during integration.] in the appendix. This is one of
+the benefits of having a completeness result: it lets us switch freely
+between equational and denotational modes of reasoning.
+
+There are some other basic rules we may want to use which turn out to be
+derivable from our existing set. For example, while re-ordering labels
+in a $sans(w h e r e)$-block looks like a no-op in our named syntax, to
+rigorously justify the following rule actually requires dinaturality
+(with the permutation done via a label-substitution):
+#todo[Port the following preserved source equation or proof-tree display to native Typst.]
+\$\$\\prftree\[r\]{{\\scriptsize\\textsf{perm-cfg}}}
+    {\\Gamma \\vdash r \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_i(A\_i),)\_{i \\in I}}
+    {\\forall i \\in I. \\Gamma, x\_i : A\_i \\vdash t\_i \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in I}}
+    {\\sigma\\;\\text{permutation}}
+    {\\Gamma \\vdash r\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_i(x\_i) :\\{t\_i\\},)\_{i \\in I} \\approx r\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_{\\sigma\_i}(x\_{\\sigma\_i}) :\\{t\_{\\sigma\_i}\\},)\_{i \\in I} \\rhd {\\ensuremath{\\mathsf{L}}}}\$\$
+Note the implicit use of the fact that if some region $r$ typechecks in
+some label-context $sans(L)$, then it typechecks in any permutation of
+$sans(L)$, which is again proven by label-substitution.
+
+== Metatheory
+<metatheory>
+We can now begin to investigate the metatheoretic properties of our
+equational theory. As a first sanity check, we can verify that
+weakening, label-weakening, and loosening of effects all respect our
+equivalence relation, as stated in the following lemma:
+
+#block[
+Given $Gamma lt.eq Delta$, $sans(L) lt.eq sans(K)$, and
+$epsilon.alt lt.eq epsilon.alt'$, we have that
+
++ $Delta tack.r_epsilon.alt a approx a' : A arrow.r.double.long Gamma tack.r_(epsilon.alt') a approx a' : A$
+
++ $Delta tack.r r approx r' gt.tri sans(L) arrow.r.double.long Gamma tack.r r approx r' gt.tri sans(K)$
+
+]
+#block[
+#emph[Proof.] These are formalized as:
+
++ `Term.InS.wk_congr` and `Term.InS.wk_eff_congr` in
+  `Rewrite/Term/Setoid.lean`
+
++ `Region.InS.vwk_congr` and `Region.InS.lwk_congr` in
+  `Rewrite/Region/Setoid.lean`
+
+~◻
+
+]
+It is straightforward to verify that these are indeed equivalence
+relations. In fact, it turns out that substitution and
+label-substitution both respect these equivalences, in the following
+precise sense:
+
+#block[
+Given $gamma approx gamma' : Gamma mapsto Delta$, we have that
+
++ $Delta tack.r_epsilon.alt a approx a' : A arrow.r.double.long Gamma tack.r_epsilon.alt \[ gamma \] a approx \[ gamma' \] a' : A$
+
++ $Delta tack.r r approx r' gt.tri sans(L) arrow.r.double.long Gamma tack.r \[ gamma \] r approx \[ gamma' \] r' gt.tri sans(L)$
+
++ $rho approx rho' : Delta mapsto Xi arrow.r.double.long \[ gamma \] rho approx \[ gamma' \] rho' : Gamma mapsto Xi$
+
++ $sigma approx sigma' tack.r Delta : sans(L) arrow.r.squiggly sans(K) arrow.r.double.long \[ gamma \] sigma approx \[ gamma' \] sigma' tack.r Gamma : sans(L) arrow.r.squiggly sans(K)$
+
+]
+#block[
+#emph[Proof.] These are formalized as:
+
++ `Term.InS.subst_congr` in `Rewrite/Term/Setoid.lean`
+
++ `Region.InS.vsubst_congr` in `Rewrite/Region/Setoid.lean`
+
++ `Term.Subst.InS.comp_congr` in `Rewrite/Term/Setoid.lean`
+
++ `Region.Subst.InS.vsubst_congr` in `Rewrite/Region/LSubst.lean`
+
+~◻
+
+]
+In particular, note that this lemma uses an equivalence relation on
+substitutions and label-substitutions: this is just the obvious
+pointwise extension of the equivalence relation on terms and regions
+respectively. We give the rules for this relation in
+Figure~#todo[Resolve source reference `fig:ssa-subst-equiv` during integration.] in the interests of explicitness.
+
+#block[
+Given
+$sigma approx sigma' tack.r Gamma : sans(L) arrow.r.squiggly sans(K)$,
+we have that
+
++ $Gamma tack.r r approx r' gt.tri sans(L) arrow.r.double.long Gamma tack.r \[ sigma \] r approx \[ sigma' \] r' gt.tri sans(K)$
+
++ $kappa approx kappa' tack.r Gamma : sans(L) arrow.r.squiggly sans(J) arrow.r.double.long \[ sigma \] kappa approx \[ sigma' \] kappa' tack.r Gamma : sans(K) arrow.r.squiggly sans(J)$
+
+]
+#block[
+#emph[Proof.] These are formalized as:
+
++ `Region.InS.lsubst_congr` in `Rewrite/Region/LSubst.lean`
+
++ `Region.LSubst.InS.comp_congr` in `Rewrite/Region/LSubst.lean`
+
+~◻
+
+]
+This means, in particular, that, substitution and label-substitution are
+well-defined operators on equivalence classes of terms, which will come
+in handy later as we set out to prove completeness in
+Section~#todo[Resolve source reference `ssec:completeness.` during integration.]
+
+#todo[Port the following preserved source proof-tree display to native Typst.]
+#figure([\$\$\\begin{gathered}
+      \\prftree\[r\]{{\\scriptsize\\textsf{sb-nil}}}{\\cdot \\approx\\cdot: \\Gamma \\mapsto \\cdot} \\qquad
+      \\prftree\[r\]{{\\scriptsize\\textsf{sb-cons}}}
+        {\\Gamma \\vdash\_{\\bot} a \\approx a\' : {A}}{\\gamma \\approx\\gamma\': \\Gamma \\mapsto \\Delta}
+        {\\gamma, x \\mapsto a \\approx\\gamma\', x \\mapsto a\': \\Gamma \\mapsto \\Delta, x : A}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{sb-skip-l}}}
+        {\\gamma \\approx\\gamma\': \\Gamma \\mapsto \\Delta}
+        {\\gamma, x \\mapsto a \\approx\\gamma\': \\Gamma \\mapsto \\Delta} \\qquad
+      \\prftree\[r\]{{\\scriptsize\\textsf{sb-skip-r}}}
+        {\\gamma \\approx\\gamma\': \\Gamma \\mapsto \\Delta}
+        {\\gamma \\approx\\gamma\', x \\mapsto a\': \\Gamma \\mapsto \\Delta}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{ls-nil}}}{\\lbseq{\\cdot}{\\cdot}{\\cdot}{\\ensuremath{\\mathsf{K}}}} \\qquad
+      \\prftree\[r\]{{\\scriptsize\\textsf{ls-cons}}}
+        {\\Gamma, x : A \\vdash r \\approx r\' \\rhd {\\ensuremath{\\mathsf{K}}}}
+        {\\sigma \\approx\\sigma\' \\vdash \\Gamma: \\ensuremath{\\mathsf{L}} \\rightsquigarrow \\ensuremath{\\mathsf{K}}}
+        {\\sigma, \\ell(x) \\mapsto r \\approx\\sigma\', \\ell(x) \\mapsto r\' \\vdash \\Gamma: \\ensuremath{\\mathsf{L}}, \\ell(A) \\rightsquigarrow \\ensuremath{\\mathsf{K}}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{ls-skip-l}}}
+        {\\sigma \\approx\\sigma\' \\vdash \\Gamma: \\ensuremath{\\mathsf{L}} \\rightsquigarrow \\ensuremath{\\mathsf{K}}}
+        {\\sigma, \\ell(x) \\mapsto r \\approx\\sigma\' \\vdash \\Gamma: \\ensuremath{\\mathsf{L}} \\rightsquigarrow \\ensuremath{\\mathsf{K}}}
+        \\qquad
+      \\prftree\[r\]{{\\scriptsize\\textsf{ls-skip-r}}}
+        {\\sigma \\approx\\sigma\' \\vdash \\Gamma: \\ensuremath{\\mathsf{L}} \\rightsquigarrow \\ensuremath{\\mathsf{K}}}
+        {\\sigma \\approx\\sigma\', \\ell(x) \\mapsto r\' \\vdash \\Gamma: \\ensuremath{\\mathsf{L}} \\rightsquigarrow \\ensuremath{\\mathsf{K}}}
+      \\\\
+      \\prftree\[r\]{{\\scriptsize\\textsf{sb-id}}}
+        {\\gamma \\approx\\gamma\': \\Gamma, x : A \\mapsto \\Delta, x : A}
+        {\\gamma \\approx\\gamma\': \\Gamma \\mapsto \\Delta} \\qquad
+      \\prftree\[r\]{{\\scriptsize\\textsf{ls-id}}}
+        {\\sigma \\approx\\sigma\' \\vdash \\Gamma: \\ensuremath{\\mathsf{L}}, \\ell(A) \\rightsquigarrow \\ensuremath{\\mathsf{K}}, \\ell(A)}
+        {\\sigma \\approx\\sigma\' \\vdash \\Gamma: \\ensuremath{\\mathsf{L}} \\rightsquigarrow \\ensuremath{\\mathsf{K}}}
+
+  \\end{gathered}\$\$
+
+  ],
+  caption: [
+    Rules for the equivalence relation on #lssa
+    substitutions and label-substitutions
+  ]
+)
+<fig:ssa-subst-equiv>
+
+== Standard SSA
+<ssec:ssa-normal>
+The relaxation of SSA to #lssa allows us to state our
+equational theory and handle substitution more conveniently. However,
+this approach may lead readers to question whether we have truly
+provided a type-theoretic presentation of SSA as it is used in practice.
+The argument given in the introduction for why this is the case can be
+re-stated as the following series of explicit claims:
+
++ Every #lssa region can be converted to an equivalent
+  lexical SSA region <claim:ssa-conv>
+
++ <claim:ssa-erase> Every lexical SSA region can be erased to a
+  well-formed SSA program by removing "$sans(w h e r e)$"
+
++ Every well-formed SSA program can be typed as a lexical SSA region
+  purely by adding "$sans(w h e r e)$" <claim:ssa-wf>. Moreover, a way
+  to do this can be found in nearly linear time.
+
++ Two lexical SSA regions which erase to the same SSA program are
+  equivalent <claim:ssa-inj>
+
+Claim~#todo[Resolve source reference `claim:ssa-inj` during integration.] implies that the mappings given in
+Claim~#todo[Resolve source reference `claim:ssa-erase` during integration.] and Claim~#todo[Resolve source reference `claim:ssa-wf` during integration.] establish an equivalence
+(up to our equational theory) between lexical SSA and traditional SSA.
+This means that the choice of where-bracketing that converts an SSA
+program into a lexical SSA program is semantically irrelevant. In other
+words, where-bracketing only makes dominance syntactically apparent,
+letting us give syntax-directed rules for typing SSA programs.
+
+We establish this claim in two phases. First, we will show that
+#lssa can be transformed (in linear space) into an
+equivalent lexical SSA program. Next, we will show that ordinary and
+lexical SSA can be transformed into one another by adding and removing
+where-blocks.
+
+Converting #lssa directly to lexical SSA can be
+unwieldy. Therefore, we break the transformation down into two lowering
+passes:
+
++ We first convert #lssa into to a subset corresponding
+  to A-normal form (ANF) extended with mutually recursive
+  $sans(w h e r e)$-bindings
+
++ We then convert the resulting ANF regions into lexical SSA
+
+=== From #lssa to A-Normal Form
+<from-lambda_ensuremathmathsfssa-to-a-normal-form>
+Our first step is to extend the work of
+#todo[Restore prose citation `chakravarty-functional-ssa-2003` during integration.];, by providing
+an algorithm for converting between #lssa and ANF in an
+equivalence-preserving way. We define the ANF regions, whose grammar is
+given in Figure~#todo[Resolve source reference `fig:anf-grammar` during integration.], to be #lssa regions
+with expressions restricted to operations $o$; equivalently, we can view
+ANF regions as lexical SSA regions with the syntactic category of
+regions $r$ and terminators $tau$ fused. We may now introduce the
+following predicates on syntax:
+
+- $sans(I s A N F) \( r \)$ means that the region $r$ is in ANF
+
+- $sans(I s S S A) \( r \)$ means that the region $r$ is a lexical SSA
+  region. We note that
+  $sans(I s S S A) \( r \) arrow.r.double.long sans(I s A N F) \( r \)$.
+
+- $sans(I s V a l) \( a \)$ means that the expression $a$ can be parsed
+  as a value $v$
+
+- $sans(I s O p) \( a \)$ means that the expression $a$ can be parsed as
+  an instruction $o$. We note that
+  $sans(I s V a l) \( a \) arrow.r.double.long sans(I s O p) \( a \)$.
+
+We can define a syntactic function to convert an #lssa
+region to ANF inductively as follows:
+$ sans(A N F) \( sans(b r) #h(0em) ell #h(0em) a \) & = sans(A N F)_(sans(l e t)) \( x \, a \, sans(b r) #h(0em) ell #h(0em) x \)\
+sans(A N F) \( sans(l e t) #h(0em) x = a ; #h(0em) r \) & = sans(A N F)_(sans(l e t)) \( x \, a \, sans(A N F) \( r \) \)\
+sans(A N F) \( sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) r \) & = sans(A N F)_(sans(l e t)) \( z \, a \, sans(l e t) #h(0em) \( x \, y \) = z ; sans(A N F) \( r \) \)\
+sans(A N F) \( sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : r \, iota_r #h(0em) y : s } \) & = sans(A N F)_(sans(l e t)) \( z \, a \, sans(c a s e) #h(0em) z #h(0em) { iota_l #h(0em) x : sans(A N F) \( r \) \, iota_r #h(0em) y : sans(A N F) \( s \) } \)\
+sans(A N F) \( r #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i \) & = sans(A N F) \( r \) #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { sans(A N F) \( t_i \) } \, \)_i $
+where we define $sans(A N F)_(sans(l e t)) \( x \, a \, r \)$ by
+induction on expressions $a$ as follows
+$ sans(A N F)_(sans(l e t)) \( x \, a \, r \) & = \( sans(l e t) #h(0em) x = a ; r \) #h(8em) upright("if") #h(0em) sans(I s O p) \( a \)\
+sans(A N F)_(sans(l e t)) \( x \, f #h(0em) e \, r \) & = sans(A N F)_(sans(l e t)) \( y \, e \, sans(l e t) #h(0em) x = f #h(0em) y ; r \)\
+sans(A N F)_(sans(l e t)) \( x \, \( sans(l e t) #h(0em) y = e ; #h(0em) a \) \, r \) & = sans(A N F)_(sans(l e t)) \( y \, e \, sans(A N F)_(sans(l e t)) \( x \, a \, r \) \)\
+sans(A N F)_(sans(l e t)) \( x \, \( e_1 \, e_2 \) \, r \) & = sans(A N F)_(sans(l e t)) \( y_1 \, e_1 \, sans(A N F)_(sans(l e t)) \( y_2 \, e_2 \, sans(A N F)_(sans(l e t)) \( x \, \( y_1 \, y_2 \) \, r \) \) \)\
+sans(A N F)_(sans(l e t)) \( x \, \( sans(l e t) #h(0em) \( y \, z \) = e ; #h(0em) a \) \, r \) & = sans(A N F)_(sans(l e t)) \( w \, e \, \( sans(l e t) #h(0em) \( y \, z \) = w ; sans(A N F)_(sans(l e t)) \( x \, a \, r \) \) \)\
+sans(A N F)_(sans(l e t)) \( x \, iota_l #h(0em) e \, r \) & = sans(A N F)_(sans(l e t)) \( y \, e \, \( sans(l e t) #h(0em) x = iota_l #h(0em) y ; r \) \)\
+sans(A N F)_(sans(l e t)) \( x \, iota_r #h(0em) e \, r \) & = sans(A N F)_(sans(l e t)) \( y \, e \, \( sans(l e t) #h(0em) x = iota_r #h(0em) y ; r \) \)\
+sans(A N F)_(sans(l e t)) \( x \, sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) y : a \, iota_r #h(0em) z : b } \, r \) & = sans(A N F)_(sans(l e t)) \( w \, e \, sans(c a s e) #h(0em) w\
+ & #h(2em) #h(0em) { iota_l #h(0em) y : sans(A N F)_(sans(l e t)) \( x \, a \, sans(b r) #h(0em) ell #h(0em) x \) \, iota_r #h(0em) z : sans(A N F)_(sans(l e t)) \( x \, b \, sans(b r) #h(0em) ell #h(0em) x \) }\
+ & #h(2em) #h(0em) sans(w h e r e) #h(0em) ell \( x \) : { sans(A N F) \( r \) } \)\
+sans(A N F)_(sans(l e t)) \( x \, sans(a b o r t) #h(0em) e \, r \) & = sans(A N F)_(sans(l e t)) \( y \, e \, \( sans(l e t) #h(0em) x = sans(a b o r t) #h(0em) y ; r \) \) $
+We note that, to get to ANF, we don't actually need the new label, and
+can instead replace each branch with
+$sans(A N F)_(sans(l e t)) \( x \, a \, r \)$; introducing the label is
+only necessary to guarantee that the transformation to ANF is
+#emph[linear-space]. The specification of the functions we just defined
+is given by the following lemma:
+
+#block[
+Given an arbitrary region $r$, we have that
+
+- $sans(I s A N F) \( sans(A N F) \( r \) \)$
+
+- If $Gamma tack.r r gt.tri sans(L)$, then
+  $Gamma tack.r r approx sans(A N F) \( r \) gt.tri sans(L)$
+
+Similarly, given an arbitrary variable $x$, expression $a$ and region
+$r$ If we are also given an arbitrary expression $a$, then
+
+- $sans(I s A N F) \( r \) arrow.r.double.long sans(I s A N F) \( sans(A N F)_(sans(l e t)) \( x \, a \, r \) \)$
+
+- If $Gamma tack.r_epsilon.alt a : A$ and
+  $Gamma \, x : A tack.r r gt.tri sans(L)$, then
+  $Gamma tack.r sans(l e t) #h(0em) x = a ; r approx sans(A N F)_(sans(l e t)) \( x \, a \, r \) gt.tri sans(L)$
+
+]
+#block[
+#emph[Proof.] See Appendix~#todo[Resolve source reference `proof:anf-conversion` during integration.]~◻
+
+]
+#figure([#block[
+  #block[
+  \<$v$\> ::= $x$ | $\( v \, v' \)$ | $\( \)$
+
+  \<$o$\> ::= $v$ | $f #h(0em) v$ | $iota_l #h(0em) v$ |
+  $iota_r #h(0em) v$ | $sans(a b o r t) #h(0em) v$
+
+  \<$r \, s \, t$\> ::= $sans(l e t) #h(0em) x = o ; t$ |
+  $sans(l e t) #h(0em) \( x \, y \) = o ; t$ |
+  $t #h(0em) sans(w h e r e) #h(0em) L$ |
+  $sans(b r) #h(0em) ell #h(0em) o$ |
+  $sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) o : s \, iota_r #h(0em) y : t }$
+
+  \<$L$\> ::= $dot.op$ | $L \, ell \( x \) : { t }$
+
+  ]
+  ]],
+  caption: [
+    Grammar for ANF regions
+  ]
+)
+<fig:anf-grammar>
+
+=== From ANF to (Lexical) SSA
+<from-anf-to-lexical-ssa>
+We would now like to define a syntactic linear-space transformation from
+regions $r$ to equivalent lexical SSA regions $sans(S S A) \( r \)$. We
+do this by giving a pair of mutually syntactic transformations
+$sans(S S A) \( r \)$ converting a region to SSA, and
+$sans(S S A)_(sans(a)) \( r \, L \)$ from ANF regions $r$
+#emph[targeting] labels in $L$ to lexical SSA.
+$ sans(S S A) \( r \) & = sans(S S A)_(sans(a)) \( sans(A N F) \( r \) \, dot.op \)\
+sans(S S A)_(sans(a)) \( t \, \( ell_i \( x_i \) : { t_i } \, \)_i \) & = t #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i #h(2em) upright("where") #h(0em) t #h(0em) upright("is a terminator")\
+sans(S S A)_(sans(a)) \( \( sans(l e t) #h(0em) x = a ; r \) \, L \) & = \( sans(l e t) #h(0em) x = a ; sans(S S A)_(sans(a)) \( r \, L \) \)\
+sans(S S A)_(sans(a)) \( \( sans(l e t) #h(0em) \( x \, y \) = a ; r \) \, L \) & = \( sans(l e t) #h(0em) \( x \, y \) = a ; sans(S S A)_(sans(a)) \( r \, L \) \)\
+sans(S S A)_(sans(a)) \( \( sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t } \) \, L \) & = \( sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : sans(b r) #h(0em) ell_l #h(0em) x \, iota_r #h(0em) y : sans(b r) #h(0em) ell_r #h(0em) y } \)\
+ & #h(2em) #h(0em) sans(w h e r e) #h(0em) L \, ell_l \( x \) : { sans(S S A) \( s \) } \, ell_r \( y \) : { sans(S S A) \( t \) }\
+sans(S S A)_(sans(a)) \( \( r #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i \) \, L \) & = sans(S S A)_(sans(a)) \( r \, \( L \, \( ell_i \( x_i \) : { sans(S S A) \( t_i \) } \, \)_i \) \) $
+The specification of these functions is as follows:
+
+#block[
+Given an arbitrary region $r$,
+
+- $sans(I s S S A) \( sans(S S A) \( r \) \)$
+
+- If $Gamma tack.r r gt.tri sans(L)$, then
+  $Gamma tack.r r approx sans(S S A) \( r \) gt.tri sans(L)$
+
+In particular,
+
+- If $sans(I s A N F) \( r \)$ and
+  $forall i \, sans(I s S S A) \( t_i \)$, then
+  $sans(I s S S A) \( sans(S S A)_(sans(a)) \( r \, \( ell_i \( x_i \) : { t_i } \, \)_i \) \)$
+
+- If $Gamma tack.r r gt.tri sans(L) \, \( ell_i \( A_i \) \, \)_i$ and
+  $forall i \, Gamma tack.r t_i gt.tri sans(L) \, \( ell_i \( A_i \) \, \)_i$,
+  then
+  $Gamma tack.r \( r #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i \) approx sans(S S A)_(sans(a)) \( r \, \( ell_i \( x_i \) : { t_i } \, \)_i \) gt.tri sans(L)$
+
+]
+#block[
+#emph[Proof.] See Appendix~#todo[Resolve source reference `proof:ssa-conversion` during integration.]~◻
+
+]
+=== From (Lexical) SSA to SSA
+<from-lexical-ssa-to-ssa>
+We now come to the final part of our argument: that lexical SSA is
+equivalent to standard SSA, where we take the
+basic-blocks-with-arguments dialect described in Figure~#todo[Resolve source reference `fig:bba-grammar` during integration.]
+as standard. We begin by recalling how, in Figure~#todo[Resolve source reference `fig:ssa-data` during integration.], we
+illustrated how a lexical SSA region can alternatively be interpreted as
+a tuple of:
+
+- A basic block $beta$ (the #emph[entry block];), consisting of,
+
+  - A sequence of instructions $sans(l e t) #h(0em) x = o ;$
+
+  - A terminator $tau$
+
+- A map from labels $ell$ to subtrees $r$ (the region's
+  #emph[children];), $L$
+
+More formally, given a lexical SSA region $r$, we can define the
+following functions to compute $r$'s entry block and children as follows
+$ sans(e n t r y) \( sans(l e t) #h(0em) x = a ; r \) & = \( sans(l e t) #h(0em) x = a ; sans(e n t r y) \( r \) \)\
+sans(e n t r y) \( sans(l e t) #h(0em) \( x \, y \) = a ; r \) & = \( sans(l e t) #h(0em) \( x \, y \) = a ; sans(e n t r y) \( r \) \)\
+sans(e n t r y) \( tau #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i \) & = tau $
+$ sans(c h i l d r e n) \( sans(l e t) #h(0em) x = a ; r \) & = sans(c h i l d r e n) \( r \)\
+sans(c h i l d r e n) \( sans(l e t) #h(0em) \( x \, y \) = a ; r \) & = sans(c h i l d r e n) \( r \)\
+sans(c h i l d r e n) \( tau #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i \) & = \[ ell_i \( x_i \) : { t_i } \, \]_i $
+We can similarly define a function to construct a lexical SSA program
+from a basic block $beta$ and a set of children as follows:
+#todo[Port the following preserved source equation or proof-tree display to native Typst.]
+\$\$\\begin{aligned}
+  \\ensuremath{\\mathsf{bb}}(\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a; \\beta}, L) &= \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a; \\adddom{\\beta}}{L} \\\\
+  \\ensuremath{\\mathsf{bb}}(\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = a; \\beta}, L) &= \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = a; \\adddom{\\beta}}{L} \\\\
+  \\ensuremath{\\mathsf{bb}}(\\tau, L) &= \\tau\\;\\ensuremath{\\mathsf{where}}\\;L
+  \\end{aligned}\$\$ It is easy to see that these functions are mutually
+inverse: for any lexical SSA region $r$, we have
+$ r = sans(b b) \( sans(e n t r y) \( r \) \, sans(c h i l d r e n) \( r \) \) $
+Some other useful facts about $sans(b b) \( dot.op \, dot.op \)$
+include:
+
+- It is a congruence: if $r approx r'$ and each $t_i approx t_(i')$,
+  $sans(b b) \( r \, \( ell_i \( x_i \) : { t_i } \, \)_i \) approx sans(b b) \( r' \, \( ell_i \( x_i \) : { t_(i') } \, \)_i \)$
+
+- It is invariant up to permutations $sigma$:
+  $sans(b b) \( r \, \( ell_i \( x_i \) : { t_i } \, \)_i \) approx sans(b b) \( r \, \( ell_(sigma_i) \( x_(sigma_i) \) : { t_(sigma_i) } \, \)_i \)$
+
+- Similarly, #emph[if both sides of the equation are well-typed], i.e.,
+
+  - All $t_i$ do not use $y$ or any of the variables defined in $s$
+
+  - All branches to $ell_i$ come from $kappa$ or $ell_j$ (and not from
+    either $r$ or $G$)
+
+  $ sans(b b) \( r \, \( G \, kappa \( y \) : { s } \, \( ell_i \( x_i \) : { t_i } \, \) \) \) approx sans(b b) \( r \, \( G \, kappa \( y \) : { s #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \) } \) \) $
+  and hence
+  $ sans(b b) \( r \, \( G \, kappa \( y \) : { s } \, \( ell_i \( x_i \) : { t_i } \, \) \) \) approx sans(b b) \( r \, \( G \, kappa \( y \) : { sans(b b) \( s \, \( ell_i \( x_i \) : { t_i } \, \) \) } \) \) $
+  In particular, we may apply this rule twice to obtain
+  $ sans(b b) \( r \, \( G \, kappa \( y \) : { sans(b b) \( s \, G' \) } \, \( ell_i \( x_i \) : { t_i } \, \) \) \) approx sans(b b) \( r \, \( G \, kappa \( y \) : { sans(b b) \( s \, G' \, \( ell_i \( x_i \) : { t_i } \, \) \) } \) \) $<eqn:pull-where>
+
+We may hence define a function $sans(c f g) \( dot.op \)$ from lexical
+SSA programs $r$ to control-flow graphs $G$ as follows:
+$ sans(c f g) \( r \) = sans(e n t r y) \( r \) \, \( ell_i \( x_i \) : { sans(c f g) \( t_i \) } \, \)_(\( ell_i \( x_i \) : { t_i } \) in sans(c h i l d r e n) \( r \)) $
+where we recursively flatten
+$ G \, ell \( x \) : { beta \, G' } := G \, ell \( x \) : { beta } \, G' $
+At the level of program text, all this function is doing is "removing
+$sans(w h e r e)$-blocks;" so we'll call the result #emph[reased]. An
+SSA program is #emph[well-formed] if:
+
+- All variable uses are well-typed
+
+- All variable uses respect dominance-based scoping
+
+It is easy to see that any erased program is well-formed, since our
+typing rules guarantee every expression is well-typed, while our lexical
+scoping for values ensures that variables are only visible in the
+children of the block $beta$ in which they are defined, which the
+lexical scoping of labels guarantees are dominated by $beta$.
+
+On the other hand, we may give an algorithm to convert any well-formed
+SSA program $G$ into a well-typed lexical SSA program
+$r = sans(r e g) \( G \)$ as follows:
+
++ Compute the dominance tree of $G$, rooted at its entry block $beta$.
+
++ For each child $ell_i \( x_i \) : { beta_i }$ of $beta$, let $G_i$
+  denote the CFG composed of the descendants of $beta_i$ (with $beta_i$
+  as entry block), given in the order they appear in $G$. Recursively
+  compute $r_i = sans(r e g) \( G_i \)$.
+
++ Return the program
+  $sans(b b) \( beta \, \( ell_i \( x_i \) : { r_i } \, \)_i \)$
+
+We will write $G tilde.eq G'$ to mean "$G$ is a permutation of $G'$"
+(that is, $G$ and $G'$ have the same entry block, but the other labels
+may be reordered). It is easy to see that this algorithm yields a
+lexical SSA program which erases to a permutation of $G$, i.e.,
+$sans(c f g) \( sans(r e g) \( G \) \) tilde.eq G$, as desired. To
+complete our argument, it hence suffices to show that, given lexical SSA
+regions $Gamma tack.r r gt.tri sans(L)$,
+$Gamma tack.r r' gt.tri sans(L)$, such that
+$sans(c f g) \( r \) tilde.eq sans(c f g) \( r' \)$, we have that
+$Gamma tack.r r approx r' gt.tri sans(L)$. We break this down into two
+lemmas:
+
+#block[
+If $G tilde.eq G'$ and
+$Gamma tack.r sans(r e g) \( G \) gt.tri sans(L)$, then
+$Gamma tack.r sans(r e g) \( G' \) gt.tri sans(L)$ and
+$Gamma tack.r sans(r e g) \( G \) approx sans(r e g) \( G' \) gt.tri sans(L)$
+
+]
+#block[
+#emph[Proof.] See Appendix~#todo[Resolve source reference `proof:cfg-perm-invar` during integration.]~◻
+
+]
+#block[
+Given a lexical SSA region $r$ (i.e., assuming
+$sans(I s S S A) \( r \)$) s.t. $Gamma tack.r r gt.tri sans(L)$, we have
+that
+$Gamma tack.r r approx sans(r e g) \( sans(c f g) \( r \) \) gt.tri sans(L)$.
+
+]
+#block[
+#emph[Proof.] See Appendix~#todo[Resolve source reference `proof:cfg-conversion` during integration.]~◻
+
+]
+It follows that, given lexical SSA regions
+$Gamma tack.r r gt.tri sans(L)$ and $Gamma tack.r r' gt.tri sans(L)$, if
+$sans(c f g) \( r \) tilde.eq sans(c f g) \( r' \)$, we have that
+$Gamma tack.r r approx r' gt.tri sans(L)$, as desired, since in
+particular
+$ r approx sans(r e g) \( sans(c f g) \( r \) \) approx sans(r e g) \( sans(c f g) \( r' \) \) approx r' $
