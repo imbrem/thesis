@@ -48,67 +48,22 @@ congruence relation:
   since while their result values are the same, their side effects may
   differ!
 
-#todo[Port the following preserved source proof-tree display to native Typst.]
-#figure([\$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{refl}}}{\\Gamma \\vdash\_{\\epsilon} a: {A}}{\\Gamma \\vdash\_{\\epsilon} a \\approx a : {A}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{trans}}}
-        {\\Gamma \\vdash\_{\\epsilon} a \\approx b : {A}}
-        {\\Gamma \\vdash\_{\\epsilon} b \\approx c : {A}}
-        {\\Gamma \\vdash\_{\\epsilon} a \\approx c : {A}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{symm}}}
-        {\\Gamma \\vdash\_{\\epsilon} a \\approx b : {A}}
-        {\\Gamma \\vdash\_{\\epsilon} b \\approx a : {A}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$}}}
-        {\\Gamma \\vdash\_{\\epsilon} a \\approx a\' : {A}}
-        {\\Gamma, x : A \\vdash\_{\\epsilon} b \\approx b\' : {B}}
-        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;b} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a\';\\;b\'} : {B}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{pair}}}
-        {\\Gamma \\vdash\_{\\epsilon} a \\approx a\' : {A}}
-        {\\Gamma \\vdash\_{\\epsilon} b \\approx b\' : {B}}
-        {\\Gamma \\vdash\_{\\epsilon} (a, b) \\approx(a\', b) : {A \\otimes B}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$}}}
-        {\\Gamma \\vdash\_{\\epsilon} e \\approx e\' : {A \\otimes B}}
-        {\\Gamma, x : A, y : B \\vdash\_{\\epsilon} c \\approx c\' : {C}}
-        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e;\\;c} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e\';\\;c\'} : {C}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{inl}}}
-        {\\Gamma \\vdash\_{\\epsilon} a \\approx a\' : {A}}
-        {\\Gamma \\vdash\_{\\epsilon} \\iota\_l\\;{a} \\approx\\iota\_l\\;{a\'} : {A + B}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{inr}}}
-        {\\Gamma \\vdash\_{\\epsilon} b \\approx b\' : {B}}
-        {\\Gamma \\vdash\_{\\epsilon} \\iota\_r\\;{b} \\approx\\iota\_r\\;{b\'} : {A + B}} \\qquad
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{case}}}
-        {\\Gamma \\vdash\_{\\epsilon} e \\approx e\' : {A + B}}
-        {\\Gamma, x : A \\vdash\_{\\epsilon} a \\approx a\' : {C}}
-        {\\Gamma, y : B \\vdash\_{\\epsilon} b \\approx b\' : {C}}
-        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :a, \\iota\_r\\;{y} :b\\} \\approx\\ensuremath{\\mathsf{case}}\\;e\'\\;\\{\\iota\_l\\;{x} :a\', \\iota\_r\\;{y} :b\'\\} : {C}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{abort}}}
-        {\\Gamma \\vdash\_{\\epsilon} a \\approx a\' : {\\ensuremath{\\mathbf{0}}}}
-        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{abort}}\\;{a} \\approx\\ensuremath{\\mathsf{abort}}\\;{a\'} : {A}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{initial}}}
-        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma \\vdash\_{\\epsilon} a\': {A}}
-        {\\Gamma \\vdash\_{\\bot} e: {\\ensuremath{\\mathbf{0}}}}
-        {\\Gamma \\vdash\_{\\epsilon} a \\approx a\' : {A}}
-        \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{terminal}}}
-        {\\Gamma \\vdash\_{\\bot} a: {\\ensuremath{\\mathbf{1}}}}
-        {\\Gamma \\vdash\_{\\bot} a\': {\\ensuremath{\\mathbf{1}}}}
-        {\\Gamma \\vdash\_{\\epsilon} a \\approx a\' : {\\ensuremath{\\mathbf{1}}}}
-
-  \\end{gathered}\$\$
-
-  ],
-  caption: [
-    Congruence rules for #lssa expressions
-  ]
-)
+#figure([
+  #rule-set(
+    prooftree(rule(label: msc("refl"), eff-typing($Gamma$, $epsilon$, $a$, $A$), eff-typing($Gamma$, $epsilon$, $a approx a$, $A$))),
+    prooftree(rule(label: msc("trans"), eff-typing($Gamma$, $epsilon$, $a approx b$, $A$), eff-typing($Gamma$, $epsilon$, $b approx c$, $A$), eff-typing($Gamma$, $epsilon$, $a approx c$, $A$))),
+    prooftree(rule(label: msc("symm"), eff-typing($Gamma$, $epsilon$, $a approx b$, $A$), eff-typing($Gamma$, $epsilon$, $b approx a$, $A$))),
+    prooftree(rule(label: msc("let1"), eff-typing($Gamma$, $epsilon$, $a approx a'$, $A$), eff-typing($Gamma, x : A$, $epsilon$, $b approx b'$, $B$), eff-typing($Gamma$, $epsilon$, $sans("let") x = a; b approx sans("let") x = a'; b'$, $B$))),
+    prooftree(rule(label: msc("pair"), eff-typing($Gamma$, $epsilon$, $a approx a'$, $A$), eff-typing($Gamma$, $epsilon$, $b approx b'$, $B$), eff-typing($Gamma$, $epsilon$, $(a, b) approx (a', b)$, $A times B$))),
+    prooftree(rule(label: msc("let2"), eff-typing($Gamma$, $epsilon$, $e approx e'$, $A times B$), eff-typing($Gamma, x : A, y : B$, $epsilon$, $c approx c'$, $C$), eff-typing($Gamma$, $epsilon$, $sans("let") (x, y) = e; c approx sans("let") (x, y) = e'; c'$, $C$))),
+    prooftree(rule(label: msc("inl"), eff-typing($Gamma$, $epsilon$, $a approx a'$, $A$), eff-typing($Gamma$, $epsilon$, $iota_l a approx iota_l a'$, $A + B$))),
+    prooftree(rule(label: msc("inr"), eff-typing($Gamma$, $epsilon$, $b approx b'$, $B$), eff-typing($Gamma$, $epsilon$, $iota_r b approx iota_r b'$, $A + B$))),
+    prooftree(rule(label: msc("case"), eff-typing($Gamma$, $epsilon$, $e approx e'$, $A + B$), eff-typing($Gamma, x : A$, $epsilon$, $a approx a'$, $C$), eff-typing($Gamma, y : B$, $epsilon$, $b approx b'$, $C$), eff-typing($Gamma$, $epsilon$, $sans("case") e {iota_l x : a, iota_r y : b} approx sans("case") e' {iota_l x : a', iota_r y : b'}$, $C$))),
+    prooftree(rule(label: msc("abort"), eff-typing($Gamma$, $epsilon$, $a approx a'$, $upright(bold(0))$), eff-typing($Gamma$, $epsilon$, $sans("abort") a approx sans("abort") a'$, $A$))),
+    prooftree(rule(label: msc("initial"), eff-typing($Gamma$, $epsilon$, $a$, $A$), eff-typing($Gamma$, $epsilon$, $a'$, $A$), eff-typing($Gamma$, $bot$, $e$, $upright(bold(0))$), eff-typing($Gamma$, $epsilon$, $a approx a'$, $A$))),
+    prooftree(rule(label: msc("terminal"), eff-typing($Gamma$, $bot$, $a$, $upright(bold(1))$), eff-typing($Gamma$, $bot$, $a'$, $upright(bold(1))$), eff-typing($Gamma$, $epsilon$, $a approx a'$, $upright(bold(1))$))),
+  )
+], caption: [Congruence rules for #lssa expressions])
 <fig:ssa-expr-congr-rules>
 
 We may group the rest of our rules according to the relevant
@@ -149,80 +104,17 @@ summarized in Figure~#todo[Resolve source reference `fig:ssa-unary-let-expr:` du
   Note in particular that, since both sides are well-typed, $d$ cannot
   depend on either $x$ or $y$.
 
-#todo[Port the following preserved source proof-tree display to native Typst.]
-#figure([\$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-\$\\beta\$}}}
-        {\\Gamma \\vdash\_{\\bot} a: {A}}
-        {\\Gamma, x : A \\vdash\_{\\epsilon} b: {B}}
-        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;b} \\approx\[b/x\]a : {B}}
-      \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-\$\\eta\$}}}
-        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;x} \\approx a : {A}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-op}}}
-        {f \\in \\ensuremath{\\mathcal{I}}\_{\\epsilon}(A, B)}
-        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma, y : B \\vdash\_{\\epsilon} c: {C}}
-        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = f\\;a;\\;c} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = f\\;x;\\;c}} : {C}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-let\$\_1\$}}}
-        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma, x : A \\vdash\_{\\epsilon} b: {B}}
-        {\\Gamma, y : B \\vdash\_{\\epsilon} c: {C}}
-        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = (\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;b});\\;c} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = b;\\;c}} : {C}}
-      \\\\
-      %
-      %
-      %
-      %
-      %
-      %
-      %
-      %
-      %
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-let\$\_2\$}}}
-        {\\Gamma \\vdash\_{\\epsilon} e: {A \\times B}}
-        {\\Gamma, x : A, y : C \\vdash\_{\\epsilon} c: {C}}
-        {\\Gamma, z : C \\vdash\_{\\epsilon} d: {D}}
-        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e;\\;c});\\;d} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = c;\\;d}} : {D}}
-      \\\\
-      %
-      %
-      %
-      %
-      %
-      %
-      %
-      %
-      %
-      %
-      %
-      %
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-abort}}}
-        {\\Gamma \\vdash\_{\\epsilon} a: {\\ensuremath{\\mathbf{0}}}}
-        {\\Gamma, y : A \\vdash\_{\\epsilon} b: {B}}
-        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = \\ensuremath{\\mathsf{abort}}\\;{b};\\;b} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = \\ensuremath{\\mathsf{abort}}\\;{x};\\;b}} : {B}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-case}}}
-        {\\Gamma \\vdash\_{\\epsilon} e: {A + B}}
-        {\\Gamma, x : A \\vdash\_{\\epsilon} a: {C}}
-        {\\Gamma, y : B \\vdash\_{\\epsilon} b: {C}}
-        {\\Gamma, z : C \\vdash\_{\\epsilon} d: {D}}
-        {
-          \\prfStackPremises
-          {\\Gamma \\vdash\_\\epsilon \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (\\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :a, \\iota\_r\\;{y} :b\\});\\;d}}
-          {\\hspace{6em} \\approx\\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = a;\\;d}, \\iota\_r\\;{y} :\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = b;\\;d}\\} : D}
-        }
-
-  \\end{gathered}\$\$
-
-  ],
-  caption: [
-    Rewriting rules for #lssa unary $sans(l e t)$
-    expressions
-  ]
-)
+#figure([
+  #rule-set(
+    prooftree(rule(label: msc("let1-beta"), eff-typing($Gamma$, $bot$, $a$, $A$), eff-typing($Gamma, x : A$, $epsilon$, $b$, $B$), eff-typing($Gamma$, $epsilon$, $sans("let") x = a; b approx [b/x]a$, $B$))),
+    prooftree(rule(label: msc("let1-eta"), eff-typing($Gamma$, $epsilon$, $a$, $A$), eff-typing($Gamma$, $epsilon$, $sans("let") x = a; x approx a$, $A$))),
+    prooftree(rule(label: msc("let1-op"), $f in cal(I)_epsilon(A, B)$, eff-typing($Gamma$, $epsilon$, $a$, $A$), eff-typing($Gamma, y : B$, $epsilon$, $c$, $C$), eff-typing($Gamma$, $epsilon$, $sans("let") y = f a; c approx sans("let") x = a; sans("let") y = f x; c$, $C$))),
+    prooftree(rule(label: msc("let1-let1"), eff-typing($Gamma$, $epsilon$, $a$, $A$), eff-typing($Gamma, x : A$, $epsilon$, $b$, $B$), eff-typing($Gamma, y : B$, $epsilon$, $c$, $C$), eff-typing($Gamma$, $epsilon$, $sans("let") y = (sans("let") x = a; b); c approx sans("let") x = a; sans("let") y = b; c$, $C$))),
+    prooftree(rule(label: msc("let1-let2"), eff-typing($Gamma$, $epsilon$, $e$, $A times B$), eff-typing($Gamma, x : A, y : C$, $epsilon$, $c$, $C$), eff-typing($Gamma, z : C$, $epsilon$, $d$, $D$), eff-typing($Gamma$, $epsilon$, $sans("let") z = (sans("let") (x, y) = e; c); d approx sans("let") (x, y) = e; sans("let") z = c; d$, $D$))),
+    prooftree(rule(label: msc("let1-abort"), eff-typing($Gamma$, $epsilon$, $a$, $upright(bold(0))$), eff-typing($Gamma, y : A$, $epsilon$, $b$, $B$), eff-typing($Gamma$, $epsilon$, $sans("let") y = sans("abort") b; b approx sans("let") x = a; sans("let") y = sans("abort") x; b$, $B$))),
+    prooftree(rule(label: msc("let1-case"), eff-typing($Gamma$, $epsilon$, $e$, $A + B$), eff-typing($Gamma, x : A$, $epsilon$, $a$, $C$), eff-typing($Gamma, y : B$, $epsilon$, $b$, $C$), eff-typing($Gamma, z : C$, $epsilon$, $d$, $D$), eff-typing($Gamma$, $epsilon$, $sans("let") z = (sans("case") e {iota_l x : a, iota_r y : b}); d approx sans("case") e {iota_l x : sans("let") z = a; d, iota_r y : sans("let") z = b; d}$, $D$))),
+  )
+], caption: [Rewriting rules for #lssa unary $sans("let")$ expressions])
 <fig:ssa-unary-let-expr>
 
 Handling the other type constructors is a little simpler: by providing a
@@ -255,53 +147,17 @@ $ \( sans(l e t) #h(0em) \( x \, y \) = f #h(0em) a ; #h(0em) b \) & approx \( s
  & approx \( sans(l e t) #h(0em) z_a = a ; #h(0em) sans(l e t) #h(0em) z_f = f #h(0em) z_a ; #h(0em) sans(l e t) #h(0em) \( x \, y \) = z ; #h(0em) b \)\
  & approx \( sans(l e t) #h(0em) z_a = a ; #h(0em) sans(l e t) #h(0em) \( x \, y \) = f #h(0em) z_a ; #h(0em) b \) $
 
-#todo[Port the following preserved source proof-tree display to native Typst.]
-#figure([\$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$-pair}}}
-        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma \\vdash\_{\\epsilon} b: {B}}
-        {\\Gamma, x : A, y : B \\vdash\_{\\epsilon} c: {C}}
-        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = (a, b);\\;c} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = b;\\;c}} : {C}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$-\$\\eta\$}}}
-        {\\Gamma \\vdash\_{\\epsilon} e: {A \\otimes B}}
-        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e;\\;(x, y)} \\approx e : {A \\otimes B}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$-bind}}}
-        {\\Gamma \\vdash\_{\\epsilon} e: {A \\otimes B}}
-        {\\Gamma, x : A, y : B \\vdash\_{\\epsilon} c: {C}}
-        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e;\\;c} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = e;\\;\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = z;\\;c}} : {C}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{case-inl}}}
-        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma, x : A \\vdash\_{\\epsilon} c: {C}}
-        {\\Gamma, y : B \\vdash\_{\\epsilon} d: {C}}
-        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{case}}\\;\\iota\_l\\;{a}\\;\\{\\iota\_l\\;{x} :c, \\iota\_r\\;{y} :d\\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;c} : {C}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{case-inr}}}
-        {\\Gamma \\vdash\_{\\epsilon} b: {B}}
-        {\\Gamma, x : A \\vdash\_{\\epsilon} c: {C}}
-        {\\Gamma, y : B \\vdash\_{\\epsilon} d: {C}}
-        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{case}}\\;\\iota\_r\\;{b}\\;\\{\\iota\_l\\;{x} :c, \\iota\_r\\;{y} :d\\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = b;\\;d} : {C}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{case-\$\\eta\$}}}
-        {\\Gamma \\vdash\_{\\epsilon} e: {A + B}}
-        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :\\iota\_l\\;{x}, \\iota\_r\\;{y} :\\iota\_r\\;{y}\\} \\approx e : {A + B}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{case-bind}}}
-        {\\Gamma \\vdash\_{\\epsilon} e: {A + B}}
-        {\\Gamma, x : A \\vdash\_{\\epsilon} c: {C}}
-        {\\Gamma, y : B \\vdash\_{\\epsilon} d: {C}}
-        {\\Gamma \\vdash\_{\\epsilon} \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :c, \\iota\_r\\;{y} :d\\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = e;\\;\\ensuremath{\\mathsf{case}}\\;z\\;\\{\\iota\_l\\;{x} :c, \\iota\_r\\;{y} :d\\}} : {C}}
-
-  \\end{gathered}\$\$
-
-  ],
-  caption: [
-    Rewriting rules for #lssa binary $sans(l e t)$ and
-    $sans(c a s e)$ expressions
-  ]
-)
+#figure([
+  #rule-set(
+    prooftree(rule(label: msc("let2-pair"), eff-typing($Gamma$, $epsilon$, $a$, $A$), eff-typing($Gamma$, $epsilon$, $b$, $B$), eff-typing($Gamma, x : A, y : B$, $epsilon$, $c$, $C$), eff-typing($Gamma$, $epsilon$, $sans("let") (x, y) = (a, b); c approx sans("let") x = a; sans("let") y = b; c$, $C$))),
+    prooftree(rule(label: msc("let2-eta"), eff-typing($Gamma$, $epsilon$, $e$, $A times B$), eff-typing($Gamma$, $epsilon$, $sans("let") (x, y) = e; (x, y) approx e$, $A times B$))),
+    prooftree(rule(label: msc("let2-bind"), eff-typing($Gamma$, $epsilon$, $e$, $A times B$), eff-typing($Gamma, x : A, y : B$, $epsilon$, $c$, $C$), eff-typing($Gamma$, $epsilon$, $sans("let") (x, y) = e; c approx sans("let") z = e; sans("let") (x, y) = z; c$, $C$))),
+    prooftree(rule(label: msc("case-inl"), eff-typing($Gamma$, $epsilon$, $a$, $A$), eff-typing($Gamma, x : A$, $epsilon$, $c$, $C$), eff-typing($Gamma, y : B$, $epsilon$, $d$, $C$), eff-typing($Gamma$, $epsilon$, $sans("case") iota_l a {iota_l x : c, iota_r y : d} approx sans("let") x = a; c$, $C$))),
+    prooftree(rule(label: msc("case-inr"), eff-typing($Gamma$, $epsilon$, $b$, $B$), eff-typing($Gamma, x : A$, $epsilon$, $c$, $C$), eff-typing($Gamma, y : B$, $epsilon$, $d$, $C$), eff-typing($Gamma$, $epsilon$, $sans("case") iota_r b {iota_l x : c, iota_r y : d} approx sans("let") y = b; d$, $C$))),
+    prooftree(rule(label: msc("case-eta"), eff-typing($Gamma$, $epsilon$, $e$, $A + B$), eff-typing($Gamma$, $epsilon$, $sans("case") e {iota_l x : iota_l x, iota_r y : iota_r y} approx e$, $A + B$))),
+    prooftree(rule(label: msc("case-bind"), eff-typing($Gamma$, $epsilon$, $e$, $A + B$), eff-typing($Gamma, x : A$, $epsilon$, $c$, $C$), eff-typing($Gamma, y : B$, $epsilon$, $d$, $C$), eff-typing($Gamma$, $epsilon$, $sans("case") e {iota_l x : c, iota_r y : d} approx sans("let") z = e; sans("case") z {iota_l x : c, iota_r y : d}$, $C$))),
+  )
+], caption: [Rewriting rules for #lssa binary $sans("let")$ and $sans("case")$ expressions])
 <fig:ssa-let2-case-expr>
 
 Similarly, it is enough to give $eta$, $beta$, and binding rules for
@@ -388,160 +244,41 @@ rules are given in Figure~#todo[Resolve source reference `fig:ssa-reg-let2-case-
 particular that $eta$-rules are not necessary, as these are derivable
 from binding and the $eta$-rules for expressions.
 
-#todo[Port the following preserved source proof-tree display to native Typst.]
-#figure([\$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{refl}}}{\\Gamma \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}{\\Gamma \\vdash r \\approx r \\rhd {\\ensuremath{\\mathsf{L}}}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{trans}}}{\\Gamma \\vdash r \\approx s \\rhd {\\ensuremath{\\mathsf{L}}}}{\\Gamma \\vdash s \\approx t \\rhd {\\ensuremath{\\mathsf{L}}}}
-        {\\Gamma \\vdash r \\approx t \\rhd {\\ensuremath{\\mathsf{L}}}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{symm}}}{\\Gamma \\vdash r \\approx s \\rhd {\\ensuremath{\\mathsf{L}}}}{\\Gamma \\vdash s \\approx r \\rhd {\\ensuremath{\\mathsf{L}}}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let}}\$\_1\$}
-        {\\Gamma \\vdash\_{\\epsilon} a \\approx a\' : {A}}
-        {\\Gamma, x : A \\vdash r \\approx r\' \\rhd {\\ensuremath{\\mathsf{L}}}}
-        {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a; r} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a\'; r\'} \\rhd {\\ensuremath{\\mathsf{L}}}}
-      \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{let}}\$\_2\$}
-        {\\Gamma \\vdash\_{\\epsilon} e \\approx e\' : {A \\otimes B}}
-        {\\Gamma, x : A, y : B \\vdash r \\approx r\' \\rhd {\\ensuremath{\\mathsf{L}}}}
-        {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e; r} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e\'; r\'} \\rhd {\\ensuremath{\\mathsf{L}}}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{case}}}
-        {\\Gamma \\vdash\_{\\epsilon} e \\approx e\' : {A + B}}
-        {\\Gamma, x : A \\vdash r \\approx r\' \\rhd {\\ensuremath{\\mathsf{L}}}}
-        {\\Gamma, y : B \\vdash s \\approx s\' \\rhd {\\ensuremath{\\mathsf{L}}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :r, \\iota\_r\\;{y} :s\\} \\approx\\ensuremath{\\mathsf{case}}\\;e\'\\;\\{\\iota\_l\\;{x} :r\', \\iota\_r\\;{y} :s\'\\} \\rhd {\\ensuremath{\\mathsf{L}}}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{cfg}}}
-        {\\Gamma \\vdash r \\approx r\' \\rhd {\\ensuremath{\\mathsf{L}}, (\\ell\_i(A\_i),)\_{i \\in I}}}
-        {\\forall i \\in I. \\Gamma, x\_i : A\_i \\vdash t\_i \\approx t\_i\' \\rhd {\\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in I}}}
-        {\\Gamma \\vdash r\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_i(x\_i: A\_i) :\\{t\_i\\},)\_{i \\in I} \\approx r\'\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_i(x\_i: A\_i) :\\{t\_i\'\\},)\_{i \\in I} \\rhd {\\ensuremath{\\mathsf{L}}}
-        }
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{initial}}}
-        {\\Gamma \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\Gamma \\vdash s \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\exists x, \\Gamma\\;x = \\ensuremath{\\mathbf{0}}}
-        {\\Gamma \\vdash r \\approx s \\rhd {\\ensuremath{\\mathsf{L}}}}
-
-  \\end{gathered}\$\$
-
-  ],
-  caption: [
-    Congruence rules for #lssa regions
-  ]
-)
+#figure([
+  #rule-set(
+    prooftree(rule(label: msc("refl"), $Gamma tack.r r gt.tri sans("L")$, $Gamma tack.r r approx r gt.tri sans("L")$)),
+    prooftree(rule(label: msc("trans"), $Gamma tack.r r approx s gt.tri sans("L")$, $Gamma tack.r s approx t gt.tri sans("L")$, $Gamma tack.r r approx t gt.tri sans("L")$)),
+    prooftree(rule(label: msc("symm"), $Gamma tack.r r approx s gt.tri sans("L")$, $Gamma tack.r s approx r gt.tri sans("L")$)),
+    prooftree(rule(label: msc("let1"), eff-typing($Gamma$, $epsilon$, $a approx a'$, $A$), $Gamma, x : A tack.r r approx r' gt.tri sans("L")$, $Gamma tack.r sans("let") x = a; r approx sans("let") x = a'; r' gt.tri sans("L")$)),
+    prooftree(rule(label: msc("let2"), eff-typing($Gamma$, $epsilon$, $e approx e'$, $A times B$), $Gamma, x : A, y : B tack.r r approx r' gt.tri sans("L")$, $Gamma tack.r sans("let") (x, y) = e; r approx sans("let") (x, y) = e'; r' gt.tri sans("L")$)),
+    prooftree(rule(label: msc("case"), eff-typing($Gamma$, $epsilon$, $e approx e'$, $A + B$), $Gamma, x : A tack.r r approx r' gt.tri sans("L")$, $Gamma, y : B tack.r s approx s' gt.tri sans("L")$, $Gamma tack.r sans("case") e {iota_l x : r, iota_r y : s} approx sans("case") e' {iota_l x : r', iota_r y : s'} gt.tri sans("L")$)),
+    prooftree(rule(label: msc("cfg"), $Gamma tack.r r approx r' gt.tri sans("L"), (ell_i(A_i),)_(i in I)$, $forall i in I. Gamma, x_i : A_i tack.r t_i approx t_i' gt.tri sans("L"), (ell_j(A_j),)_(j in I)$, $Gamma tack.r r sans("where") (ell_i(x_i : A_i) : {t_i},)_(i in I) approx r' sans("where") (ell_i(x_i : A_i) : {t_i'},)_(i in I) gt.tri sans("L")$)),
+    prooftree(rule(label: msc("initial"), $Gamma tack.r r gt.tri sans("L")$, $Gamma tack.r s gt.tri sans("L")$, $exists x, Gamma x = upright(bold(0))$, $Gamma tack.r r approx s gt.tri sans("L")$)),
+  )
+], caption: [Congruence rules for #lssa regions])
 <fig:ssa-reg-congr-rules>
 
-#todo[Port the following preserved source proof-tree display to native Typst.]
-#figure([\$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-\$\\beta\$}}}
-        {\\Gamma \\vdash\_{\\bot} a: {A}}
-        {\\Gamma, x : A \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a; r} \\approx\[a/x\]r \\rhd {\\ensuremath{\\mathsf{L}}}}
-      \\\\
-        \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-op}}}
-        {f \\in \\ensuremath{\\mathcal{I}}\_{\\epsilon}(A, B)}
-        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma, y : B \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = f\\;a; r} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a; \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = f\\;x; r}} \\rhd {\\ensuremath{\\mathsf{L}}}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_{1}\$-let\$\_1\$}}}
-        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma, x : A \\vdash\_{\\epsilon} b: {B}}
-        {\\Gamma, y : B \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = (\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a;\\;b}); r} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a; \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = b; r}} \\rhd {\\ensuremath{\\mathsf{L}}}}
-      \\\\
-      %
-      %
-      %
-      %
-      %
-      %
-      %
-      %
-      %
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_{1}\$-let\$\_2\$}}}
-        {\\Gamma \\vdash\_{\\epsilon} e: {A \\otimes B}}
-        {\\Gamma, x : A, y : B \\vdash\_{\\epsilon} c: {C}}
-        {\\Gamma, z : C \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e;\\;c}); r} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e; \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = c; r}} \\rhd {\\ensuremath{\\mathsf{L}}}}
-      \\\\
-      %
-      %
-      %
-      %
-      %
-      %
-      %
-      %
-      %
-      %
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-case}}}
-        {\\Gamma \\vdash\_{\\epsilon} e: {A + B}}
-        {\\Gamma, x : A \\vdash\_{\\epsilon} a: {C}}
-        {\\Gamma, y : B \\vdash\_{\\epsilon} b: {C}}
-        {\\Gamma, z : C \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
-        {
-          \\prfStackPremises
-          {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = (\\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :a, \\iota\_r\\;{y} :b\\}); r}}
-          {\\hspace{6em} \\approx\\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = a; r}, \\iota\_r\\;{y} :\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = b; r}\\} \\rhd \\ensuremath{\\mathsf{L}}}
-        }
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_1\$-abort}}}
-        {\\Gamma \\vdash\_{\\epsilon} a: {\\ensuremath{\\mathbf{0}}}}
-        {\\Gamma, y : A \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = \\ensuremath{\\mathsf{abort}}\\;{a}; r} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a; \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = \\ensuremath{\\mathsf{abort}}\\;{x}; r}} \\rhd {\\ensuremath{\\mathsf{L}}}}
-
-  \\end{gathered}\$\$
-
-  ],
-  caption: [
-    Rewriting rules for #lssa unary
-    $sans(l e t)$-statements
-  ]
-)
+#figure([
+  #rule-set(
+    prooftree(rule(label: msc("let1-beta"), eff-typing($Gamma$, $bot$, $a$, $A$), $Gamma, x : A tack.r r gt.tri sans("L")$, $Gamma tack.r sans("let") x = a; r approx [a/x]r gt.tri sans("L")$)),
+    prooftree(rule(label: msc("let1-op"), $f in cal(I)_epsilon(A, B)$, eff-typing($Gamma$, $epsilon$, $a$, $A$), $Gamma, y : B tack.r r gt.tri sans("L")$, $Gamma tack.r sans("let") y = f a; r approx sans("let") x = a; sans("let") y = f x; r gt.tri sans("L")$)),
+    prooftree(rule(label: msc("let1-let1"), eff-typing($Gamma$, $epsilon$, $a$, $A$), eff-typing($Gamma, x : A$, $epsilon$, $b$, $B$), $Gamma, y : B tack.r r gt.tri sans("L")$, $Gamma tack.r sans("let") y = (sans("let") x = a; b); r approx sans("let") x = a; sans("let") y = b; r gt.tri sans("L")$)),
+    prooftree(rule(label: msc("let1-let2"), eff-typing($Gamma$, $epsilon$, $e$, $A times B$), eff-typing($Gamma, x : A, y : B$, $epsilon$, $c$, $C$), $Gamma, z : C tack.r r gt.tri sans("L")$, $Gamma tack.r sans("let") z = (sans("let") (x, y) = e; c); r approx sans("let") (x, y) = e; sans("let") z = c; r gt.tri sans("L")$)),
+    prooftree(rule(label: msc("let1-case"), eff-typing($Gamma$, $epsilon$, $e$, $A + B$), eff-typing($Gamma, x : A$, $epsilon$, $a$, $C$), eff-typing($Gamma, y : B$, $epsilon$, $b$, $C$), $Gamma, z : C tack.r r gt.tri sans("L")$, $Gamma tack.r sans("let") z = (sans("case") e {iota_l x : a, iota_r y : b}); r approx sans("case") e {iota_l x : sans("let") z = a; r, iota_r y : sans("let") z = b; r} gt.tri sans("L")$)),
+    prooftree(rule(label: msc("let1-abort"), eff-typing($Gamma$, $epsilon$, $a$, $upright(bold(0))$), $Gamma, y : A tack.r r gt.tri sans("L")$, $Gamma tack.r sans("let") y = sans("abort") a; r approx sans("let") x = a; sans("let") y = sans("abort") x; r gt.tri sans("L")$)),
+  )
+], caption: [Rewriting rules for #lssa unary $sans("let")$-statements])
 <fig:ssa-reg-unary-let>
 
-#todo[Port the following preserved source proof-tree display to native Typst.]
-#figure([\$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$-pair}}}
-        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma \\vdash\_{\\epsilon} b: {B}}
-        {\\Gamma, x : A, y : B \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = (a, b); r} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a; \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = b; r}} \\rhd {\\ensuremath{\\mathsf{L}}}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{let\$\_2\$-bind}}}
-        {\\Gamma \\vdash\_{\\epsilon} e: {A \\otimes B}}
-        {\\Gamma, x : A, y : B \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\Gamma \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e; r} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = e; \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = z; r}} \\rhd {\\ensuremath{\\mathsf{L}}}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{case-inl}}}
-        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma, x : A \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\Gamma, y : B \\vdash s \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathsf{case}}\\;\\iota\_l\\;{a}\\;\\{\\iota\_l\\;{x} :r, \\iota\_r\\;{y} :s\\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a; r} \\rhd {\\ensuremath{\\mathsf{L}}}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{case-inr}}}
-        {\\Gamma \\vdash\_{\\epsilon} b: {B}}
-        {\\Gamma, x : A \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\Gamma, y : B \\vdash s \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\Gamma \\vdash \\ensuremath{\\mathsf{case}}\\;\\iota\_r\\;{b}\\;\\{\\iota\_l\\;{x} :r, \\iota\_r\\;{y} :s\\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = b; s} \\rhd {\\ensuremath{\\mathsf{L}}}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{case-bind}}}
-      {\\Gamma \\vdash\_{\\epsilon} e: {A + B}}
-      {\\Gamma, x : A \\vdash r \\rhd \\ensuremath{\\mathsf{L}}}
-      {\\Gamma, y : B \\vdash s \\rhd \\ensuremath{\\mathsf{L}}}
-      {\\Gamma \\vdash \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :r, \\iota\_r\\;{y} :s\\} \\approx\\ensuremath{\\ensuremath{\\mathsf{let}}\\;z = e; \\ensuremath{\\mathsf{case}}\\;z\\;\\{\\iota\_l\\;{x} :r, \\iota\_r\\;{y} :s\\}} \\rhd {\\ensuremath{\\mathsf{L}}}}
-
-  \\end{gathered}\$\$
-
-  ],
-  caption: [
-    Rewriting rules for #lssa binary
-    $sans(l e t)$-statements and $sans(c a s e)$-statements
-  ]
-)
+#figure([
+  #rule-set(
+    prooftree(rule(label: msc("let2-pair"), eff-typing($Gamma$, $epsilon$, $a$, $A$), eff-typing($Gamma$, $epsilon$, $b$, $B$), $Gamma, x : A, y : B tack.r r gt.tri sans("L")$, $Gamma tack.r sans("let") (x, y) = (a, b); r approx sans("let") x = a; sans("let") y = b; r gt.tri sans("L")$)),
+    prooftree(rule(label: msc("let2-bind"), eff-typing($Gamma$, $epsilon$, $e$, $A times B$), $Gamma, x : A, y : B tack.r r gt.tri sans("L")$, $Gamma tack.r sans("let") (x, y) = e; r approx sans("let") z = e; sans("let") (x, y) = z; r gt.tri sans("L")$)),
+    prooftree(rule(label: msc("case-inl"), eff-typing($Gamma$, $epsilon$, $a$, $A$), $Gamma, x : A tack.r r gt.tri sans("L")$, $Gamma, y : B tack.r s gt.tri sans("L")$, $Gamma tack.r sans("case") iota_l a {iota_l x : r, iota_r y : s} approx sans("let") x = a; r gt.tri sans("L")$)),
+    prooftree(rule(label: msc("case-inr"), eff-typing($Gamma$, $epsilon$, $b$, $B$), $Gamma, x : A tack.r r gt.tri sans("L")$, $Gamma, y : B tack.r s gt.tri sans("L")$, $Gamma tack.r sans("case") iota_r b {iota_l x : r, iota_r y : s} approx sans("let") y = b; s gt.tri sans("L")$)),
+    prooftree(rule(label: msc("case-bind"), eff-typing($Gamma$, $epsilon$, $e$, $A + B$), $Gamma, x : A tack.r r gt.tri sans("L")$, $Gamma, y : B tack.r s gt.tri sans("L")$, $Gamma tack.r sans("case") e {iota_l x : r, iota_r y : s} approx sans("let") z = e; sans("case") z {iota_l x : r, iota_r y : s} gt.tri sans("L")$)),
+  )
+], caption: [Rewriting rules for #lssa binary $sans("let")$-statements and $sans("case")$-statements])
 <fig:ssa-reg-let2-case-expr>
 
 Dealing with $sans(w h e r e)$-blocks, on the other hand, is a little
@@ -713,81 +450,17 @@ $) since, in particular, we may have $y lt.eq x$, in
 which case the loop will never exit and hence $sans(h i)$ will never be
 executed.
 
-#todo[Port the following preserved source proof-tree display to native Typst.]
-#figure([\$\$\\begin{gathered}
-        \\prftree\[r\]{{\\scriptsize\\textsf{cfg-\$\\beta\_1\$}}}
-          {\\Gamma \\vdash\_{\\bot} a: {A\_k}}
-          {\\forall i \\in I. \\Gamma, x\_i : A\_i \\vdash t\_i \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in I}}
-          {\\Gamma \\vdash \\ensuremath{\\mathsf{br}}\\;\\ell\_k\\;a\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_i(x\_i) :\\{t\_i\\},)\_{i \\in I} \\approx(\\ensuremath{\\ensuremath{\\mathsf{let}}\\;x\_k = a; t\_k})\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_i(x\_i) :\\{t\_i\\},)\_{i \\in I} \\rhd {\\ensuremath{\\mathsf{L}}}}
-        \\\\
-        \\prftree\[r\]{{\\scriptsize\\textsf{cfg-\$\\beta\_2\$}}}
-          {\\Gamma \\vdash\_{\\bot} b: {B}}
-          {\\forall i \\in I. \\Gamma, x\_i : A\_i \\vdash t\_i \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in I}}
-          {\\ensuremath{\\mathsf{L}}\\;\\kappa = B}
-          {\\kappa \\notin \\{\\ell\_i \\mid i \\in I\\}}
-          {\\Gamma \\vdash \\ensuremath{\\mathsf{br}}\\;\\kappa\\;b\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_i(x\_i) :\\{t\_i\\},)\_{i \\in I} \\approx\\ensuremath{\\mathsf{br}}\\;\\kappa\\;b \\rhd {\\ensuremath{\\mathsf{L}}}}
-        \\\\
-          \\prftree\[r\]{{\\scriptsize\\textsf{cfg-\$\\eta\$}}}
-          {\\Gamma \\vdash r \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_i(A\_i),)\_{i \\in I}}
-          {\\forall i \\in I. \\Gamma, x\_i : A\_i \\vdash t\_i \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in I}}
-          {
-            \\Gamma \\vdash r\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_i(x\_i) :\\{t\_i\\},)\_{i \\in I} \\approx\[\\ensuremath{\\mathsf{cfgs}}\\;\\{(\\ell\_i(x\_i) :\\{t\_i\\},)\_{i \\in I}\\}\]r \\rhd {\\ensuremath{\\mathsf{L}}}
-          }
-        \\\\
-        \\prftree\[r\]{{\\scriptsize\\textsf{codiag}}}
-          {\\Gamma \\vdash r \\rhd \\ensuremath{\\mathsf{L}}, \\ell(A)}
-          {\\Gamma, y : A \\vdash s \\rhd \\ensuremath{\\mathsf{L}}, \\ell(A), \\kappa(A)}
-          {\\Gamma \\vdash r\\;\\ensuremath{\\mathsf{where}}\\;\\ell(x) :\\{\\ensuremath{\\mathsf{br}}\\;\\kappa\\;x\\;\\ensuremath{\\mathsf{where}}\\;\\kappa(y) :\\{s\\}\\} \\approx r\\;\\ensuremath{\\mathsf{where}}\\;\\ell(y) :\\{\[\\ell/\\kappa\]s\\} \\rhd {\\ensuremath{\\mathsf{L}}}}
-        \\\\
-        \\\\
-        \\prftree\[r\]{{\\scriptsize\\textsf{uni}}}
-          {
-            \\Gamma \\vdash r \\rhd \\ensuremath{\\mathsf{L}}, \\ell(A)
-          }
-          %
-          %
-          %
-          %
-          %
-          %
-          %
-          %
-          %
-          %
-          {
-            \\Gamma, x : A \\vdash \\ensuremath{\\ensuremath{\\mathsf{let}}\\;y = e;\\;s} \\approx t\\;\\ensuremath{\\mathsf{where}}\\;\\ell(x) :\\{\\ensuremath{\\mathsf{br}}\\;\\kappa\\;e\\} \\rhd {\\ensuremath{\\mathsf{L}}, \\kappa(B)}
-          }
-          {
-            \\Gamma \\vdash (r\\;\\ensuremath{\\mathsf{where}}\\;\\ell(x) :\\{\\ensuremath{\\mathsf{br}}\\;\\kappa\\;e\\})\\;\\ensuremath{\\mathsf{where}}\\;\\kappa(y) :\\{s\\} \\approx r\\;\\ensuremath{\\mathsf{where}}\\;t \\rhd {\\ensuremath{\\mathsf{L}}}
-          }
-        \\\\
-        \\text{where} \\qquad
-        {\\Gamma, x : A \\vdash\_{\\bot} e: {B}}, \\quad
-        {\\Gamma, y : B \\vdash s \\rhd \\ensuremath{\\mathsf{L}}, \\kappa(B)}, \\quad \\text{and} \\quad
-        {\\Gamma, x : A \\vdash t \\rhd \\ensuremath{\\mathsf{L}}, \\ell(A)}
-        \\\\
-        \\\\
-        \\prftree\[r\]{{\\scriptsize\\textsf{dinat}}}
-          {\\prfStackPremises{
-            \\Gamma \\vdash r \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_i(A\_i),)\_{i \\in I}
-          }{
-            \\Gamma \\vdash \\sigma: (\\ell\_i(A\_i),)\_{i \\in I} \\rightsquigarrow (\\kappa\_j(B\_j),)\_{j \\in J}
-          }
-          }{
-            \\forall j \\in J. \\Gamma, x\_j : B\_j \\vdash t\_j \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_i(A\_i),)\_{i \\in I}
-          }{
-            \\prfStackPremises
-              {\\Gamma \\vdash (\[{\\sigma}^\\upharpoonleft\]r)\\;\\ensuremath{\\mathsf{where}}\\;(\\kappa\_j(x\_j) :\\{\[{\\sigma}^\\upharpoonleft\]t\_j\\},)\_{j \\in J}}
-              {\\hspace{8em} \\approx r\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_i(x\_i) :\\{\[{(\\kappa\_j(x\_j) \\mapsto t\_j,)\_{j \\in J}}^\\upharpoonleft\](\\sigma\\;\\ell\_i\\;x\_i)\\},)\_{i \\in I}}
-          }
-
-  \\end{gathered}\$\$
-
-  ],
-  caption: [
-    Rewriting rules for #lssa $sans(w h e r e)$-blocks
-  ]
-)
+#figure([
+  #rule-set(
+    prooftree(rule(label: msc("cfg-beta1"), eff-typing($Gamma$, $bot$, $a$, $A_k$), $forall i in I. Gamma, x_i : A_i tack.r t_i gt.tri sans("L"), (ell_j(A_j),)_(j in I)$, $Gamma tack.r sans("br") ell_k a sans("where") (ell_i(x_i) : {t_i},)_(i in I) approx (sans("let") x_k = a; t_k) sans("where") (ell_i(x_i) : {t_i},)_(i in I) gt.tri sans("L")$)),
+    prooftree(rule(label: msc("cfg-beta2"), eff-typing($Gamma$, $bot$, $b$, $B$), $forall i in I. Gamma, x_i : A_i tack.r t_i gt.tri sans("L"), (ell_j(A_j),)_(j in I)$, $sans("L") kappa = B$, $kappa in.not {ell_i | i in I}$, $Gamma tack.r sans("br") kappa b sans("where") (ell_i(x_i) : {t_i},)_(i in I) approx sans("br") kappa b gt.tri sans("L")$)),
+    prooftree(rule(label: msc("cfg-eta"), $Gamma tack.r r gt.tri sans("L"), (ell_i(A_i),)_(i in I)$, $forall i in I. Gamma, x_i : A_i tack.r t_i gt.tri sans("L"), (ell_j(A_j),)_(j in I)$, $Gamma tack.r r sans("where") (ell_i(x_i) : {t_i},)_(i in I) approx [sans("cfgs") {(ell_i(x_i) : {t_i},)_(i in I)}] r gt.tri sans("L")$)),
+    prooftree(rule(label: msc("codiag"), $Gamma tack.r r gt.tri sans("L"), ell(A)$, $Gamma, y : A tack.r s gt.tri sans("L"), ell(A), kappa(A)$, $Gamma tack.r r sans("where") ell(x) : {sans("br") kappa x sans("where") kappa(y) : {s}} approx r sans("where") ell(y) : {[ell/kappa]s} gt.tri sans("L")$)),
+    prooftree(rule(label: msc("uni"), $Gamma tack.r r gt.tri sans("L"), ell(A)$, $Gamma, x : A tack.r sans("let") y = e; s approx t sans("where") ell(x) : {sans("br") kappa e} gt.tri sans("L"), kappa(B)$, $Gamma tack.r (r sans("where") ell(x) : {sans("br") kappa e}) sans("where") kappa(y) : {s} approx r sans("where") t gt.tri sans("L")$)),
+    $upright("where") quad #eff-typing($Gamma, x : A$, $bot$, $e$, $B$), quad Gamma, y : B tack.r s gt.tri sans("L"), kappa(B), quad upright("and") quad Gamma, x : A tack.r t gt.tri sans("L"), ell(A)$,
+    prooftree(rule(label: msc("dinat"), $Gamma tack.r r gt.tri sans("L"), (ell_i(A_i),)_(i in I)$, $Gamma tack.r sigma : (ell_i(A_i),)_(i in I) arrow.r.squiggly (kappa_j(B_j),)_(j in J)$, $forall j in J. Gamma, x_j : B_j tack.r t_j gt.tri sans("L"), (ell_i(A_i),)_(i in I)$, $Gamma tack.r ([sigma^harpoon.tl]r) sans("where") (kappa_j(x_j) : {[sigma^harpoon.tl]t_j},)_(j in J) approx r sans("where") (ell_i(x_i) : {[(kappa_j(x_j) mapsto t_j,)_(j in J)^harpoon.tl](sigma ell_i x_i)},)_(i in I)$)),
+  )
+], caption: [Rewriting rules for #lssa $sans("where")$-blocks])
 <fig:ssa-where-rules>
 
 #figure([#block[
@@ -1043,49 +716,20 @@ well-defined operators on equivalence classes of terms, which will come
 in handy later as we set out to prove completeness in
 Section~#todo[Resolve source reference `ssec:completeness.` during integration.]
 
-#todo[Port the following preserved source proof-tree display to native Typst.]
-#figure([\$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{sb-nil}}}{\\cdot \\approx\\cdot: \\Gamma \\mapsto \\cdot} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{sb-cons}}}
-        {\\Gamma \\vdash\_{\\bot} a \\approx a\' : {A}}{\\gamma \\approx\\gamma\': \\Gamma \\mapsto \\Delta}
-        {\\gamma, x \\mapsto a \\approx\\gamma\', x \\mapsto a\': \\Gamma \\mapsto \\Delta, x : A}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{sb-skip-l}}}
-        {\\gamma \\approx\\gamma\': \\Gamma \\mapsto \\Delta}
-        {\\gamma, x \\mapsto a \\approx\\gamma\': \\Gamma \\mapsto \\Delta} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{sb-skip-r}}}
-        {\\gamma \\approx\\gamma\': \\Gamma \\mapsto \\Delta}
-        {\\gamma \\approx\\gamma\', x \\mapsto a\': \\Gamma \\mapsto \\Delta}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{ls-nil}}}{\\lbseq{\\cdot}{\\cdot}{\\cdot}{\\ensuremath{\\mathsf{K}}}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{ls-cons}}}
-        {\\Gamma, x : A \\vdash r \\approx r\' \\rhd {\\ensuremath{\\mathsf{K}}}}
-        {\\sigma \\approx\\sigma\' \\vdash \\Gamma: \\ensuremath{\\mathsf{L}} \\rightsquigarrow \\ensuremath{\\mathsf{K}}}
-        {\\sigma, \\ell(x) \\mapsto r \\approx\\sigma\', \\ell(x) \\mapsto r\' \\vdash \\Gamma: \\ensuremath{\\mathsf{L}}, \\ell(A) \\rightsquigarrow \\ensuremath{\\mathsf{K}}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{ls-skip-l}}}
-        {\\sigma \\approx\\sigma\' \\vdash \\Gamma: \\ensuremath{\\mathsf{L}} \\rightsquigarrow \\ensuremath{\\mathsf{K}}}
-        {\\sigma, \\ell(x) \\mapsto r \\approx\\sigma\' \\vdash \\Gamma: \\ensuremath{\\mathsf{L}} \\rightsquigarrow \\ensuremath{\\mathsf{K}}}
-        \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{ls-skip-r}}}
-        {\\sigma \\approx\\sigma\' \\vdash \\Gamma: \\ensuremath{\\mathsf{L}} \\rightsquigarrow \\ensuremath{\\mathsf{K}}}
-        {\\sigma \\approx\\sigma\', \\ell(x) \\mapsto r\' \\vdash \\Gamma: \\ensuremath{\\mathsf{L}} \\rightsquigarrow \\ensuremath{\\mathsf{K}}}
-      \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{sb-id}}}
-        {\\gamma \\approx\\gamma\': \\Gamma, x : A \\mapsto \\Delta, x : A}
-        {\\gamma \\approx\\gamma\': \\Gamma \\mapsto \\Delta} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{ls-id}}}
-        {\\sigma \\approx\\sigma\' \\vdash \\Gamma: \\ensuremath{\\mathsf{L}}, \\ell(A) \\rightsquigarrow \\ensuremath{\\mathsf{K}}, \\ell(A)}
-        {\\sigma \\approx\\sigma\' \\vdash \\Gamma: \\ensuremath{\\mathsf{L}} \\rightsquigarrow \\ensuremath{\\mathsf{K}}}
-
-  \\end{gathered}\$\$
-
-  ],
-  caption: [
-    Rules for the equivalence relation on #lssa
-    substitutions and label-substitutions
-  ]
-)
+#figure([
+  #rule-set(
+    prooftree(rule(label: msc("sb-nil"), $dot.op approx dot.op : Gamma mapsto dot.op$)),
+    prooftree(rule(label: msc("sb-cons"), eff-typing($Gamma$, $bot$, $a approx a'$, $A$), $gamma approx gamma' : Gamma mapsto Delta$, $gamma, x mapsto a approx gamma', x mapsto a' : Gamma mapsto Delta, x : A$)),
+    prooftree(rule(label: msc("sb-skip-l"), $gamma approx gamma' : Gamma mapsto Delta$, $gamma, x mapsto a approx gamma' : Gamma mapsto Delta$)),
+    prooftree(rule(label: msc("sb-skip-r"), $gamma approx gamma' : Gamma mapsto Delta$, $gamma approx gamma', x mapsto a' : Gamma mapsto Delta$)),
+    prooftree(rule(label: msc("ls-nil"), $dot.op approx dot.op tack.r Gamma : dot.op arrow.r.squiggly sans("K")$)),
+    prooftree(rule(label: msc("ls-cons"), $Gamma, x : A tack.r r approx r' gt.tri sans("K")$, $sigma approx sigma' tack.r Gamma : sans("L") arrow.r.squiggly sans("K")$, $sigma, ell(x) mapsto r approx sigma', ell(x) mapsto r' tack.r Gamma : sans("L"), ell(A) arrow.r.squiggly sans("K")$)),
+    prooftree(rule(label: msc("ls-skip-l"), $sigma approx sigma' tack.r Gamma : sans("L") arrow.r.squiggly sans("K")$, $sigma, ell(x) mapsto r approx sigma' tack.r Gamma : sans("L") arrow.r.squiggly sans("K")$)),
+    prooftree(rule(label: msc("ls-skip-r"), $sigma approx sigma' tack.r Gamma : sans("L") arrow.r.squiggly sans("K")$, $sigma approx sigma', ell(x) mapsto r' tack.r Gamma : sans("L") arrow.r.squiggly sans("K")$)),
+    prooftree(rule(label: msc("sb-id"), $gamma approx gamma' : Gamma, x : A mapsto Delta, x : A$, $gamma approx gamma' : Gamma mapsto Delta$)),
+    prooftree(rule(label: msc("ls-id"), $sigma approx sigma' tack.r Gamma : sans("L"), ell(A) arrow.r.squiggly sans("K"), ell(A)$, $sigma approx sigma' tack.r Gamma : sans("L") arrow.r.squiggly sans("K")$)),
+  )
+], caption: [Rules for the equivalence relation on #lssa substitutions and label-substitutions])
 <fig:ssa-subst-equiv>
 
 == Standard SSA
@@ -1301,8 +945,8 @@ sans(c h i l d r e n) \( tau #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) 
 We can similarly define a function to construct a lexical SSA program
 from a basic block $beta$ and a set of children as follows:
 #align(center, $
-  sans("bb")(sans("let") x = a; beta, L) &= sans("let") x = a; sans("adddom")(beta)(L) \
-  sans("bb")(sans("let") (x, y) = a; beta, L) &= sans("let") (x, y) = a; sans("adddom")(beta)(L) \
+  sans("bb")(sans("let") x = a; beta, L) &= sans("let") x = a; sans("bb")(beta, L) \
+  sans("bb")(sans("let") (x, y) = a; beta, L) &= sans("let") (x, y) = a; sans("bb")(beta, L) \
   sans("bb")(tau, L) &= tau sans("where") L
 $) It is easy to see that these functions are mutually
 inverse: for any lexical SSA region $r$, we have

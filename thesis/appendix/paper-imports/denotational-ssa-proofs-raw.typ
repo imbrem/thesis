@@ -1167,36 +1167,18 @@ omitted.~◻
 #block[
 The rewrite rules cfg-fuse$""_1$ (Eqn.~#todo[Resolve source reference `eqn:where-fusion-1` during integration.]) and
 cfg-fuse$""_2$ are sound, where we define
-#todo[Port the following preserved source equation or proof-tree display to native Typst.]
-\$\$\\prftree\[r\]{{\\scriptsize\\textsf{cfg-fuse\$\_2\$}}}
-    {\\Gamma \\vdash r \\rhd \\ensuremath{\\mathsf{L}}, (\\ell\_i(A\_i),)\_i, \\kappa(B)}
-    {
-      \\prfStackPremises{
-        \\forall i \\in I. \\Gamma, x\_i : A\_i \\vdash t\_i \\rhd
-          \\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in I}, \\kappa(B)
-      }{
-        \\Gamma, y : B \\vdash s \\rhd
-          \\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in I}, \\kappa(B),
-            (\\ell\_{j\'}\'(A\_{j\'}\'),)\_{j\' \\in I\'},
-      }{
-        \\forall i\' \\in I\'. \\Gamma, x\_{i\'}\' : A\_{i\'}\' \\vdash t\_{i\'}\' \\rhd
-          \\ensuremath{\\mathsf{L}}, (\\ell\_j(A\_j),)\_{j \\in I}, \\kappa(B),
-            (\\ell\_{j\'}\'(A\_{j\'}\'),)\_{j\' \\in I\'}
-      }
-    }
-    {
-      \\prfStackPremises{
-        \\Gamma \\vdash
-          r\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_i(x\_i) :\\{t\_i\\},)\_{i \\in I},
-            \\kappa(y) :\\{s\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_{i\'}\'(x\_{i\'}\') :\\{t\_{i\'}\'\\},)\_{i\' \\in I\'}\\}
-      }{
-        \\hspace{8em}
-        \\approx r\\;\\ensuremath{\\mathsf{where}}\\;(\\ell\_i(x\_i) :\\{t\_i\\},)\_{i \\in I},
-            \\kappa(y) :\\{s\\}, (\\ell\_{i\'}\'(x\_{i\'}\') :\\{t\_{i\'}\'\\},)\_{i\' \\in I\'}
-        \\rhd \\ensuremath{\\mathsf{L}}
-      }
-    }
-    \\label{eqn:where-fusion-2}\$\$ <lem:where-fusion>
+#align(center, prooftree(rule(
+  label: msc("cfg-fuse2"),
+  $Gamma tack.r r gt.tri sans("L"), (ell_i(A_i),)_i, kappa(B)$,
+  $forall i in I. Gamma, x_i : A_i tack.r t_i gt.tri sans("L"), (ell_j(A_j),)_(j in I), kappa(B)$,
+  $Gamma, y : B tack.r s gt.tri sans("L"), (ell_j(A_j),)_(j in I), kappa(B), (ell_(j')'(A_(j')'),)_(j' in I')$,
+  $forall i' in I'. Gamma, x_(i')' : A_(i')' tack.r t_(i')' gt.tri sans("L"), (ell_j(A_j),)_(j in I), kappa(B), (ell_(j')'(A_(j')'),)_(j' in I')$,
+  $Gamma tack.r r sans("where") (ell_i(x_i) : {t_i},)_(i in I),
+      kappa(y) : {s sans("where") (ell_(i')'(x_(i')') : {t_(i')'},)_(i' in I')}
+    approx r sans("where") (ell_i(x_i) : {t_i},)_(i in I),
+      kappa(y) : {s}, (ell_(i')'(x_(i')') : {t_(i')'},)_(i' in I') gt.tri sans("L")$,
+))) <eqn:where-fusion-2>
+ <lem:where-fusion>
 
 ]
 #block[
