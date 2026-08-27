@@ -3,3 +3,4 @@
 
 #todo[Integrate the raw interpretation, soundness, and completeness imports.]
 
+#include "paper-raw.typ"

@@ -146,3 +146,5 @@
   [#_panel("codiagonal") #linebreak() #smallcaps[Codiagonal]],
   [#_panel("dinaturality") #linebreak() #smallcaps[Dinaturality]],
 )
+
+#let conway-axiom-diagram(kind) = _panel(kind)

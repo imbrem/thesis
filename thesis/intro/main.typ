@@ -142,3 +142,7 @@ I want to start by justifying this choice of topic.
 - Study RTL itself, lowering RTL to SSA
 
 - Study stack machines ==> WASM ("WASM is imperative programming")
+
+#todo[Reconcile the preceding thesis-introduction drafts and Neel discussion notes with the following verbatim introduction from _The Denotational Semantics of SSA_. Retain the imported version intact until that editorial pass.]
+
+#include "denotational-ssa-raw.typ"
