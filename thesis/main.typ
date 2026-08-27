@@ -9,6 +9,20 @@
 
 #include "type-theoretic-ssa/main.typ"
 
+#include "category-theory/main.typ"
+
+#include "lambda-ssa/main.typ"
+
+#include "equational-theory/main.typ"
+
+#include "denotational-semantics/main.typ"
+
+#include "models/main.typ"
+
+#include "refinement/main.typ"
+
+#include "related-work/main.typ"
+
 #pagebreak()
 #bibliography("refs.bib")
 

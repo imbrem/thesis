@@ -2,3 +2,5 @@
 #show: chapter.with(title: "Sample Appendix")
 
 SAMPLE TEXT
+
+#include "paper-imports/main.typ"
