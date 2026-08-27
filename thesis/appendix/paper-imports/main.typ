@@ -3,3 +3,4 @@
 
 #todo[Integrate mechanically transcribed paper appendices after the main-body draft.]
 
+#include "refinement/complete-refinement-appendices-raw.typ"
