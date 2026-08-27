@@ -139,7 +139,7 @@ Since in a distributive Freyd category $cal(C)_tack.t$ must be distributive (and
 <string-diagrams>
 #emph[String diagrams] provide a graphical calculus for reasoning about (symmetric) monoidal categories, which allows us to succinctly express complex morphisms and rewrites. Since both cartesian and co-cartesian categories are monoidal (with the product and coproduct as tensor, respectively), we can use string diagrams to reason about both. In the co-cartesian case, string diagrams behave much like control-flow diagrams, with boxes representing sub-programs, input wires entry points, and output wires exit points. In particular, a #emph[region] is just a box with a single input wire. Continuing this analogy, we draw the codiagonal morphism $\[ sans("id")_A   sans("id")_A \]$ as joining two wires, and the zero morphism as a wire coming from nowhere, as in Figure~#todo[Cross-reference: \@fig:coproduct-string-diagrams.]
 
-#figure(todo[Port the source TikZ/string diagram at this exact position to native Typst; the authoritative diagram remains in the provenance source range],
+#figure(coproduct-cfg-diagram(),
   caption: [
     A string diagram using the coproduct as symmetric monoidal structure, interpreted as a CFG
   ]
@@ -148,13 +148,13 @@ Since in a distributive Freyd category $cal(C)_tack.t$ must be distributive (and
 
 The power of string diagrams comes from the fact that many syntactically distinct ways to write equal values are obviously graphically equivalent by #emph[isotopy]: essentially, moving boxes and wires around. String diagrams also give us an elegant way to represent and reason about Elgot structures. It turns out that Elgot structures induce a #emph[trace] on the coproduct @hasegawa-trace-02: given $f : A + C arrow.r B + C$, we can define $ sans("Tr")_(A   B)^C ( f ) = iota_l ; \[ f ; B + iota_r \]^dagger = iota_l ; f ; \[ sans("id")   ( iota_l ; f )^dagger \] : A arrow.r B $ Since this satisfies the axioms of a trace over a symmetric monoidal category, we can draw it, and therefore the Elgot operator, as in Figure~#todo[Cross-reference: \@fig:elgot-string-diagrams.] Continuing with the control-flow diagram analogy, such traces can be interpreted as #emph[loops], with the Elgot axioms, now drawn as diagrams in Figure~#todo[Cross-reference: \@fig:elgot-ax-string-diagrams.]
 
-#figure([#figure(todo[Port the source TikZ/string diagram at this exact position to native Typst; the authoritative diagram remains in the provenance source range],
+#figure([#figure(elgot-trace-diagram(kind: "trace"),
     caption: [
       The trace of $f : A + C arrow.r B + C$
     ]
   )
 
-  #figure(todo[Port the source TikZ/string diagram at this exact position to native Typst; the authoritative diagram remains in the provenance source range],
+  #figure(elgot-trace-diagram(kind: "fixpoint"),
     caption: [
       The fixpoint of $f : A arrow.r B + A$
     ]
@@ -167,25 +167,25 @@ The power of string diagrams comes from the fact that many syntactically distinc
 )
 <fig:elgot-string-diagrams>
 
-#figure([#figure(todo[Port the source TikZ/string diagram at this exact position to native Typst; the authoritative diagram remains in the provenance source range],
+#figure([#figure(conway-axiom-diagram("fixpoint"),
     caption: [
       Fixpoint
     ]
   )
 
-  #figure(todo[Port the source TikZ/string diagram at this exact position to native Typst; the authoritative diagram remains in the provenance source range],
+  #figure(conway-axiom-diagram("naturality"),
     caption: [
       Naturality
     ]
   )
 
-  #figure(todo[Port the source TikZ/string diagram at this exact position to native Typst; the authoritative diagram remains in the provenance source range],
+  #figure(conway-axiom-diagram("codiagonal"),
     caption: [
       Codiagonal
     ]
   )
 
-  #figure(todo[Port the source TikZ/string diagram at this exact position to native Typst; the authoritative diagram remains in the provenance source range],
+  #figure(conway-axiom-diagram("dinaturality"),
     caption: [
       Dinaturality
     ]
@@ -200,7 +200,7 @@ The power of string diagrams comes from the fact that many syntactically distinc
 
 Unfortunately, unmodified string diagrams do not work for premonoidal categories, and hence for Freyd categories. The reason is because, since not all morphisms are central, premonoidal categories do not in general validate #emph[sliding]. However, this is easy enough to fix: we can postulate a (dashed red) "state" wire which all impure morphisms require as an input and output, as in Figure~#todo[Cross-reference: \@fig:premonoidal-string-diagram.] Since the state wire linearly threads through all impure boxes, it establishes a unique order in which they must be executed; this construction is shown to be sound in #cite(<promonad>, form: "prose"). Pure morphisms do not have a state wire, so a diagram representing a pure morphism will simply have a dashed red "stripe" on the side. This gives us a convenient way to distinguish between string diagrams using the monoidal structure induced by the coproduct and those using the premonoidal structure induced by the tensor product in a category having both (such as a distributive premonoidal category): the latter will have a state wire, while the former will not.
 
-#figure(todo[Port the source TikZ/string diagram at this exact position to native Typst; the authoritative diagram remains in the provenance source range],
+#figure(premonoidal-state-diagram(),
   caption: [
     A string diagram in a premonoidal category, demonstrating the necessity of using a state wire
   ]

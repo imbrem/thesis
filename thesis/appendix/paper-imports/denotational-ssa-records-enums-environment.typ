@@ -6,69 +6,24 @@
 #import "/lib/prelude.typ": *
 #show: chapter.with(title: "Records and Enums")
 
+#let paper-rule(label, ..lines) = prooftree(rule(label: msc(label), ..lines.pos()))
+
 <apx:records-enums>
-For simplicity, we defined our language to have only binary products and sums. However, we would like to support records (named $n$-ary products) and enums (named $n$-ary sums). We will implement these on top of our language using contexts; the resulting machinery will turn out to be crucial in proving the Böhm-Jacopini theorem in Appendix~#todo[Cross-reference: \@apx:data-control] and completeness in Section~#todo[Cross-reference: \@ssec:completeness.] We begin by defining #emph[packing] of variable contexts as follows: $ ⟨ dot.op ⟩ = upright(bold(1)) #h(2em) ⟨ Gamma   x : A ⟩ = ⟨ Gamma ⟩ ⊗ A $ While in general we destructure pairs using binary $sans("let")$-bindings, it will be more convenient to start defining operations on records in terms of projections. We begin by defining projections on pairs in the obvious manner: #todo[Native Typst port required for the following source equation, proof tree, or figure; exact LaTeX is preserved immediately below.]
-```latex
-\$\$\\prftree\[r\]{{\\scriptsize\\textsf{\$\\pi\_l\$}}}
-    {\\Gamma \\vdash\_{\\epsilon} e: {A \\otimes B}}
-    {\\Gamma \\vdash\_{\\epsilon} \\pi\_l\\;e := (\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e;\\;x}): {A}}
-  \\qquad
-  \\prftree\[r\]{{\\scriptsize\\textsf{\$\\pi\_r\$}}}
-    {\\Gamma \\vdash\_{\\epsilon} e: {A \\otimes B}}
-    {\\Gamma \\vdash\_{\\epsilon} \\pi\_r\\;e := (\\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e;\\;y}): {A}}\$\$
-``` We may then define projections on records as follows: $ pi_(( Delta   x : A )   y) #h(0em) e = pi_(Delta   y) ( pi_l #h(0em) e ) #h(2em) pi_(( Delta   x : A )   x) #h(0em) e = pi_r #h(0em) e $ with typing rule #todo[Native Typst port required for the following source equation, proof tree, or figure; exact LaTeX is preserved immediately below.]
-```latex
-\$\$\\prftree\[r\]{{\\scriptsize\\textsf{\$\\pi\_{\\ensuremath{\\mathsf{rec}}}\$}}}
-    {\\Gamma \\vdash\_{\\epsilon} e: {\\langle \\Delta \\rangle}}
-    {\\Delta(x) = A}
-    {\\Gamma \\vdash\_{\\epsilon} \\pi\_{\\Delta, x}\\;e: {A}}\$\$
-``` We will omit $Delta$ when it is clear from context. We can define a term $Gamma tack.r_tack.t sans("packed") ( Gamma ) : \[ Gamma \]$ to "pack" up the current context into a record as follows: $ sans("packed") ( dot.op ) = ( ) #h(2em) sans("packed") ( Gamma   x : A ) = ( sans("packed") ( Gamma )   x ) $ We may now define packing and unpacking substitutions $sans("pack")_y^⊗ ( Gamma ) : Gamma mapsto y : ⟨ Gamma ⟩$, $sans("unpack")_y^⊗ ( Gamma ) : y : ⟨ Gamma ⟩ mapsto Gamma$ as follows: $ sans("pack")_y^⊗ ( Gamma ) = y mapsto sans("packed") ( Gamma ) #h(2em) sans("unpack")_y^⊗ ( Gamma ) = ( x mapsto pi_(Gamma   x) #h(0em) y )_(x in Gamma) $ Our equational theory is sufficient to show that the pack and unpack substitutions are inverses of each other: $ \[ sans("unpack")_y^⊗ ( Gamma ) \] sans("pack")_y^⊗ ( Gamma ) & approx sans("id")_Gamma : Gamma mapsto Gamma\
-\[ sans("pack")_y^⊗ ( Gamma ) \] sans("unpack")_y^⊗ ( Gamma ) & approx sans("id")_(y : \[ Gamma \]) : y : Gamma mapsto y : Gamma $ Similarly, we may define a "packing" operation $⟨ dot.op ⟩$ on label-contexts as follows: $ ⟨ dot.op ⟩ = upright(bold(0)) #h(2em) ⟨ sans(L)   ell ( A ) ⟩ = ⟨ sans(L) ⟩ + A $ We may then define injections on enums as follows: $ iota_(( sans(L)   ell ( A ) )   kappa) #h(0em) e = iota_(sans(L)   kappa) ( iota_l #h(0em) e ) #h(2em) iota_(( sans(L)   ell ( A ) )   ell) #h(0em) e = iota_r #h(0em) e $ with typing rule #todo[Native Typst port required for the following source equation, proof tree, or figure; exact LaTeX is preserved immediately below.]
-```latex
-\$\$\\prftree\[r\]{{\\scriptsize\\textsf{\$\\iota\_{\\ensuremath{\\mathsf{enum}}}\$}}}
-    {\\Gamma \\vdash\_{\\epsilon} e: {A}}
-    {\\ensuremath{\\mathsf{L}}(\\ell) = A}
-    {\\Gamma \\vdash\_{\\epsilon} \\iota\_{\\ensuremath{\\mathsf{L}}, \\ell}\\;e: {\\langle \\ensuremath{\\mathsf{L}} \\rangle}}\$\$
-``` Similarly, we can define $n$-ary case-statements on enums by induction as follows: $ sans("case")_dot.op #h(0em) e #h(0em) { } & = oo\
-sans("case")_(sans(L)   kappa ( A )) #h(0em) e #h(0em) { ( ell_i ( x_i ) : t_i )_i   kappa ( y ) : s } & = sans("case") #h(0em) e #h(0em) { iota_l #h(0em) x : sans("case")_(sans(L)) #h(0em) x #h(0em) { ( ell_i ( A_i ) : t_i )_i }   iota_r #h(0em) y : s } $ with typing rule #todo[Native Typst port required for the following source equation, proof tree, or figure; exact LaTeX is preserved immediately below.]
-```latex
-\$\$\\prftree\[r\]{{\\scriptsize\\textsf{\$\\ensuremath{\\mathsf{case}}\_{\\ensuremath{\\mathsf{enum}}}\$}}}
-    {\\Gamma \\vdash\_{\\epsilon} e: {\[\\ensuremath{\\mathsf{L}}\]}}
-    {\\forall i. \\Gamma, x\_i : A\_i \\vdash t\_i \\rhd \\ensuremath{\\mathsf{K}}}
-    {\\Gamma \\vdash \\ensuremath{\\mathsf{case}}\_{\\ensuremath{\\mathsf{L}}}\\;e\\;\\{(\\ell\_i(x\_i): t\_i)\_i\\} \\rhd \\ensuremath{\\mathsf{K}}}\$\$
-``` where #todo[Native Typst port required for the following source equation, proof tree, or figure; exact LaTeX is preserved immediately below.]
-```latex
-\$\$\\prftree\[r\]{\$\\infty\$}
-    {\\Gamma \\vdash \\infty := \\ensuremath{\\mathsf{br}}\\;\\ell\\;()\\;\\ensuremath{\\mathsf{where}}\\;\\ell(x) :\\{\\ensuremath{\\mathsf{br}}\\;\\ell\\;x\\} \\rhd \\ensuremath{\\mathsf{L}}}\$\$
-``` We may now define "packing" and "unpacking" label-substitutions $dot.op tack.r sans("pack")_kappa^(+) ( sans(L) ) : sans(L) arrow.r.squiggly kappa ( \[ sans(L) \] )$, $dot.op tack.r sans("unpack")_kappa^(+) ( sans(L) ) : kappa ( \[ sans(L) \] ) arrow.r.squiggly sans(L)$ as follows: $ sans("pack")_kappa^(+) ( dot.op ) = dot.op #h(2em) sans("pack")_kappa^(+) ( sans(L)   ell ( A ) ) = \[ kappa ( x ) mapsto sans("br") #h(0em) kappa #h(0em) iota_l #h(0em) x \] sans("pack")_kappa^(+) ( sans(L) )   ell ( x ) mapsto sans("br") #h(0em) kappa #h(0em) iota_r #h(0em) x $ $ sans("unpack")_kappa^(+) ( sans(L) ) = kappa ( x ) mapsto sans("unpack")^(+) ( sans(L) ) #h(0em) x $ where we have #todo[Native Typst port required for the following source equation, proof tree, or figure; exact LaTeX is preserved immediately below.]
-```latex
-\$\$\\prftree\[r\]{{\\scriptsize\\textsf{unpack\$^+\$}}}
-    {\\Gamma \\vdash\_{\\epsilon} e: {\\ensuremath{\\mathsf{L}}}}
-    {\\Gamma \\vdash \\ensuremath{\\mathsf{unpack}}^+(\\ensuremath{\\mathsf{L}})\\;e \\rhd \\ensuremath{\\mathsf{L}}}\$\$
-``` defined as follows: $ sans("unpack")^(+) ( dot.op ) #h(0em) e = oo #h(2em) sans("unpack")^(+) ( sans(L)   ell ( A ) ) #h(0em) e = sans("case") #h(0em) e #h(0em) { iota_l #h(0em) x : sans("unpack")^(+) ( sans(L) ) #h(0em) x   iota_r #h(0em) y : sans("br") #h(0em) ell #h(0em) y } $ We can further show that, in this case for all label contexts $sans(L)$, these substitutions are mutually inverse, i.e., that $ Gamma tack.r \[ sans("unpack")_kappa^(+) ( sans(L) ) \] sans("pack")_kappa^(+) ( sans(L) ) & approx sans("id")_(sans(L)) : sans(L) arrow.r.squiggly sans(L)\
+For simplicity, we defined our language to have only binary products and sums. However, we would like to support records (named $n$-ary products) and enums (named $n$-ary sums). We will implement these on top of our language using contexts; the resulting machinery will turn out to be crucial in proving the Böhm-Jacopini theorem in Appendix~#todo[Cross-reference: \@apx:data-control] and completeness in Section~#todo[Cross-reference: \@ssec:completeness.] We begin by defining #emph[packing] of variable contexts as follows: $ ⟨ dot.op ⟩ = upright(bold(1)) #h(2em) ⟨ Gamma   x : A ⟩ = ⟨ Gamma ⟩ ⊗ A $ While in general we destructure pairs using binary $sans("let")$-bindings, it will be more convenient to start defining operations on records in terms of projections. We begin by defining projections on pairs in the obvious manner: #align(center, grid(columns: (auto, auto), gutter: 2em,
+  paper-rule($pi_l$, $Gamma tack.r_epsilon.alt e : A ⊗ B$, $Gamma tack.r_epsilon.alt pi_l e := sans("let") (x, y) = e; x : A$),
+  paper-rule($pi_r$, $Gamma tack.r_epsilon.alt e : A ⊗ B$, $Gamma tack.r_epsilon.alt pi_r e := sans("let") (x, y) = e; y : A$),
+)) We may then define projections on records as follows: $ pi_(( Delta   x : A )   y) #h(0em) e = pi_(Delta   y) ( pi_l #h(0em) e ) #h(2em) pi_(( Delta   x : A )   x) #h(0em) e = pi_r #h(0em) e $ with typing rule #align(center, paper-rule($pi_sans("rec")$, $Gamma tack.r_epsilon.alt e : ⟨Delta⟩$, $Delta(x) = A$, $Gamma tack.r_epsilon.alt pi_(Delta, x) e : A$)) We will omit $Delta$ when it is clear from context. We can define a term $Gamma tack.r_tack.t sans("packed") ( Gamma ) : \[ Gamma \]$ to "pack" up the current context into a record as follows: $ sans("packed") ( dot.op ) = ( ) #h(2em) sans("packed") ( Gamma   x : A ) = ( sans("packed") ( Gamma )   x ) $ We may now define packing and unpacking substitutions $sans("pack")_y^⊗ ( Gamma ) : Gamma mapsto y : ⟨ Gamma ⟩$, $sans("unpack")_y^⊗ ( Gamma ) : y : ⟨ Gamma ⟩ mapsto Gamma$ as follows: $ sans("pack")_y^⊗ ( Gamma ) = y mapsto sans("packed") ( Gamma ) #h(2em) sans("unpack")_y^⊗ ( Gamma ) = ( x mapsto pi_(Gamma   x) #h(0em) y )_(x in Gamma) $ Our equational theory is sufficient to show that the pack and unpack substitutions are inverses of each other: $ \[ sans("unpack")_y^⊗ ( Gamma ) \] sans("pack")_y^⊗ ( Gamma ) & approx sans("id")_Gamma : Gamma mapsto Gamma\
+\[ sans("pack")_y^⊗ ( Gamma ) \] sans("unpack")_y^⊗ ( Gamma ) & approx sans("id")_(y : \[ Gamma \]) : y : Gamma mapsto y : Gamma $ Similarly, we may define a "packing" operation $⟨ dot.op ⟩$ on label-contexts as follows: $ ⟨ dot.op ⟩ = upright(bold(0)) #h(2em) ⟨ sans(L)   ell ( A ) ⟩ = ⟨ sans(L) ⟩ + A $ We may then define injections on enums as follows: $ iota_(( sans(L)   ell ( A ) )   kappa) #h(0em) e = iota_(sans(L)   kappa) ( iota_l #h(0em) e ) #h(2em) iota_(( sans(L)   ell ( A ) )   ell) #h(0em) e = iota_r #h(0em) e $ with typing rule #align(center, paper-rule($iota_sans("enum")$, $Gamma tack.r_epsilon.alt e : A$, $sans("L")(ell) = A$, $Gamma tack.r_epsilon.alt iota_(sans("L"), ell) e : ⟨sans("L")⟩$)) Similarly, we can define $n$-ary case-statements on enums by induction as follows: $ sans("case")_dot.op #h(0em) e #h(0em) { } & = oo\
+sans("case")_(sans(L)   kappa ( A )) #h(0em) e #h(0em) { ( ell_i ( x_i ) : t_i )_i   kappa ( y ) : s } & = sans("case") #h(0em) e #h(0em) { iota_l #h(0em) x : sans("case")_(sans(L)) #h(0em) x #h(0em) { ( ell_i ( A_i ) : t_i )_i }   iota_r #h(0em) y : s } $ with typing rule #align(center, paper-rule($sans("case")_sans("enum")$, $Gamma tack.r_epsilon.alt e : ⟦sans("L")⟧$, $forall i. Gamma, x_i : A_i tack.r t_i gt.tri sans("K")$, $Gamma tack.r sans("case")_(sans("L")) e { (ell_i(x_i) : t_i)_i } gt.tri sans("K")$)) where #align(center, paper-rule($oo$, $Gamma tack.r oo := sans("br") ell (); sans("where") ell(x) : { sans("br") ell x } gt.tri sans("L")$)) We may now define "packing" and "unpacking" label-substitutions $dot.op tack.r sans("pack")_kappa^(+) ( sans(L) ) : sans(L) arrow.r.squiggly kappa ( \[ sans(L) \] )$, $dot.op tack.r sans("unpack")_kappa^(+) ( sans(L) ) : kappa ( \[ sans(L) \] ) arrow.r.squiggly sans(L)$ as follows: $ sans("pack")_kappa^(+) ( dot.op ) = dot.op #h(2em) sans("pack")_kappa^(+) ( sans(L)   ell ( A ) ) = \[ kappa ( x ) mapsto sans("br") #h(0em) kappa #h(0em) iota_l #h(0em) x \] sans("pack")_kappa^(+) ( sans(L) )   ell ( x ) mapsto sans("br") #h(0em) kappa #h(0em) iota_r #h(0em) x $ $ sans("unpack")_kappa^(+) ( sans(L) ) = kappa ( x ) mapsto sans("unpack")^(+) ( sans(L) ) #h(0em) x $ where we have #align(center, paper-rule($sans("unpack")^+$, $Gamma tack.r_epsilon.alt e : sans("L")$, $Gamma tack.r sans("unpack")^+(sans("L")) e gt.tri sans("L")$)) defined as follows: $ sans("unpack")^(+) ( dot.op ) #h(0em) e = oo #h(2em) sans("unpack")^(+) ( sans(L)   ell ( A ) ) #h(0em) e = sans("case") #h(0em) e #h(0em) { iota_l #h(0em) x : sans("unpack")^(+) ( sans(L) ) #h(0em) x   iota_r #h(0em) y : sans("br") #h(0em) ell #h(0em) y } $ We can further show that, in this case for all label contexts $sans(L)$, these substitutions are mutually inverse, i.e., that $ Gamma tack.r \[ sans("unpack")_kappa^(+) ( sans(L) ) \] sans("pack")_kappa^(+) ( sans(L) ) & approx sans("id")_(sans(L)) : sans(L) arrow.r.squiggly sans(L)\
 Gamma tack.r \[ sans("pack")_kappa^(+) ( sans(L) ) \] sans("unpack")_kappa^(+) ( sans(L) ) & approx sans("id")_(kappa ( \[ sans(L) \] )) : kappa ( \[ sans(L) \] ) arrow.r.squiggly kappa ( \[ sans(L) \] ) $ Finally, fixing a distinguished variable $square.stroked.tiny$, it will be very useful to define a "#emph[variable packing]" operation on expressions and regions as follows: $ Gamma tack.r r gt.tri sans(L) ==> square.stroked.tiny : \[ Gamma \] tack.r ( ⟨ r ⟩^⊗ := \[ sans("unpack")_square.stroked.tiny^⊗ ( Gamma ) \] r ) gt.tri sans(L) $ In particular, for $Gamma$ pure, the packing operation $\[ dot.op \]$ is an injection on expressions and regions w.r.t. the equational theory, since $sans("unpack")_square.stroked.tiny^⊗ ( Gamma )$ has an inverse. Similarly, fixing a distinguished label $square.filled.medium$, we may define a "label packing" operation on regions as follows: $ Gamma tack.r r gt.tri sans(L) ==> Gamma tack.r ⟨ r ⟩^(+) := \[ sans("pack")_square.filled.medium^(+) ( sans(L) ) \] r gt.tri square.filled.medium ( \[ sans(L) \] ) $ Since the packing substitution has an inverse, it similarly follows that label packing is an injection w.r.t. the equational theory, i.e. $ Gamma tack.r r approx r' gt.tri sans(L) arrow.l.r.double Gamma tack.r ⟨ r ⟩^(+) approx ⟨ r' ⟩^(+) gt.tri sans(L) $ Finally, we can define a "packing" operation on regions to be given by label-packing followed by variable-packing, or vice versa (since it turns out the operations commute), as follows: $ Gamma tack.r r gt.tri sans(L) ==> square.stroked.tiny : \[ Gamma \] tack.r ⟨ r ⟩ := ⟨ ⟨ r ⟩^(+) ⟩^⊗ = ⟨ ⟨ r ⟩^⊗ ⟩^(+) gt.tri square.filled.medium ( sans(L) ) $ We similarly have that this is an injection for $Gamma$ pure, i.e. $ Gamma tack.r r approx r' gt.tri sans(L) arrow.l.r.double Gamma tack.r ⟨ r ⟩ approx ⟨ r' ⟩ gt.tri sans(L) $
 
 == Böhm-Jacopini for SSA
 <apx:data-control>
 Now that we have given our equational theory, we want to show it is "good enough" to reason about the properties inherent to all SSA-based languages. In particular, we wish to show that we have enough power to reason about interconversion between data-flow and control-flow. For example, a state machine can be implemented either as a switch on a state value, or as a set of mutually-tail-recursive functions (i.e., the state can be encoded in the program counter). We demonstrate this by using some of the machinery from the previous section to state and prove a form of the Böhm-Jacopini theorem @bohm-jacopini for SSA.
 
-The Böhm-Jacopini theorem states that every general control-flow graph program can be rewritten to an equivalent program which uses only structured control-flow: i.e., it can be rewritten to a program using only conditional branching, sequencing, and loops. To adapt this result to SSA, we need to express branching, sequencing and loops as SSA regions $Gamma tack.r r gt.tri sans(L)$, so that we can build up an inductive set of structured regions. We will be maximally strict, and allow branching to an exit label in $sans(L)$ only as the terminal statement in a structured program (and, in particular, not from within a loop!). It is obvious that we can represent conditional branching using $sans("case")$-statements, but we need convenient primitives for sequencing and looping. Sequencing can be expressed using a $sans("where")$-block as follows (with $ell$ fresh): #todo[Native Typst port required for the following source equation, proof tree, or figure; exact LaTeX is preserved immediately below.]
-```latex
-\$\$\\prftree\[r\]{{\\scriptsize\\textsf{seq}}}
-    {\\Gamma \\vdash r \\rhd \\blacksquare(A)}
-    {\\Gamma, \\square : A \\vdash s \\rhd \\ensuremath{\\mathsf{L}}}
-    {\\Gamma \\vdash \\ensuremath{\\mathsf{seq}}(r, s) 
-      := (\[\\blacksquare(x) \\mapsto \\ensuremath{\\mathsf{br}}\\;\\ell\\;x\]r\\;\\ensuremath{\\mathsf{where}}\\;\\ell(\\square) :\\{s\\}) \\rhd \\ensuremath{\\mathsf{L}}}\$\$
-``` where “$square.stroked.tiny$" is a distinguished input variable, and "$square.filled.medium$" is a distinguished output label. Another, equivalent, way of writing sequencing is: $ Gamma tack.r sans("seq") ( r   s ) approx \[ square.filled.medium ( square.stroked.tiny ) mapsto s \] r gt.tri sans(L) $ That is, when we exit $r$, we jump to (a copy of) $s$.
+The Böhm-Jacopini theorem states that every general control-flow graph program can be rewritten to an equivalent program which uses only structured control-flow: i.e., it can be rewritten to a program using only conditional branching, sequencing, and loops. To adapt this result to SSA, we need to express branching, sequencing and loops as SSA regions $Gamma tack.r r gt.tri sans(L)$, so that we can build up an inductive set of structured regions. We will be maximally strict, and allow branching to an exit label in $sans(L)$ only as the terminal statement in a structured program (and, in particular, not from within a loop!). It is obvious that we can represent conditional branching using $sans("case")$-statements, but we need convenient primitives for sequencing and looping. Sequencing can be expressed using a $sans("where")$-block as follows (with $ell$ fresh): #align(center, paper-rule($sans("seq")$, $Gamma tack.r r gt.tri square.filled.medium(A)$, $Gamma, square.stroked.tiny : A tack.r s gt.tri sans("L")$, $Gamma tack.r sans("seq")(r, s) := ([square.filled.medium(x) mapsto sans("br") ell x] r; sans("where") ell(square.stroked.tiny) : {s}) gt.tri sans("L")$)) where “$square.stroked.tiny$" is a distinguished input variable, and "$square.filled.medium$" is a distinguished output label. Another, equivalent, way of writing sequencing is: $ Gamma tack.r sans("seq") ( r   s ) approx \[ square.filled.medium ( square.stroked.tiny ) mapsto s \] r gt.tri sans(L) $ That is, when we exit $r$, we jump to (a copy of) $s$.
 
-Expressing structured looping is a bit more complicated, since we do not have mutable variables and hence cannot directly express while loops. If we recall that loops can be expressed as tail-recursive procedures which carry the loop state in the argument, then we can define a "functional do-while loop" as follows: #todo[Native Typst port required for the following source equation, proof tree, or figure; exact LaTeX is preserved immediately below.]
-```latex
-\$\$\\prftree\[r\]{{\\scriptsize\\textsf{loop}}}
-    {\\Gamma \\vdash\_{\\epsilon} e: {A}}
-    {\\Gamma, \\square : A \\vdash r \\rhd \\blacksquare(B + A)}
-    {\\Gamma \\vdash \\ensuremath{\\mathsf{loop}}(e, r) 
-      := (\\ensuremath{\\mathsf{br}}\\;\\ell\\;e\\;\\ensuremath{\\mathsf{where}}\\;\\ell(\\square) :\\{\\ensuremath{\\mathsf{seq}}(r, \\ensuremath{\\mathsf{case}}\\;\\square\\;\\{\\iota\_l\\;{x} :\\ensuremath{\\mathsf{br}}\\;\\blacksquare\\;x, \\iota\_r\\;{y} :\\ensuremath{\\mathsf{br}}\\;\\ell\\;y\\})\\}) \\rhd \\blacksquare(B)}\$\$
-``` We can now define the inductive predicate $Gamma tack.r^(sans(s)) r gt.tri sans(L)$, which says that $r$ is a structured region with input variables $Gamma$ and output labels $sans(L)$, as in Figure~#todo[Cross-reference: \@fig:structured-regions.] Note that this defines a subset of the well-typed regions: every region $r$ such that $Gamma tack.r^(sans(s)) r gt.tri sans(L)$ is also well-typed as $Gamma tack.r r gt.tri sans(L)$.
+Expressing structured looping is a bit more complicated, since we do not have mutable variables and hence cannot directly express while loops. If we recall that loops can be expressed as tail-recursive procedures which carry the loop state in the argument, then we can define a "functional do-while loop" as follows: #align(center, paper-rule($sans("loop")$, $Gamma tack.r_epsilon.alt e : A$, $Gamma, square.stroked.tiny : A tack.r r gt.tri square.filled.medium(B + A)$, $Gamma tack.r sans("loop")(e, r) := (sans("br") ell e; sans("where") ell(square.stroked.tiny) : { sans("seq")(r, sans("case") square.stroked.tiny { iota_l x : sans("br") square.filled.medium x, iota_r y : sans("br") ell y }) }) gt.tri square.filled.medium(B)$)) We can now define the inductive predicate $Gamma tack.r^(sans(s)) r gt.tri sans(L)$, which says that $r$ is a structured region with input variables $Gamma$ and output labels $sans(L)$, as in Figure~#todo[Cross-reference: \@fig:structured-regions.] Note that this defines a subset of the well-typed regions: every region $r$ such that $Gamma tack.r^(sans(s)) r gt.tri sans(L)$ is also well-typed as $Gamma tack.r r gt.tri sans(L)$.
 
 It now remains to give an algorithm to convert a region $r$ targeting label-context $sans(L)$ into an equivalent structured region $sans("WH")_(sans(L)) ( r )$. In particular, we define $ sans("WH")_(sans(L)) ( r ) = \[ sans("unpack")_square.filled.medium^(+) ( sans(L) ) \] sans("PW")_L ( r ) $ where we define $ sans("PW")_(sans(L)) ( sans("br") #h(0em) ell #h(0em) a ) & = sans("br") #h(0em) square.filled.medium #h(0em) iota_(sans(L)   ell) #h(0em) a\
 sans("PW")_(sans(L)) ( sans("let") #h(0em) x = a ; r ) & = sans("let") #h(0em) x = a ; sans("PW")_(sans(L)) ( r )\
@@ -92,35 +47,14 @@ For all $Gamma tack.r r gt.tri sans(L)$, we have that $Gamma tack.r^(sans(s)) sa
 #emph[Proof.] See Appendix~#todo[Cross-reference: \@proof:bohm-jacopini]~◻
 
 ]
-#figure([#todo[Native Typst port required for the following source equation, proof tree, or figure; exact LaTeX is preserved immediately below.]
-```latex
-\$\$\\begin{gathered}
-      \\prftree\[r\]{{\\scriptsize\\textsf{s-br}}}{\\Gamma \\vdash\_{\\bot} a: {A}}{\\ensuremath{\\mathsf{L}}\\;\\ell = A}
-        {\\Gamma \\vdash^{\\ensuremath{\\mathsf{s}}} \\ensuremath{\\mathsf{br}}\\;\\ell\\;a \\rhd \\ensuremath{\\mathsf{L}}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{s-let\$\_1\$-r}}}
-        {\\Gamma \\vdash\_{\\epsilon} a: {A}}
-        {\\Gamma, x : A \\vdash^{\\ensuremath{\\mathsf{s}}} r \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\Gamma \\vdash^{\\ensuremath{\\mathsf{s}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;x = a; r} \\rhd \\ensuremath{\\mathsf{L}}} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{s-let\$\_2\$-r}}}
-        {\\Gamma \\vdash\_{\\epsilon} e: {A \\otimes B}}
-        {\\Gamma, x : A, y : B \\vdash^{\\ensuremath{\\mathsf{s}}} r \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\Gamma \\vdash^{\\ensuremath{\\mathsf{s}}} \\ensuremath{\\ensuremath{\\mathsf{let}}\\;(x, y) = e; r} \\rhd \\ensuremath{\\mathsf{L}}} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{s-case-r}}}
-        {\\Gamma \\vdash\_{\\epsilon} e: {A + B}}
-        {\\Gamma, x : A \\vdash^{\\ensuremath{\\mathsf{s}}} r \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\Gamma, y : B \\vdash^{\\ensuremath{\\mathsf{s}}} s \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\Gamma \\vdash^{\\ensuremath{\\mathsf{s}}} \\ensuremath{\\mathsf{case}}\\;e\\;\\{\\iota\_l\\;{x} :r, \\iota\_r\\;{y} :s\\} \\rhd \\ensuremath{\\mathsf{L}}} \\\\
-      \\prftree\[r\]{{\\scriptsize\\textsf{s-seq}}}
-        {\\Gamma \\vdash^{\\ensuremath{\\mathsf{s}}} r \\rhd \\blacksquare(A)}
-        {\\Gamma, \\square : A \\vdash^{\\ensuremath{\\mathsf{s}}} s \\rhd \\ensuremath{\\mathsf{L}}}
-        {\\Gamma \\vdash^{\\ensuremath{\\mathsf{s}}} \\ensuremath{\\mathsf{seq}}(r, s) \\rhd \\ensuremath{\\mathsf{L}}} \\qquad
-      \\prftree\[r\]{{\\scriptsize\\textsf{s-loop}}}
-        {\\Gamma \\vdash\_{\\epsilon} e: {\\blacksquare(A)}}
-        {\\Gamma, \\square : A \\vdash^{\\ensuremath{\\mathsf{s}}} r \\rhd \\blacksquare(B + A)}
-        {\\Gamma \\vdash^{\\ensuremath{\\mathsf{s}}} \\ensuremath{\\mathsf{loop}}(e, r) \\rhd \\blacksquare(B)}
-    
-  \\end{gathered}\$\$
-```
+#figure([#rule-set(
+  paper-rule($sans("s-br")$, $Gamma tack.r_bot a : A$, $sans("L") ell = A$, $Gamma tack.r^sans("s") sans("br") ell a gt.tri sans("L")$),
+  paper-rule($sans("s-let")_1-sans("r")$, $Gamma tack.r_epsilon.alt a : A$, $Gamma, x : A tack.r^sans("s") r gt.tri sans("L")$, $Gamma tack.r^sans("s") sans("let") x = a; r gt.tri sans("L")$),
+  paper-rule($sans("s-let")_2-sans("r")$, $Gamma tack.r_epsilon.alt e : A ⊗ B$, $Gamma, x : A, y : B tack.r^sans("s") r gt.tri sans("L")$, $Gamma tack.r^sans("s") sans("let") (x, y) = e; r gt.tri sans("L")$),
+  paper-rule($sans("s-case-r")$, $Gamma tack.r_epsilon.alt e : A + B$, $Gamma, x : A tack.r^sans("s") r gt.tri sans("L")$, $Gamma, y : B tack.r^sans("s") s gt.tri sans("L")$, $Gamma tack.r^sans("s") sans("case") e { iota_l x : r, iota_r y : s } gt.tri sans("L")$),
+  paper-rule($sans("s-seq")$, $Gamma tack.r^sans("s") r gt.tri square.filled.medium(A)$, $Gamma, square.stroked.tiny : A tack.r^sans("s") s gt.tri sans("L")$, $Gamma tack.r^sans("s") sans("seq")(r, s) gt.tri sans("L")$),
+  paper-rule($sans("s-loop")$, $Gamma tack.r_epsilon.alt e : square.filled.medium(A)$, $Gamma, square.stroked.tiny : A tack.r^sans("s") r gt.tri square.filled.medium(B + A)$, $Gamma tack.r^sans("s") sans("loop")(e, r) gt.tri square.filled.medium(B)$),
+)
 
   ],
   caption: [
@@ -179,19 +113,11 @@ sans("env")_R ( A ⊗ f ) & = pi_r ; A ⊗ f = R ⊗ sigma ; alpha^(- 1) ; ( pi_
 - $sigma_(A   B)^R$ is natural: given $f : R ⊗ A arrow.r A'$ and $g : R ⊗ B arrow.r B'$, we have that $ f ⊗_R B gt.double_() sigma_(A'   B)^R & = Delta_R ⊗ ( A ⊗ B ) ; alpha ; R ⊗ ( alpha^(- 1) ; f ⊗ B ) ; pi_r ; sigma\
    & = alpha^(- 1) ; f ⊗ B ; sigma\
    & = R ⊗ sigma ; R ⊗ sigma ; f ⊗ B ; sigma\
-   & = Delta_R ⊗ ( B ⊗ A ) ; R ⊗ ( pi_r ; sigma ) ; R ⊗ sigma ; alpha^(- 1) ; f ⊗ B ; sigma & = sigma_(A   B)^R gt.double_() B ⊗_R f $ and #todo[Native Typst port required for the following source equation, proof tree, or figure; exact LaTeX is preserved immediately below.]
-```latex
-\$\$\\begin{aligned}
-        A \\otimes g \\gg\_{} \\sigma^R\_{A, B\'} 
-          &= {\\Delta}\_{R} \\otimes (A \\otimes B) ; \\alpha 
-          ; R \\otimes (R \\otimes \\sigma ; \\alpha^{-1} ; g \\otimes A ; \\sigma)
-          ; \\pi\_r ; \\sigma \\\\
-          &= R \\otimes \\sigma ; \\alpha^{-1} ; g \\otimes A ; \\cancel{\\sigma ; \\sigma} \\\\
-          &= {\\Delta}\_{R} \\otimes (A \\otimes B) ; \\alpha ; R \\otimes (\\pi\_r ; \\sigma) 
-            ; \\alpha^{-1} ; g \\otimes A
-          &= \\sigma^R\_{A, B} \\gg\_{} g \\otimes\_R A
-        \\end{aligned}\$\$
-```
+   & = Delta_R ⊗ ( B ⊗ A ) ; R ⊗ ( pi_r ; sigma ) ; R ⊗ sigma ; alpha^(- 1) ; f ⊗ B ; sigma & = sigma_(A   B)^R gt.double_() B ⊗_R f $ and $ A ⊗ g gt.double_() sigma_(A, B\x27)^R
+  &= Delta_R ⊗ (A ⊗ B); alpha; R ⊗ (R ⊗ sigma; alpha^(-1); g ⊗ A; sigma); pi_r; sigma \
+  &= R ⊗ sigma; alpha^(-1); g ⊗ A; cancel((sigma; sigma)) \
+  &= Delta_R ⊗ (A ⊗ B); alpha; R ⊗ (pi_r; sigma); alpha^(-1); g ⊗ A \
+  &= sigma_(A, B)^R gt.double_() g ⊗_R A $
 
 - Pure morphisms are central: given $f : R ⊗ A arrow.r A'$ and $g : R ⊗ B arrow.r B'$ pure, we have that $ f ⊗_R B gt.double_() A' ⊗_R g & = Delta_R ; alpha ; R ⊗ ( alpha^(- 1) ; f ⊗ B ; sigma ) ; alpha^(- 1) ; g ⊗ A' ; sigma\
    & = Delta_R ; alpha ; R ⊗ ( R ⊗ sigma ; alpha^(- 1) ; g ⊗ A ; sigma ) ; alpha^(- 1) ; f ⊗ B'\
@@ -206,21 +132,21 @@ sans("env")_R ( A ⊗ f ) & = pi_r ; A ⊗ f = R ⊗ sigma ; alpha^(- 1) ; ( pi_
 ~◻
 
 ]
-#figure([#figure(todo[Port the source TikZ/string diagram at this exact position to native Typst; the authoritative diagram remains in the provenance source range],
+#figure([#figure(environment-naturality-diagram(0),
     caption: [
       Equation~#todo[Cross-reference: \@eqn:env-a-nat-1]
     ]
   )
   <fig:env-a-nat-1>
 
-  #figure(todo[Port the source TikZ/string diagram at this exact position to native Typst; the authoritative diagram remains in the provenance source range],
+  #figure(environment-naturality-diagram(1),
     caption: [
       Equation~#todo[Cross-reference: \@eqn:env-a-nat-2]
     ]
   )
   <fig:env-a-nat-2>
 
-  #figure(todo[Port the source TikZ/string diagram at this exact position to native Typst; the authoritative diagram remains in the provenance source range],
+  #figure(environment-naturality-diagram(2),
     caption: [
       Equation~#todo[Cross-reference: \@eqn:env-a-nat-3]
     ]
@@ -234,7 +160,7 @@ sans("env")_R ( A ⊗ f ) & = pi_r ; A ⊗ f = R ⊗ sigma ; alpha^(- 1) ; ( pi_
 )
 <fig:env-a-nat>
 
-#figure(todo[Port the source TikZ/string diagram at this exact position to native Typst; the authoritative diagram remains in the provenance source range],
+#figure(environment-centrality-diagram(),
   caption: [
     Centrality of pure morphisms in the environment comonad's co-Kleisli category
   ]
@@ -249,14 +175,9 @@ If $cal(C)$ is a distributive Freyd category, then $cal(C)_(R ⊗ dot.op)$ is al
 ]
 #block[
 #emph[Proof.] Given $f : R ⊗ A arrow.r B$ and $g : R ⊗ A arrow.r C$, we may define the coproduct and injections $ \[ f   g \]_R := delta^(- 1) ; \[ f   g \] : R ⊗ A arrow.r B + C #h(2em) iota_l^R := pi_r ; iota_r : R ⊗ A arrow.r A + B #h(2em) iota_r^R := pi_r ; iota_r : R ⊗ B arrow.r A + B $ To verify this is indeed a coproduct, we can check that $ iota_l^R gt.double_() \[ f   g \]_R & = Delta_R ; alpha ; R ⊗ ( pi_r ; iota_r ) ; delta^(- 1) ; \[ f   g \] = R ⊗ iota_r ; delta^(- 1) ; \[ f   g \] = f\
-iota_r^R gt.double_() \[ f   g \]_R & = Delta_R ; alpha ; R ⊗ ( pi_r ; iota_l ) ; delta^(- 1) ; \[ f   g \] = R ⊗ iota_l ; delta^(- 1) ; \[ f   g \] = g $ This morphism is obviously unique, since we have for all $h : R ⊗ ( A + B ) arrow.r C$ #todo[Native Typst port required for the following source equation, proof tree, or figure; exact LaTeX is preserved immediately below.]
-```latex
-\$\$\[\\iota^{R}\_{l} \\gg\_{} h, \\iota^{R}\_{r} \\gg\_{} h\]\_{R}
-    = \\delta^{-1} 
-    ; \[{\\Delta}\_{R} ; \\alpha ; R \\otimes \\iota\_l ; \\pi\_r ; h,
-      {\\Delta}\_{R} ; \\alpha ; R \\otimes \\iota\_r ; \\pi\_r ; h\]
-    = \\cancel{\\delta^{-1} ; \[R \\otimes \\iota\_r, R \\otimes \\iota\_l\]} ; h\$\$
-``` To show that $R_(cal(C) ⊗ dot.op)$ is indeed distributive, we need $delta^(R - 1) := sans("env")_R ( delta^(- 1) ) = pi_r ; delta^R$ to be the inverse to $delta^R := \[ A ⊗ iota_l^R   A ⊗ iota_r^R \]_R$, which can easily be derived from the functoriality of $sans("env")_R ( dot.op )$, since $ sans("env")_R ( delta ) = pi_r ; \[ iota_l ; iota_r \] = delta^(- 1) ; \[ pi_r ; iota_l   pi_r iota_r \] = delta^R $~◻
+iota_r^R gt.double_() \[ f   g \]_R & = Delta_R ; alpha ; R ⊗ ( pi_r ; iota_l ) ; delta^(- 1) ; \[ f   g \] = R ⊗ iota_l ; delta^(- 1) ; \[ f   g \] = g $ This morphism is obviously unique, since we have for all $h : R ⊗ ( A + B ) arrow.r C$ $ [iota_l^R gt.double_() h, iota_r^R gt.double_() h]_R
+  = delta^(-1); [Delta_R; alpha; R ⊗ iota_l; pi_r; h, Delta_R; alpha; R ⊗ iota_r; pi_r; h]
+  = cancel((delta^(-1); [R ⊗ iota_r, R ⊗ iota_l])); h $ To show that $R_(cal(C) ⊗ dot.op)$ is indeed distributive, we need $delta^(R - 1) := sans("env")_R ( delta^(- 1) ) = pi_r ; delta^R$ to be the inverse to $delta^R := \[ A ⊗ iota_l^R   A ⊗ iota_r^R \]_R$, which can easily be derived from the functoriality of $sans("env")_R ( dot.op )$, since $ sans("env")_R ( delta ) = pi_r ; \[ iota_l ; iota_r \] = delta^(- 1) ; \[ pi_r ; iota_l   pi_r iota_r \] = delta^R $~◻
 
 ]
 Note in particular that this allows us to define sums $ f +_R g & = \[ f gt.double_() iota_l^R   g gt.double_() iota_r^R \]_R\
