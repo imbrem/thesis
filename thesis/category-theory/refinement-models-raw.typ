@@ -252,7 +252,7 @@ $f ; \[ sans("id") \, f^dagger \] = f$
 ]
 Our goal is to have our fixpoint operator's properties correspond
 precisely to drawing a loop in a control-flow graph, as in the left-hand
-side of Figure~@fig:fixpoint-string-diagram, which corresponds to
+side of Figure~@fig:elgot-ax-string-diagrams, which corresponds to
 $f^dagger$. In particular, we should be able to reconfigure such
 diagrams up to isotopy (i.e., moving boxes and wires around without
 changing connectivity) without changing the meaning of our program. To
@@ -277,39 +277,11 @@ Given a pre-iterative category $cal(C)$, we say $\( - \)^dagger$ is a
   $\( f^dagger \)^dagger = \( f ; \[ sans("id") \, iota_r \] \)^dagger : A arrow.r B$
 
 ]
-#todo[Mechanically port the four TikZ string diagrams from source lines 1889--2057. Pandoc preserved their captions and labels below but omitted the TikZ drawing bodies.]
-
-#figure([#figure([],
-    caption: [
-      Fixpoint
-    ]
-  )
-  <fig:fixpoint-string-diagram>
-
-  #figure([],
-    caption: [
-      Naturality
-    ]
-  )
-
-  #figure([],
-    caption: [
-      Codiagonal
-    ]
-  )
-
-  #figure([],
-    caption: [
-      Dinaturality
-    ]
-  )
-
-  ],
+#figure(conway-axiom-diagrams(),
   caption: [
     Representations of the Conway iteration axioms as string diagrams
   ]
-)
-<fig:elgot-ax-string-diagrams>
+) <fig:elgot-ax-string-diagrams>
 
 In particular, we note that naturality and codiagonal correspond
 directly to our rules let-iter and codiag respectively; we will later
