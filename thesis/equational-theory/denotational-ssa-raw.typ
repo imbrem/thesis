@@ -386,29 +386,21 @@ since
 $ y = e ; y = s ; y = s ; dots.h #h(0em) #h(0em) approx #h(0em) #h(0em) x = t ; y = e ; y = s ; dots.h #h(0em) #h(0em) approx #h(0em) #h(0em) x = t ; x = t ; y = e ; dots.h #h(0em) #h(0em) approx #h(0em) #h(0em) dots.h.c $
 where $s$ and $t$ may branch out of the loop. Note that, due to
 let$""_1$-$beta$, cfg-$eta$, and cfg-$beta_1$, this is equivalent to the
-rule \$\$\\begin{gathered}
-\\prftree\[r\]{{\\scriptsize\\textsf{uni\'}}}
-{
-  \\Gamma, x : A \\vdash \[e/y\]s \\approx\[\\ell(x) \\mapsto \\ensuremath{\\mathsf{br}}\\;\\kappa\\;e\]t \\rhd {\\ensuremath{\\mathsf{L}}, \\kappa(B)}
-}
-{
-  \\Gamma \\vdash ((\[\\ell(x) \\mapsto \\ensuremath{\\mathsf{br}}\\;\\kappa\\;e\]r)\\;\\ensuremath{\\mathsf{where}}\\;\\kappa(y) :\\{s\\}) \\approx(r\\;\\ensuremath{\\mathsf{where}}\\;\\ell(x) :\\{t\\}) \\rhd {\\ensuremath{\\mathsf{L}}}
-} \\\\
-\\text{where} \\qquad
-{
-  \\Gamma \\vdash r \\rhd \\ensuremath{\\mathsf{L}}, \\ell(A)
-} \\qquad
-{
-  \\Gamma, x : A \\vdash\_{\\bot} e: {B}
-} \\qquad
-{
-  \\Gamma, y : B \\vdash s \\rhd \\ensuremath{\\mathsf{L}}, \\kappa(B)
-} \\qquad
-{
-  \\Gamma, x : A \\vdash t \\rhd \\ensuremath{\\mathsf{L}}, \\ell(A)
-}
-\\end{gathered}
-\\label{eqn:uni-variant}\$\$ Going back to our concrete example from
+rule
+#align(center)[
+  #prooftree(rule(
+    label: msc("uni'"),
+    $Gamma, x : A tack.r [e/y]s approx [ell(x) mapsto sans("br") kappa e]t gt.tri sans("L"), kappa(B)$,
+    $Gamma tack.r (([ell(x) mapsto sans("br") kappa e]r) sans("where") kappa(y) : {s}) approx (r sans("where") ell(x) : {t}) gt.tri sans("L")$,
+  ))
+  #align(center, $upright("where") quad
+    Gamma tack.r r gt.tri sans("L"), ell(A) quad
+    #eff-typing($Gamma, x : A$, $bot$, $e$, $B$) quad
+    Gamma, y : B tack.r s gt.tri sans("L"), kappa(B) quad
+    Gamma, x : A tack.r t gt.tri sans("L"), ell(A)$)
+]
+<eqn:uni-variant>
+Going back to our concrete example from
 Equation~#todo[Resolve source reference `eqn:loop-comm-ssa` during integration.], if we first substitute the let-binding
 $y = 3 x$ on the RHS, we get
 $ sans(b r) #h(0em) ell #h(0em) x #h(0em) sans(w h e r e) #h(0em) ell \( y \) : { sans(l e t) #h(0em) x' = y + 1 ; sans(i f) #h(0em) p #h(0em) 3 x' #h(0em) { sans(r e t) #h(0em) 3 x' } #h(0em) sans(e l s e) #h(0em) { sans(b r) #h(0em) ell #h(0em) x' } }\
