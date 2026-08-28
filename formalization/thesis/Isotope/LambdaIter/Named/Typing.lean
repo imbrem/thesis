@@ -1,5 +1,3 @@
-/-
-Copyright (c) 2026 Remu G. -/
 import Isotope.LambdaIter.Named.Subtyping
 
 /-! # Typing for named lambda-iter -/

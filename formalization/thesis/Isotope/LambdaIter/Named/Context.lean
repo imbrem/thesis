@@ -1,5 +1,3 @@
-/-
-Copyright (c) 2026 Remu G. -/
 import Isotope.LambdaIter.Named.Defs
 
 /-! # Shadowing contexts for named lambda-iter -/
