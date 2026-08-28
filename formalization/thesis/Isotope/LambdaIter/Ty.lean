@@ -21,6 +21,18 @@ class TypeFormers (τ : Type u) where
   /-- The empty type. -/
   empty : τ
 
+/-- Tensor in a type universe. -/
+def tensor [TypeFormers τ] (A B : τ) : τ := TypeFormers.tensor A B
+
+/-- Unit in a type universe. -/
+def unit [TypeFormers τ] : τ := TypeFormers.unit
+
+/-- Coproduct in a type universe. -/
+def coprod [TypeFormers τ] (A B : τ) : τ := TypeFormers.coprod A B
+
+/-- Empty type in a type universe. -/
+def empty [TypeFormers τ] : τ := TypeFormers.empty
+
 /-- Simple types freely generated from the base types `α`. -/
 inductive Ty (α : Type u) : Type u where
   | base (a : α)
@@ -36,14 +48,19 @@ instance : TypeFormers (Ty α) where
   coprod := Ty.coprod
   empty := Ty.empty
 
+@[simp] theorem tensor_ty (A B : Ty α) : tensor A B = Ty.tensor A B := rfl
+@[simp] theorem unit_ty : (unit : Ty α) = Ty.unit := rfl
+@[simp] theorem coprod_ty (A B : Ty α) : coprod A B = Ty.coprod A B := rfl
+@[simp] theorem empty_ty : (empty : Ty α) = Ty.empty := rfl
+
 section Examples
 
 variable {α : Type u}
 
-example (A B : Ty α) : TypeFormers.tensor A B = Ty.tensor A B := rfl
-example (A B : Ty α) : TypeFormers.coprod A B = Ty.coprod A B := rfl
-example : (TypeFormers.unit : Ty α) = Ty.unit := rfl
-example : (TypeFormers.empty : Ty α) = Ty.empty := rfl
+example (A B : Ty α) : tensor A B = Ty.tensor A B := rfl
+example (A B : Ty α) : coprod A B = Ty.coprod A B := rfl
+example : (unit : Ty α) = Ty.unit := rfl
+example : (empty : Ty α) = Ty.empty := rfl
 
 end Examples
 
