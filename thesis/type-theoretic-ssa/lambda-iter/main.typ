@@ -40,12 +40,16 @@ Mirroring this, expressions $a, b, c$ consist of
 
 - _Pairs_ $(a, b)$ and the unique empty tuple $()$ (_nil_).
 
+  #todo[fix spacing behind "_nil_" here]
+
 - _Let-bindings_ $#letx($x$, $a$, $b$)$
   and _destructuring let-bindings_ $#letx($(x, y)$, $a$, $b$)$.
 
-  We write $a seq b$ as syntactic sugar for
-  $#letx($·$, $a$, $b$)$
-  (i.e., a let-binding where the bound variable is not used in $b$).
+  We define _sequencing_ $a seq b$ to be syntactic sugar for
+  $#letx($x$, $a$, $b$)$
+  where $x ∉ fv(b)$
+  --
+  i.e. $x$ does not appear in the _free variables_ of $b$.
 
 - _Case-expressions_ $#casex($e$, $x$, $a$, $y$, $b$)$,
   representing branching control-flow
@@ -55,9 +59,11 @@ Mirroring this, expressions $a, b, c$ consist of
 
   - Evaluates an initial value $a : A$
 
-  - Evaluates the loop body $b : B tysum A$ with $x = a$;
-    if the loop evaluates to a value of type $B$, we return it,
-    otherwise, we re-evaluate the loop with $x$ having the new value of type $A$
+  - Evaluates the loop body $b : B tysum A$ with $x = a$; and:
+    
+    - If the loop evaluates to a value of type $B$, returns it;
+    
+    - Otherwise, re-evaluates the loop with $x$ having the new value of type $A$
 
 We give the full grammar for #liter types, expressions, and
 contexts in @fig-expr-syntax.
@@ -108,16 +114,28 @@ $letx(x, a, b)$
 and
 $letx(y, a, subvar(y, x, b))$
 as the same term whenever it is convenient to do so,
-where $subvar(y, x, b)$ denotes replacing all occurrences of $x$
-in $b$ with $y$.
+where $subvar(y, x, b)$ denotes the 
+_capture-avoiding substitution_ of $x$ with $y$ in $b$.
+
+#todo[move definition of capture-avoiding substitution here]
+
 In particular, we may therefore treat all bound variables
--- e.g. $x$ in $letx(x, a, b)$ -- as _fresh symbols_.
+-- e.g. $x$ in $letx(x, a, b)$ -- as _fresh symbols_
+-- which don't appear anywhere else.
+
+#todo[
+  perhaps use above to:
+  - Define $α$-equivalence more generally
+  - Define quotienting under $α$-equivalence
+  - Show how this can be represented syntactically using 
+    _locally nameless syntax_ -- or point to this in the appendix
+]
 
 This can be formalized by using _locally nameless_ syntax,
 in which free variables remain names like $x, y, z$
 while bound variables are represented as de-Bruijn indices;
 more information may be found in the Appendix #todo[write this or remove it]
-or in #todo[locally nameless tutorial citation]
+or in @chargueraud-locally-nameless-12.
 
 == Typing <typing-rules>
 
