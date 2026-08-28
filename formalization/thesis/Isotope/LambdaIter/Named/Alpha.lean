@@ -4,12 +4,12 @@ import Isotope.LambdaIter.Named.Subst
 
 namespace Isotope.LambdaIter.Named
 
-variable [DecidableEq ν] {S : Signature τ}
+variable [DecidableEq ν] {Φ : Type*}
 
 /-- Independent named alpha-equivalence. Binder-renaming constructors require
 both absence of a free target name and `CaptureSafe`, so they cannot capture a
 free occurrence or move it beneath an existing same-named binder. -/
-inductive Alpha : Tm ν S → Tm ν S → Prop where
+inductive Alpha : Tm ν Φ → Tm ν Φ → Prop where
   | refl (a) : Alpha a a
   | symm : Alpha a b → Alpha b a
   | trans : Alpha a b → Alpha b c → Alpha a c

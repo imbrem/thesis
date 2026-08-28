@@ -1,5 +1,6 @@
 import Isotope.LambdaIter.Named.Defs
 import Isotope.LambdaIter.Weakening
+import Isotope.LambdaIter.Context.Shadowing
 
 /-!
 # Contexts for named lambda-iter

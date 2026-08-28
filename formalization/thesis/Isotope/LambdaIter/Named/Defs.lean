@@ -1,35 +1,29 @@
-import Isotope.LambdaIter.Ty
+import Isotope.LambdaIter.Signature
 
 /-! # Named syntax for lambda-iter -/
 
 namespace Isotope.LambdaIter.Named
 
-universe u v w
-
-/-- A typed instruction signature. `pure` records the side condition used by
-the effect-sensitive equations, without baking an effect system into syntax. -/
-structure Signature (τ : Type u) where
-  Op : Type v
-  src : Op → τ
-  trg : Op → τ
-  pure : Op → Prop := fun _ => False
+universe u v
 
 /-- `none` binders deliberately retain a context position, but cannot be
 referenced and shadow no name. -/
 abbrev Binder (ν : Type u) := Option ν
 
-inductive Tm (ν : Type w) {τ : Type u} (S : Signature.{u, v} τ) : Type (max w v) where
+/-- Raw named terms depend only on names and primitive operators. Instruction
+typing and effects are supplied independently to later judgments. -/
+inductive Tm (ν : Type u) (Φ : Type v) : Type (max u v) where
   | var (x : ν)
-  | op (f : S.Op) (a : Tm ν S)
-  | let₁ (x : Binder ν) (a b : Tm ν S)
+  | op (f : Φ) (a : Tm ν Φ)
+  | let₁ (x : Binder ν) (a b : Tm ν Φ)
   | unit
-  | pair (a b : Tm ν S)
-  | let₂ (x y : Binder ν) (a b : Tm ν S)
-  | inl (a : Tm ν S)
-  | inr (a : Tm ν S)
-  | case (e : Tm ν S) (x : Binder ν) (a : Tm ν S)
-      (y : Binder ν) (b : Tm ν S)
-  | abort (a : Tm ν S)
-  | iter (a : Tm ν S) (x : Binder ν) (b : Tm ν S)
+  | pair (a b : Tm ν Φ)
+  | let₂ (x y : Binder ν) (a b : Tm ν Φ)
+  | inl (a : Tm ν Φ)
+  | inr (a : Tm ν Φ)
+  | case (e : Tm ν Φ) (x : Binder ν) (a : Tm ν Φ)
+      (y : Binder ν) (b : Tm ν Φ)
+  | abort (a : Tm ν Φ)
+  | iter (a : Tm ν Φ) (x : Binder ν) (b : Tm ν Φ)
 
 end Isotope.LambdaIter.Named

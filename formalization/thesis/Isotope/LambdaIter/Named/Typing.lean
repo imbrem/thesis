@@ -6,11 +6,11 @@ namespace Isotope.LambdaIter.Named
 
 open TypeFormers
 
-variable [DecidableEq ν] [TypeFormers τ] [Subtyping τ] (S : Signature τ)
+variable [DecidableEq ν] [TypeFormers τ] [Subtyping τ] [HasTy Φ τ]
 
-inductive HasType : Ctx ν τ → Tm ν S → τ → Prop where
+inductive HasType : Ctx ν τ → Tm ν Φ → τ → Prop where
   | var (h : Ctx.lookup Γ x = some A) : HasType Γ (.var x) A
-  | op (hf : InstTy S f A B) (ha : HasType Γ a A) : HasType Γ (.op f a) B
+  | op (hf : InstTy f A B) (ha : HasType Γ a A) : HasType Γ (.op f a) B
   | let₁ (ha : HasType Γ a A) (hb : HasType (.snoc Γ x A) b B) :
       HasType Γ (.let₁ x a b) B
   | unit : HasType Γ .unit TypeFormers.unit

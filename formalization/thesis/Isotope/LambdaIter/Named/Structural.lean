@@ -4,25 +4,25 @@ import Isotope.LambdaIter.Named.Typing
 
 namespace Isotope.LambdaIter.Named
 
-variable {ν τ : Type*} [DecidableEq ν] [TypeFormers τ] [Subtyping τ]
-  {S : Signature τ}
+variable {ν τ Φ : Type*} [DecidableEq ν] [TypeFormers τ] [Subtyping τ]
+  [HasTy Φ τ]
 
 /-- The lookup condition under which a shared `Wk Γ Δ` transports typing from
 `Δ` to `Γ`. It is intentionally proof-relevant. Not every shared weakening has
 this property: `NameEdit.introduce` can make a variable visible only in `Δ`. -/
-structure LookupWk {Γ Δ : Ctx ν τ} (w : Ctx.Wk Γ Δ) : Type _ where
+structure LookupStrictWk {Γ Δ : Ctx ν τ} (w : Ctx.StrictWk Γ Δ) : Type _ where
   lookup : ∀ x A, Δ.lookup x = some A → Γ.lookup x = some A
 
-/-- Subtyping-aware lookup condition for `SubtypeWk`. -/
-structure LookupSubtypeWk {Γ Δ : Ctx ν τ} (w : Ctx.SubtypeWk Γ Δ) : Type _ where
+/-- Subtyping-aware lookup condition for ordinary shared `Wk`. -/
+structure LookupWk {Γ Δ : Ctx ν τ} (w : Ctx.Wk Γ Δ) : Type _ where
   lookup : ∀ x A, Δ.lookup x = some A →
     Σ B, (Γ.lookup x = some B) ×' Subty B A
 
-namespace LookupWk
+namespace LookupStrictWk
 
-def snoc {Γ Δ : Ctx ν τ} {w : Ctx.Wk Γ Δ}
-    (h : LookupWk w) (n : Option ν) (A : τ) :
-    LookupWk (Ctx.Wk.keep (A := A) w (.keep n)) := ⟨by
+def snoc {Γ Δ : Ctx ν τ} {w : Ctx.StrictWk Γ Δ}
+    (h : LookupStrictWk w) (n : Option ν) (A : τ) :
+    LookupStrictWk (Ctx.StrictWk.keep (A := A) w (.keep n)) := ⟨by
   intro x B hx
   cases n with
   | none => exact h.lookup x B hx
@@ -31,13 +31,13 @@ def snoc {Γ Δ : Ctx ν τ} {w : Ctx.Wk Γ Δ}
     · subst e; simpa [Ctx.lookup] using hx
     · simpa [Ctx.lookup, e] using h.lookup x B (by simpa [Ctx.lookup, e] using hx)⟩
 
-end LookupWk
+end LookupStrictWk
 
-namespace LookupSubtypeWk
+namespace LookupWk
 
-def snoc {Γ Δ : Ctx ν τ} {w : Ctx.SubtypeWk Γ Δ}
-    (h : LookupSubtypeWk w) (n : Option ν) (A : τ) :
-    LookupSubtypeWk (Ctx.SubtypeWk.keep (A := A) (B := A) w (.keep n) (Subty.refl A)) := ⟨by
+def snoc {Γ Δ : Ctx ν τ} {w : Ctx.Wk Γ Δ}
+    (h : LookupWk w) (n : Option ν) (A : τ) :
+    LookupWk (Ctx.Wk.keep (A := A) (B := A) w (.keep n) (Subty.refl A)) := ⟨by
   intro x B hx
   cases n with
   | none => exact h.lookup x B hx
@@ -50,11 +50,20 @@ def snoc {Γ Δ : Ctx ν τ} {w : Ctx.SubtypeWk Γ Δ}
     · obtain ⟨C, hC, hCB⟩ := h.lookup x B (by simpa [Ctx.lookup, e] using hx)
       exact ⟨C, by simpa [Ctx.lookup, e] using hC, hCB⟩⟩
 
-end LookupSubtypeWk
+end LookupWk
 
-theorem HasType.wk {Γ Δ : Ctx ν τ} {a : Tm ν S} {A : τ}
-    (w : Ctx.Wk Γ Δ) (hw : LookupWk w) (h : HasType S Δ a A) :
-    HasType S Γ a A := by
+omit [TypeFormers τ] [Subtyping τ] in
+theorem lookup_snoc_eq {Γ Δ : Ctx ν τ}
+    (heq : ∀ x, Γ.lookup x = Δ.lookup x) (n : Option ν) (A : τ) :
+    ∀ x, (Ctx.snoc Γ n A).lookup x = (Ctx.snoc Δ n A).lookup x := by
+  intro x
+  cases n with
+  | none => exact heq x
+  | some y => by_cases h : x = y <;> simp [Ctx.lookup, h, heq x]
+
+theorem HasType.strictWk {Γ Δ : Ctx ν τ} {a : Tm ν Φ} {A : τ}
+    (w : Ctx.StrictWk Γ Δ) (hw : LookupStrictWk w) (h : HasType Δ a A) :
+    HasType Γ a A := by
   induction h generalizing Γ with
   | var hx => exact .var (hw.lookup _ _ hx)
   | op hf _ ih => exact .op hf (ih w hw)
@@ -70,9 +79,9 @@ theorem HasType.wk {Γ Δ : Ctx ν τ} {a : Tm ν S} {A : τ}
   | iter _ _ iha ihb => exact .iter (iha w hw) (ihb _ (hw.snoc _ _))
   | sub _ hAB ih => exact .sub (ih w hw) hAB
 
-theorem HasType.subtypeWk {Γ Δ : Ctx ν τ} {a : Tm ν S} {A : τ}
-    (w : Ctx.SubtypeWk Γ Δ) (hw : LookupSubtypeWk w) (h : HasType S Δ a A) :
-    HasType S Γ a A := by
+theorem HasType.wk {Γ Δ : Ctx ν τ} {a : Tm ν Φ} {A : τ}
+    (w : Ctx.Wk Γ Δ) (hw : LookupWk w) (h : HasType Δ a A) :
+    HasType Γ a A := by
   induction h generalizing Γ with
   | var hx =>
       obtain ⟨B, hB, hBA⟩ := hw.lookup _ _ hx
@@ -91,8 +100,38 @@ theorem HasType.subtypeWk {Γ Δ : Ctx ν τ} {a : Tm ν S} {A : τ}
   | sub _ hAB ih => exact .sub (ih w hw) hAB
 
 /-- Proposition-valued corollary, when derivation identity is irrelevant. -/
-theorem HasType.wk_nonempty {Γ Δ : Ctx ν τ} {a : Tm ν S} {A : τ}
-    (h : HasType S Δ a A) (p : Nonempty (Σ w : Ctx.Wk Γ Δ, LookupWk w)) :
-    HasType S Γ a A := p.elim fun ⟨w, hw⟩ => h.wk w hw
+theorem HasType.strictWk_nonempty {Γ Δ : Ctx ν τ} {a : Tm ν Φ} {A : τ}
+    (h : HasType Δ a A) (p : Nonempty (Σ w : Ctx.StrictWk Γ Δ, LookupStrictWk w)) :
+    HasType Γ a A := p.elim fun ⟨w, hw⟩ => h.strictWk w hw
+
+/-- Transport across an exact equality of visible lookups. This is the core
+fact used for checked shadow-only context edits. -/
+theorem HasType.lookupEq {Γ Δ : Ctx ν τ} {a : Tm ν Φ} {A : τ}
+    (h : HasType Γ a A) (heq : ∀ x, Γ.lookup x = Δ.lookup x) :
+    HasType Δ a A := by
+  induction h generalizing Δ with
+  | var hx => exact .var (heq _ ▸ hx)
+  | op hf _ ih => exact .op hf (ih heq)
+  | let₁ _ _ iha ihb =>
+      exact .let₁ (iha heq) (ihb (lookup_snoc_eq heq _ _))
+  | unit => exact .unit
+  | pair _ _ iha ihb => exact .pair (iha heq) (ihb heq)
+  | let₂ _ _ iha ihb =>
+      exact .let₂ (iha heq)
+        (ihb (lookup_snoc_eq (lookup_snoc_eq heq _ _) _ _))
+  | inl _ ih => exact .inl (ih heq)
+  | inr _ ih => exact .inr (ih heq)
+  | case _ _ _ ihe iha ihb =>
+      exact .case (ihe heq)
+        (iha (lookup_snoc_eq heq _ _))
+        (ihb (lookup_snoc_eq heq _ _))
+  | abort _ ih => exact .abort (ih heq)
+  | iter _ _ iha ihb =>
+      exact .iter (iha heq) (ihb (lookup_snoc_eq heq _ _))
+  | sub _ hAB ih => exact .sub (ih heq) hAB
+
+theorem HasType.shadowEdit {Γ Δ : Ctx ν τ} {a : Tm ν Φ} {A : τ}
+    (d : Ctx.ShadowEdit Γ Δ) (h : HasType Γ a A) : HasType Δ a A :=
+  h.lookupEq (d.lookup_eq)
 
 end Isotope.LambdaIter.Named
