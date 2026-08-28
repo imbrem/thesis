@@ -1,6 +1,6 @@
 /-
 Copyright (c) 2026 Remu G. -/
-import Isotope.LambdaIter.Named.Context
+import Isotope.LambdaIter.Named.Subtyping
 
 /-! # Typing for named lambda-iter -/
 
@@ -8,11 +8,11 @@ namespace Isotope.LambdaIter.Named
 
 open TypeFormers
 
-variable [DecidableEq ι] [TypeFormers τ] (S : Signature τ)
+variable [DecidableEq ι] [TypeFormers τ] [Subtyping τ] (S : Signature τ)
 
 inductive HasType : Ctx ι τ → Tm ι S → τ → Prop where
   | var (h : Ctx.lookup Γ x = some A) : HasType Γ (.var x) A
-  | op (ha : HasType Γ a (S.src f)) : HasType Γ (.op f a) (S.trg f)
+  | op (hf : InstTy S f A B) (ha : HasType Γ a A) : HasType Γ (.op f a) B
   | let₁ (ha : HasType Γ a A) (hb : HasType ((x, A) :: Γ) b B) :
       HasType Γ (.let₁ x a b) B
   | unit : HasType Γ .unit TypeFormers.unit
@@ -31,5 +31,8 @@ inductive HasType : Ctx ι τ → Tm ι S → τ → Prop where
   | iter (ha : HasType Γ a A)
       (hb : HasType ((x, A) :: Γ) b (coprod B A)) :
       HasType Γ (.iter a x b) B
+  /-- The explicit coercion boundary leaves every term-former rule
+  syntax-directed while exposing the result-subtyping used by weakening. -/
+  | sub (ha : HasType Γ a A) (hAB : Subty A B) : HasType Γ a B
 
 end Isotope.LambdaIter.Named

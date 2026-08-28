@@ -8,7 +8,7 @@ namespace Isotope.LambdaIter.Named
 
 open TypeFormers
 
-variable [DecidableEq ι] [TypeFormers τ] {S : Signature τ}
+variable [DecidableEq ι] [TypeFormers τ] [Subtyping τ] {S : Signature τ}
 
 /-- Syntactic purity, used exactly where the thesis requires a pure expression. -/
 inductive Pure : Tm ι S → Prop where
@@ -105,7 +105,8 @@ inductive Eqv (S : Signature τ) : Ctx ι τ → Tm ι S → Tm ι S → τ → 
   | refl (h : HasType S Γ a A) : Eqv S Γ a a A
   | symm (h : Eqv S Γ a b A) : Eqv S Γ b a A
   | trans (h₁ : Eqv S Γ a b A) (h₂ : Eqv S Γ b c A) : Eqv S Γ a c A
-  | op (h : Eqv S Γ a b (S.src f)) : Eqv S Γ (.op f a) (.op f b) (S.trg f)
+  | op (hf : InstTy S f A B) (h : Eqv S Γ a b A) :
+      Eqv S Γ (.op f a) (.op f b) B
   | let₁ (ha : Eqv S Γ a a' A)
       (hb : Eqv S ((x, A) :: Γ) b b' B) :
       Eqv S Γ (.let₁ x a b) (.let₁ x a' b') B
@@ -136,5 +137,6 @@ inductive Eqv (S : Signature τ) : Ctx ι τ → Tm ι S → Tm ι S → τ → 
         (Tm.subst x' h b') (coprod B A')) :
       Eqv S Γ (.iter a (some x) b)
         (.iter (.let₁ (some x) a h) (some x') b') B
+  | sub (h : Eqv S Γ a b A) (hAB : Subty A B) : Eqv S Γ a b B
 
 end Isotope.LambdaIter.Named

@@ -2,6 +2,7 @@
 Copyright (c) 2026 Remu G. -/
 import Isotope.LambdaIter.Named.Defs
 import Isotope.LambdaIter.Named.Context
+import Isotope.LambdaIter.Named.Subtyping
 import Isotope.LambdaIter.Named.Typing
 import Isotope.LambdaIter.Named.Structural
 import Isotope.LambdaIter.Named.Subst
