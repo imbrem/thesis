@@ -4,67 +4,95 @@ import Isotope.LambdaIter.Named.Typing
 
 namespace Isotope.LambdaIter.Named
 
-variable {ι τ : Type*} [DecidableEq ι] [TypeFormers τ] [Subtyping τ]
+variable {ν τ : Type*} [DecidableEq ν] [TypeFormers τ] [Subtyping τ]
   {S : Signature τ}
 
-theorem HasType.transport {Γ Δ : Ctx ι τ} {a : Tm ι S} {A : τ}
-    (hΓ : Ctx.Preserves Γ Δ) (h : HasType S Γ a A) : HasType S Δ a A := by
-  induction h generalizing Δ with
-  | var h => exact .var (hΓ _ _ h)
-  | op hf _ ih => exact .op hf (ih hΓ)
-  | let₁ _ _ iha ihb => exact .let₁ (iha hΓ) (ihb (hΓ.cons _ _))
-  | unit => exact .unit
-  | pair _ _ iha ihb => exact .pair (iha hΓ) (ihb hΓ)
-  | let₂ _ _ iha ihc => exact .let₂ (iha hΓ) (ihc ((hΓ.cons _ _).cons _ _))
-  | inl _ ih => exact .inl (ih hΓ)
-  | inr _ ih => exact .inr (ih hΓ)
-  | case _ _ _ ihe iha ihb =>
-      exact .case (ihe hΓ) (iha (hΓ.cons _ _)) (ihb (hΓ.cons _ _))
-  | abort _ ih => exact .abort (ih hΓ)
-  | iter _ _ iha ihb => exact .iter (iha hΓ) (ihb (hΓ.cons _ _))
-  | sub _ hAB ih => exact .sub (ih hΓ) hAB
+/-- The lookup condition under which a shared `Wk Γ Δ` transports typing from
+`Δ` to `Γ`. It is intentionally proof-relevant. Not every shared weakening has
+this property: `NameEdit.introduce` can make a variable visible only in `Δ`. -/
+structure LookupWk {Γ Δ : Ctx ν τ} (w : Ctx.Wk Γ Δ) : Type _ where
+  lookup : ∀ x A, Δ.lookup x = some A → Γ.lookup x = some A
 
-/-- Replay a derivation in a context whose visible variable types have been
-strengthened to subtypes. -/
-theorem HasType.transportWeakens {Γ Δ : Ctx ι τ} {a : Tm ι S} {A : τ}
-    (hΓ : Ctx.Weakens Γ Δ) (h : HasType S Γ a A) : HasType S Δ a A := by
-  induction h generalizing Δ with
+/-- Subtyping-aware lookup condition for `SubtypeWk`. -/
+structure LookupSubtypeWk {Γ Δ : Ctx ν τ} (w : Ctx.SubtypeWk Γ Δ) : Type _ where
+  lookup : ∀ x A, Δ.lookup x = some A →
+    Σ B, (Γ.lookup x = some B) ×' Subty B A
+
+namespace LookupWk
+
+def snoc {Γ Δ : Ctx ν τ} {w : Ctx.Wk Γ Δ}
+    (h : LookupWk w) (n : Option ν) (A : τ) :
+    LookupWk (Ctx.Wk.keep (A := A) w (.keep n)) := ⟨by
+  intro x B hx
+  cases n with
+  | none => exact h.lookup x B hx
+  | some y =>
+    by_cases e : x = y
+    · subst e; simpa [Ctx.lookup] using hx
+    · simpa [Ctx.lookup, e] using h.lookup x B (by simpa [Ctx.lookup, e] using hx)⟩
+
+end LookupWk
+
+namespace LookupSubtypeWk
+
+def snoc {Γ Δ : Ctx ν τ} {w : Ctx.SubtypeWk Γ Δ}
+    (h : LookupSubtypeWk w) (n : Option ν) (A : τ) :
+    LookupSubtypeWk (Ctx.SubtypeWk.keep (A := A) (B := A) w (.keep n) (Subty.refl A)) := ⟨by
+  intro x B hx
+  cases n with
+  | none => exact h.lookup x B hx
+  | some y =>
+    by_cases e : x = y
+    · subst e
+      have hAB : A = B := by simpa [Ctx.lookup] using hx
+      subst B
+      exact ⟨A, by simp [Ctx.lookup], Subty.refl A⟩
+    · obtain ⟨C, hC, hCB⟩ := h.lookup x B (by simpa [Ctx.lookup, e] using hx)
+      exact ⟨C, by simpa [Ctx.lookup, e] using hC, hCB⟩⟩
+
+end LookupSubtypeWk
+
+theorem HasType.wk {Γ Δ : Ctx ν τ} {a : Tm ν S} {A : τ}
+    (w : Ctx.Wk Γ Δ) (hw : LookupWk w) (h : HasType S Δ a A) :
+    HasType S Γ a A := by
+  induction h generalizing Γ with
+  | var hx => exact .var (hw.lookup _ _ hx)
+  | op hf _ ih => exact .op hf (ih w hw)
+  | let₁ _ _ iha ihb => exact .let₁ (iha w hw) (ihb _ (hw.snoc _ _))
+  | unit => exact .unit
+  | pair _ _ iha ihb => exact .pair (iha w hw) (ihb w hw)
+  | let₂ _ _ iha ihc => exact .let₂ (iha w hw) (ihc _ ((hw.snoc _ _).snoc _ _))
+  | inl _ ih => exact .inl (ih w hw)
+  | inr _ ih => exact .inr (ih w hw)
+  | case _ _ _ ihe iha ihb =>
+      exact .case (ihe w hw) (iha _ (hw.snoc _ _)) (ihb _ (hw.snoc _ _))
+  | abort _ ih => exact .abort (ih w hw)
+  | iter _ _ iha ihb => exact .iter (iha w hw) (ihb _ (hw.snoc _ _))
+  | sub _ hAB ih => exact .sub (ih w hw) hAB
+
+theorem HasType.subtypeWk {Γ Δ : Ctx ν τ} {a : Tm ν S} {A : τ}
+    (w : Ctx.SubtypeWk Γ Δ) (hw : LookupSubtypeWk w) (h : HasType S Δ a A) :
+    HasType S Γ a A := by
+  induction h generalizing Γ with
   | var hx =>
-      obtain ⟨B, hB, hBA⟩ := hΓ _ _ hx
+      obtain ⟨B, hB, hBA⟩ := hw.lookup _ _ hx
       exact .sub (.var hB) hBA
-  | op hf _ ih => exact .op hf (ih hΓ)
-  | let₁ _ _ iha ihb => exact .let₁ (iha hΓ) (ihb (hΓ.cons _ _))
+  | op hf _ ih => exact .op hf (ih w hw)
+  | let₁ _ _ iha ihb => exact .let₁ (iha w hw) (ihb _ (hw.snoc _ _))
   | unit => exact .unit
-  | pair _ _ iha ihb => exact .pair (iha hΓ) (ihb hΓ)
-  | let₂ _ _ iha ihc => exact .let₂ (iha hΓ) (ihc ((hΓ.cons _ _).cons _ _))
-  | inl _ ih => exact .inl (ih hΓ)
-  | inr _ ih => exact .inr (ih hΓ)
+  | pair _ _ iha ihb => exact .pair (iha w hw) (ihb w hw)
+  | let₂ _ _ iha ihc => exact .let₂ (iha w hw) (ihc _ ((hw.snoc _ _).snoc _ _))
+  | inl _ ih => exact .inl (ih w hw)
+  | inr _ ih => exact .inr (ih w hw)
   | case _ _ _ ihe iha ihb =>
-      exact .case (ihe hΓ) (iha (hΓ.cons _ _)) (ihb (hΓ.cons _ _))
-  | abort _ ih => exact .abort (ih hΓ)
-  | iter _ _ iha ihb => exact .iter (iha hΓ) (ihb (hΓ.cons _ _))
-  | sub _ hAB ih => exact .sub (ih hΓ) hAB
+      exact .case (ihe w hw) (iha _ (hw.snoc _ _)) (ihb _ (hw.snoc _ _))
+  | abort _ ih => exact .abort (ih w hw)
+  | iter _ _ iha ihb => exact .iter (iha w hw) (ihb _ (hw.snoc _ _))
+  | sub _ hAB ih => exact .sub (ih w hw) hAB
 
-theorem HasType.weakenSubtypes {Γ Δ : Ctx ι τ} {a : Tm ι S} {A B : τ}
-    (h : HasType S Γ a A) (hΓ : Ctx.Weakens Γ Δ) (hAB : Subty A B) :
-    HasType S Δ a B := .sub (h.transportWeakens hΓ) hAB
-
-/-- Anonymous weakening is always safe: it neither shadows nor becomes visible. -/
-theorem HasType.weakenAnon {Γ : Ctx ι τ} {a : Tm ι S} {A : τ}
-    (h : HasType S Γ a A) (B : τ) :
-    HasType S ((none, B) :: Γ) a A :=
-  h.transport (Ctx.preserves_anon Γ B)
-
-/-- Named weakening is intentionally exposed only with the precise first-match
-preservation premise. In particular it cannot insert a binder that shadows a
-free occurrence. -/
-theorem HasType.weaken {Γ Δ : Ctx ι τ} {a : Tm ι S} {A : τ}
-    (h : HasType S Γ a A) (hΓ : Ctx.Preserves Γ Δ) :
-    HasType S Δ a A := h.transport hΓ
-
-/-- Strengthening is the same transport theorem in the erasing direction. -/
-theorem HasType.strengthen {Γ : Ctx ι τ} {a : Tm ι S} {A : τ}
-    {b : Option ι × τ} (h : HasType S (b :: Γ) a A)
-    (hb : Ctx.CanErase Γ b) : HasType S Γ a A := h.transport hb
+/-- Proposition-valued corollary, when derivation identity is irrelevant. -/
+theorem HasType.wk_nonempty {Γ Δ : Ctx ν τ} {a : Tm ν S} {A : τ}
+    (h : HasType S Δ a A) (p : Nonempty (Σ w : Ctx.Wk Γ Δ, LookupWk w)) :
+    HasType S Γ a A := p.elim fun ⟨w, hw⟩ => h.wk w hw
 
 end Isotope.LambdaIter.Named

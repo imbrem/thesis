@@ -6,7 +6,7 @@ namespace Isotope.LambdaIter.Named
 
 variable {S : Signature τ}
 
-def Tm.rename (ρ : ι → κ) : Tm ι S → Tm κ S
+def Tm.rename (ρ : ν → κ) : Tm ν S → Tm κ S
   | .var x => .var (ρ x)
   | .op f a => .op f (a.rename ρ)
   | .let₁ x a b => .let₁ (x.map ρ) (a.rename ρ) (b.rename ρ)
@@ -20,9 +20,9 @@ def Tm.rename (ρ : ι → κ) : Tm ι S → Tm κ S
   | .abort a => .abort (a.rename ρ)
   | .iter a x b => .iter (a.rename ρ) (x.map ρ) (b.rename ρ)
 
-variable [DecidableEq ι]
+variable [DecidableEq ν]
 
-private def Binder.blocks (b : Binder ι) (x : ι) : Bool :=
+private def Binder.blocks (b : Binder ν) (x : ν) : Bool :=
   match b with
   | none => false
   | some y => decide (x = y)
@@ -30,7 +30,7 @@ private def Binder.blocks (b : Binder ι) (x : ι) : Bool :=
 /-- Shadow-respecting substitution. Capture avoidance is expressed separately
 by `CaptureSafe`; this operation never substitutes an occurrence shadowed by a
 same-named binder. -/
-def Tm.subst (x : ι) (s : Tm ι S) : Tm ι S → Tm ι S
+def Tm.subst (x : ν) (s : Tm ν S) : Tm ν S → Tm ν S
   | .var y => if x = y then s else .var y
   | .op f a => .op f (subst x s a)
   | .let₁ y a b =>
@@ -49,7 +49,7 @@ def Tm.subst (x : ι) (s : Tm ι S) : Tm ι S → Tm ι S
   | .iter a y b =>
       .iter (subst x s a) y (if y.blocks x then b else subst x s b)
 
-def Tm.Free (x : ι) : Tm ι S → Prop
+def Tm.Free (x : ν) : Tm ν S → Prop
   | .var y => x = y
   | .op _ a | .inl a | .inr a | .abort a => a.Free x
   | .let₁ y a b => a.Free x ∨ (y ≠ some x ∧ b.Free x)
@@ -60,7 +60,7 @@ def Tm.Free (x : ι) : Tm ι S → Prop
       e.Free x ∨ (y ≠ some x ∧ a.Free x) ∨ (z ≠ some x ∧ b.Free x)
   | .iter a y b => a.Free x ∨ (y ≠ some x ∧ b.Free x)
 
-def Tm.Binds (x : ι) : Tm ι S → Prop
+def Tm.Binds (x : ν) : Tm ν S → Prop
   | .var _ | .unit => False
   | .op _ a | .inl a | .inr a | .abort a => a.Binds x
   | .let₁ y a b => y = some x ∨ a.Binds x ∨ b.Binds x
@@ -72,18 +72,18 @@ def Tm.Binds (x : ι) : Tm ι S → Prop
 
 /-- A conservative, checkable side condition for the named substitution: no
 free name of the replacement is bound anywhere in the target. -/
-def CaptureSafe (s t : Tm ι S) : Prop :=
+def CaptureSafe (s t : Tm ν S) : Prop :=
   ∀ y, s.Free y → ¬t.Binds y
 
 /-- The capture-avoiding interface requires evidence that the raw,
 shadow-respecting traversal cannot capture a free name. -/
-def Tm.substSafe (x : ι) (s t : Tm ι S) (_ : CaptureSafe s t) : Tm ι S :=
+def Tm.substSafe (x : ν) (s t : Tm ν S) (_ : CaptureSafe s t) : Tm ν S :=
   Tm.subst x s t
 
-@[simp] theorem Tm.subst_var_same (x : ι) (s : Tm ι S) :
+@[simp] theorem Tm.subst_var_same (x : ν) (s : Tm ν S) :
     Tm.subst x s (Tm.var x) = s := by simp [Tm.subst]
 
-@[simp] theorem Tm.subst_var_ne {x y : ι} (h : x ≠ y) (s : Tm ι S) :
+@[simp] theorem Tm.subst_var_ne {x y : ν} (h : x ≠ y) (s : Tm ν S) :
     Tm.subst x s (Tm.var y) = .var y := by simp [Tm.subst, h]
 
 end Isotope.LambdaIter.Named

@@ -16,20 +16,20 @@ structure Signature (τ : Type u) where
 
 /-- `none` binders deliberately retain a context position, but cannot be
 referenced and shadow no name. -/
-abbrev Binder (ι : Type u) := Option ι
+abbrev Binder (ν : Type u) := Option ν
 
-inductive Tm (ι : Type w) {τ : Type u} (S : Signature.{u, v} τ) : Type (max w v) where
-  | var (x : ι)
-  | op (f : S.Op) (a : Tm ι S)
-  | let₁ (x : Binder ι) (a b : Tm ι S)
+inductive Tm (ν : Type w) {τ : Type u} (S : Signature.{u, v} τ) : Type (max w v) where
+  | var (x : ν)
+  | op (f : S.Op) (a : Tm ν S)
+  | let₁ (x : Binder ν) (a b : Tm ν S)
   | unit
-  | pair (a b : Tm ι S)
-  | let₂ (x y : Binder ι) (a b : Tm ι S)
-  | inl (a : Tm ι S)
-  | inr (a : Tm ι S)
-  | case (e : Tm ι S) (x : Binder ι) (a : Tm ι S)
-      (y : Binder ι) (b : Tm ι S)
-  | abort (a : Tm ι S)
-  | iter (a : Tm ι S) (x : Binder ι) (b : Tm ι S)
+  | pair (a b : Tm ν S)
+  | let₂ (x y : Binder ν) (a b : Tm ν S)
+  | inl (a : Tm ν S)
+  | inr (a : Tm ν S)
+  | case (e : Tm ν S) (x : Binder ν) (a : Tm ν S)
+      (y : Binder ν) (b : Tm ν S)
+  | abort (a : Tm ν S)
+  | iter (a : Tm ν S) (x : Binder ν) (b : Tm ν S)
 
 end Isotope.LambdaIter.Named
