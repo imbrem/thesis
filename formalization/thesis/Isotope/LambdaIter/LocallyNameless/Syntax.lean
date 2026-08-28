@@ -1,29 +1,21 @@
-import Isotope.LambdaIter.Ty
+import Isotope.LambdaIter.Signature
 
 namespace Isotope.LambdaIter.LocallyNameless
 
-/-- A typed instruction signature.  Effects are kept abstract; `IsPure` is the
-side condition used by the pure substitution equations. -/
-structure Signature (τ : Type u) where
-  Instr : Type v
-  src : Instr → τ
-  trg : Instr → τ
-  IsPure : Instr → Prop := fun _ => False
-
 /-- Locally nameless terms with `n` in-scope bound variables. -/
-inductive Tm (ν : Type w) (𝕀 : Type v) : Nat → Type (max v w) where
-  | fv {n} (x : ν) : Tm ν 𝕀 n
-  | bv {n} (ι : Fin n) : Tm ν 𝕀 n
-  | op {n} (f : 𝕀) (a : Tm ν 𝕀 n) : Tm ν 𝕀 n
-  | let₁ {n} (a : Tm ν 𝕀 n) (b : Tm ν 𝕀 (n + 1)) : Tm ν 𝕀 n
-  | unit {n} : Tm ν 𝕀 n
-  | pair {n} (a b : Tm ν 𝕀 n) : Tm ν 𝕀 n
-  | let₂ {n} (a : Tm ν 𝕀 n) (b : Tm ν 𝕀 (n + 2)) : Tm ν 𝕀 n
-  | inl {n} (a : Tm ν 𝕀 n) : Tm ν 𝕀 n
-  | inr {n} (a : Tm ν 𝕀 n) : Tm ν 𝕀 n
-  | case {n} (e : Tm ν 𝕀 n) (l r : Tm ν 𝕀 (n + 1)) : Tm ν 𝕀 n
-  | abort {n} (a : Tm ν 𝕀 n) : Tm ν 𝕀 n
-  | iter {n} (init : Tm ν 𝕀 n) (body : Tm ν 𝕀 (n + 1)) : Tm ν 𝕀 n
+inductive Tm (ν : Type w) (Φ : Type v) : Nat → Type (max v w) where
+  | fv {n} (x : ν) : Tm ν Φ n
+  | bv {n} (ι : Fin n) : Tm ν Φ n
+  | op {n} (f : Φ) (a : Tm ν Φ n) : Tm ν Φ n
+  | let₁ {n} (a : Tm ν Φ n) (b : Tm ν Φ (n + 1)) : Tm ν Φ n
+  | unit {n} : Tm ν Φ n
+  | pair {n} (a b : Tm ν Φ n) : Tm ν Φ n
+  | let₂ {n} (a : Tm ν Φ n) (b : Tm ν Φ (n + 2)) : Tm ν Φ n
+  | inl {n} (a : Tm ν Φ n) : Tm ν Φ n
+  | inr {n} (a : Tm ν Φ n) : Tm ν Φ n
+  | case {n} (e : Tm ν Φ n) (l r : Tm ν Φ (n + 1)) : Tm ν Φ n
+  | abort {n} (a : Tm ν Φ n) : Tm ν Φ n
+  | iter {n} (init : Tm ν Φ n) (body : Tm ν Φ (n + 1)) : Tm ν Φ n
   deriving Repr
 
 namespace Tm
@@ -32,7 +24,7 @@ private def up (ρ : Fin n → Fin m) : Fin (n + 1) → Fin (m + 1) :=
   Fin.cases 0 (fun i => Fin.succ (ρ i))
 
 /-- Rename bound variables. -/
-def rename (ρ : Fin n → Fin m) : Tm ν 𝕀 n → Tm ν 𝕀 m
+def rename (ρ : Fin n → Fin m) : Tm ν Φ n → Tm ν Φ m
   | .fv x => .fv x
   | .bv i => .bv (ρ i)
   | .op f a => .op f (rename ρ a)
@@ -46,21 +38,21 @@ def rename (ρ : Fin n → Fin m) : Tm ν 𝕀 n → Tm ν 𝕀 m
   | .abort a => .abort (rename ρ a)
   | .iter a b => .iter (rename ρ a) (rename (up ρ) b)
 
-def lift (t : Tm ν 𝕀 n) : Tm ν 𝕀 (n + 1) := rename Fin.succ t
+def lift (t : Tm ν Φ n) : Tm ν Φ (n + 1) := rename Fin.succ t
 
 /-- Insert one ambient binder under the top binder, preserving index zero. -/
-def underBinder (t : Tm ν 𝕀 (n + 1)) : Tm ν 𝕀 (n + 2) :=
+def underBinder (t : Tm ν Φ (n + 1)) : Tm ν Φ (n + 2) :=
   rename (Fin.cases 0 (fun i => Fin.succ (Fin.succ i))) t
 
 /-- Insert one ambient binder under the top two binders. -/
-def underTwoBinders (t : Tm ν 𝕀 (n + 2)) : Tm ν 𝕀 (n + 3) :=
+def underTwoBinders (t : Tm ν Φ (n + 2)) : Tm ν Φ (n + 3) :=
   rename (Fin.cases 0 (Fin.cases 1 (fun i => Fin.succ (Fin.succ (Fin.succ i))))) t
 
-private def upSub (σ : Fin n → Tm ν 𝕀 m) : Fin (n + 1) → Tm ν 𝕀 (m + 1) :=
+private def upSub (σ : Fin n → Tm ν Φ m) : Fin (n + 1) → Tm ν Φ (m + 1) :=
   Fin.cases (.bv 0) (fun i => lift (σ i))
 
 /-- Simultaneous, capture-avoiding substitution for bound variables. -/
-def bsubst (σ : Fin n → Tm ν 𝕀 m) : Tm ν 𝕀 n → Tm ν 𝕀 m
+def bsubst (σ : Fin n → Tm ν Φ m) : Tm ν Φ n → Tm ν Φ m
   | .fv x => .fv x
   | .bv i => σ i
   | .op f a => .op f (bsubst σ a)
@@ -75,11 +67,11 @@ def bsubst (σ : Fin n → Tm ν 𝕀 m) : Tm ν 𝕀 n → Tm ν 𝕀 m
   | .iter a b => .iter (bsubst σ a) (bsubst (upSub σ) b)
 
 /-- Open the outermost binder. -/
-def instantiate (b : Tm ν 𝕀 (n + 1)) (a : Tm ν 𝕀 n) : Tm ν 𝕀 n :=
+def instantiate (b : Tm ν Φ (n + 1)) (a : Tm ν Φ n) : Tm ν Φ n :=
   bsubst (Fin.cases a (fun i => .bv i)) b
 
 /-- Substitute a term for a free variable. -/
-def fsubst [DecidableEq ν] (x : ν) (s : Tm ν 𝕀 n) : Tm ν 𝕀 n → Tm ν 𝕀 n
+def fsubst [DecidableEq ν] (x : ν) (s : Tm ν Φ n) : Tm ν Φ n → Tm ν Φ n
   | .fv y => if x = y then s else .fv y
   | .bv i => .bv i
   | .op f a => .op f (fsubst x s a)
@@ -93,10 +85,10 @@ def fsubst [DecidableEq ν] (x : ν) (s : Tm ν 𝕀 n) : Tm ν 𝕀 n → Tm ν
   | .abort a => .abort (fsubst x s a)
   | .iter a b => .iter (fsubst x s a) (fsubst x (lift s) b)
 
-@[simp] theorem fsubst_fv_self [DecidableEq ν] (x : ν) (s : Tm ν 𝕀 n) :
+@[simp] theorem fsubst_fv_self [DecidableEq ν] (x : ν) (s : Tm ν Φ n) :
     fsubst x s (.fv x) = s := by simp [fsubst]
 
-@[simp] theorem fsubst_fv_ne [DecidableEq ν] {x y : ν} (h : x ≠ y) (s : Tm ν 𝕀 n) :
+@[simp] theorem fsubst_fv_ne [DecidableEq ν] {x y : ν} (h : x ≠ y) (s : Tm ν Φ n) :
     fsubst x s (.fv y) = .fv y := by simp [fsubst, h]
 
 end Tm

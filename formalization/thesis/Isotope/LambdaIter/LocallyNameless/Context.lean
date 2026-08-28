@@ -63,6 +63,16 @@ def Wk.at [TypeFormers τ] [Subtyping τ] : {n : Nat} →
   | _ + 1, .snoc _ _, .snoc _ _, .snoc w h, ι =>
       Fin.cases h (fun j => w.at j) ι
 
+/-- Exact, same-shape weakening for bound contexts. -/
+inductive StrictWk : BoundCtx τ n → BoundCtx τ n → Type u where
+  | nil : StrictWk .nil .nil
+  | snoc : StrictWk Γ' Γ → StrictWk (.snoc Γ' A) (.snoc Γ A)
+
+def StrictWk.toWk {τ : Type u} [TypeFormers τ] [Subtyping τ]
+    {n : Nat} {Γ' Γ : BoundCtx τ n} : StrictWk Γ' Γ → Wk Γ' Γ
+  | .nil => .nil
+  | .snoc w => .snoc w.toWk (Subty.refl _)
+
 /-- Proposition-truncated bound weakening, exposed separately. -/
 abbrev WkProp (Γ' Γ : BoundCtx τ n) [TypeFormers τ] [Subtyping τ] : Prop :=
   Nonempty (Wk Γ' Γ)
@@ -78,12 +88,12 @@ structure LookupRefines {ν : Type u} {τ : Type v}
   subty : Subty ty A
 
 /-- A shared free-context weakening together with exactly the lookup transport
-needed by typing. Bare `SubtypeWk` permits incompatible newly shadowing names;
+needed by typing. Bare `Ctx.Wk` permits incompatible newly shadowing names;
 this wrapper deliberately rejects those derivations. -/
 structure FreeWk {ν : Type u} {τ : Type v}
     [DecidableEq ν] [TypeFormers τ] [Subtyping τ]
     (Γ' Γ : LambdaIter.Ctx ν τ) : Type (max u v) where
-  structural : LambdaIter.Ctx.SubtypeWk Γ' Γ
+  structural : LambdaIter.Ctx.Wk Γ' Γ
   lookup : ∀ x A, Γ.lookup x = some A → LookupRefines Γ' x A
 
 /-- Proposition-truncated free weakening, exposed separately. -/
