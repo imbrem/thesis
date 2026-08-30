@@ -201,6 +201,47 @@ theorem rightUnitor_naturality {X Y : Kleisli T} (f : X ⟶ Y) :
   slice_lhs 2 3 => exact hunit
   rw [MonoidalCategory.rightUnitor_naturality]
 
+theorem pentagon (W X Y Z : Kleisli T) : MonoidalCategory.Pentagon W X Y Z := by
+  dsimp [MonoidalCategory.Pentagon]
+  change ((Kleisli.Adjunction.toKleisli T).map (α_ W.of X.of Y.of).hom ▷ Z) ≫
+      (Kleisli.Adjunction.toKleisli T).map (α_ W.of (X.of ⊗ Y.of) Z.of).hom ≫
+      W ◁ (Kleisli.Adjunction.toKleisli T).map (α_ X.of Y.of Z.of).hom =
+    (Kleisli.Adjunction.toKleisli T).map (α_ (W.of ⊗ X.of) Y.of Z.of).hom ≫
+      (Kleisli.Adjunction.toKleisli T).map (α_ W.of X.of (Y.of ⊗ Z.of)).hom
+  rw [toKleisli_map_whiskerRight]
+  have hw := whiskerLeft_toKleisli_map T W (α_ X.of Y.of Z.of).hom
+  calc
+    _ = (Kleisli.Adjunction.toKleisli T).map ((α_ W.of X.of Y.of).hom ▷ Z.of) ≫
+        (Kleisli.Adjunction.toKleisli T).map (α_ W.of (X.of ⊗ Y.of) Z.of).hom ≫
+        (Kleisli.Adjunction.toKleisli T).map (W.of ◁ (α_ X.of Y.of Z.of).hom) := by
+      exact congrArg
+        (fun q ↦ (Kleisli.Adjunction.toKleisli T).map
+          ((α_ W.of X.of Y.of).hom ▷ Z.of) ≫
+          (Kleisli.Adjunction.toKleisli T).map
+            (α_ W.of (X.of ⊗ Y.of) Z.of).hom ≫ q) hw
+    _ = _ := by
+      simpa only [Functor.map_comp] using congrArg
+        (fun h ↦ (Kleisli.Adjunction.toKleisli T).map h)
+        (MonoidalCategory.pentagon W.of X.of Y.of Z.of)
+
+theorem triangle (X Y : Kleisli T) :
+    (α_ X (𝟙_ (Kleisli T)) Y).hom ≫ X ◁ (λ_ Y).hom = (ρ_ X).hom ▷ Y := by
+  change (Kleisli.Adjunction.toKleisli T).map (α_ X.of (𝟙_ C) Y.of).hom ≫
+      X ◁ (Kleisli.Adjunction.toKleisli T).map (λ_ Y.of).hom =
+    (Kleisli.Adjunction.toKleisli T).map (ρ_ X.of).hom ▷ Y
+  have hx := whiskerLeft_toKleisli_map T X (λ_ Y.of).hom
+  have hr := toKleisli_map_whiskerRight T (ρ_ X.of).hom Y
+  calc
+    _ = (Kleisli.Adjunction.toKleisli T).map (α_ X.of (𝟙_ C) Y.of).hom ≫
+        (Kleisli.Adjunction.toKleisli T).map (X.of ◁ (λ_ Y.of).hom) :=
+      congrArg ((Kleisli.Adjunction.toKleisli T).map
+        (α_ X.of (𝟙_ C) Y.of).hom ≫ ·) hx
+    _ = (Kleisli.Adjunction.toKleisli T).map ((ρ_ X.of).hom ▷ Y.of) := by
+      simpa only [Functor.map_comp] using congrArg
+        (fun h ↦ (Kleisli.Adjunction.toKleisli T).map h)
+        (MonoidalCategory.triangle X.of Y.of)
+    _ = _ := hr.symm
+
 end Kleisli
 
 end CategoryTheory
