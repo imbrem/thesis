@@ -54,6 +54,17 @@ def pull {n k : Nat} {β : BoundCtx τ n} {β' : BoundCtx τ k}
     rfl
   · rfl
 
+@[simp] theorem pull_succ {n : Nat} (β : BoundCtx τ n) (A : τ)
+    (ρ : BoundDen β) (a : TyDen A) :
+    pull (TypedRenaming.succ β A) (ρ, a) = ρ := by
+  induction β with
+  | nil => rfl
+  | snoc β B ih =>
+      apply Prod.ext
+      · change pull (TypedRenaming.succ β A) (ρ.1, a) = ρ.1
+        exact ih ρ.1
+      · rfl
+
 end BoundDen
 
 private theorem denote_bv_transport {Γ : Ctx ν τ} {n : Nat}
@@ -170,5 +181,120 @@ theorem denote_rename {Γ : Ctx ν τ} {n k : Nat}
       change (denote (m := m) (ε := ε) (h.rename r) γ ρ >>= fun a =>
         pure (coeSub d a)) = _
       rw [ih]
+
+/-- A typed substitution denotes precisely the values stored in its source
+environment.  This purity premise is necessary: unrestricted substitution
+would duplicate arbitrary effects at repeated variable occurrences. -/
+def SubstDen {Γ : Ctx ν τ} {n k : Nat}
+    {β : BoundCtx τ n} {β' : BoundCtx τ k} {σ : Fin n → Tm ν Φ k}
+    (s : TypedSubst (Γ := Γ) β β' σ) (γ : CtxDen Γ)
+    (ρ' : BoundDen β') (ρ : BoundDen β) : Prop :=
+  ∀ i, denote (m := m) (ε := ε) (s i) γ ρ' = pure (BoundDen.get ρ i)
+
+theorem SubstDen.up {Γ : Ctx ν τ} {n k : Nat}
+    {β : BoundCtx τ n} {β' : BoundCtx τ k} {σ : Fin n → Tm ν Φ k}
+    {s : TypedSubst (Γ := Γ) β β' σ} {γ : CtxDen Γ}
+    {ρ' : BoundDen β'} {ρ : BoundDen β}
+    (hs : SubstDen (m := m) (ε := ε) s γ ρ' ρ)
+    (A : τ) (a : TyDen A) :
+    SubstDen (m := m) (ε := ε) (s.up A) γ (ρ', a) (ρ, a) := by
+  intro i
+  refine Fin.cases ?_ (fun j => ?_) i
+  · simp only [TypedSubst.up, Fin.cases_zero]
+    unfold denote
+    change (pure a : m _) = pure a
+    rfl
+  · simp only [TypedSubst.up, Fin.cases_succ, HasType.lift]
+    change denote (m := m) (ε := ε)
+      (HasType.rename (TypedRenaming.succ β' A) (s j)) γ (ρ', a) =
+        pure (BoundDen.get ρ j)
+    have hr := denote_rename (m := m) (ε := ε) (s j)
+      (TypedRenaming.succ β' A) γ (ρ', a)
+    calc
+      _ = denote (m := m) (ε := ε) (s j) γ
+          (BoundDen.pull (TypedRenaming.succ β' A) (ρ', a)) := hr
+      _ = denote (m := m) (ε := ε) (s j) γ ρ' := by
+        rw [BoundDen.pull_succ]
+      _ = pure (BoundDen.get ρ j) := hs j
+
+/-- Semantic substitution for value-respecting simultaneous substitutions. -/
+theorem denote_bsubst {Γ : Ctx ν τ} {n k : Nat}
+    {β : BoundCtx τ n} {β' : BoundCtx τ k} {σ : Fin n → Tm ν Φ k}
+    (s : TypedSubst (Γ := Γ) β β' σ) {t : Tm ν Φ n} {A : τ}
+    (h : HasType Φ Γ β t A) (γ : CtxDen Γ)
+    (ρ' : BoundDen β') (ρ : BoundDen β)
+    (hs : SubstDen (m := m) (ε := ε) s γ ρ' ρ) :
+    denote (m := m) (ε := ε) (h.bsubst s) γ ρ' =
+      denote (m := m) (ε := ε) h γ ρ := by
+  induction h generalizing k β' with
+  | fv h => simp only [HasType.bsubst]; unfold denote; rfl
+  | bv => simpa only [HasType.bsubst, denote] using hs _
+  | op h ih => simp only [HasType.bsubst]; unfold denote; rw [ih s ρ' ρ hs]
+  | let₁ ha hb iha ihb =>
+      simp only [HasType.bsubst]; unfold denote
+      rw [iha s ρ' ρ hs]
+      apply bind_congr
+      intro a
+      exact ihb (s := s.up _) (ρ' := (ρ', a)) (ρ := (ρ, a)) (hs.up _ a)
+  | unit => simp only [HasType.bsubst]; unfold denote; rfl
+  | pair ha hb iha ihb =>
+      simp only [HasType.bsubst]; unfold denote
+      rw [iha s ρ' ρ hs, ihb s ρ' ρ hs]
+  | let₂ ha hc iha ihc =>
+      simp only [HasType.bsubst]; unfold denote
+      rw [iha s ρ' ρ hs]
+      apply bind_congr
+      intro ab
+      exact ihc (s := (s.up _).up _)
+        (ρ' := ((ρ', (TypeModel.tensorEquiv _ _ ab).1),
+          (TypeModel.tensorEquiv _ _ ab).2))
+        (ρ := ((ρ, (TypeModel.tensorEquiv _ _ ab).1),
+          (TypeModel.tensorEquiv _ _ ab).2))
+        ((hs.up _ _).up _ _)
+  | inl h ih => simp only [HasType.bsubst]; unfold denote; rw [ih s ρ' ρ hs]
+  | inr h ih => simp only [HasType.bsubst]; unfold denote; rw [ih s ρ' ρ hs]
+  | abort h ih => simp only [HasType.bsubst]; unfold denote; rw [ih s ρ' ρ hs]
+  | case he hl hr ihe ihl ihr =>
+      simp only [HasType.bsubst]; unfold denote
+      rw [ihe s ρ' ρ hs]
+      apply bind_congr
+      intro e
+      cases TypeModel.coprodEquiv _ _ e with
+      | inl a => exact ihl (s := s.up _) (ρ' := (ρ', a)) (ρ := (ρ, a)) (hs.up _ a)
+      | inr b => exact ihr (s := s.up _) (ρ' := (ρ', b)) (ρ := (ρ, b)) (hs.up _ b)
+  | iter ha hb iha ihb =>
+      simp only [HasType.bsubst]; unfold denote
+      rw [iha s ρ' ρ hs]
+      apply bind_congr
+      intro a
+      congr 1
+      funext x
+      exact congrArg (fun z => z >>= fun s => pure (TypeModel.coprodEquiv _ _ s))
+        (ihb (s.up _) (ρ', x) (ρ, x) (hs.up _ x))
+  | sub h d ih =>
+      simp only [HasType.bsubst]; unfold denote; rw [ih s ρ' ρ hs]
+
+/-- Opening a binder by a pure computation agrees with extending its
+semantic environment by the resulting value. -/
+theorem denote_instantiate {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+    {a : Tm ν Φ n} {b : Tm ν Φ (n + 1)} {A B : τ}
+    (hb : HasType Φ Γ (.snoc β A) b B) (ha : HasType Φ Γ β a A)
+    (γ : CtxDen Γ) (ρ : BoundDen β) (x : TyDen A)
+    (hx : denote (m := m) (ε := ε) ha γ ρ = pure x) :
+    denote (m := m) (ε := ε) (hb.instantiate ha) γ ρ =
+      denote (m := m) (ε := ε) hb γ (ρ, x) := by
+  unfold HasType.instantiate
+  let ss : TypedSubst (Γ := Γ) (.snoc β A) β
+      (Fin.cases a fun i => .bv i) := Fin.cases ha fun _ => .bv
+  change denote (m := m) (ε := ε) (hb.bsubst ss) γ ρ = _
+  apply denote_bsubst ss hb γ ρ (ρ, x)
+  intro i
+  refine Fin.cases ?_ (fun j => ?_) i
+  · exact hx
+  · change denote (m := m) (ε := ε) (ss (Fin.succ j)) γ ρ =
+      pure (BoundDen.get ρ j)
+    change denote (m := m) (ε := ε) (HasType.bv (ι := j)) γ ρ = _
+    unfold denote
+    rfl
 
 end Isotope.LambdaIter.Semantics
