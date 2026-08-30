@@ -1,4 +1,4 @@
-import Isotope.CategoryTheory.Monad.Types
+import Isotope.CategoryTheory.Monad.Elgot
 import Isotope.LambdaIter.Semantics.Categorical
 import Isotope.LambdaIter.Semantics.Denotation
 
@@ -57,6 +57,45 @@ variable [Semantics.InstructionModel Φ τ ε m]
         (Semantics.InstructionModel.denote
           (Φ := Φ) (τ := τ) (ε := ε) (m := m) f))
 
+variable {ν : Type w} [DecidableEq ν]
+variable [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+
+/-- The categorical denotation specialized to a set-valued monadic model. -/
+noncomputable def denoteOfType {Γ : Ctx ν τ} {n : Nat}
+    {β : BoundCtx τ n} {t : Tm ν Φ n} {A : τ} (h : HasType Φ Γ β t A) :=
+  letI := ofInstructionModel (τ := τ) (Φ := Φ) (ε := ε) (m := m)
+  Categorical.denote
+    (CategoryTheory.Kleisli.Adjunction.toKleisli (CategoryTheory.ofTypeMonad m))
+    (ofTypeModel (τ := τ)) h
+
 end Categorical
+
+variable {τ : Type u} [TypeFormers τ] [Subtyping τ]
+variable [Semantics.TypeModel.{u, v} τ]
+variable {Φ : Type q} [HasTy Φ τ]
+variable {ε : Type r} [HasEff Φ ε] [Bot ε]
+variable {m : Type v → Type v} [Monad m] [LawfulMonad m]
+variable [Semantics.InstructionModel Φ τ ε m]
+variable {ν : Type w} [DecidableEq ν]
+variable [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+
+/-- Canonical embedding of the existing nested-pair free environment into its categorical
+interpretation.  This avoids requiring the syntactic and semantic universes to coincide. -/
+def ctxToCategorical : {Γ : Ctx ν τ} → CtxDen Γ →
+    Categorical.ctxObj (Categorical.ofTypeModel (τ := τ)) Γ
+  | .nil, _ => PUnit.unit
+  | .snoc Γ _ A, γ => (ctxToCategorical γ.1, γ.2)
+
+/-- Canonical embedding of a bound environment into its categorical interpretation. -/
+def boundToCategorical : {n : Nat} → {β : BoundCtx τ n} → BoundDen β →
+    Categorical.boundObj (Categorical.ofTypeModel (τ := τ)) β
+  | 0, .nil, _ => PUnit.unit
+  | _ + 1, .snoc β A, ρ => (boundToCategorical ρ.1, ρ.2)
+
+/-- Canonical complete categorical environment associated to the monadic environments. -/
+def envToCategorical {n : Nat} {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    (γ : CtxDen Γ) (ρ : BoundDen β) :
+    Categorical.envObj (Categorical.ofTypeModel (τ := τ)) Γ β :=
+  (ctxToCategorical γ, boundToCategorical ρ)
 
 end Isotope.LambdaIter.Semantics
