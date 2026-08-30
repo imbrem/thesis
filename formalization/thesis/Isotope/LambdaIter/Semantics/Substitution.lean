@@ -76,6 +76,27 @@ private theorem denote_bv_transport {Γ : Ctx ν τ} {n : Nat}
   cases e
   simp [denote]
 
+@[simp] theorem denote_newest {Γ : Ctx ν τ} {n : Nat}
+    {β : BoundCtx τ n} {A : τ} (γ : CtxDen Γ) (ρ : BoundDen β)
+    (a : TyDen A) :
+    denote (m := m) (ε := ε)
+      (HasType.newest (Φ := Φ) (Γ := Γ) (β := β) (A := A)) γ (ρ, a) = pure a := by
+  unfold HasType.newest
+  exact denote_bv_transport (m := m) (ε := ε) (β := .snoc β A)
+    (i := (0 : Fin (n + 1)))
+    (e := rfl) γ (ρ, a)
+
+@[simp] theorem denote_previous {Γ : Ctx ν τ} {n : Nat}
+    {β : BoundCtx τ n} {A B : τ} (γ : CtxDen Γ) (ρ : BoundDen β)
+    (a : TyDen A) (b : TyDen B) :
+    denote (m := m) (ε := ε)
+      (HasType.previous (Φ := Φ) (Γ := Γ) (β := β) (A := A) (B := B))
+        γ ((ρ, a), b) = pure a := by
+  unfold HasType.previous
+  exact denote_bv_transport (m := m) (ε := ε) (β := .snoc (.snoc β A) B)
+    (i := (1 : Fin (n + 2)))
+    (e := rfl) γ ((ρ, a), b)
+
 /-- Denotation is natural under every type-preserving bound-variable
 renaming. -/
 theorem denote_rename {Γ : Ctx ν τ} {n k : Nat}
