@@ -146,6 +146,18 @@ theorem toKleisli_map_isCentral {X Y : C} (f : X ⟶ Y) :
     exact (comp_toKleisli_map T _ (Y'.of ◁ f)).trans
       (hmiddle.trans (toKleisli_map_comp T (X'.of ◁ f) _).symm)
 
+theorem associator_hom_isCentral (X Y Z : Kleisli T) :
+    PremonoidalCategory.IsCentral (α_ X Y Z).hom := by
+  exact toKleisli_map_isCentral T (α_ X.of Y.of Z.of).hom
+
+theorem leftUnitor_hom_isCentral (X : Kleisli T) :
+    PremonoidalCategory.IsCentral (λ_ X).hom := by
+  exact toKleisli_map_isCentral T (λ_ X.of).hom
+
+theorem rightUnitor_hom_isCentral (X : Kleisli T) :
+    PremonoidalCategory.IsCentral (ρ_ X).hom := by
+  exact toKleisli_map_isCentral T (ρ_ X.of).hom
+
 end Kleisli
 
 end CategoryTheory
