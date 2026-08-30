@@ -1,5 +1,6 @@
 import Isotope.CategoryTheory.Monad.Strong
 import Isotope.CategoryTheory.Premonoidal.Basic
+import Isotope.CategoryTheory.Premonoidal.Symmetric
 
 /-! # Premonoidal Kleisli categories of strong monads -/
 
@@ -293,6 +294,152 @@ instance premonoidalCategory : PremonoidalCategory (Kleisli T) where
   rightUnitor_naturality := rightUnitor_naturality T
   pentagon := pentagon T
   triangle := triangle T
+
+def braidingIso (X Y : Kleisli T) : X ⊗ Y ≅ Y ⊗ X :=
+  (Kleisli.Adjunction.toKleisli T).mapIso
+    (BraidedCategory.braiding X.of Y.of)
+
+theorem braiding_naturality_left {X Y : Kleisli T} (f : X ⟶ Y) (Z : Kleisli T) :
+    f ▷ Z ≫ (braidingIso T Y Z).hom =
+      (braidingIso T X Z).hom ≫ Z ◁ f := by
+  apply Kleisli.hom_ext
+  change ((f ▷ Z) ≫ (Kleisli.Adjunction.toKleisli T).map
+      (BraidedCategory.braiding Y.of Z.of).hom).of = _
+  rw [comp_toKleisli_map]
+  change _ = ((Kleisli.Adjunction.toKleisli T).map
+      (BraidedCategory.braiding X.of Z.of).hom ≫ Z ◁ f).of
+  rw [toKleisli_map_comp]
+  dsimp [whiskerRight, whiskerLeft, Monad.Strong.costrength]
+  simp only [Category.assoc]
+  have hcancel :
+      T.map (BraidedCategory.braiding Z.of Y.of).hom ≫
+        T.map (BraidedCategory.braiding Y.of Z.of).hom = 𝟙 _ := by
+    rw [← Functor.map_comp, SymmetricCategory.symmetry, Functor.map_id]
+  slice_lhs 4 5 => exact hcancel
+  rw [BraidedCategory.braiding_naturality_left_assoc]
+  simp only [Category.comp_id]
+
+theorem braiding_naturality_right (X : Kleisli T) {Y Z : Kleisli T} (f : Y ⟶ Z) :
+    X ◁ f ≫ (braidingIso T X Z).hom =
+      (braidingIso T X Y).hom ≫ f ▷ X := by
+  apply Kleisli.hom_ext
+  change ((X ◁ f) ≫ (Kleisli.Adjunction.toKleisli T).map
+      (BraidedCategory.braiding X.of Z.of).hom).of = _
+  rw [comp_toKleisli_map]
+  change _ = ((Kleisli.Adjunction.toKleisli T).map
+      (BraidedCategory.braiding X.of Y.of).hom ≫ f ▷ X).of
+  rw [toKleisli_map_comp]
+  dsimp [whiskerRight, whiskerLeft, Monad.Strong.costrength]
+  simp only [Category.assoc]
+  have hbraid := (BraidedCategory.braiding_naturality_right X.of f.of).symm
+  slice_rhs 1 2 => exact hbraid
+  have hcancel :
+      (BraidedCategory.braiding X.of (T.obj Z.of)).hom ≫
+        (BraidedCategory.braiding (T.obj Z.of) X.of).hom = 𝟙 _ :=
+    SymmetricCategory.symmetry X.of (T.obj Z.of)
+  slice_rhs 2 3 => exact hcancel
+  simp only [Category.id_comp]
+
+theorem braiding_hexagon_forward (X Y Z : Kleisli T) :
+    (α_ X Y Z).hom ≫ (braidingIso T X (Y ⊗ Z)).hom ≫ (α_ Y Z X).hom =
+      (braidingIso T X Y).hom ▷ Z ≫ (α_ Y X Z).hom ≫
+        Y ◁ (braidingIso T X Z).hom := by
+  change (Kleisli.Adjunction.toKleisli T).map (α_ X.of Y.of Z.of).hom ≫
+      (Kleisli.Adjunction.toKleisli T).map
+        (BraidedCategory.braiding X.of (Y.of ⊗ Z.of)).hom ≫
+      (Kleisli.Adjunction.toKleisli T).map (α_ Y.of Z.of X.of).hom =
+    ((Kleisli.Adjunction.toKleisli T).map
+        (BraidedCategory.braiding X.of Y.of).hom ▷ Z) ≫
+      (Kleisli.Adjunction.toKleisli T).map (α_ Y.of X.of Z.of).hom ≫
+      Y ◁ (Kleisli.Adjunction.toKleisli T).map
+        (BraidedCategory.braiding X.of Z.of).hom
+  have hr := toKleisli_map_whiskerRight T
+    (BraidedCategory.braiding X.of Y.of).hom Z
+  have hl := whiskerLeft_toKleisli_map T Y
+    (BraidedCategory.braiding X.of Z.of).hom
+  calc
+    _ = (Kleisli.Adjunction.toKleisli T).map
+          ((BraidedCategory.braiding X.of Y.of).hom ▷ Z.of) ≫
+        (Kleisli.Adjunction.toKleisli T).map (α_ Y.of X.of Z.of).hom ≫
+        (Kleisli.Adjunction.toKleisli T).map
+          (Y.of ◁ (BraidedCategory.braiding X.of Z.of).hom) := by
+      simpa only [Functor.map_comp] using congrArg
+        (fun h ↦ (Kleisli.Adjunction.toKleisli T).map h)
+        (BraidedCategory.hexagon_forward X.of Y.of Z.of)
+    _ = ((Kleisli.Adjunction.toKleisli T).map
+          (BraidedCategory.braiding X.of Y.of).hom ▷ Z) ≫
+        (Kleisli.Adjunction.toKleisli T).map (α_ Y.of X.of Z.of).hom ≫
+        (Kleisli.Adjunction.toKleisli T).map
+          (Y.of ◁ (BraidedCategory.braiding X.of Z.of).hom) :=
+      congrArg (· ≫ (Kleisli.Adjunction.toKleisli T).map
+        (α_ Y.of X.of Z.of).hom ≫ (Kleisli.Adjunction.toKleisli T).map
+          (Y.of ◁ (BraidedCategory.braiding X.of Z.of).hom)) hr.symm
+    _ = _ := congrArg
+      (((Kleisli.Adjunction.toKleisli T).map
+          (BraidedCategory.braiding X.of Y.of).hom ▷ Z) ≫
+        (Kleisli.Adjunction.toKleisli T).map (α_ Y.of X.of Z.of).hom ≫ ·) hl.symm
+
+theorem braiding_hexagon_reverse (X Y Z : Kleisli T) :
+    (α_ X Y Z).inv ≫ (braidingIso T (X ⊗ Y) Z).hom ≫ (α_ Z X Y).inv =
+      X ◁ (braidingIso T Y Z).hom ≫ (α_ X Z Y).inv ≫
+        (braidingIso T X Z).hom ▷ Y := by
+  change (Kleisli.Adjunction.toKleisli T).map (α_ X.of Y.of Z.of).inv ≫
+      (Kleisli.Adjunction.toKleisli T).map
+        (BraidedCategory.braiding (X.of ⊗ Y.of) Z.of).hom ≫
+      (Kleisli.Adjunction.toKleisli T).map (α_ Z.of X.of Y.of).inv =
+    X ◁ (Kleisli.Adjunction.toKleisli T).map
+        (BraidedCategory.braiding Y.of Z.of).hom ≫
+      (Kleisli.Adjunction.toKleisli T).map (α_ X.of Z.of Y.of).inv ≫
+      ((Kleisli.Adjunction.toKleisli T).map
+        (BraidedCategory.braiding X.of Z.of).hom ▷ Y)
+  have hl := whiskerLeft_toKleisli_map T X
+    (BraidedCategory.braiding Y.of Z.of).hom
+  have hr := toKleisli_map_whiskerRight T
+    (BraidedCategory.braiding X.of Z.of).hom Y
+  calc
+    _ = (Kleisli.Adjunction.toKleisli T).map
+          (X.of ◁ (BraidedCategory.braiding Y.of Z.of).hom) ≫
+        (Kleisli.Adjunction.toKleisli T).map (α_ X.of Z.of Y.of).inv ≫
+        (Kleisli.Adjunction.toKleisli T).map
+          ((BraidedCategory.braiding X.of Z.of).hom ▷ Y.of) := by
+      simpa only [Functor.map_comp] using congrArg
+        (fun h ↦ (Kleisli.Adjunction.toKleisli T).map h)
+        (BraidedCategory.hexagon_reverse X.of Y.of Z.of)
+    _ = (X ◁ (Kleisli.Adjunction.toKleisli T).map
+          (BraidedCategory.braiding Y.of Z.of).hom) ≫
+        (Kleisli.Adjunction.toKleisli T).map (α_ X.of Z.of Y.of).inv ≫
+        (Kleisli.Adjunction.toKleisli T).map
+          ((BraidedCategory.braiding X.of Z.of).hom ▷ Y.of) :=
+      congrArg (· ≫ (Kleisli.Adjunction.toKleisli T).map
+        (α_ X.of Z.of Y.of).inv ≫ (Kleisli.Adjunction.toKleisli T).map
+          ((BraidedCategory.braiding X.of Z.of).hom ▷ Y.of)) hl.symm
+    _ = _ := congrArg
+      ((X ◁ (Kleisli.Adjunction.toKleisli T).map
+          (BraidedCategory.braiding Y.of Z.of).hom) ≫
+        (Kleisli.Adjunction.toKleisli T).map (α_ X.of Z.of Y.of).inv ≫ ·) hr.symm
+
+theorem braiding_symmetry (X Y : Kleisli T) :
+    (braidingIso T X Y).hom ≫ (braidingIso T Y X).hom = 𝟙 (X ⊗ Y) := by
+  dsimp [braidingIso]
+  calc
+    _ = (Kleisli.Adjunction.toKleisli T).map
+        ((BraidedCategory.braiding X.of Y.of).hom ≫
+          (BraidedCategory.braiding Y.of X.of).hom) :=
+      ((Kleisli.Adjunction.toKleisli T).map_comp _ _).symm
+    _ = (Kleisli.Adjunction.toKleisli T).map (𝟙 (X.of ⊗ Y.of)) := congrArg
+      (fun h ↦ (Kleisli.Adjunction.toKleisli T).map h)
+      (SymmetricCategory.symmetry X.of Y.of)
+    _ = _ := (Kleisli.Adjunction.toKleisli T).map_id (X.of ⊗ Y.of)
+
+instance symmetricPremonoidalCategory : SymmetricPremonoidalCategory (Kleisli T) where
+  braiding := braidingIso T
+  naturality_left := braiding_naturality_left T
+  naturality_right := braiding_naturality_right T
+  hexagon_forward := braiding_hexagon_forward T
+  hexagon_reverse := braiding_hexagon_reverse T
+  braiding_central X Y := toKleisli_map_isCentral T
+    (BraidedCategory.braiding X.of Y.of).hom
+  symmetry := braiding_symmetry T
 
 end Kleisli
 
