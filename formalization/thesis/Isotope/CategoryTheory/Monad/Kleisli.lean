@@ -1,6 +1,7 @@
 import Isotope.CategoryTheory.Monad.Strong
 import Isotope.CategoryTheory.Premonoidal.Basic
 import Isotope.CategoryTheory.Premonoidal.Symmetric
+import Isotope.CategoryTheory.Freyd.Basic
 
 /-! # Premonoidal Kleisli categories of strong monads -/
 
@@ -440,6 +441,72 @@ instance symmetricPremonoidalCategory : SymmetricPremonoidalCategory (Kleisli T)
   braiding_central X Y := toKleisli_map_isCentral T
     (BraidedCategory.braiding X.of Y.of).hom
   symmetry := braiding_symmetry T
+
+instance toKleisliStrongPremonoidal :
+    Functor.StrongPremonoidal (Kleisli.Adjunction.toKleisli T) where
+  unitIso := Iso.refl _
+  tensorIso _ _ := Iso.refl _
+  tensor_naturality_left := fun f Z ↦ by
+    change (Kleisli.Adjunction.toKleisli T).map f ▷
+        (Kleisli.Adjunction.toKleisli T).obj Z ≫ 𝟙 _ =
+      𝟙 _ ≫ (Kleisli.Adjunction.toKleisli T).map (f ▷ Z)
+    rw [Category.comp_id, Category.id_comp]
+    exact toKleisli_map_whiskerRight T f ((Kleisli.Adjunction.toKleisli T).obj Z)
+  tensor_naturality_right := fun X {_ _} f ↦ by
+    change (Kleisli.Adjunction.toKleisli T).obj X ◁
+        (Kleisli.Adjunction.toKleisli T).map f ≫ 𝟙 _ =
+      𝟙 _ ≫ (Kleisli.Adjunction.toKleisli T).map (X ◁ f)
+    rw [Category.comp_id, Category.id_comp]
+    exact whiskerLeft_toKleisli_map T ((Kleisli.Adjunction.toKleisli T).obj X) f
+  associativity X Y Z := by
+    change (Kleisli.Adjunction.toKleisli T).map (α_ X Y Z).hom ≫
+        (Kleisli.Adjunction.toKleisli T).obj X ◁ 𝟙 _ ≫ 𝟙 _ =
+      𝟙 _ ▷ (Kleisli.Adjunction.toKleisli T).obj Z ≫ 𝟙 _ ≫
+        (Kleisli.Adjunction.toKleisli T).map (α_ X Y Z).hom
+    simp
+    exact Category.comp_id _
+  left_unitality X := by
+    change 𝟙 _ ▷ (Kleisli.Adjunction.toKleisli T).obj X ≫ 𝟙 _ ≫
+      (Kleisli.Adjunction.toKleisli T).map (λ_ X).hom =
+        (Kleisli.Adjunction.toKleisli T).map (λ_ X).hom
+    simp
+  right_unitality X := by
+    change (Kleisli.Adjunction.toKleisli T).obj X ◁ 𝟙 _ ≫ 𝟙 _ ≫
+      (Kleisli.Adjunction.toKleisli T).map (ρ_ X).hom =
+        (Kleisli.Adjunction.toKleisli T).map (ρ_ X).hom
+    simp
+  map_central f := toKleisli_map_isCentral T f
+
+instance toKleisliStrongSymmetricPremonoidal :
+    Functor.StrongSymmetricPremonoidal (Kleisli.Adjunction.toKleisli T) where
+  toStrongPremonoidal := inferInstance
+  braiding X Y := by
+    change 𝟙 _ ≫ (Kleisli.Adjunction.toKleisli T).map
+        (BraidedCategory.braiding X Y).hom =
+      (Kleisli.Adjunction.toKleisli T).map
+        (BraidedCategory.braiding X Y).hom ≫ 𝟙 _
+    simp
+
+end Kleisli
+
+namespace Kleisli
+
+section Cartesian
+
+variable {D : Type u} [Category.{v} D] [CartesianMonoidalCategory D]
+  (S : Monad D) [S.Strong] [SymmetricCategory D]
+
+instance toKleisliFreydCategory :
+    FreydCategory (Kleisli.Adjunction.toKleisli S) where
+  toStrongSymmetricPremonoidal := inferInstance
+  obj_bijective := by
+    constructor
+    · intro X Y h
+      exact congrArg Kleisli.of h
+    · intro X
+      exact ⟨X.of, Kleisli.mk_of X⟩
+
+end Cartesian
 
 end Kleisli
 
