@@ -175,6 +175,41 @@ theorem associator_naturality_right (X Y : Kleisli T) {Z W : Kleisli T}
   rw [← Monad.Strong.associativity]
   rw [MonoidalCategory.associator_naturality_right_assoc]
 
+theorem associator_naturality_left {X Y : Kleisli T} (f : X ⟶ Y)
+    (Z W : Kleisli T) :
+    ((f ▷ Z) ▷ W) ≫ (α_ Y Z W).hom =
+      (α_ X Z W).hom ≫ f ▷ (Z ⊗ W) := by
+  apply Kleisli.hom_ext
+  change (((f ▷ Z) ▷ W) ≫
+      (Kleisli.Adjunction.toKleisli T).map (α_ Y.of Z.of W.of).hom).of = _
+  rw [comp_toKleisli_map]
+  change _ = ((Kleisli.Adjunction.toKleisli T).map
+      (α_ X.of Z.of W.of).hom ≫ f ▷ (Z ⊗ W)).of
+  rw [toKleisli_map_comp]
+  dsimp [whiskerRight]
+  rw [MonoidalCategory.comp_whiskerRight]
+  simp only [Category.assoc]
+  rw [Monad.Strong.costrength_associativity]
+  rw [MonoidalCategory.associator_naturality_left_assoc]
+
+theorem associator_naturality_middle (X : Kleisli T) {Y Z : Kleisli T}
+    (f : Y ⟶ Z) (W : Kleisli T) :
+    ((X ◁ f) ▷ W) ≫ (α_ X Z W).hom =
+      (α_ X Y W).hom ≫ X ◁ (f ▷ W) := by
+  apply Kleisli.hom_ext
+  change (((X ◁ f) ▷ W) ≫
+      (Kleisli.Adjunction.toKleisli T).map (α_ X.of Z.of W.of).hom).of = _
+  rw [comp_toKleisli_map]
+  change _ = ((Kleisli.Adjunction.toKleisli T).map
+      (α_ X.of Y.of W.of).hom ≫ X ◁ (f ▷ W)).of
+  rw [toKleisli_map_comp]
+  dsimp [whiskerLeft, whiskerRight]
+  rw [MonoidalCategory.comp_whiskerRight]
+  rw [MonoidalCategory.whiskerLeft_comp]
+  simp only [Category.assoc]
+  rw [Monad.Strong.strength_costrength_associativity]
+  rw [MonoidalCategory.associator_naturality_middle_assoc]
+
 theorem leftUnitor_naturality {X Y : Kleisli T} (f : X ⟶ Y) :
     𝟙_ (Kleisli T) ◁ f ≫ (λ_ Y).hom = (λ_ X).hom ≫ f := by
   apply Kleisli.hom_ext
@@ -241,6 +276,23 @@ theorem triangle (X Y : Kleisli T) :
         (fun h ↦ (Kleisli.Adjunction.toKleisli T).map h)
         (MonoidalCategory.triangle X.of Y.of)
     _ = _ := hr.symm
+
+instance premonoidalCategory : PremonoidalCategory (Kleisli T) where
+  tensorHom_def _ _ := rfl
+  whiskerLeft_id := whiskerLeft_id T
+  whiskerLeft_comp := whiskerLeft_comp T
+  id_whiskerRight := id_whiskerRight T
+  comp_whiskerRight := comp_whiskerRight T
+  associator_central := associator_hom_isCentral T
+  leftUnitor_central := leftUnitor_hom_isCentral T
+  rightUnitor_central := rightUnitor_hom_isCentral T
+  associator_naturality_left := associator_naturality_left T
+  associator_naturality_middle := associator_naturality_middle T
+  associator_naturality_right := associator_naturality_right T
+  leftUnitor_naturality := leftUnitor_naturality T
+  rightUnitor_naturality := rightUnitor_naturality T
+  pentagon := pentagon T
+  triangle := triangle T
 
 end Kleisli
 
