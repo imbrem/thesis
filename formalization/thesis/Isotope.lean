@@ -3,5 +3,6 @@ import Isotope.CategoryTheory.Freyd
 import Isotope.CategoryTheory.Monad
 import Isotope.CategoryTheory.Premonoidal
 import Isotope.Elgot.Basic
+import Isotope.Elgot.Trace
 import Isotope.LambdaIter
 import Isotope.LambdaSSA
