@@ -463,7 +463,9 @@ instance toKleisliStrongPremonoidal :
         (Kleisli.Adjunction.toKleisli T).obj X ◁ 𝟙 _ ≫ 𝟙 _ =
       𝟙 _ ▷ (Kleisli.Adjunction.toKleisli T).obj Z ≫ 𝟙 _ ≫
         (Kleisli.Adjunction.toKleisli T).map (α_ X Y Z).hom
-    simp
+    simp only [PremonoidalCategory.whiskerLeft_id, Category.comp_id,
+      PremonoidalCategory.id_whiskerRight, Kleisli.Adjunction.toKleisli_obj_of,
+      Category.id_comp]
     exact Category.comp_id _
   left_unitality X := by
     change 𝟙 _ ▷ (Kleisli.Adjunction.toKleisli T).obj X ≫ 𝟙 _ ≫
