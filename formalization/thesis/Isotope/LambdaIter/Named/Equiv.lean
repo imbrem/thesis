@@ -20,7 +20,9 @@ inductive Pure (pureEff : ε) : Tm ν Φ → Prop where
   | inr : Pure pureEff a → Pure pureEff (.inr a)
   | case : Pure pureEff e → Pure pureEff a → Pure pureEff b → Pure pureEff (.case e x a y b)
   | abort : Pure pureEff a → Pure pureEff (.abort a)
-  | iter : Pure pureEff a → Pure pureEff b → Pure pureEff (.iter a x b)
+  /- Iteration is deliberately absent. Even when its initializer and body use
+  only pure instructions, Elgot iteration can diverge, so an abstract Elgot
+  model cannot in general regard the resulting computation as a pure map. -/
 
 /-- Raw axiom schemes. `Eqv.ax` below additionally requires both sides to have
 the displayed type, making every scheme a typed equation. -/
