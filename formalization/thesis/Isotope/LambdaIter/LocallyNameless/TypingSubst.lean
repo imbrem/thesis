@@ -35,6 +35,17 @@ end TypedRenaming
 
 namespace HasType
 
+def newest {n : Nat} {β : BoundCtx τ n} {A : τ} :
+    HasType Φ Γ (.snoc β A) (.bv 0) A := by
+  simpa [BoundCtx.get] using
+    (HasType.bv (Φ := Φ) (Γ := Γ) (β := .snoc β A) (ι := (0 : Fin (n + 1))))
+
+def previous {n : Nat} {β : BoundCtx τ n} {A B : τ} :
+    HasType Φ Γ (.snoc (.snoc β A) B) (.bv 1) A := by
+  simpa [BoundCtx.get] using
+    (HasType.bv (Φ := Φ) (Γ := Γ) (β := .snoc (.snoc β A) B)
+      (ι := (1 : Fin (n + 2))))
+
 /-- Rename a typing derivation along a type-preserving index map. -/
 def rename {n m : Nat} {β : BoundCtx τ n} {β' : BoundCtx τ m}
     (ρ : TypedRenaming β β') :

@@ -59,6 +59,34 @@ inductive Deriv (pureEff : ε) (Γ : LambdaIter.Ctx ν τ) :
   | iter (da : Deriv pureEff Γ ha ha')
       (db : Deriv pureEff Γ hb hb') :
       Deriv pureEff Γ (.iter ha hb) (.iter ha' hb')
+  | letBeta (hp : Pure pureEff a) (ha : HasType Φ Γ β a A)
+      (hb : HasType Φ Γ (.snoc β A) b B) :
+      Deriv pureEff Γ (.let₁ ha hb) (hb.instantiate ha)
+  | letEta (ha : HasType Φ Γ β a A) :
+      Deriv pureEff Γ
+        (.let₁ ha HasType.newest) ha
+  | unitEta (ha : HasType Φ Γ β a TypeFormers.unit) :
+      Deriv pureEff Γ (.let₁ ha .unit) ha
+  | pairBeta (ha : HasType Φ Γ β a A) (hb : HasType Φ Γ β b B)
+      (hc : HasType Φ Γ (.snoc (.snoc β A) B) c C) :
+      Deriv pureEff Γ (.let₂ (.pair ha hb) hc)
+        (.let₁ ha (.let₁ (hb.lift (B := A)) hc))
+  | pairEta (ha : HasType Φ Γ β a (TypeFormers.tensor A B)) :
+      Deriv pureEff Γ
+        (.let₂ ha
+          (.pair HasType.previous HasType.newest)) ha
+  | caseBetaL (he : HasType Φ Γ β e A)
+      (hl : HasType Φ Γ (.snoc β A) l C)
+      (hr : HasType Φ Γ (.snoc β B) r C) :
+      Deriv pureEff Γ (.case (.inl he) hl hr) (.let₁ he hl)
+  | caseBetaR (he : HasType Φ Γ β e B)
+      (hl : HasType Φ Γ (.snoc β A) l C)
+      (hr : HasType Φ Γ (.snoc β B) r C) :
+      Deriv pureEff Γ (.case (.inr he) hl hr) (.let₁ he hr)
+  | caseEta (he : HasType Φ Γ β e (TypeFormers.coprod A B)) :
+      Deriv pureEff Γ
+        (.case he
+          (.inl HasType.newest) (.inr HasType.newest)) he
 
 set_option relaxedAutoImplicit false
 
@@ -98,6 +126,14 @@ def Deriv.erase {n : Nat} {β : BoundCtx τ n} {a b : Tm ν Φ n} {A : τ}
   | .case he hl hr => .case he.erase hl.erase hr.erase
   | .abort h => .abort h.erase
   | .iter ha hb => .iter ha.erase hb.erase
+  | .letBeta hp ha hb => .letBeta hp ha hb
+  | .letEta ha => .letEta ha
+  | .unitEta ha => .unitEta ha
+  | .pairBeta ha hb hc => .pairBeta ha hb hc
+  | .pairEta ha => .pairEta ha
+  | .caseBetaL he hl hr => .caseBetaL he hl hr
+  | .caseBetaR he hl hr => .caseBetaR he hl hr
+  | .caseEta he => .caseEta he
 
 /-- Proposition truncation at fixed proof-relevant endpoints. -/
 abbrev Related (pureEff : ε) (Γ : LambdaIter.Ctx ν τ)
