@@ -362,4 +362,77 @@ theorem sound_iterNaturality [LawfulElgotMonad m]
   | inr y =>
       simp [denote_newest]
 
+theorem sound_iterCodiagonal [LawfulElgotMonad m]
+    {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+    {a : Tm ν Φ n} {b : Tm ν Φ (n + 1)} {A B : τ}
+    (ha : HasType Φ Γ β a A)
+    (hb : HasType Φ Γ (.snoc β A) b
+      (TypeFormers.coprod (TypeFormers.coprod B A) A))
+    (γ : CtxDen Γ) (ρ : BoundDen β) :
+    denote (m := m) (ε := ε)
+        (.iter ha (.iter HasType.newest hb.underBinder)) γ ρ =
+      denote (m := m) (ε := ε)
+        (.iter ha (.case hb HasType.newest (.inr HasType.newest))) γ ρ := by
+  simp only [denote]
+  apply bind_congr
+  intro a
+  let raw := fun x : TyDen A =>
+    denote (m := m) (ε := ε) hb γ (ρ, x) >>= fun s =>
+      pure (TypeModel.coprodEquiv (TypeFormers.coprod B A) A s)
+  let conv := TypeModel.coprodEquiv B A
+  let converted := Elgot.mapReturn raw (Elgot.liftPure conv)
+  let lhs := fun x : TyDen A =>
+      denote (m := m) (ε := ε)
+          (HasType.newest (Φ := Φ) (Γ := Γ) (β := β) (A := A)) γ (ρ, x) >>=
+        Elgot.iter (fun y =>
+          denote (m := m) (ε := ε) (hb.underBinder (X := A))
+              γ ((ρ, x), y) >>= fun s =>
+          pure (TypeModel.coprodEquiv (TypeFormers.coprod B A) A s)) >>= fun ba =>
+        pure (TypeModel.coprodEquiv B A ba)
+  have hleft : lhs = Elgot.iter converted := by
+    funext x
+    unfold lhs
+    rw [denote_newest, LawfulMonad.pure_bind]
+    have hbody : (fun y : TyDen A =>
+        denote (m := m) (ε := ε) (hb.underBinder (X := A))
+          γ ((ρ, x), y) >>= fun s =>
+        pure (TypeModel.coprodEquiv (TypeFormers.coprod B A) A s)) = raw := by
+      funext y
+      unfold raw
+      apply congrArg
+        (fun z => z >>= fun s =>
+          pure (TypeModel.coprodEquiv (TypeFormers.coprod B A) A s))
+      exact denote_underBinder (m := m) (ε := ε) (X := A) hb γ ρ x y
+    rw [hbody]
+    change Elgot.kcomp (Elgot.iter raw) (Elgot.liftPure conv) x = _
+    exact congrFun (LawfulElgotMonad.naturality raw (Elgot.liftPure conv)) x
+  change Elgot.iter lhs a = _
+  rw [hleft]
+  rw [show Elgot.iter (Elgot.iter converted) =
+      Elgot.iter (Elgot.flattenBody converted) from
+    LawfulElgotMonad.codiagonal converted]
+  congr 1
+  funext x
+  unfold Elgot.flattenBody Elgot.kcomp Elgot.liftPure Elgot.flatten converted
+  unfold Elgot.mapReturn raw conv
+  simp only [Function.comp_apply, LawfulMonad.bind_assoc, LawfulMonad.pure_bind]
+  apply bind_congr
+  intro s
+  cases hs : TypeModel.coprodEquiv (TypeFormers.coprod B A) A s with
+  | inl ba =>
+      simp
+      have hn : denote (m := m) (ε := ε)
+          (HasType.newest (Φ := Φ) (Γ := Γ) (β := .snoc β A)
+            (A := TypeFormers.coprod B A)) γ ((ρ, x), ba) = pure ba :=
+        denote_newest (m := m) (ε := ε) (β := .snoc β A) γ (ρ, x) ba
+      calc
+        Elgot.liftPure conv ba = pure (conv ba) := rfl
+        _ = conv <$> (pure ba : m _) := (map_pure conv ba).symm
+        _ = conv <$> denote (m := m) (ε := ε)
+              (HasType.newest (Φ := Φ) (Γ := Γ) (β := .snoc β A)
+                (A := TypeFormers.coprod B A)) γ ((ρ, x), ba) :=
+          congrArg (fun z => conv <$> z) hn.symm
+  | inr y =>
+      simp [denote_newest]
+
 end Isotope.LambdaIter.Semantics
