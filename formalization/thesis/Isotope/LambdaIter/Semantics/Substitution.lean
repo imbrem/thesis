@@ -65,6 +65,22 @@ def pull {n k : Nat} {β : BoundCtx τ n} {β' : BoundCtx τ k}
         exact ih ρ.1
       · rfl
 
+@[simp] theorem pull_underBinder {n : Nat} (β : BoundCtx τ n) (X Y : τ)
+    (ρ : BoundDen β) (x : TyDen X) (y : TyDen Y) :
+    pull (TypedRenaming.underBinder β X Y) ((ρ, x), y) = (ρ, y) := by
+  apply Prod.ext
+  · exact pull_succ β X ρ x
+  · rfl
+
+@[simp] theorem pull_underTwoBinders {n : Nat} (β : BoundCtx τ n) (X Y Z : τ)
+    (ρ : BoundDen β) (x : TyDen X) (y : TyDen Y) (z : TyDen Z) :
+    pull (TypedRenaming.underTwoBinders β X Y Z) (((ρ, x), y), z) = ((ρ, y), z) := by
+  apply Prod.ext
+  · apply Prod.ext
+    · exact pull_succ β X ρ x
+    · rfl
+  · rfl
+
 end BoundDen
 
 private theorem denote_bv_transport {Γ : Ctx ν τ} {n : Nat}
@@ -329,5 +345,33 @@ theorem denote_instantiate {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
         (BoundDen.pull (TypedRenaming.succ β X) (ρ, x)) :=
       denote_rename (m := m) (ε := ε) h _ γ _
     _ = _ := by rw [BoundDen.pull_succ]
+
+@[simp] theorem denote_underBinder {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+    {t : Tm ν Φ (n + 1)} {A X Y : τ}
+    (h : HasType Φ Γ (.snoc β Y) t A)
+    (γ : CtxDen Γ) (ρ : BoundDen β) (x : TyDen X) (y : TyDen Y) :
+    denote (m := m) (ε := ε) (h.underBinder (X := X)) γ ((ρ, x), y) =
+      denote (m := m) (ε := ε) h γ (ρ, y) := by
+  unfold HasType.underBinder
+  calc
+    _ = denote (m := m) (ε := ε) h γ
+        (BoundDen.pull (TypedRenaming.underBinder β X Y) ((ρ, x), y)) :=
+      denote_rename (m := m) (ε := ε) h _ γ _
+    _ = _ := by rw [BoundDen.pull_underBinder]
+
+@[simp] theorem denote_underTwoBinders {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+    {t : Tm ν Φ (n + 2)} {A X Y Z : τ}
+    (h : HasType Φ Γ (.snoc (.snoc β Y) Z) t A)
+    (γ : CtxDen Γ) (ρ : BoundDen β) (x : TyDen X) (y : TyDen Y) (z : TyDen Z) :
+    denote (m := m) (ε := ε) (h.underTwoBinders (X := X)) γ (((ρ, x), y), z) =
+      denote (m := m) (ε := ε) h γ ((ρ, y), z) := by
+  unfold HasType.underTwoBinders
+  calc
+    _ = denote (m := m) (ε := ε) h γ
+        (BoundDen.pull (TypedRenaming.underTwoBinders β X Y Z) (((ρ, x), y), z)) :=
+      denote_rename (m := m) (ε := ε) h _ γ _
+    _ = _ := by
+      rw [BoundDen.pull_underTwoBinders]
+      exact rfl
 
 end Isotope.LambdaIter.Semantics
