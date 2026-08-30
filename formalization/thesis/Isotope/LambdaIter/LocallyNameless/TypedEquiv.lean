@@ -117,6 +117,40 @@ inductive Deriv (pureEff : ε) (Γ : LambdaIter.Ctx ν τ) :
       Deriv pureEff Γ (.case he hl hr)
         (.let₁ he
           (.case HasType.newest hl.underBinder hr.underBinder))
+  | emptyInitial (ha : HasType Φ Γ β a TypeFormers.empty)
+      (hb : HasType Φ Γ (.snoc β A) b B)
+      (hc : HasType Φ Γ (.snoc β A) c B) :
+      Deriv pureEff Γ (.let₁ (.abort ha) hb) (.let₁ (.abort ha) hc)
+  | iterFixpoint (ha : HasType Φ Γ β a A)
+      (hb : HasType Φ Γ (.snoc β A) b (TypeFormers.coprod B A)) :
+      Deriv pureEff Γ (.iter ha hb)
+        (.let₁ ha
+          (.case hb HasType.newest
+            (.iter HasType.newest hb.underBinder.underBinder)))
+  | iterNaturality (ha : HasType Φ Γ β a A)
+      (hb : HasType Φ Γ (.snoc β A) b (TypeFormers.coprod B A))
+      (hc : HasType Φ Γ (.snoc β B) c C) :
+      Deriv pureEff Γ (.let₁ (.iter ha hb) hc)
+        (.iter ha
+          (.case hb (.inl hc.underBinder) (.inr HasType.newest)))
+  | iterCodiagonal (ha : HasType Φ Γ β a A)
+      (hb : HasType Φ Γ (.snoc β A) b
+        (TypeFormers.coprod (TypeFormers.coprod B A) A)) :
+      Deriv pureEff Γ
+        (.iter ha (.iter HasType.newest hb.underBinder))
+        (.iter ha (.case hb HasType.newest (.inr HasType.newest)))
+  | iterUniformity (ha : HasType Φ Γ β a A)
+      (hh : HasType Φ Γ (.snoc β A) h A') (hp : Pure pureEff h)
+      (hb : HasType Φ Γ (.snoc β A) b (TypeFormers.coprod B A))
+      (hb' : HasType Φ Γ (.snoc β A') b' (TypeFormers.coprod B A'))
+      (square : Deriv pureEff Γ
+        (.case hb (.inl HasType.newest) (.inr hh.underBinder))
+        ((hb'.underBinder).instantiate hh)) :
+      Deriv pureEff Γ (.iter ha hb) (.iter (.let₁ ha hh) hb')
+  | iterBind (ha : HasType Φ Γ β a A)
+      (hb : HasType Φ Γ (.snoc β A) b (TypeFormers.coprod B A)) :
+      Deriv pureEff Γ (.iter ha hb)
+        (.let₁ ha (.iter HasType.newest hb.underBinder))
 
 set_option relaxedAutoImplicit false
 
@@ -170,6 +204,13 @@ def Deriv.erase {n : Nat} {β : BoundCtx τ n} {a b : Tm ν Φ n} {A : τ}
   | .bindLetCase he hl hr hd => .bindLetCase he hl hr hd
   | .bindPair ha hc => .bindPair ha hc
   | .bindCase he hl hr => .bindCase he hl hr
+  | .emptyInitial ha hb hc => .emptyInitial ha hb hc
+  | .iterFixpoint ha hb => .iterFixpoint ha hb
+  | .iterNaturality ha hb hc => .iterNaturality ha hb hc
+  | .iterCodiagonal ha hb => .iterCodiagonal ha hb
+  | .iterUniformity ha hh hp hb hb' square =>
+      .iterUniformity ha hh hp hb hb' square.erase
+  | .iterBind ha hb => .iterBind ha hb
 
 /-- Proposition truncation at fixed proof-relevant endpoints. -/
 abbrev Related (pureEff : ε) (Γ : LambdaIter.Ctx ν τ)
