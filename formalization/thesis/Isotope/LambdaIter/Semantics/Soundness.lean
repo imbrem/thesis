@@ -435,4 +435,70 @@ theorem sound_iterCodiagonal [LawfulElgotMonad m]
   | inr y =>
       simp [denote_newest]
 
+theorem sound_iterUniformity [LawfulElgotMonad m]
+    {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+    {a : Tm ν Φ n} {h b : Tm ν Φ (n + 1)} {b' : Tm ν Φ (n + 1)}
+    {A A' B : τ}
+    (ha : HasType Φ Γ β a A)
+    (hh : HasType Φ Γ (.snoc β A) h A') (hp : Pure (⊥ : ε) h)
+    (hb : HasType Φ Γ (.snoc β A) b (TypeFormers.coprod B A))
+    (hb' : HasType Φ Γ (.snoc β A') b' (TypeFormers.coprod B A'))
+    (hsquare : ∀ (γ : CtxDen Γ) (ρA : BoundDen (.snoc β A)),
+      denote (m := m) (ε := ε)
+          (.case hb (.inl HasType.newest) (.inr hh.underBinder)) γ ρA =
+        denote (m := m) (ε := ε) ((hb'.underBinder).instantiate hh) γ ρA)
+    (γ : CtxDen Γ) (ρ : BoundDen β) :
+    denote (m := m) (ε := ε) (.iter ha hb) γ ρ =
+      denote (m := m) (ε := ε) (.iter (.let₁ ha hh) hb') γ ρ := by
+  classical
+  let hfun := fun x : TyDen A => Classical.choose
+    (denote_pure_factor (m := m) (ε := ε) hp hh γ (ρ, x))
+  have hhfun (x : TyDen A) :
+      denote (m := m) (ε := ε) hh γ (ρ, x) = pure (hfun x) :=
+    Classical.choose_spec (denote_pure_factor (m := m) (ε := ε) hp hh γ (ρ, x))
+  let f := fun x : TyDen A =>
+    denote (m := m) (ε := ε) hb γ (ρ, x) >>= fun s =>
+      pure (TypeModel.coprodEquiv B A s)
+  let g := fun x : TyDen A' =>
+    denote (m := m) (ε := ε) hb' γ (ρ, x) >>= fun s =>
+      pure (TypeModel.coprodEquiv B A' s)
+  have comm : Elgot.kcomp f (Elgot.liftPure (Sum.map id hfun)) =
+      Elgot.kcomp (Elgot.liftPure hfun) g := by
+    funext x
+    have sq := hsquare γ (ρ, x)
+    rw [denote_instantiate (m := m) (ε := ε)
+      (hb'.underBinder (X := A)) hh γ (ρ, x) (hfun x) (hhfun x)] at sq
+    rw [denote_underBinder (m := m) (ε := ε) (X := A)
+      hb' γ ρ x (hfun x)] at sq
+    calc
+      Elgot.kcomp f (Elgot.liftPure (Sum.map id hfun)) x =
+          denote (m := m) (ε := ε)
+              (.case hb (.inl HasType.newest) (.inr hh.underBinder)) γ (ρ, x) >>=
+            fun s => pure (TypeModel.coprodEquiv B A' s) := by
+        unfold f Elgot.kcomp Elgot.liftPure
+        simp only [Function.comp_apply, denote, LawfulMonad.bind_assoc,
+          LawfulMonad.pure_bind]
+        apply bind_congr
+        intro s
+        cases hs : TypeModel.coprodEquiv B A s with
+        | inl y => simp [denote_newest]
+        | inr y => simp [denote_underBinder, hhfun]
+      _ = denote (m := m) (ε := ε) hb' γ (ρ, hfun x) >>=
+            fun s => pure (TypeModel.coprodEquiv B A' s) :=
+        congrArg (fun z => z >>= fun s => pure (TypeModel.coprodEquiv B A' s)) sq
+      _ = Elgot.kcomp (Elgot.liftPure hfun) g x := by
+        unfold g Elgot.kcomp Elgot.liftPure
+        simp only [Function.comp_apply, LawfulMonad.pure_bind]
+  have hu := LawfulElgotMonad.uniformity f g hfun comm
+  simp only [denote, LawfulMonad.bind_assoc]
+  apply bind_congr
+  intro x
+  change Elgot.iter f x = _
+  rw [hu]
+  unfold Elgot.kcomp Elgot.liftPure
+  simp only [Function.comp_apply, LawfulMonad.pure_bind]
+  rw [hhfun x, LawfulMonad.pure_bind]
+  change Elgot.iter g (hfun x) = Elgot.iter g (hfun x)
+  rfl
+
 end Isotope.LambdaIter.Semantics
