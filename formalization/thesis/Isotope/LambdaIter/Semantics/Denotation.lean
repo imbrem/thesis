@@ -57,7 +57,7 @@ def denote : {Γ : Ctx ν τ} → {n : Nat} → {β : BoundCtx τ n} →
       | .inl a => denote hl γ (ρ, a)
       | .inr b => denote hr γ (ρ, b)
   | _, _, _, _, _, .abort ha, γ, ρ =>
-      denote ha γ ρ >>= fun z => TypeModel.emptyElim z
+      denote ha γ ρ >>= fun z => Empty.elim (TypeModel.emptyEquiv z)
   | _, _, _, _, _, .iter ha hb, γ, ρ =>
       denote ha γ ρ >>= Elgot.iter (fun a =>
         denote hb γ (ρ, a) >>= fun s =>

@@ -9,7 +9,7 @@ model: distinct derivations need not denote the same coercion.
 
 namespace Isotope.LambdaIter.Semantics
 
-universe u v w
+universe u v
 
 /-- A set-valued interpretation of a lambda-iter type universe. -/
 class TypeModel (τ : Type u) [TypeFormers τ] [Subtyping τ] where
@@ -17,7 +17,7 @@ class TypeModel (τ : Type u) [TypeFormers τ] [Subtyping τ] where
   tensorEquiv (A B : τ) : interp (tensor A B) ≃ interp A × interp B
   unitEquiv : interp (unit : τ) ≃ Unit
   coprodEquiv (A B : τ) : interp (coprod A B) ≃ Sum (interp A) (interp B)
-  emptyElim {C : Sort w} : interp (empty : τ) → C
+  emptyEquiv : interp (empty : τ) ≃ Empty
   coe {A B : τ} : Subty A B → interp A → interp B
 
 /-- Coherence needed when equational reasoning identifies composite subtype
@@ -38,7 +38,7 @@ class LawfulTypeModel (τ : Type u) [TypeFormers τ] [Subtyping τ]
     TypeModel.coprodEquiv A' B' (TypeModel.coe (Subty.coprod f g) s) =
       Sum.map (TypeModel.coe f) (TypeModel.coe g) (TypeModel.coprodEquiv A B s)
   coe_empty (A : τ) (z : TypeModel.interp (empty : τ)) :
-    TypeModel.coe (Subty.empty A) z = TypeModel.emptyElim z
+    TypeModel.coe (Subty.empty A) z = Empty.elim (TypeModel.emptyEquiv z)
   coe_unit (A : τ) (a : TypeModel.interp A) :
     TypeModel.unitEquiv (TypeModel.coe (Subty.unit A) a) = ()
 
@@ -122,6 +122,29 @@ def wk [TypeFormers τ] [Subtyping τ] [TypeModel.{u, v} τ] :
   | _ + 1, .snoc _ _, .snoc _ _, .snoc w d, ρ =>
       (wk w ρ.1, coeSub d ρ.2)
 
+/-- Bound weakening is pointwise semantic coercion. -/
+theorem get_wk [TypeFormers τ] [Subtyping τ] [TypeModel.{u, v} τ] :
+    {n : Nat} → {β' β : LocallyNameless.BoundCtx τ n} →
+      (w : LocallyNameless.BoundCtx.Wk β' β) → (ρ : BoundDen β') →
+      (i : Fin n) →
+      BoundDen.get (wk w ρ) i = coeSub (w.at i) (BoundDen.get ρ i)
+  | 0, .nil, .nil, .nil, _, i => Fin.elim0 i
+  | _ + 1, .snoc _ _, .snoc _ _, .snoc w d, ρ, i => by
+      refine Fin.cases rfl (fun j => ?_) i
+      exact get_wk w ρ.1 j
+
 end BoundDen
+
+/-- The additional semantic law required of a free weakening. `FreeWk` keeps
+lookup transport separate from its structural derivation; in a
+proof-relevant model their chosen coercions must therefore be related
+explicitly rather than silently identified. -/
+structure RespectsFreeWk [TypeFormers τ] [Subtyping τ] [TypeModel.{u, v} τ]
+    [DecidableEq ν] {Γ' Γ : Ctx ν τ}
+    (w : LocallyNameless.FreeWk Γ' Γ) : Prop where
+  lookup (γ : CtxDen Γ') (x : ν) (A : τ) (h : Γ.lookup x = some A) :
+    let r := w.lookup x A h
+    CtxDen.lookup (CtxDen.wk w.structural γ) x h =
+      coeSub r.subty (CtxDen.lookup γ x r.found)
 
 end Isotope.LambdaIter.Semantics
