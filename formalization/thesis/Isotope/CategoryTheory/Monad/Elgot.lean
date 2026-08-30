@@ -281,6 +281,38 @@ theorem iterate_naturality [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotM
     Isotope.Elgot.iter (m := m) (Isotope.Elgot.mapReturn (m := m) _ g.of)
   exact Isotope.Elgot.LawfulElgotMonad.naturality (m := m) _ _
 
+theorem codiagonal_comparison {X Y : Kleisli (TM m)} :
+    coprod.desc (𝟙 (Y ⨿ X)) (coprod.inr : X ⟶ Y ⨿ X) ≫
+        (coprodIsoSum m Y X).hom =
+      coprod.map (coprodIsoSum m Y X).hom (𝟙 X) ≫
+        (coprodIsoSum m (Kleisli.mk (TM m) (Y.of ⊕ X.of)) X).hom ≫
+          Kleisli.Hom.mk (Isotope.Elgot.liftPure (m := m)
+            (Isotope.Elgot.flatten (A := X.of) (B := Y.of))) := by
+  let S := Kleisli.mk (TM m) (Y.of ⊕ X.of)
+  let flat : Kleisli.mk (TM m) ((Y.of ⊕ X.of) ⊕ X.of) ⟶ S :=
+    Kleisli.Hom.mk (Isotope.Elgot.liftPure (m := m)
+      (Isotope.Elgot.flatten (A := X.of) (B := Y.of)))
+  have hl : (binaryCofan m S X).inl ≫ flat = 𝟙 S := by
+    apply Kleisli.hom_ext
+    funext s
+    cases s <;> simp [S, flat, binaryCofan, Kleisli.Adjunction.toKleisli,
+      Isotope.Elgot.flatten, Isotope.Elgot.liftPure, Function.comp_def]
+  have hr : (binaryCofan m S X).inr ≫ flat = (binaryCofan m Y X).inr := by
+    apply Kleisli.hom_ext
+    funext x
+    simp [S, flat, binaryCofan, Kleisli.Adjunction.toKleisli,
+      Isotope.Elgot.flatten, Isotope.Elgot.liftPure, Function.comp_def]
+  dsimp [S, flat] at hl hr
+  apply coprod.hom_ext
+  · rw [coprod.inl_desc_assoc, Category.id_comp]
+    rw [coprod.inl_map_assoc, inl_coprodIsoSum_hom_assoc]
+    exact (Category.comp_id _).symm.trans
+      (congrArg ((coprodIsoSum m Y X).hom ≫ ·) hl.symm)
+  · rw [coprod.inr_desc_assoc]
+    rw [coprod.inr_map_assoc, inr_coprodIsoSum_hom_assoc]
+    rw [inr_coprodIsoSum_hom, Category.id_comp]
+    exact hr.symm
+
 end Kleisli.Type
 
 end CategoryTheory
