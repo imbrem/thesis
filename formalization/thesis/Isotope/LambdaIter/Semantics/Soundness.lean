@@ -594,4 +594,14 @@ theorem sound [LawfulElgotMonad m]
       exact sound_iterUniformity ha hh hp hb hb' ih
   | iterBind ha hb => exact sound_iterBind ha hb
 
+/-- Proposition-truncated typed equality is sound at its fixed endpoints. -/
+theorem related_sound [LawfulElgotMonad m]
+    {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+    {a b : Tm ν Φ n} {A : τ}
+    {ha : HasType Φ Γ β a A} {hb : HasType Φ Γ β b A}
+    (h : TypedEquiv.Related (⊥ : ε) Γ ha hb)
+    (γ : CtxDen Γ) (ρ : BoundDen β) :
+    denote (m := m) (ε := ε) ha γ ρ = denote (m := m) (ε := ε) hb γ ρ :=
+  h.elim fun d => sound d γ ρ
+
 end Isotope.LambdaIter.Semantics
