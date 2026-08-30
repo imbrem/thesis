@@ -42,6 +42,11 @@ def mapReturn {m : Type u → Type u} [Monad m] {A B C : Type u}
 def flatten {A B : Type u} : (B ⊕ A) ⊕ A → B ⊕ A :=
   Sum.elim id Sum.inr
 
+/-- Apply `flatten` to the result of an effectful iteration body. -/
+def flattenBody {m : Type u → Type u} [Monad m] {A B : Type u}
+    (f : A → m ((B ⊕ A) ⊕ A)) : A → m (B ⊕ A) :=
+  kcomp f (liftPure flatten)
+
 /-- The Conway/complete-Elgot equations, with pure uniformity. -/
 class LawfulElgotMonad (m : Type u → Type u) [Monad m] [LawfulMonad m] [Iterate m] : Prop where
   fixpoint {A B : Type u} (f : A → m (B ⊕ A)) :
@@ -49,7 +54,7 @@ class LawfulElgotMonad (m : Type u → Type u) [Monad m] [LawfulMonad m] [Iterat
   naturality {A B C : Type u} (f : A → m (B ⊕ A)) (g : B → m C) :
     kcomp (iter f) g = iter (mapReturn f g)
   codiagonal {A B : Type u} (f : A → m ((B ⊕ A) ⊕ A)) :
-    iter (iter f) = iter (fun a ↦ f a >>= pure ∘ flatten)
+    iter (iter f) = iter (flattenBody f)
   uniformity {A B C : Type u} (f : A → m (B ⊕ A)) (g : C → m (B ⊕ C))
       (h : A → C)
       (comm : kcomp f (liftPure (Sum.map id h)) = kcomp (liftPure h) g) :
@@ -198,6 +203,227 @@ theorem naturality (f : A → _root_.Part (B ⊕ A)) (g : B → _root_.Part C) :
   constructor <;> rintro ⟨b, hb, hc⟩
   · exact ⟨b, (mem_iter_iff _ _ _).1 hb, hc⟩
   · exact ⟨b, (mem_iter_iff _ _ _).2 hb, hc⟩
+
+theorem mem_flattenBody_iff (f : A → _root_.Part ((B ⊕ A) ⊕ A)) (a : A) (s : B ⊕ A) :
+    s ∈ flattenBody f a ↔ ∃ x, x ∈ f a ∧ flatten x = s := by
+  rw [show flattenBody f = kcomp f (liftPure flatten) by rfl, mem_kcomp_iff]
+  constructor <;> rintro ⟨x, hx, hs⟩
+  · exact ⟨x, hx, (_root_.Part.mem_some_iff.mp hs).symm⟩
+  · exact ⟨x, hx, _root_.Part.mem_some_iff.mpr hs.symm⟩
+
+theorem runs_flatten_cases (f : A → _root_.Part ((B ⊕ A) ⊕ A))
+    {a : A} {s : B ⊕ A} (h : Runs f a s) :
+    (∀ b, s = Sum.inl b → Runs (flattenBody f) a b) ∧
+    (∀ a' b, s = Sum.inr a' → Runs (flattenBody f) a' b →
+      Runs (flattenBody f) a b) := by
+  induction h with
+  | done hs =>
+      constructor
+      · intro b heq
+        cases heq
+        apply Runs.done
+        rw [mem_flattenBody_iff]
+        exact ⟨Sum.inl (Sum.inl _), hs, rfl⟩
+      · intro a' b heq
+        cases heq
+        intro tail
+        apply Runs.more
+        · rw [mem_flattenBody_iff]
+          exact ⟨Sum.inl (Sum.inr _), hs, rfl⟩
+        · exact tail
+  | more hs hr ih =>
+      constructor
+      · intro b heq
+        apply Runs.more
+        · rw [mem_flattenBody_iff]
+          exact ⟨Sum.inr _, hs, rfl⟩
+        · exact ih.1 b heq
+      · intro a' b heq tail
+        apply Runs.more
+        · rw [mem_flattenBody_iff]
+          exact ⟨Sum.inr _, hs, rfl⟩
+        · exact ih.2 a' b heq tail
+
+theorem runs_flatten_of_left (f : A → _root_.Part ((B ⊕ A) ⊕ A))
+    {a : A} {b : B} (h : Runs f a (Sum.inl b)) : Runs (flattenBody f) a b :=
+  (runs_flatten_cases f h).1 b rfl
+
+theorem runs_flatten_append (f : A → _root_.Part ((B ⊕ A) ⊕ A))
+    {a a' : A} {b : B} (h : Runs f a (Sum.inr a'))
+    (tail : Runs (flattenBody f) a' b) : Runs (flattenBody f) a b :=
+  (runs_flatten_cases f h).2 a' b rfl tail
+
+theorem runs_flatten_of_nested (f : A → _root_.Part ((B ⊕ A) ⊕ A))
+    {a : A} {b : B} (h : Runs (iter f) a b) : Runs (flattenBody f) a b := by
+  induction h with
+  | done hs => exact runs_flatten_of_left f ((mem_iter_iff _ _ _).1 hs)
+  | more hs hr ih => exact runs_flatten_append f ((mem_iter_iff _ _ _).1 hs) ih
+
+theorem runs_nested_of_flatten (f : A → _root_.Part ((B ⊕ A) ⊕ A))
+    {a : A} {b : B} (h : Runs (flattenBody f) a b) : Runs (iter f) a b := by
+  induction h with
+  | done hs =>
+      rw [mem_flattenBody_iff] at hs
+      rcases hs with ⟨x, hx, heq⟩
+      cases x with
+      | inl s =>
+          cases s with
+          | inl b' =>
+              have hb : b' = _ := Sum.inl.inj heq
+              subst b'
+              exact .done ((mem_iter_iff _ _ _).2 (.done hx))
+          | inr a' => cases heq
+      | inr a' => cases heq
+  | more hs hr ih =>
+      rw [mem_flattenBody_iff] at hs
+      rcases hs with ⟨x, hx, heq⟩
+      cases x with
+      | inl s =>
+          cases s with
+          | inl b' => cases heq
+          | inr a' =>
+              have ha : a' = _ := Sum.inr.inj heq
+              subst a'
+              exact .more ((mem_iter_iff _ _ _).2 (.done hx)) ih
+      | inr a' =>
+          have ha : a' = _ := Sum.inr.inj heq
+          subst a'
+          cases ih with
+          | done hi =>
+              apply Runs.done
+              rw [mem_iter_iff] at hi ⊢
+              exact .more hx hi
+          | more hi ht =>
+              apply Runs.more
+              · rw [mem_iter_iff] at hi ⊢
+                exact .more hx hi
+              · exact ht
+
+theorem codiagonal (f : A → _root_.Part ((B ⊕ A) ⊕ A)) :
+    iter (iter f) = iter (flattenBody f) := by
+  funext a
+  apply _root_.Part.ext
+  intro b
+  rw [mem_iter_iff, mem_iter_iff]
+  exact ⟨runs_flatten_of_nested f, runs_nested_of_flatten f⟩
+
+theorem uniform_step (f : A → _root_.Part (B ⊕ A)) (g : C → _root_.Part (B ⊕ C))
+    (h : A → C)
+    (comm : kcomp f (liftPure (Sum.map id h)) = kcomp (liftPure h) g)
+    (a : A) (t : B ⊕ C) :
+    t ∈ g (h a) ↔ ∃ s, s ∈ f a ∧ Sum.map id h s = t := by
+  have square := congrFun comm a
+  constructor
+  · intro ht
+    have hr : t ∈ kcomp (liftPure h) g a := by
+      rw [mem_kcomp_iff]
+      exact ⟨h a, _root_.Part.mem_some _, ht⟩
+    rw [← square, mem_kcomp_iff] at hr
+    rcases hr with ⟨s, hs, ht⟩
+    exact ⟨s, hs, (_root_.Part.mem_some_iff.mp ht).symm⟩
+  · rintro ⟨s, hs, rfl⟩
+    have hl : Sum.map id h s ∈ kcomp f (liftPure (Sum.map id h)) a := by
+      rw [mem_kcomp_iff]
+      exact ⟨s, hs, _root_.Part.mem_some _⟩
+    rw [square, mem_kcomp_iff] at hl
+    rcases hl with ⟨c, hc, ht⟩
+    have hcEq : c = h a := _root_.Part.mem_some_iff.mp hc
+    subst c
+    exact ht
+
+theorem runs_uniform_forward (f : A → _root_.Part (B ⊕ A))
+    (g : C → _root_.Part (B ⊕ C)) (h : A → C)
+    (comm : kcomp f (liftPure (Sum.map id h)) = kcomp (liftPure h) g)
+    {a : A} {b : B} (hr : Runs f a b) : Runs g (h a) b := by
+  induction hr with
+  | done hs =>
+      apply Runs.done
+      rw [uniform_step f g h comm]
+      exact ⟨Sum.inl _, hs, rfl⟩
+  | more hs hr ih =>
+      apply Runs.more
+      · rw [uniform_step f g h comm]
+        exact ⟨Sum.inr _, hs, rfl⟩
+      · exact ih
+
+theorem runs_uniform_reverse (f : A → _root_.Part (B ⊕ A))
+    (g : C → _root_.Part (B ⊕ C)) (h : A → C)
+    (comm : kcomp f (liftPure (Sum.map id h)) = kcomp (liftPure h) g)
+    {c : C} {b : B} (hr : Runs g c b) : ∀ a, c = h a → Runs f a b := by
+  induction hr with
+  | done ht =>
+      intro a ha
+      rw [ha] at ht
+      rw [uniform_step f g h comm] at ht
+      rcases ht with ⟨s, hs, heq⟩
+      cases s with
+      | inl b' =>
+          have hb : b' = _ := Sum.inl.inj heq
+          subst b'
+          exact .done hs
+      | inr a' => cases heq
+  | more ht hr ih =>
+      intro a ha
+      rw [ha] at ht
+      rw [uniform_step f g h comm] at ht
+      rcases ht with ⟨s, hs, heq⟩
+      cases s with
+      | inl b' => cases heq
+      | inr a' =>
+          have hc : h a' = _ := Sum.inr.inj heq
+          exact .more hs (ih a' hc.symm)
+
+theorem uniformity (f : A → _root_.Part (B ⊕ A)) (g : C → _root_.Part (B ⊕ C))
+    (h : A → C)
+    (comm : kcomp f (liftPure (Sum.map id h)) = kcomp (liftPure h) g) :
+    iter f = kcomp (liftPure h) (iter g) := by
+  funext a
+  apply _root_.Part.ext
+  intro b
+  rw [mem_iter_iff, mem_kcomp_iff]
+  constructor
+  · intro hr
+    exact ⟨h a, _root_.Part.mem_some _, (mem_iter_iff _ _ _).2 (runs_uniform_forward f g h comm hr)⟩
+  · rintro ⟨c, hc, hb⟩
+    have hcEq : c = h a := _root_.Part.mem_some_iff.mp hc
+    exact runs_uniform_reverse f g h comm ((mem_iter_iff _ _ _).1 hb) a hcEq
+
+noncomputable instance : LawfulElgotMonad _root_.Part where
+  fixpoint := fixpoint
+  naturality := naturality
+  codiagonal := codiagonal
+  uniformity := uniformity
+
+section Examples
+
+@[simp] theorem iter_immediate (a : A) (b : B) :
+    iter (fun _ : A ↦ _root_.Part.some (Sum.inl b)) a = _root_.Part.some b := by
+  apply _root_.Part.ext
+  intro b'
+  rw [mem_iter_iff, _root_.Part.mem_some_iff]
+  constructor
+  · intro hr
+    cases hr with
+    | done hs => exact Sum.inl.inj (_root_.Part.mem_some_iff.mp hs)
+    | more hs _ => cases _root_.Part.mem_some_iff.mp hs
+  · intro hb
+    subst b'
+    exact .done (_root_.Part.mem_some _)
+
+@[simp] theorem iter_forever (a : A) :
+    iter (B := B) (fun a : A ↦ _root_.Part.some (Sum.inr a)) a =
+      (_root_.Part.none : _root_.Part B) := by
+  apply _root_.Part.ext
+  intro b
+  rw [mem_iter_iff]
+  constructor
+  · intro hr
+    induction hr with
+    | done hs => cases _root_.Part.mem_some_iff.mp hs
+    | more _ _ ih => exact ih
+  · exact (_root_.Part.notMem_none b).elim
+
+end Examples
 
 end Part
 
