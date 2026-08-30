@@ -108,6 +108,20 @@ noncomputable def coprodIsoSum (X Y : Kleisli (TM m)) :
       (IsColimit.comp_coconePointUniqueUpToIso_hom (coprodIsCoprod X Y)
         (binaryCofanIsColimit m X Y) (Discrete.mk WalkingPair.right))
 
+@[reassoc (attr := simp)] theorem binary_inl_coprodIsoSum_inv (X Y : Kleisli (TM m)) :
+    (binaryCofan m X Y).inl ≫ (coprodIsoSum m X Y).inv =
+      (coprod.inl : X ⟶ X ⨿ Y) := by
+  simpa [coprodIsoSum] using
+    (IsColimit.comp_coconePointUniqueUpToIso_inv (coprodIsCoprod X Y)
+      (binaryCofanIsColimit m X Y) (Discrete.mk WalkingPair.left))
+
+@[reassoc (attr := simp)] theorem binary_inr_coprodIsoSum_inv (X Y : Kleisli (TM m)) :
+    (binaryCofan m X Y).inr ≫ (coprodIsoSum m X Y).inv =
+      (coprod.inr : Y ⟶ X ⨿ Y) := by
+  simpa [coprodIsoSum] using
+    (IsColimit.comp_coconePointUniqueUpToIso_inv (coprodIsCoprod X Y)
+      (binaryCofanIsColimit m X Y) (Discrete.mk WalkingPair.right))
+
 /-- The ordinary type-theoretic distribution equivalence, viewed as an isomorphism in `Type`. -/
 def typeLeftDistribIso (X Y Z : Type u) :
     (X × Y) ⊕ (X × Z) ≅ X × (Y ⊕ Z) where
@@ -128,6 +142,53 @@ noncomputable def kleisliLeftDistribIso (X Y Z : Kleisli (TM m)) :
     ((Kleisli.Adjunction.toKleisli (TM m)).mapIso
       (typeLeftDistribIso X.of Y.of Z.of))).trans
     (PremonoidalCategory.whiskerLeftIso X (coprodIsoSum m Y Z).symm)
+
+theorem kleisliLeftDistribIso_hom (X Y Z : Kleisli (TM m)) :
+    (kleisliLeftDistribIso m X Y Z).hom = DistributiveTensor.leftHom X Y Z := by
+  apply coprod.hom_ext
+  · simp only [kleisliLeftDistribIso, Iso.trans_hom]
+    simp only [Category.assoc]
+    rw [inl_coprodIsoSum_hom_assoc]
+    rw [DistributiveTensor.inl_leftHom]
+    have h : (binaryCofan m (X ⊗ Y) (X ⊗ Z)).inl ≫
+        ((Kleisli.Adjunction.toKleisli (TM m)).mapIso
+          (typeLeftDistribIso X.of Y.of Z.of)).hom =
+          X ◁ (binaryCofan m Y Z).inl := by
+      apply Kleisli.hom_ext
+      funext p
+      simp [binaryCofan, typeLeftDistribIso, Kleisli.Adjunction.toKleisli]
+      change pure (p.1, Sum.inl p.2) = (fun q ↦ (p.1, q)) <$> pure (Sum.inl p.2)
+      simp
+    slice_lhs 1 2 => exact h
+    change X ◁ (binaryCofan m Y Z).inl ≫
+      X ◁ (coprodIsoSum m Y Z).inv = X ◁ coprod.inl
+    rw [← PremonoidalCategory.whiskerLeft_comp]
+    rw [binary_inl_coprodIsoSum_inv]
+    rfl
+  · simp only [kleisliLeftDistribIso, Iso.trans_hom]
+    simp only [Category.assoc]
+    rw [inr_coprodIsoSum_hom_assoc]
+    rw [DistributiveTensor.inr_leftHom]
+    have h : (binaryCofan m (X ⊗ Y) (X ⊗ Z)).inr ≫
+        ((Kleisli.Adjunction.toKleisli (TM m)).mapIso
+          (typeLeftDistribIso X.of Y.of Z.of)).hom =
+          X ◁ (binaryCofan m Y Z).inr := by
+      apply Kleisli.hom_ext
+      funext p
+      simp [binaryCofan, typeLeftDistribIso, Kleisli.Adjunction.toKleisli]
+      change pure (p.1, Sum.inr p.2) = (fun q ↦ (p.1, q)) <$> pure (Sum.inr p.2)
+      simp
+    slice_lhs 1 2 => exact h
+    change X ◁ (binaryCofan m Y Z).inr ≫
+      X ◁ (coprodIsoSum m Y Z).inv = X ◁ coprod.inr
+    rw [← PremonoidalCategory.whiskerLeft_comp]
+    rw [binary_inr_coprodIsoSum_inv]
+    rfl
+
+noncomputable instance distributiveTensor : DistributiveTensor (Kleisli (TM m)) where
+  left_isIso X Y Z := by
+    rw [← kleisliLeftDistribIso_hom m]
+    infer_instance
 
 noncomputable instance iteration [Isotope.Elgot.Iterate m] : Iteration (Kleisli (TM m)) where
   iterate f := Kleisli.Hom.mk
