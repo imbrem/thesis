@@ -88,6 +88,49 @@ theorem costrength_right_unitality [SymmetricCategory C] (X : C) :
   rw [Monad.Strong.left_unitality]
   simp
 
+theorem costrength_associativity [SymmetricCategory C] (X Y Z : C) :
+    costrength T X Y ▷ Z ≫ costrength T (X ⊗ Y) Z ≫ T.map (α_ X Y Z).hom =
+      (α_ (T.obj X) Y Z).hom ≫ costrength T X (Y ⊗ Z) := by
+  simp only [costrength_def, MonoidalCategory.comp_whiskerRight, Category.assoc]
+  rw [BraidedCategory.braiding_naturality_left_assoc]
+  rw [Monad.Strong.naturality_right_assoc]
+  rw [BraidedCategory.braiding_naturality_left_assoc]
+  have hprefix :
+      (BraidedCategory.braiding (T.obj X) Y).hom ▷ Z ≫
+          (BraidedCategory.braiding (Y ⊗ T.obj X) Z).hom =
+        (α_ (T.obj X) Y Z).hom ≫
+          (BraidedCategory.braiding (T.obj X) (Y ⊗ Z)).hom ≫
+          (BraidedCategory.braiding Y Z).hom ▷ T.obj X ≫
+          (α_ Z Y (T.obj X)).hom := by
+    rw [BraidedCategory.braiding_tensor_left_hom,
+      BraidedCategory.braiding_tensor_right_hom]
+    monoidal
+  slice_lhs 1 2 => exact hprefix
+  have hassoc := Monad.Strong.associativity (T := T) Z Y X
+  slice_lhs 4 6 => exact hassoc
+  have hnat := Monad.Strong.naturality_left (T := T)
+    (BraidedCategory.braiding Y Z).hom X
+  slice_lhs 3 4 => exact hnat
+  have htail :
+      (BraidedCategory.braiding Y Z).hom ▷ X ≫ (α_ Z Y X).hom ≫
+          Z ◁ (BraidedCategory.braiding Y X).hom ≫
+          (BraidedCategory.braiding Z (X ⊗ Y)).hom ≫ (α_ X Y Z).hom =
+        (BraidedCategory.braiding (Y ⊗ Z) X).hom := by
+    rw [BraidedCategory.braiding_tensor_right_hom,
+      BraidedCategory.braiding_tensor_left_hom]
+    apply (cancel_epi (α_ Y Z X).inv).1
+    simp only [Category.assoc]
+    rw [BraidedCategory.yang_baxter_assoc]
+    have hcancel :
+        X ◁ (BraidedCategory.braiding Y Z).hom ≫
+          X ◁ (BraidedCategory.braiding Z Y).hom = 𝟙 _ := by
+      rw [← MonoidalCategory.whiskerLeft_comp, SymmetricCategory.symmetry]
+      simp
+    slice_lhs 5 6 => exact hcancel
+    simp
+  simp only [← Functor.map_comp, Category.assoc]
+  rw [htail]
+
 theorem costrength_multiplication [SymmetricCategory C] (X Y : C) :
     (T.μ.app X ▷ Y) ≫ costrength T X Y =
       costrength T (T.obj X) Y ≫ T.map (costrength T X Y) ≫ T.μ.app (X ⊗ Y) := by
@@ -111,7 +154,8 @@ theorem costrength_multiplication [SymmetricCategory C] (X Y : C) :
   simp only [Category.assoc]
 
 attribute [reassoc] costrength_unit costrength_naturality_left
-  costrength_naturality_right costrength_right_unitality costrength_multiplication
+  costrength_naturality_right costrength_right_unitality costrength_associativity
+  costrength_multiplication
 
 end Monad.Strong
 
