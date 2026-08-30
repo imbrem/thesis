@@ -277,6 +277,21 @@ theorem truncate_flattenApprox {E : Type u → Type u} {A B : Type (u + 1)}
   funext s
   exact (ret (E := E) (Isotope.Elgot.flatten s)).coherent n
 
+/-- A two-level residual machine. Its two recursive summands respectively
+represent recursion of the outer and inner iterations. -/
+noncomputable def doubleStep {E : Type u → Type u} {A B : Type (u + 1)}
+    (n : Nat) (f : A → Approx E ((B ⊕ A) ⊕ A) (n + 1)) :
+    Approx E ((B ⊕ A) ⊕ A) (n + 1) →
+      Part ((Visible E B (Approx E B n) ⊕ Approx E ((B ⊕ A) ⊕ A) (n + 1)) ⊕
+        Approx E ((B ⊕ A) ⊕ A) (n + 1)) :=
+  fun x => x >>= fun
+    | .ret (.inl (.inl b)) => Part.some (.inl (.inl (.ret b)))
+    | .ret (.inl (.inr a)) => Part.some (.inl (.inr (f a)))
+    | .ret (.inr a) => Part.some (.inr (f a))
+    | .vis e next => Part.some (.inl (.inl (.vis e (fun r =>
+        iter n (iter n (next r) (fun a => truncate n (f a)))
+          (fun a => iter n (truncate n (f a)) (fun a => truncate n (f a)))))))
+
 end Approx
 
 /-- The defining fixpoint equation for weak interaction-tree iteration. -/
