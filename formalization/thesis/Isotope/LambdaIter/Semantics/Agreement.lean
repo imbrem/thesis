@@ -60,6 +60,12 @@ variable [Semantics.InstructionModel Φ τ ε m]
 variable {ν : Type w} [DecidableEq ν]
 variable [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
 
+@[simp] private theorem types_snd_apply {X Y : Type v} (p : X × Y) :
+    CategoryTheory.CartesianMonoidalCategory.snd X Y p = p.2 := by rfl
+
+@[simp] private theorem types_fst_apply {X Y : Type v} (p : X × Y) :
+    CategoryTheory.CartesianMonoidalCategory.fst X Y p = p.1 := by rfl
+
 /-- The categorical denotation specialized to a set-valued monadic model. -/
 noncomputable def denoteOfType {Γ : Ctx ν τ} {n : Nat}
     {β : BoundCtx τ n} {t : Tm ν Φ n} {A : τ} (h : HasType Φ Γ β t A) :=
@@ -97,5 +103,62 @@ def envToCategorical {n : Nat} {Γ : Ctx ν τ} {β : BoundCtx τ n}
     (γ : CtxDen Γ) (ρ : BoundDen β) :
     Categorical.envObj (Categorical.ofTypeModel (τ := τ)) Γ β :=
   (ctxToCategorical γ, boundToCategorical ρ)
+
+theorem ctxLookup_toCategorical {Γ : Ctx ν τ} (γ : CtxDen Γ)
+    (x : ν) {A : τ} (h : Γ.lookup x = some A) :
+    Categorical.ctxLookup (Categorical.ofTypeModel (τ := τ)) x h
+        (ctxToCategorical γ) = CtxDen.lookup γ x h := by
+  induction Γ generalizing A with
+  | nil => simp [Ctx.lookup] at h
+  | snoc Γ name B ih =>
+      cases name with
+      | none =>
+          exact ih γ.1 h
+      | some y =>
+          by_cases hxy : x = y
+          · subst y
+            have hBA : B = A := by simpa [Ctx.lookup] using h
+            subst A
+            simp only [Categorical.ctxLookup, CtxDen.lookup, ctxToCategorical]
+            simp
+          · simp only [Categorical.ctxLookup, CtxDen.lookup, ctxToCategorical]
+            simp only [dif_neg hxy]
+            change Categorical.ctxLookup (Categorical.ofTypeModel (τ := τ)) x _
+                (ctxToCategorical γ.1) = CtxDen.lookup γ.1 x _
+            exact ih γ.1 (by simpa [Ctx.lookup, hxy] using h)
+
+theorem freeLookup_toCategorical {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+    (γ : CtxDen Γ) (ρ : BoundDen β) (x : ν) {A : τ}
+    (h : Γ.lookup x = some A) :
+    Categorical.freeLookup (Categorical.ofTypeModel (τ := τ)) x h
+        (envToCategorical γ ρ) = CtxDen.lookup γ x h := by
+  exact ctxLookup_toCategorical γ x h
+
+theorem boundLookup_toCategorical {n : Nat} {β : BoundCtx τ n}
+    (ρ : BoundDen β) (i : Fin n) :
+    Categorical.boundLookup (Categorical.ofTypeModel (τ := τ)) i
+        (boundToCategorical ρ) = BoundDen.get ρ i := by
+  induction β with
+  | nil => exact Fin.elim0 i
+  | snoc β A ih =>
+      refine Fin.cases ?_ (fun j => ?_) i
+      · rfl
+      · exact ih ρ.1 j
+
+theorem boundVar_toCategorical {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+    (γ : CtxDen Γ) (ρ : BoundDen β) (i : Fin n) :
+    Categorical.boundVar (Categorical.ofTypeModel (τ := τ)) i
+        (envToCategorical γ ρ) = BoundDen.get ρ i := by
+  exact boundLookup_toCategorical ρ i
+
+theorem envSnocIso_toCategorical {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+    (γ : CtxDen Γ) (ρ : BoundDen β) {A : τ} (a : TyDen A) :
+    (Categorical.envSnocIso (Categorical.ofTypeModel (τ := τ)) Γ β A).hom
+        (envToCategorical γ ρ, a) = envToCategorical γ (ρ, a) := by rfl
+
+theorem envPairHom_toCategorical {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+    (γ : CtxDen Γ) (ρ : BoundDen β) {A B : τ} (a : TyDen A) (b : TyDen B) :
+    Categorical.envPairHom (Categorical.ofTypeModel (τ := τ)) Γ β A B
+        (envToCategorical γ ρ, (a, b)) = envToCategorical γ ((ρ, a), b) := by rfl
 
 end Isotope.LambdaIter.Semantics
