@@ -1,4 +1,5 @@
 import Isotope.CategoryTheory.Freyd.Basic
+import Mathlib.CategoryTheory.Distributive.Monoidal
 import Mathlib.CategoryTheory.Limits.Constructions.FiniteProductsOfBinaryProducts
 import Mathlib.CategoryTheory.Limits.Preserves.Finite
 
@@ -69,6 +70,16 @@ universal property of coproducts. -/
 class DistributiveTensor (C : Type u₁) [Category.{v₁} C] [MonoidalCategoryStruct C]
     [HasBinaryCoproducts C] : Prop where
   left_isIso (X Y Z : C) : IsIso (DistributiveTensor.leftHom X Y Z) := by infer_instance
+
+/-- Mathlib's monoidal distributivity structure supplies our weaker, premonoidal-compatible
+distributivity interface. -/
+instance ofIsMonoidalLeftDistrib (C : Type u₁) [Category.{v₁} C]
+    [MonoidalCategory C] [HasBinaryCoproducts C] [IsMonoidalLeftDistrib C] :
+    DistributiveTensor C where
+  left_isIso X Y Z := by
+    unfold DistributiveTensor.leftHom
+    rw [← CategoryTheory.leftDistrib_hom]
+    infer_instance
 
 namespace DistributiveTensor
 

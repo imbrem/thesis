@@ -1,6 +1,7 @@
 import Isotope.CategoryTheory.Freyd.Elgot
 import Isotope.CategoryTheory.Monad.Types
 import Isotope.Elgot.Basic
+import Mathlib.CategoryTheory.Adjunction.Limits
 
 /-! # Elgot structure on Kleisli categories of type monads -/
 
@@ -76,6 +77,14 @@ instance hasInitial : HasInitial (Kleisli (TM m)) :=
 
 instance hasFiniteCoproducts : HasFiniteCoproducts (Kleisli (TM m)) :=
   hasFiniteCoproducts_of_has_binary_and_initial
+
+/-- The pure embedding preserves finite coproducts, since it is the left adjoint in the Kleisli
+adjunction. -/
+noncomputable instance toKleisliPreservesFiniteCoproducts :
+    PreservesFiniteCoproducts (Kleisli.Adjunction.toKleisli (TM m)) := by
+  haveI : PreservesColimitsOfSize.{u, u} (Kleisli.Adjunction.toKleisli (TM m)) :=
+    (_root_.CategoryTheory.Kleisli.Adjunction.adj (TM m)).leftAdjoint_preservesColimits
+  infer_instance
 
 /-- Comparison between Mathlib's selected Kleisli coproduct and the objectwise sum cocone. -/
 noncomputable def coprodIsoSum (X Y : Kleisli (TM m)) :
