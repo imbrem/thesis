@@ -5,4 +5,4 @@ import Isotope.LambdaIter.Semantics.Purity
 import Isotope.LambdaIter.Semantics.Substitution
 import Isotope.LambdaIter.Semantics.Soundness
 import Isotope.LambdaIter.Semantics.Categorical
-import Isotope.LambdaIter.Semantics.Agreement
+import Isotope.LambdaIter.Semantics.Agreement.Full
