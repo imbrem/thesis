@@ -501,4 +501,97 @@ theorem sound_iterUniformity [LawfulElgotMonad m]
   change Elgot.iter g (hfun x) = Elgot.iter g (hfun x)
   rfl
 
+/-- Every proof-relevant typed equation preserves denotation. -/
+theorem sound [LawfulElgotMonad m]
+    {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+    {a b : Tm ν Φ n} {A : τ}
+    {ha : HasType Φ Γ β a A} {hb : HasType Φ Γ β b A}
+    (d : TypedEquiv.Deriv (⊥ : ε) Γ ha hb) :
+    ∀ (γ : CtxDen Γ) (ρ : BoundDen β),
+      denote (m := m) (ε := ε) ha γ ρ = denote (m := m) (ε := ε) hb γ ρ := by
+  induction d with
+  | refl => intro γ ρ; rfl
+  | symm _ ih => intro γ ρ; exact (ih γ ρ).symm
+  | trans _ _ ih₁ ih₂ => intro γ ρ; exact (ih₁ γ ρ).trans (ih₂ γ ρ)
+  | sub _ _ ih =>
+      intro γ ρ
+      simp only [denote]
+      rw [ih γ ρ]
+  | op _ ih =>
+      intro γ ρ
+      simp only [denote]
+      rw [ih γ ρ]
+  | let₁ _ _ ih₁ ih₂ =>
+      intro γ ρ
+      simp only [denote]
+      rw [ih₁ γ ρ]
+      apply bind_congr
+      intro x
+      exact ih₂ γ (ρ, x)
+  | pair _ _ ih₁ ih₂ =>
+      intro γ ρ
+      simp only [denote]
+      rw [ih₁ γ ρ]
+      apply bind_congr
+      intro x
+      rw [ih₂ γ ρ]
+  | let₂ _ _ ih₁ ih₂ =>
+      intro γ ρ
+      simp only [denote]
+      rw [ih₁ γ ρ]
+      apply bind_congr
+      intro x
+      exact ih₂ γ _
+  | inl _ ih =>
+      intro γ ρ
+      simp only [denote]
+      rw [ih γ ρ]
+  | inr _ ih =>
+      intro γ ρ
+      simp only [denote]
+      rw [ih γ ρ]
+  | case _ _ _ ihe ihl ihr =>
+      intro γ ρ
+      simp only [denote]
+      rw [ihe γ ρ]
+      apply bind_congr
+      intro e
+      cases TypeModel.coprodEquiv _ _ e with
+      | inl x => exact ihl γ (ρ, x)
+      | inr x => exact ihr γ (ρ, x)
+  | abort _ ih =>
+      intro γ ρ
+      simp only [denote]
+      rw [ih γ ρ]
+  | iter _ _ ih₁ ih₂ =>
+      intro γ ρ
+      simp only [denote]
+      rw [ih₁ γ ρ]
+      apply bind_congr
+      intro x
+      congr 1
+      funext y
+      rw [ih₂ γ (ρ, y)]
+  | letBeta hp ha hb => exact sound_letBeta hp ha hb
+  | letEta ha => exact sound_letEta ha
+  | unitEta ha => exact sound_unitEta ha
+  | pairBeta ha hb hc => exact sound_pairBeta ha hb hc
+  | pairEta ha => exact sound_pairEta ha
+  | caseBetaL he hl hr => exact sound_caseBetaL he hl hr
+  | caseBetaR he hl hr => exact sound_caseBetaR he hl hr
+  | caseEta he => exact sound_caseEta he
+  | bindOp ha hc => exact sound_bindOp ha hc
+  | bindLet ha hb hc => exact sound_bindLet ha hb hc
+  | bindLetPair he hc hd => exact sound_bindLetPair he hc hd
+  | bindLetCase he hl hr hd => exact sound_bindLetCase he hl hr hd
+  | bindPair ha hc => exact sound_bindPair ha hc
+  | bindCase he hl hr => exact sound_bindCase he hl hr
+  | emptyInitial ha hb hc => exact sound_emptyInitial ha hb hc
+  | iterFixpoint ha hb => exact sound_iterFixpoint ha hb
+  | iterNaturality ha hb hc => exact sound_iterNaturality ha hb hc
+  | iterCodiagonal ha hb => exact sound_iterCodiagonal ha hb
+  | iterUniformity ha hh hp hb hb' _ ih =>
+      exact sound_iterUniformity ha hh hp hb hb' ih
+  | iterBind ha hb => exact sound_iterBind ha hb
+
 end Isotope.LambdaIter.Semantics
