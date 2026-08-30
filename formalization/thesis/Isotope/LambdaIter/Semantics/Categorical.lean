@@ -154,6 +154,43 @@ def loop [HasBinaryCoproducts C] [Iteration C] {X Y : C}
 
 end FreydCombinators
 
+section DistributiveControl
+
+variable {V : Type u₁} {C : Type u₂}
+  [Category.{v₁} V] [Category.{v₂} C]
+  [CartesianMonoidalCategory V] [SymmetricCategory V]
+  [PremonoidalCategory C] [SymmetricPremonoidalCategory C]
+  [HasFiniteCoproducts V] [HasFiniteCoproducts C]
+  [DistributiveTensor V] [DistributivePremonoidalCategory C]
+  (J : Functor V C) [DistributiveFreydCategory J]
+
+/-- Because `J` preserves finite coproducts, a computation whose source is the image of a value
+coproduct can be split into a computation coproduct. -/
+noncomputable def splitMapCoprod (A B : V) :
+    J.obj (A ⨿ B) ⟶ J.obj A ⨿ J.obj B :=
+  inv (coprodComparison J A B)
+
+/-- Contextual case analysis.  The distributor sends the retained context into the selected
+branch; the inverse coproduct comparison then exposes the computation coproduct consumed by
+`coprod.desc`. -/
+noncomputable def caseWithContext {R A B D : V}
+    (scrutinee : J.obj R ⟶ J.obj (A ⨿ B))
+    (left : J.obj (R ⊗ A) ⟶ J.obj D)
+    (right : J.obj (R ⊗ B) ⟶ J.obj D) : J.obj R ⟶ J.obj D :=
+  bind J scrutinee <|
+    J.map (DistributiveTensor.leftIso R A B).inv ≫
+      splitMapCoprod J (R ⊗ A) (R ⊗ B) ≫
+        coprod.desc left right
+
+/-- Elimination from an interpreted empty type is pure. -/
+noncomputable def abort {τ : Type u₃} [TypeFormers τ] [Subtyping τ]
+    (M : TypeModel τ V) {R : V} {A : τ}
+    (emptyComputation : J.obj R ⟶ J.obj (M.obj (empty : τ))) :
+    J.obj R ⟶ J.obj (M.obj A) :=
+  emptyComputation ≫ J.map (M.emptyIsInitial.to (M.obj A))
+
+end DistributiveControl
+
 section StrongIteration
 
 variable {V : Type u₁} {C : Type u₂}
@@ -163,6 +200,28 @@ variable {V : Type u₁} {C : Type u₂}
   [HasFiniteCoproducts V] [HasFiniteCoproducts C]
   [DistributiveTensor V] [DistributivePremonoidalCategory C]
   [Iteration C] [ElgotCategory C]
+
+/-- Run `f` on the right component while retaining the left value context. -/
+noncomputable def retainLeft (J : Functor V C) [FreydCategory J]
+    {R X Y : V} (f : J.obj X ⟶ J.obj Y) :
+    J.obj (R ⊗ X) ⟶ J.obj (R ⊗ Y) :=
+  (Functor.StrongPremonoidal.tensorIso (J := J) R X).inv ≫
+    leftTensor (𝟙 (J.obj R)) f ≫
+    (Functor.StrongPremonoidal.tensorIso (J := J) R Y).hom
+
+/-- Turn a loop body depending on a read-only environment into an ordinary categorical
+iteration body.  A pure diagonal preserves the environment, the inverse distributor routes it
+into both branches, and the preserved environment is discarded after the loop exits. -/
+noncomputable def contextualLoop (J : Functor V C) [StrongElgotFreydCategory J]
+    {R A B : V} (body : J.obj (R ⊗ A) ⟶ J.obj (B ⨿ A)) :
+    J.obj (R ⊗ A) ⟶ J.obj B :=
+  iterate
+    (J.map (CartesianMonoidalCategory.lift
+        (CartesianMonoidalCategory.fst R A) (𝟙 (R ⊗ A))) ≫
+      retainLeft J body ≫
+      J.map (DistributiveTensor.leftIso R B A).inv ≫
+      splitMapCoprod J (R ⊗ B) (R ⊗ A)) ≫
+    J.map (CartesianMonoidalCategory.snd R B)
 
 /-- Thread a fixed context through a context-independent loop body.  This is the primitive
 contextual iteration equation used when proving the full syntax interpretation sound. -/
@@ -176,5 +235,62 @@ theorem threadLoop_eq (J : Functor V C) [StrongElgotFreydCategory J]
   StrongElgotFreydCategory.strength J R body
 
 end StrongIteration
+
+section Denotation
+
+variable {V : Type u₁} {C : Type u₂}
+  [Category.{v₁} V] [Category.{v₂} C]
+  [CartesianMonoidalCategory V] [SymmetricCategory V]
+  [PremonoidalCategory C] [SymmetricPremonoidalCategory C]
+  [HasFiniteCoproducts V] [HasFiniteCoproducts C]
+  [DistributiveTensor V] [DistributivePremonoidalCategory C]
+  [Iteration C] [ElgotCategory C]
+  (J : Functor V C) [StrongElgotFreydCategory J]
+  {τ : Type u₃} [TypeFormers τ] [Subtyping τ] (M : TypeModel τ V)
+  {ν : Type u₄} [DecidableEq ν]
+  {Φ : Type*} [HasTy Φ τ] [InstructionModel J M Φ]
+
+/-- Reassociate an environment extended by a pair into an environment extended by its two
+components. -/
+def envPairHom (Γ : Ctx ν τ) {n : Nat} (β : LocallyNameless.BoundCtx τ n) (A B : τ) :
+    envObj M Γ β ⊗ (M.obj A ⊗ M.obj B) ⟶
+      envObj M Γ (.snoc (.snoc β A) B) :=
+  (α_ (ctxObj M Γ) (boundObj M β) (M.obj A ⊗ M.obj B)).hom ≫
+    ctxObj M Γ ◁ (α_ (boundObj M β) (M.obj A) (M.obj B)).inv
+
+/-- Denotation of an existing locally nameless typing derivation in a strong Elgot Freyd
+category.  As in the monadic semantics, the derivation matters at `sub`. -/
+noncomputable def denote : {Γ : Ctx ν τ} → {n : Nat} →
+    {β : LocallyNameless.BoundCtx τ n} → {t : LocallyNameless.Tm ν Φ n} → {A : τ} →
+    LocallyNameless.HasType Φ Γ β t A →
+      (J.obj (envObj M Γ β) ⟶ J.obj (M.obj A))
+  | _, _, _, _, _, .fv h => J.map (freeLookup M _ h)
+  | _, _, _, _, _, .bv => J.map (boundVar M _)
+  | _, _, _, _, _, .op ha => denote ha ≫ InstructionModel.denote _
+  | Γ, _, β, _, _, .let₁ ha hb => bind J (denote ha) <|
+      J.map (envSnocIso M Γ β _).hom ≫ denote hb
+  | _, _, _, _, _, .unit =>
+      J.map (CartesianMonoidalCategory.toUnit _ ≫ M.unitIso.inv)
+  | _, _, _, _, _, .pair ha hb =>
+      pair J (denote ha) (denote hb) ≫ J.map (M.tensorIso _ _).inv
+  | Γ, _, β, _, _, .let₂ ha hc => bind J (denote ha) <|
+      J.map ((𝟙 _) ⊗ₘ (M.tensorIso _ _).hom) ≫
+        J.map (envPairHom M Γ β _ _) ≫ denote hc
+  | _, _, _, _, _, .inl ha =>
+      denote ha ≫ J.map (coprod.inl ≫ (M.coprodIso _ _).inv)
+  | _, _, _, _, _, .inr hb =>
+      denote hb ≫ J.map (coprod.inr ≫ (M.coprodIso _ _).inv)
+  | Γ, _, β, _, _, .case he hl hr =>
+      caseWithContext J (denote he ≫ J.map (M.coprodIso _ _).hom)
+        (J.map (envSnocIso M Γ β _).hom ≫ denote hl)
+        (J.map (envSnocIso M Γ β _).hom ≫ denote hr)
+  | _, _, _, _, _, .abort ha => abort J M (denote ha)
+  | Γ, _, β, _, _, .iter ha hb => bind J (denote ha) <|
+      contextualLoop J
+        (J.map (envSnocIso M Γ β _).hom ≫ denote hb ≫
+          J.map (M.coprodIso _ _).hom)
+  | _, _, _, _, _, .sub ha d => denote ha ≫ J.map (M.subty d)
+
+end Denotation
 
 end Isotope.LambdaIter.Semantics.Categorical
