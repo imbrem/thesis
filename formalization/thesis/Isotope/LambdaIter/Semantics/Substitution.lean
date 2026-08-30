@@ -318,4 +318,16 @@ theorem denote_instantiate {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
     unfold denote
     rfl
 
+@[simp] theorem denote_lift {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+    {t : Tm ν Φ n} {A X : τ} (h : HasType Φ Γ β t A)
+    (γ : CtxDen Γ) (ρ : BoundDen β) (x : TyDen X) :
+    denote (m := m) (ε := ε) (h.lift (B := X)) γ (ρ, x) =
+      denote (m := m) (ε := ε) h γ ρ := by
+  unfold HasType.lift
+  calc
+    _ = denote (m := m) (ε := ε) h γ
+        (BoundDen.pull (TypedRenaming.succ β X) (ρ, x)) :=
+      denote_rename (m := m) (ε := ε) h _ γ _
+    _ = _ := by rw [BoundDen.pull_succ]
+
 end Isotope.LambdaIter.Semantics
