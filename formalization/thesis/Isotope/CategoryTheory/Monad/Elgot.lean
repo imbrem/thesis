@@ -212,12 +212,14 @@ theorem coprodIsoSum_hom_sumElim {X Y Z : Kleisli (TM m)}
     rw [coprod.inl_desc]
     apply Kleisli.hom_ext
     funext x
-    simp [binaryCofan, Kleisli.Adjunction.toKleisli]
+    simp [binaryCofan, Kleisli.Adjunction.toKleisli, Isotope.Elgot.kcomp,
+      Isotope.Elgot.liftPure, Function.comp_def, joinM, bind_map_left]
   · rw [inr_coprodIsoSum_hom_assoc]
     rw [coprod.inr_desc]
     apply Kleisli.hom_ext
     funext y
-    simp [binaryCofan, Kleisli.Adjunction.toKleisli]
+    simp [binaryCofan, Kleisli.Adjunction.toKleisli, Isotope.Elgot.kcomp,
+      Isotope.Elgot.liftPure, Function.comp_def, joinM, bind_map_left]
 
 theorem comp_of_eq_kcomp {X Y Z : Kleisli (TM m)} (f : X ⟶ Y) (g : Y ⟶ Z) :
     (f ≫ g).of = Isotope.Elgot.kcomp (m := m) f.of g.of := by
@@ -242,19 +244,42 @@ theorem iterate_fixpoint [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMon
 theorem coprodMap_coprodIsoSum_hom {X Y Z : Kleisli (TM m)} (g : Y ⟶ Z) :
     coprod.map g (𝟙 X) ≫ (coprodIsoSum m Z X).hom =
       (coprodIsoSum m Y X).hom ≫ Kleisli.Hom.mk
-        (Sum.elim (fun y ↦ g.of y >>= fun z ↦ pure (Sum.inl z))
-          (fun x ↦ pure (Sum.inr x))) := by
+        (Sum.elim
+          (Isotope.Elgot.kcomp (m := m) g.of
+            (Isotope.Elgot.liftPure (m := m) (Sum.inl : Z.of → Z.of ⊕ X.of)))
+          (Isotope.Elgot.liftPure (m := m) (Sum.inr : X.of → Z.of ⊕ X.of))) := by
   apply coprod.hom_ext
   · simp only [Category.assoc, coprod.inl_map, inl_coprodIsoSum_hom,
       inl_coprodIsoSum_hom_assoc]
     apply Kleisli.hom_ext
     funext y
-    simp [binaryCofan, Kleisli.Adjunction.toKleisli]
+    simp [binaryCofan, Kleisli.Adjunction.toKleisli, Isotope.Elgot.kcomp,
+      Isotope.Elgot.liftPure, Function.comp_def, joinM, bind_map_left]
   · simp only [Category.assoc, coprod.inr_map, inr_coprodIsoSum_hom,
       inr_coprodIsoSum_hom_assoc]
     apply Kleisli.hom_ext
     funext x
-    simp [binaryCofan, Kleisli.Adjunction.toKleisli]
+    simp [binaryCofan, Kleisli.Adjunction.toKleisli, Isotope.Elgot.kcomp,
+      Isotope.Elgot.liftPure, Function.comp_def, joinM, bind_map_left]
+
+theorem iterate_naturality [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+    {X Y Z : Kleisli (TM m)} (f : X ⟶ Y ⨿ X) (g : Y ⟶ Z) :
+    iterate f ≫ g = iterate (f ≫ coprod.map g (𝟙 X)) := by
+  apply Kleisli.hom_ext
+  rw [comp_of_eq_kcomp, iterate_of, iterate_of]
+  have h : (f ≫ coprod.map g (𝟙 X)) ≫ (coprodIsoSum m Z X).hom =
+      (f ≫ (coprodIsoSum m Y X).hom) ≫ Kleisli.Hom.mk
+        (Sum.elim
+          (Isotope.Elgot.kcomp (m := m) g.of
+            (Isotope.Elgot.liftPure (m := m) (Sum.inl : Z.of → Z.of ⊕ X.of)))
+          (Isotope.Elgot.liftPure (m := m) (Sum.inr : X.of → Z.of ⊕ X.of))) := by
+    simp only [Category.assoc, coprodMap_coprodIsoSum_hom]
+  have hof := congrArg Kleisli.Hom.of h
+  rw [hof]
+  conv_rhs => rw [comp_of_eq_kcomp]
+  change Isotope.Elgot.kcomp (m := m) (Isotope.Elgot.iter (m := m) _) g.of =
+    Isotope.Elgot.iter (m := m) (Isotope.Elgot.mapReturn (m := m) _ g.of)
+  exact Isotope.Elgot.LawfulElgotMonad.naturality (m := m) _ _
 
 end Kleisli.Type
 
