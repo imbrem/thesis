@@ -51,6 +51,14 @@ theorem costrength_def [BraidedCategory C] (X Y : C) :
     costrength T X Y = (BraidedCategory.braiding (T.obj X) Y).hom ≫ strength Y X ≫
       T.map (BraidedCategory.braiding Y X).hom := rfl
 
+theorem costrength_unit [SymmetricCategory C] (X Y : C) :
+    T.η.app X ▷ Y ≫ costrength T X Y = T.η.app (X ⊗ Y) := by
+  rw [costrength_def, BraidedCategory.braiding_naturality_left_assoc]
+  have hunit := Monad.Strong.unit (T := T) Y X
+  slice_lhs 2 3 => exact hunit
+  slice_lhs 2 3 => exact (T.η.naturality (BraidedCategory.braiding Y X).hom).symm
+  simp
+
 end Monad.Strong
 
 end CategoryTheory
