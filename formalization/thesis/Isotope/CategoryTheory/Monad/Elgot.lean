@@ -10,6 +10,7 @@ universe u
 namespace CategoryTheory
 
 open Category Limits
+open scoped MonoidalCategory
 
 namespace Kleisli.Type
 
@@ -90,6 +91,43 @@ noncomputable instance toKleisliPreservesFiniteCoproducts :
 noncomputable def coprodIsoSum (X Y : Kleisli (TM m)) :
     X ⨿ Y ≅ Kleisli.mk (TM m) (X.of ⊕ Y.of) :=
   (coprodIsCoprod X Y).coconePointUniqueUpToIso (binaryCofanIsColimit m X Y)
+
+@[reassoc (attr := simp)] theorem inl_coprodIsoSum_hom (X Y : Kleisli (TM m)) :
+    (coprod.inl : X ⟶ X ⨿ Y) ≫ (coprodIsoSum m X Y).hom =
+      (binaryCofan m X Y).inl :=
+  by
+    simpa [coprodIsoSum] using
+      (IsColimit.comp_coconePointUniqueUpToIso_hom (coprodIsCoprod X Y)
+        (binaryCofanIsColimit m X Y) (Discrete.mk WalkingPair.left))
+
+@[reassoc (attr := simp)] theorem inr_coprodIsoSum_hom (X Y : Kleisli (TM m)) :
+    (coprod.inr : Y ⟶ X ⨿ Y) ≫ (coprodIsoSum m X Y).hom =
+      (binaryCofan m X Y).inr :=
+  by
+    simpa [coprodIsoSum] using
+      (IsColimit.comp_coconePointUniqueUpToIso_hom (coprodIsCoprod X Y)
+        (binaryCofanIsColimit m X Y) (Discrete.mk WalkingPair.right))
+
+/-- The ordinary type-theoretic distribution equivalence, viewed as an isomorphism in `Type`. -/
+def typeLeftDistribIso (X Y Z : Type u) :
+    (X × Y) ⊕ (X × Z) ≅ X × (Y ⊕ Z) where
+  hom := (Equiv.prodSumDistrib X Y Z).symm
+  inv := Equiv.prodSumDistrib X Y Z
+  hom_inv_id := by
+    funext w
+    exact (Equiv.prodSumDistrib X Y Z).apply_symm_apply w
+  inv_hom_id := by
+    funext w
+    exact (Equiv.prodSumDistrib X Y Z).symm_apply_apply w
+
+/-- Explicit left distributor in the Kleisli category: compare selected coproducts with sums,
+apply the pure distribution equivalence, then compare back under left whiskering. -/
+noncomputable def kleisliLeftDistribIso (X Y Z : Kleisli (TM m)) :
+    (X ⊗ Y) ⨿ (X ⊗ Z) ≅ X ⊗ (Y ⨿ Z) :=
+  ((coprodIsoSum m (X ⊗ Y) (X ⊗ Z)).trans
+    ((Kleisli.Adjunction.toKleisli (TM m)).mapIso
+      (typeLeftDistribIso X.of Y.of Z.of))).trans
+    (PremonoidalCategory.whiskerLeftIso X (coprodIsoSum m Y Z).symm)
 
 noncomputable instance iteration [Isotope.Elgot.Iterate m] : Iteration (Kleisli (TM m)) where
   iterate f := Kleisli.Hom.mk
