@@ -75,6 +75,24 @@ theorem comp_whiskerRight {X Y Z : Kleisli T} (f : X ⟶ Y) (g : Y ⟶ Z)
   rw [Monad.Strong.costrength_naturality_left_assoc]
   simp only [Functor.map_comp, Category.assoc]
 
+theorem toKleisli_map_whiskerRight {X Y : C} (f : X ⟶ Y) (Z : C) :
+    (Kleisli.Adjunction.toKleisli T).map f ▷ (.mk T Z) =
+      (Kleisli.Adjunction.toKleisli T).map (f ▷ Z) := by
+  apply Kleisli.hom_ext
+  dsimp [whiskerRight, Kleisli.Adjunction.toKleisli]
+  rw [MonoidalCategory.comp_whiskerRight_assoc]
+  have hunit := Monad.Strong.costrength_unit T Y Z
+  slice_lhs 2 3 => exact hunit
+
+theorem whiskerLeft_toKleisli_map (X : C) {Y Z : C} (f : Y ⟶ Z) :
+    (.mk T X) ◁ (Kleisli.Adjunction.toKleisli T).map f =
+      (Kleisli.Adjunction.toKleisli T).map (X ◁ f) := by
+  apply Kleisli.hom_ext
+  dsimp [whiskerLeft, Kleisli.Adjunction.toKleisli]
+  rw [MonoidalCategory.whiskerLeft_comp_assoc]
+  have hunit := Monad.Strong.unit (T := T) X Z
+  slice_lhs 2 3 => exact hunit
+
 end Kleisli
 
 end CategoryTheory

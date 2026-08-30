@@ -101,6 +101,9 @@ theorem costrength_multiplication [SymmetricCategory C] (X Y : C) :
   rw [Functor.map_comp]
   simp only [Category.assoc]
 
+attribute [reassoc] costrength_unit costrength_naturality_left
+  costrength_naturality_right costrength_multiplication
+
 end Monad.Strong
 
 end CategoryTheory
