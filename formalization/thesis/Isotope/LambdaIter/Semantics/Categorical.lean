@@ -37,6 +37,69 @@ class InstructionModel [TypeFormers τ] [Subtyping τ]
     (M : TypeModel τ V) (Φ : Type u₄) [HasTy Φ τ] where
   denote (f : Φ) : J.obj (M.obj (instrSrc f)) ⟶ J.obj (M.obj (instrTrg f))
 
+section Contexts
+
+variable {V : Type u₁} [Category.{v₁} V] [CartesianMonoidalCategory V]
+  [HasFiniteCoproducts V]
+  {τ : Type u₃} [TypeFormers τ] [Subtyping τ] (M : TypeModel τ V)
+
+/-- Value-category interpretation of a free-variable context.  The newest slot is the right
+tensor factor, exactly as in the existing nested-pair semantics. -/
+def ctxObj : Ctx ν τ → V
+  | .nil => 𝟙_ V
+  | .snoc Γ _ A => ctxObj Γ ⊗ M.obj A
+
+/-- Value-category interpretation of a length-indexed bound context. -/
+def boundObj : {n : Nat} → LocallyNameless.BoundCtx τ n → V
+  | 0, .nil => 𝟙_ V
+  | _ + 1, .snoc β A => boundObj β ⊗ M.obj A
+
+/-- The complete environment object. -/
+def envObj (Γ : Ctx ν τ) {n : Nat} (β : LocallyNameless.BoundCtx τ n) : V :=
+  ctxObj M Γ ⊗ boundObj M β
+
+/-- Categorical lookup of a visible free name. -/
+noncomputable def ctxLookup [DecidableEq ν] : {Γ : Ctx ν τ} →
+    (x : ν) → {A : τ} → Γ.lookup x = some A → (ctxObj M Γ ⟶ (M.obj A : V))
+  | .nil, _, _, h => by simp [Ctx.lookup] at h
+  | .snoc Γ none B, x, A, h =>
+      CartesianMonoidalCategory.fst _ _ ≫ ctxLookup x h
+  | .snoc Γ (some y) B, x, A, h => by
+      by_cases hxy : x = y
+      · subst y
+        simp [Ctx.lookup] at h
+        cases h
+        exact CartesianMonoidalCategory.snd _ _
+      · exact CartesianMonoidalCategory.fst _ _ ≫
+          ctxLookup x (by simpa [Ctx.lookup, hxy] using h)
+
+/-- Free lookup from the complete environment discards the bound component first. -/
+noncomputable def freeLookup [DecidableEq ν] {Γ : Ctx ν τ}
+    {n : Nat} {β : LocallyNameless.BoundCtx τ n}
+    (x : ν) {A : τ} (h : Γ.lookup x = some A) : envObj M Γ β ⟶ (M.obj A : V) :=
+  CartesianMonoidalCategory.fst _ _ ≫ ctxLookup M x h
+
+/-- Categorical lookup of a newest-first de Bruijn index. -/
+noncomputable def boundLookup : {n : Nat} → {β : LocallyNameless.BoundCtx τ n} →
+    (i : Fin n) → (boundObj M β ⟶ (M.obj (β.get i) : V))
+  | _ + 1, .snoc β A, i => Fin.cases
+      (CartesianMonoidalCategory.snd _ _)
+      (fun j => CartesianMonoidalCategory.fst _ _ ≫ boundLookup j) i
+
+/-- Bound lookup from the complete environment discards the free component first. -/
+noncomputable def boundVar {Γ : Ctx ν τ}
+    {n : Nat} {β : LocallyNameless.BoundCtx τ n} (i : Fin n) :
+    envObj M Γ β ⟶ (M.obj (β.get i) : V) :=
+  CartesianMonoidalCategory.snd _ _ ≫ boundLookup M i
+
+/-- Extending the bound context corresponds, up to associativity, to pairing the old complete
+environment with the new value. -/
+def envSnocIso (Γ : Ctx ν τ) {n : Nat} (β : LocallyNameless.BoundCtx τ n) (A : τ) :
+    envObj M Γ β ⊗ M.obj A ≅ envObj M Γ (.snoc β A) :=
+  α_ (ctxObj M Γ) (boundObj M β) (M.obj A)
+
+end Contexts
+
 section FreydCombinators
 
 variable {V : Type u₁} {C : Type u₂}
