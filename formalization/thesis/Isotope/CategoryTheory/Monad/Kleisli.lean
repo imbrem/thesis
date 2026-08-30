@@ -158,6 +158,23 @@ theorem rightUnitor_hom_isCentral (X : Kleisli T) :
     PremonoidalCategory.IsCentral (ρ_ X).hom := by
   exact toKleisli_map_isCentral T (ρ_ X.of).hom
 
+theorem associator_naturality_right (X Y : Kleisli T) {Z W : Kleisli T}
+    (f : Z ⟶ W) :
+    ((X ⊗ Y) ◁ f) ≫ (α_ X Y W).hom =
+      (α_ X Y Z).hom ≫ X ◁ (Y ◁ f) := by
+  apply Kleisli.hom_ext
+  change (((X ⊗ Y) ◁ f) ≫
+      (Kleisli.Adjunction.toKleisli T).map (α_ X.of Y.of W.of).hom).of = _
+  rw [comp_toKleisli_map]
+  change _ = (((Kleisli.Adjunction.toKleisli T).map (α_ X.of Y.of Z.of).hom ≫
+      X ◁ (Y ◁ f)).of)
+  rw [toKleisli_map_comp]
+  dsimp [whiskerLeft]
+  rw [MonoidalCategory.whiskerLeft_comp]
+  simp only [Category.assoc]
+  rw [← Monad.Strong.associativity]
+  rw [MonoidalCategory.associator_naturality_right_assoc]
+
 end Kleisli
 
 end CategoryTheory
