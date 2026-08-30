@@ -32,4 +32,15 @@ theorem splitMapCoprod_coprodIsoSum (X Y : Type v) :
     simpa [Kleisli.Type.binaryCofan, Kleisli.Adjunction.toKleisli] using
       congrFun (Types.binaryCoproductIso_inr_comp_hom X Y) y
 
+theorem routeContext_hom (R B A : Type v) :
+    (typeJ (m := m)).map (DistributiveTensor.leftIso R B A).inv ≫
+        splitMapCoprod (typeJ (m := m)) (R × B) (R × A) ≫
+          (Kleisli.Type.coprodIsoSum m ((typeJ (m := m)).obj (R × B))
+            ((typeJ (m := m)).obj (R × A))).hom =
+      (typeJ (m := m)).map
+        ((DistributiveTensor.leftIso R B A).inv ≫
+          (Types.binaryCoproductIso (R × B) (R × A)).hom) := by
+  rw [splitMapCoprod_coprodIsoSum]
+  exact ((typeJ (m := m)).map_comp _ _).symm
+
 end Isotope.LambdaIter.Semantics.Categorical
