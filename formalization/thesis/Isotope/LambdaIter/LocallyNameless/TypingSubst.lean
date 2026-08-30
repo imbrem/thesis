@@ -31,6 +31,18 @@ def succ (β : BoundCtx τ n) (A : τ) : TypedRenaming β (.snoc β A) where
   toFun := Fin.succ
   typed := fun _ => rfl
 
+/-- Insert an ambient slot immediately below the newest source slot. -/
+def underBinder (β : BoundCtx τ n) (X Y : τ) :
+    TypedRenaming (.snoc β Y) (.snoc (.snoc β X) Y) where
+  toFun := Fin.cases 0 (fun i => Fin.succ (Fin.succ i))
+  typed := Fin.cases rfl (fun _ => rfl)
+
+/-- Insert an ambient slot below the newest two source slots. -/
+def underTwoBinders (β : BoundCtx τ n) (X Y Z : τ) :
+    TypedRenaming (.snoc (.snoc β Y) Z) (.snoc (.snoc (.snoc β X) Y) Z) where
+  toFun := Fin.cases 0 (Fin.cases 1 (fun i => Fin.succ (Fin.succ (Fin.succ i))))
+  typed := Fin.cases rfl (Fin.cases rfl (fun _ => rfl))
+
 end TypedRenaming
 
 namespace HasType
@@ -71,6 +83,16 @@ def lift {n : Nat} {β : BoundCtx τ n} {t : Tm ν Φ n} {A B : τ}
     (h : HasType Φ Γ β t A) :
     HasType Φ Γ (.snoc β B) t.lift A :=
   rename (TypedRenaming.succ β B) h
+
+def underBinder {n : Nat} {β : BoundCtx τ n} {t : Tm ν Φ (n + 1)}
+    {A X Y : τ} (h : HasType Φ Γ (.snoc β Y) t A) :
+    HasType Φ Γ (.snoc (.snoc β X) Y) t.underBinder A :=
+  rename (TypedRenaming.underBinder β X Y) h
+
+def underTwoBinders {n : Nat} {β : BoundCtx τ n} {t : Tm ν Φ (n + 2)}
+    {A X Y Z : τ} (h : HasType Φ Γ (.snoc (.snoc β Y) Z) t A) :
+    HasType Φ Γ (.snoc (.snoc (.snoc β X) Y) Z) t.underTwoBinders A :=
+  rename (TypedRenaming.underTwoBinders β X Y Z) h
 
 end HasType
 

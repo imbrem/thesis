@@ -87,6 +87,36 @@ inductive Deriv (pureEff : ε) (Γ : LambdaIter.Ctx ν τ) :
       Deriv pureEff Γ
         (.case he
           (.inl HasType.newest) (.inr HasType.newest)) he
+  | bindOp (ha : HasType Φ Γ β a (instrSrc f))
+      (hc : HasType Φ Γ (.snoc β (instrTrg f)) c C) :
+      Deriv pureEff Γ (.let₁ (.op ha) hc)
+        (.let₁ ha (.let₁ (.op HasType.newest) hc.underBinder))
+  | bindLet (ha : HasType Φ Γ β a A)
+      (hb : HasType Φ Γ (.snoc β A) b B)
+      (hc : HasType Φ Γ (.snoc β B) c C) :
+      Deriv pureEff Γ (.let₁ (.let₁ ha hb) hc)
+        (.let₁ ha (.let₁ hb hc.underBinder))
+  | bindLetPair (he : HasType Φ Γ β e (TypeFormers.tensor A B))
+      (hc : HasType Φ Γ (.snoc (.snoc β A) B) c C)
+      (hd : HasType Φ Γ (.snoc β C) d D) :
+      Deriv pureEff Γ (.let₁ (.let₂ he hc) hd)
+        (.let₂ he (.let₁ hc (hd.underBinder.underBinder)))
+  | bindLetCase (he : HasType Φ Γ β e (TypeFormers.coprod A B))
+      (hl : HasType Φ Γ (.snoc β A) l C)
+      (hr : HasType Φ Γ (.snoc β B) r C)
+      (hd : HasType Φ Γ (.snoc β C) d D) :
+      Deriv pureEff Γ (.let₁ (.case he hl hr) hd)
+        (.case he (.let₁ hl hd.underBinder) (.let₁ hr hd.underBinder))
+  | bindPair (ha : HasType Φ Γ β a (TypeFormers.tensor A B))
+      (hc : HasType Φ Γ (.snoc (.snoc β A) B) c C) :
+      Deriv pureEff Γ (.let₂ ha hc)
+        (.let₁ ha (.let₂ HasType.newest hc.underTwoBinders))
+  | bindCase (he : HasType Φ Γ β e (TypeFormers.coprod A B))
+      (hl : HasType Φ Γ (.snoc β A) l C)
+      (hr : HasType Φ Γ (.snoc β B) r C) :
+      Deriv pureEff Γ (.case he hl hr)
+        (.let₁ he
+          (.case HasType.newest hl.underBinder hr.underBinder))
 
 set_option relaxedAutoImplicit false
 
@@ -134,6 +164,12 @@ def Deriv.erase {n : Nat} {β : BoundCtx τ n} {a b : Tm ν Φ n} {A : τ}
   | .caseBetaL he hl hr => .caseBetaL he hl hr
   | .caseBetaR he hl hr => .caseBetaR he hl hr
   | .caseEta he => .caseEta he
+  | .bindOp ha hc => .bindOp ha hc
+  | .bindLet ha hb hc => .bindLet ha hb hc
+  | .bindLetPair he hc hd => .bindLetPair he hc hd
+  | .bindLetCase he hl hr hd => .bindLetCase he hl hr hd
+  | .bindPair ha hc => .bindPair ha hc
+  | .bindCase he hl hr => .bindCase he hl hr
 
 /-- Proposition truncation at fixed proof-relevant endpoints. -/
 abbrev Related (pureEff : ε) (Γ : LambdaIter.Ctx ν τ)
