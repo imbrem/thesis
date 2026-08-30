@@ -2,6 +2,7 @@ import Isotope.CategoryTheory.Freyd.Elgot
 import Isotope.CategoryTheory.Monad.Types
 import Isotope.Elgot.Basic
 import Mathlib.CategoryTheory.Adjunction.Limits
+import Mathlib.CategoryTheory.Monoidal.Closed.Types
 
 /-! # Elgot structure on Kleisli categories of type monads -/
 
@@ -189,6 +190,10 @@ noncomputable instance distributiveTensor : DistributiveTensor (Kleisli (TM m)) 
   left_isIso X Y Z := by
     rw [← kleisliLeftDistribIso_hom m]
     infer_instance
+
+/-- Pure functions and Kleisli computations form a distributive Freyd category. -/
+noncomputable instance distributiveFreydCategory :
+    DistributiveFreydCategory (Kleisli.Adjunction.toKleisli (TM m)) := {}
 
 noncomputable instance iteration [Isotope.Elgot.Iterate m] : Iteration (Kleisli (TM m)) where
   iterate f := Kleisli.Hom.mk

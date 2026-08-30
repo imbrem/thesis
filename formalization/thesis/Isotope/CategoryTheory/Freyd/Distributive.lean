@@ -9,8 +9,8 @@ import Mathlib.CategoryTheory.Limits.Preserves.Finite
 This file keeps the two roles of coproducts explicit:
 
 * the value category has finite coproducts and its cartesian tensor distributes over them;
-* the computation category has finite coproducts of arbitrary computation morphisms, with
-  central injections, and its premonoidal tensor distributes over them;
+* the computation category has finite coproducts of arbitrary computation morphisms, and its
+  premonoidal tensor distributes over them;
 * the value-to-computation functor preserves finite coproducts.
 
 Crucially, distributivity uses only one-variable whiskering.  It does not assert an interchange
@@ -98,27 +98,21 @@ scoped notation "∂L" => DistributiveTensor.leftIso
 
 end DistributiveTensor
 
-/-- Distributive premonoidal computations additionally require the coproduct injections to be
-central.  This is exactly what lets case distinctions count as pure structural control flow. -/
+/-- A distributive premonoidal category has finite coproducts and a tensor that distributes over
+them.  We deliberately do not require Mathlib's globally selected coproduct injections to be
+central: centrality is not invariant under twisting a colimit cocone by a noncentral
+automorphism, hence such a requirement would depend on an opaque choice of colimit witness. -/
 class DistributivePremonoidalCategory (C : Type u₁) [Category.{v₁} C]
-    [PremonoidalCategory C] [HasFiniteCoproducts C] : Prop extends DistributiveTensor C where
-  inl_central {X Y : C} :
-    PremonoidalCategory.IsCentral (coprod.inl : X ⟶ X ⨿ Y) := by cat_disch
-  inr_central {X Y : C} :
-    PremonoidalCategory.IsCentral (coprod.inr : Y ⟶ X ⨿ Y) := by cat_disch
+    [PremonoidalCategory C] [HasFiniteCoproducts C] : Prop extends DistributiveTensor C
+
+instance distributivePremonoidalCategoryOfTensor (C : Type u₁) [Category.{v₁} C]
+    [PremonoidalCategory C] [HasFiniteCoproducts C] [DistributiveTensor C] :
+    DistributivePremonoidalCategory C := {}
 
 namespace DistributivePremonoidalCategory
 
 variable {C : Type u₁} [Category.{v₁} C] [PremonoidalCategory C]
   [HasFiniteCoproducts C] [DistributivePremonoidalCategory C]
-
-theorem central_inl {X Y : C} :
-    PremonoidalCategory.IsCentral (coprod.inl : X ⟶ X ⨿ Y) :=
-  DistributivePremonoidalCategory.inl_central
-
-theorem central_inr {X Y : C} :
-    PremonoidalCategory.IsCentral (coprod.inr : Y ⟶ X ⨿ Y) :=
-  DistributivePremonoidalCategory.inr_central
 
 section Symmetric
 
@@ -213,6 +207,33 @@ variable {V : Type u₁} {C : Type u₂}
 
 instance : PreservesFiniteCoproducts J :=
   DistributiveFreydCategory.preservesFiniteCoproducts
+
+/-- The pure binary coproduct cocone in the computation category.  Unlike the globally selected
+computation coproduct cocone, its injections are visibly images of value morphisms. -/
+noncomputable def pureBinaryCofan (X Y : V) :=
+  J.mapCocone (BinaryCofan.mk (coprod.inl : X ⟶ X ⨿ Y)
+    (coprod.inr : Y ⟶ X ⨿ Y))
+
+/-- The pure binary cocone is a coproduct because the Freyd inclusion preserves finite
+coproducts. -/
+noncomputable def pureBinaryCofanIsColimit (X Y : V) :
+    IsColimit (pureBinaryCofan J X Y) := by
+  exact isColimitOfPreserves J (coprodIsCoprod X Y)
+
+/-- The left injection of the pure computation coproduct cocone is central. -/
+theorem pure_inl_central (X Y : V) :
+    PremonoidalCategory.IsCentral
+      ((pureBinaryCofan J X Y).ι.app (Discrete.mk WalkingPair.left)) := by
+  simpa [pureBinaryCofan] using
+    FreydCategory.image_central J (coprod.inl : X ⟶ X ⨿ Y)
+
+/-- The right injection of the pure computation coproduct cocone is central. -/
+theorem pure_inr_central (X Y : V) :
+    PremonoidalCategory.IsCentral
+      ((pureBinaryCofan J X Y).ι.app (Discrete.mk WalkingPair.right)) :=
+  by
+    simpa [pureBinaryCofan] using
+      FreydCategory.image_central J (coprod.inr : Y ⟶ X ⨿ Y)
 
 end DistributiveFreydCategory
 
