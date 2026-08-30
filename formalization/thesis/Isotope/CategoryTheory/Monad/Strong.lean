@@ -59,6 +59,48 @@ theorem costrength_unit [SymmetricCategory C] (X Y : C) :
   slice_lhs 2 3 => exact (T.η.naturality (BraidedCategory.braiding Y X).hom).symm
   simp
 
+theorem costrength_naturality_left [SymmetricCategory C] {X X' : C}
+    (f : X ⟶ X') (Y : C) :
+    (T.map f ▷ Y) ≫ costrength T X' Y = costrength T X Y ≫ T.map (f ▷ Y) := by
+  rw [costrength_def, costrength_def,
+    BraidedCategory.braiding_naturality_left_assoc]
+  rw [Monad.Strong.naturality_right_assoc]
+  simp only [Category.assoc]
+  rw [← Functor.map_comp, BraidedCategory.braiding_naturality_right]
+  simp only [Functor.map_comp]
+
+theorem costrength_naturality_right [SymmetricCategory C] (X : C) {Y Y' : C}
+    (f : Y ⟶ Y') :
+    (T.obj X ◁ f) ≫ costrength T X Y' = costrength T X Y ≫ T.map (X ◁ f) := by
+  rw [costrength_def, costrength_def,
+    BraidedCategory.braiding_naturality_right_assoc]
+  rw [Monad.Strong.naturality_left_assoc]
+  simp only [Category.assoc]
+  rw [← Functor.map_comp, BraidedCategory.braiding_naturality_left]
+  simp only [Functor.map_comp]
+
+theorem costrength_multiplication [SymmetricCategory C] (X Y : C) :
+    (T.μ.app X ▷ Y) ≫ costrength T X Y =
+      costrength T (T.obj X) Y ≫ T.map (costrength T X Y) ≫ T.μ.app (X ⊗ Y) := by
+  rw [costrength_def, costrength_def,
+    BraidedCategory.braiding_naturality_left_assoc]
+  have hmul := Monad.Strong.multiplication_assoc (T := T) Y X
+    (T.map (BraidedCategory.braiding Y X).hom)
+  slice_lhs 2 4 => exact hmul
+  have hnat := (T.μ.naturality (BraidedCategory.braiding Y X).hom).symm
+  slice_lhs 4 5 => exact hnat
+  rw [Functor.map_comp]
+  simp only [Category.assoc]
+  simp only [Functor.comp_obj, Functor.comp_map]
+  have hcancel :
+      T.map (BraidedCategory.braiding Y (T.obj X)).hom ≫
+        T.map (BraidedCategory.braiding (T.obj X) Y).hom = 𝟙 _ := by
+    rw [← Functor.map_comp, SymmetricCategory.symmetry, Functor.map_id]
+  slice_rhs 3 4 => exact hcancel
+  simp only [Category.id_comp]
+  rw [Functor.map_comp]
+  simp only [Category.assoc]
+
 end Monad.Strong
 
 end CategoryTheory

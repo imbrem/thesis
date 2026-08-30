@@ -63,6 +63,18 @@ theorem id_whiskerRight (X Y : Kleisli T) : 𝟙 X ▷ Y = 𝟙 (X ⊗ Y) := by
   dsimp [whiskerRight]
   exact Monad.Strong.costrength_unit T X.of Y.of
 
+theorem comp_whiskerRight {X Y Z : Kleisli T} (f : X ⟶ Y) (g : Y ⟶ Z)
+    (W : Kleisli T) : (f ≫ g) ▷ W = f ▷ W ≫ g ▷ W := by
+  apply Kleisli.hom_ext
+  dsimp [whiskerRight]
+  rw [MonoidalCategory.comp_whiskerRight f.of (T.map g.of ≫ T.μ.app Z.of) W.of]
+  rw [MonoidalCategory.comp_whiskerRight (T.map g.of) (T.μ.app Z.of) W.of]
+  simp only [Category.assoc]
+  have hmul := Monad.Strong.costrength_multiplication (T := T) Z.of W.of
+  slice_lhs 3 4 => exact hmul
+  rw [Monad.Strong.costrength_naturality_left_assoc]
+  simp only [Functor.map_comp, Category.assoc]
+
 end Kleisli
 
 end CategoryTheory
