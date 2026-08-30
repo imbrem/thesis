@@ -83,6 +83,21 @@ namespace PremonoidalCategory
 
 variable {C : Type u} [Category.{v} C] [PremonoidalCategory C]
 
+/-- Tensor an isomorphism on the right. This remains an isomorphism because right whiskering is
+functorial, independently of any exchange law. -/
+def whiskerRightIso {X Y : C} (e : X ≅ Y) (Z : C) : X ⊗ Z ≅ Y ⊗ Z where
+  hom := e.hom ▷ Z
+  inv := e.inv ▷ Z
+  hom_inv_id := by rw [← PremonoidalCategory.comp_whiskerRight, e.hom_inv_id]; simp
+  inv_hom_id := by rw [← PremonoidalCategory.comp_whiskerRight, e.inv_hom_id]; simp
+
+/-- Tensor an isomorphism on the left. -/
+def whiskerLeftIso (X : C) {Y Z : C} (e : Y ≅ Z) : X ⊗ Y ≅ X ⊗ Z where
+  hom := X ◁ e.hom
+  inv := X ◁ e.inv
+  hom_inv_id := by rw [← PremonoidalCategory.whiskerLeft_comp, e.hom_inv_id]; simp
+  inv_hom_id := by rw [← PremonoidalCategory.whiskerLeft_comp, e.inv_hom_id]; simp
+
 @[simp] theorem leftTensor_id (X Y : C) : (𝟙 X) ⋉ (𝟙 Y) = 𝟙 (X ⊗ Y) := by
   simp [leftTensor]
 
@@ -111,6 +126,32 @@ theorem IsCentral.comp {X Y Z : C} {f : X ⟶ Y} {g : Y ⟶ Z}
     simp only [leftTensor, rightTensor, PremonoidalCategory.whiskerLeft_comp,
       Category.assoc]
     rw [← Category.assoc, hf', Category.assoc, hg']
+
+/-- The inverse of a central isomorphism is central. -/
+theorem IsCentral.inv {X Y : C} (e : X ≅ Y) (h : IsCentral e.hom) : IsCentral e.inv := by
+  constructor
+  · intro X' Y' g
+    apply (cancel_epi (whiskerRightIso e X').hom).1
+    change e.hom ▷ X' ≫ (e.inv ▷ X' ≫ X ◁ g) =
+      e.hom ▷ X' ≫ (Y ◁ g ≫ e.inv ▷ Y')
+    have he : e.hom ▷ X' ≫ Y ◁ g = X ◁ g ≫ e.hom ▷ Y' := by
+      simpa only [leftTensor, rightTensor] using h.1 g
+    rw [← Category.assoc, ← PremonoidalCategory.comp_whiskerRight, e.hom_inv_id]
+    simp only [PremonoidalCategory.id_whiskerRight, Category.id_comp]
+    rw [← Category.assoc, he, Category.assoc, ← PremonoidalCategory.comp_whiskerRight,
+      e.hom_inv_id]
+    simp
+  · intro X' Y' g
+    apply (cancel_mono (whiskerLeftIso Y' e).hom).1
+    change (g ▷ Y ≫ Y' ◁ e.inv) ≫ Y' ◁ e.hom =
+      (X' ◁ e.inv ≫ g ▷ X) ≫ Y' ◁ e.hom
+    have he : g ▷ X ≫ Y' ◁ e.hom = X' ◁ e.hom ≫ g ▷ Y := by
+      simpa only [leftTensor, rightTensor] using h.2 g
+    rw [Category.assoc, ← PremonoidalCategory.whiskerLeft_comp, e.inv_hom_id]
+    simp only [PremonoidalCategory.whiskerLeft_id, Category.comp_id]
+    rw [Category.assoc, he, ← Category.assoc, ← PremonoidalCategory.whiskerLeft_comp,
+      e.inv_hom_id]
+    simp
 
 end PremonoidalCategory
 
