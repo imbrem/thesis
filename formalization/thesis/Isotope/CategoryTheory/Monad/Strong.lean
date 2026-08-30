@@ -79,6 +79,15 @@ theorem costrength_naturality_right [SymmetricCategory C] (X : C) {Y Y' : C}
   rw [← Functor.map_comp, BraidedCategory.braiding_naturality_left]
   simp only [Functor.map_comp]
 
+theorem costrength_right_unitality [SymmetricCategory C] (X : C) :
+    costrength T X (𝟙_ C) ≫ T.map (ρ_ X).hom = (ρ_ (T.obj X)).hom := by
+  rw [costrength_def]
+  simp only [Category.assoc, ← Functor.map_comp]
+  simp only [braiding_tensorUnit_right, braiding_tensorUnit_left, Category.assoc,
+    Iso.inv_hom_id, Category.comp_id]
+  rw [Monad.Strong.left_unitality]
+  simp
+
 theorem costrength_multiplication [SymmetricCategory C] (X Y : C) :
     (T.μ.app X ▷ Y) ≫ costrength T X Y =
       costrength T (T.obj X) Y ≫ T.map (costrength T X Y) ≫ T.μ.app (X ⊗ Y) := by
@@ -102,7 +111,7 @@ theorem costrength_multiplication [SymmetricCategory C] (X Y : C) :
   simp only [Category.assoc]
 
 attribute [reassoc] costrength_unit costrength_naturality_left
-  costrength_naturality_right costrength_multiplication
+  costrength_naturality_right costrength_right_unitality costrength_multiplication
 
 end Monad.Strong
 

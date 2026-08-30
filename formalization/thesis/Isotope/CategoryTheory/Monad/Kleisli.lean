@@ -175,6 +175,32 @@ theorem associator_naturality_right (X Y : Kleisli T) {Z W : Kleisli T}
   rw [← Monad.Strong.associativity]
   rw [MonoidalCategory.associator_naturality_right_assoc]
 
+theorem leftUnitor_naturality {X Y : Kleisli T} (f : X ⟶ Y) :
+    𝟙_ (Kleisli T) ◁ f ≫ (λ_ Y).hom = (λ_ X).hom ≫ f := by
+  apply Kleisli.hom_ext
+  change ((𝟙_ (Kleisli T) ◁ f) ≫
+      (Kleisli.Adjunction.toKleisli T).map (λ_ Y.of).hom).of = _
+  rw [comp_toKleisli_map]
+  change _ = ((Kleisli.Adjunction.toKleisli T).map (λ_ X.of).hom ≫ f).of
+  rw [toKleisli_map_comp]
+  dsimp [whiskerLeft]
+  have hunit := Monad.Strong.left_unitality (T := T) Y.of
+  slice_lhs 2 3 => exact hunit
+  rw [MonoidalCategory.leftUnitor_naturality]
+
+theorem rightUnitor_naturality {X Y : Kleisli T} (f : X ⟶ Y) :
+    f ▷ 𝟙_ (Kleisli T) ≫ (ρ_ Y).hom = (ρ_ X).hom ≫ f := by
+  apply Kleisli.hom_ext
+  change ((f ▷ 𝟙_ (Kleisli T)) ≫
+      (Kleisli.Adjunction.toKleisli T).map (ρ_ Y.of).hom).of = _
+  rw [comp_toKleisli_map]
+  change _ = ((Kleisli.Adjunction.toKleisli T).map (ρ_ X.of).hom ≫ f).of
+  rw [toKleisli_map_comp]
+  dsimp [whiskerRight]
+  have hunit := Monad.Strong.costrength_right_unitality (T := T) Y.of
+  slice_lhs 2 3 => exact hunit
+  rw [MonoidalCategory.rightUnitor_naturality]
+
 end Kleisli
 
 end CategoryTheory
