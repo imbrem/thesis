@@ -313,6 +313,56 @@ theorem codiagonal_comparison {X Y : Kleisli (TM m)} :
     rw [inr_coprodIsoSum_hom, Category.id_comp]
     exact hr.symm
 
+theorem iterate_codiagonal [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+    {X Y : Kleisli (TM m)} (f : X ⟶ (Y ⨿ X) ⨿ X) :
+    iterate (iterate f) =
+      iterate (f ≫ coprod.desc (𝟙 (Y ⨿ X)) (coprod.inr : X ⟶ Y ⨿ X)) := by
+  let b := (coprodIsoSum m Y X).hom
+  let S := Kleisli.mk (TM m) (Y.of ⊕ X.of)
+  let t := f ≫ coprod.map b (𝟙 X)
+  let r := (t ≫ (coprodIsoSum m S X).hom).of
+  have hr : r = Isotope.Elgot.mapReturn (m := m)
+      (f ≫ (coprodIsoSum m (Y ⨿ X) X).hom).of b.of := by
+    change ((f ≫ coprod.map (coprodIsoSum m Y X).hom (𝟙 X)) ≫
+      (coprodIsoSum m (Kleisli.mk (TM m) (Y.of ⊕ X.of)) X).hom).of = _
+    have h := congrArg Kleisli.Hom.of
+      (show (f ≫ coprod.map (coprodIsoSum m Y X).hom (𝟙 X)) ≫
+          (coprodIsoSum m (Kleisli.mk (TM m) (Y.of ⊕ X.of)) X).hom =
+        (f ≫ (coprodIsoSum m (Y ⨿ X) X).hom) ≫ Kleisli.Hom.mk
+          (Sum.elim
+            (Isotope.Elgot.kcomp (m := m) (coprodIsoSum m Y X).hom.of
+              (Isotope.Elgot.liftPure (m := m) (Sum.inl : (Y.of ⊕ X.of) → (Y.of ⊕ X.of) ⊕ X.of)))
+            (Isotope.Elgot.liftPure (m := m) (Sum.inr : X.of → (Y.of ⊕ X.of) ⊕ X.of))) by
+          simp only [Category.assoc, coprodMap_coprodIsoSum_hom])
+    rw [h, comp_of_eq_kcomp]
+    rfl
+  apply Kleisli.hom_ext
+  rw [iterate_of, iterate_of]
+  have hn := Isotope.Elgot.LawfulElgotMonad.naturality (m := m)
+    (f ≫ (coprodIsoSum m (Y ⨿ X) X).hom).of b.of
+  rw [← hr] at hn
+  have hc := Isotope.Elgot.LawfulElgotMonad.codiagonal (m := m) r
+  have hp : (iterate f ≫ b).of = Isotope.Elgot.iter (m := m) r := by
+    rw [comp_of_eq_kcomp, iterate_of]
+    exact hn
+  rw [hp, hc]
+  have hcmp :
+      (f ≫ coprod.desc (𝟙 (Y ⨿ X)) (coprod.inr : X ⟶ Y ⨿ X)) ≫ b =
+        (t ≫ (coprodIsoSum m S X).hom) ≫
+          Kleisli.Hom.mk (Isotope.Elgot.liftPure (m := m)
+            (Isotope.Elgot.flatten (A := X.of) (B := Y.of))) := by
+    dsimp [t, b, S]
+    simp only [Category.assoc, codiagonal_comparison]
+  rw [congrArg Kleisli.Hom.of hcmp]
+  rw [comp_of_eq_kcomp]
+  rfl
+
+noncomputable instance elgotCategory [Isotope.Elgot.Iterate m]
+    [Isotope.Elgot.LawfulElgotMonad m] : ElgotCategory (Kleisli (TM m)) where
+  fixpoint := iterate_fixpoint m
+  naturality := iterate_naturality m
+  codiagonal := iterate_codiagonal m
+
 end Kleisli.Type
 
 end CategoryTheory
