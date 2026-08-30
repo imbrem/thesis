@@ -77,6 +77,20 @@ instance hasInitial : HasInitial (Kleisli (TM m)) :=
 instance hasFiniteCoproducts : HasFiniteCoproducts (Kleisli (TM m)) :=
   hasFiniteCoproducts_of_has_binary_and_initial
 
+/-- Comparison between Mathlib's selected Kleisli coproduct and the objectwise sum cocone. -/
+noncomputable def coprodIsoSum (X Y : Kleisli (TM m)) :
+    X ⨿ Y ≅ Kleisli.mk (TM m) (X.of ⊕ Y.of) :=
+  (coprodIsCoprod X Y).coconePointUniqueUpToIso (binaryCofanIsColimit m X Y)
+
+noncomputable instance iteration [Isotope.Elgot.Iterate m] : Iteration (Kleisli (TM m)) where
+  iterate f := Kleisli.Hom.mk
+    (Isotope.Elgot.iter (m := m) (f ≫ (coprodIsoSum m _ _).hom).of)
+
+@[simp] theorem iterate_of [Isotope.Elgot.Iterate m]
+    {X Y : Kleisli (TM m)} (f : X ⟶ Y ⨿ X) :
+    (CategoryTheory.iterate f).of =
+      Isotope.Elgot.iter (m := m) (f ≫ (coprodIsoSum m Y X).hom).of := rfl
+
 end Kleisli.Type
 
 end CategoryTheory
