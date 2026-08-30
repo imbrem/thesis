@@ -363,6 +363,52 @@ noncomputable instance elgotCategory [Isotope.Elgot.Iterate m]
   naturality := iterate_naturality m
   codiagonal := iterate_codiagonal m
 
+theorem coprodMap_pureRight_comparison {A D : Type u} {B : Kleisli (TM m)}
+    (h : A → D) :
+    coprod.map (𝟙 B) ((Kleisli.Adjunction.toKleisli (TM m)).map h) ≫
+        (coprodIsoSum m B (Kleisli.mk (TM m) D)).hom =
+      (coprodIsoSum m B (Kleisli.mk (TM m) A)).hom ≫
+        (Kleisli.Adjunction.toKleisli (TM m)).map (Sum.map id h) := by
+  apply coprod.hom_ext
+  · simp only [Category.assoc, coprod.inl_map, inl_coprodIsoSum_hom_assoc]
+    apply Kleisli.hom_ext
+    funext b
+    simp [binaryCofan, Kleisli.Adjunction.toKleisli]
+  · simp only [Category.assoc, coprod.inr_map, inr_coprodIsoSum_hom_assoc]
+    apply Kleisli.hom_ext
+    funext a
+    simp [binaryCofan, Kleisli.Adjunction.toKleisli]
+
+noncomputable instance elgotFreydCategory [Isotope.Elgot.Iterate m]
+    [Isotope.Elgot.LawfulElgotMonad m] :
+    ElgotFreydCategory (Kleisli.Adjunction.toKleisli (TM m)) where
+  uniformity f g h comm := by
+    apply Kleisli.hom_ext
+    rw [iterate_of]
+    conv_rhs => rw [comp_of_eq_kcomp, iterate_of]
+    apply Isotope.Elgot.LawfulElgotMonad.uniformity (m := m)
+    have hcat :
+        (f ≫ (coprodIsoSum m _ _).hom) ≫
+            (Kleisli.Adjunction.toKleisli (TM m)).map (Sum.map id h) =
+          (Kleisli.Adjunction.toKleisli (TM m)).map h ≫
+            (g ≫ (coprodIsoSum m _ _).hom) := by
+      calc
+        _ = (f ≫ coprod.map (𝟙 _)
+              ((Kleisli.Adjunction.toKleisli (TM m)).map h)) ≫
+              (coprodIsoSum m _ _).hom := by
+                simpa only [Category.assoc] using congrArg (f ≫ ·)
+                  (coprodMap_pureRight_comparison m h).symm
+        _ = ((Kleisli.Adjunction.toKleisli (TM m)).map h ≫ g) ≫
+              (coprodIsoSum m _ _).hom := by rw [comm]
+        _ = _ := Category.assoc _ _ _
+    have hc := congrArg Kleisli.Hom.of hcat
+    conv_lhs at hc => rw [comp_of_eq_kcomp]
+    conv_rhs at hc => rw [comp_of_eq_kcomp]
+    change Isotope.Elgot.kcomp (m := m) _
+        (Isotope.Elgot.liftPure (m := m) (Sum.map id h)) =
+      Isotope.Elgot.kcomp (m := m) (Isotope.Elgot.liftPure (m := m) h) _ at hc
+    exact hc
+
 end Kleisli.Type
 
 end CategoryTheory
