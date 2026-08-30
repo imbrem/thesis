@@ -20,7 +20,9 @@ inductive Pure (pureEff : ε) : Tm ν Φ → Prop where
   | inr : Pure pureEff a → Pure pureEff (.inr a)
   | case : Pure pureEff e → Pure pureEff a → Pure pureEff b → Pure pureEff (.case e x a y b)
   | abort : Pure pureEff a → Pure pureEff (.abort a)
-  | iter : Pure pureEff a → Pure pureEff b → Pure pureEff (.iter a x b)
+  /- Iteration is deliberately absent. Even when its initializer and body use
+  only pure instructions, Elgot iteration can diverge, so an abstract Elgot
+  model cannot in general regard the resulting computation as a pure map. -/
 
 /-- Raw axiom schemes. `Eqv.ax` below additionally requires both sides to have
 the displayed type, making every scheme a typed equation. -/
@@ -30,42 +32,45 @@ inductive Axiom (pureEff : ε) : Tm ν Φ → Tm ν Φ → Prop where
   | letEta : Axiom pureEff (.let₁ (some x) a (.var x)) a
   | unitEta : Axiom pureEff (.let₁ x a .unit) a
   | empty : Axiom pureEff (.let₁ x (.abort a) b) (.let₁ x (.abort a) b')
-  | pairBeta :
+  | pairBeta (hfresh : ¬b.Free x) :
       Axiom pureEff (.let₂ (some x) (some y) (.pair a b) c)
         (.let₁ (some x) a (.let₁ (some y) b c))
-  | pairEta : Axiom pureEff (.let₂ (some x) (some y) a (.pair (.var x) (.var y))) a
+  | pairEta (hne : x ≠ y) :
+      Axiom pureEff (.let₂ (some x) (some y) a (.pair (.var x) (.var y))) a
   | caseBetaL :
       Axiom pureEff (.case (.inl e) (some x) a (some y) b) (.let₁ (some x) e a)
   | caseBetaR :
       Axiom pureEff (.case (.inr e) (some x) a (some y) b) (.let₁ (some y) e b)
   | caseEta :
       Axiom pureEff (.case e (some x) (.inl (.var x)) (some y) (.inr (.var y))) e
-  | letOp :
+  | letOp (hfresh : ¬c.Free x) :
       Axiom pureEff (.let₁ (some y) (.op f a) c)
         (.let₁ (some x) a (.let₁ (some y) (.op f (.var x)) c))
-  | letLet :
+  | letLet (hfresh : ∀ w, x = some w → ¬c.Free w) :
       Axiom pureEff (.let₁ y (.let₁ x a b) c) (.let₁ x a (.let₁ y b c))
-  | letLet₂ :
+  | letLet₂ (hfreshX : ∀ w, x = some w → ¬d.Free w)
+      (hfreshY : ∀ w, y = some w → ¬d.Free w) :
       Axiom pureEff (.let₁ z (.let₂ x y e c) d) (.let₂ x y e (.let₁ z c d))
-  | letCase :
+  | letCase (hfreshX : ∀ w, x = some w → ¬d.Free w)
+      (hfreshY : ∀ w, y = some w → ¬d.Free w) :
       Axiom pureEff (.let₁ z (.case e x a y b) d)
         (.case e x (.let₁ z a d) y (.let₁ z b d))
-  | let₂Bind :
+  | let₂Bind (hfresh : ¬c.Free z) :
       Axiom pureEff (.let₂ x y a c) (.let₁ (some z) a (.let₂ x y (.var z) c))
-  | caseBind :
+  | caseBind (hfreshL : ¬a.Free z) (hfreshR : ¬b.Free z) :
       Axiom pureEff (.case e x a y b) (.let₁ (some z) e (.case (.var z) x a y b))
-  | iterUnfold :
+  | iterUnfold (hfresh : ¬b.Free z) :
       Axiom pureEff (.iter a (some x) b)
         (.let₁ (some x) a
           (.case b (some y) (.var y) (some z) (.iter (.var z) (some x) b)))
-  | iterNaturality :
+  | iterNaturality (hfresh : ¬c.Free x) :
       Axiom pureEff (.let₁ (some y) (.iter a (some x) b) c)
         (.iter a (some x)
           (.case b (some y) (.inl c) (some z) (.inr (.var z))))
-  | iterCodiagonal :
+  | iterCodiagonal (hfresh : ¬b.Free y) :
       Axiom pureEff (.iter a (some x) (.iter (.var x) (some y) b))
-        (.iter a (some y) (.case b (some x) (.var x) (some z) (.inr (.var z))))
-  | iterBind :
+        (.iter a (some x) (.case b (some y) (.var y) (some z) (.inr (.var z))))
+  | iterBind (hfresh : ¬b.Free y) :
       Axiom pureEff (.iter a (some x) b)
         (.let₁ (some y) a (.iter (.var y) (some x) b))
   /- Pure let-distribution. Together with `letEta`, these are the thesis's
@@ -83,19 +88,25 @@ inductive Axiom (pureEff : ε) : Tm ν Φ → Tm ν Φ → Prop where
       Axiom pureEff (.let₁ (some x) e (.inl a)) (.inl (.let₁ (some x) e a))
   | pureLetInr (hp : Pure pureEff e) :
       Axiom pureEff (.let₁ (some x) e (.inr b)) (.inr (.let₁ (some x) e b))
-  | pureLetLet (hp : Pure pureEff e) :
+  | pureLetLet (hp : Pure pureEff e)
+      (hfresh : ∀ w, y = some w → ¬e.Free w) :
       Axiom pureEff (.let₁ (some x) e (.let₁ y a b))
         (.let₁ y (.let₁ (some x) e a) (.let₁ (some x) e b))
-  | pureLetLet₂ (hp : Pure pureEff e) :
+  | pureLetLet₂ (hp : Pure pureEff e)
+      (hfreshY : ∀ w, y = some w → ¬e.Free w)
+      (hfreshZ : ∀ w, z = some w → ¬e.Free w) :
       Axiom pureEff (.let₁ (some x) e (.let₂ y z a b))
         (.let₂ y z (.let₁ (some x) e a) (.let₁ (some x) e b))
-  | pureLetCase (hp : Pure pureEff e) :
+  | pureLetCase (hp : Pure pureEff e)
+      (hfreshY : ∀ w, y = some w → ¬e.Free w)
+      (hfreshZ : ∀ w, z = some w → ¬e.Free w) :
       Axiom pureEff (.let₁ (some x) e (.case a y b z c))
         (.case (.let₁ (some x) e a) y (.let₁ (some x) e b)
           z (.let₁ (some x) e c))
   | pureLetAbort (hp : Pure pureEff e) :
       Axiom pureEff (.let₁ (some x) e (.abort a)) (.abort (.let₁ (some x) e a))
-  | pureLetIter (hp : Pure pureEff e) :
+  | pureLetIter (hp : Pure pureEff e)
+      (hfresh : ∀ w, y = some w → ¬e.Free w) :
       Axiom pureEff (.let₁ (some x) e (.iter a y b))
         (.iter (.let₁ (some x) e a) y (.let₁ (some x) e b))
 
@@ -128,13 +139,18 @@ inductive Eqv (pureEff : ε) : Ctx ν τ → Tm ν Φ → Tm ν Φ → τ → Pr
       Eqv pureEff Γ a b A
   | alpha (hab : Alpha a b) (ha : HasType Γ a A) (hb : HasType Γ b A) :
       Eqv pureEff Γ a b A
-  /-- Uniformity includes the thesis's purity side condition on the comparison. -/
+  /-- Uniformity includes the thesis's purity side condition on the comparison.
+  In the continuation branch the comparison is applied to the value named `z`;
+  using `h` unchanged here would incorrectly denote `h x`. -/
   | uniformity (hp : Pure pureEff h)
       (ha : HasType Γ a A)
       (hh : HasType (.snoc Γ (some x) A) h A')
+      (hcapture : CaptureSafe (.var z) h)
+      (hcapture' : CaptureSafe h b')
       (hsquare : Eqv pureEff (.snoc Γ (some x) A)
-        (.case b (some y) (.inl (.var y)) (some z) (.inr h))
-        (Tm.subst x' h b') (coprod B A')) :
+        (.case b (some y) (.inl (.var y)) (some z)
+          (.inr (Tm.substSafe x (.var z) h hcapture)))
+        (Tm.substSafe x' h b' hcapture') (coprod B A')) :
       Eqv pureEff Γ (.iter a (some x) b)
         (.iter (.let₁ (some x) a h) (some x') b') B
   | sub (h : Eqv pureEff Γ a b A) (hAB : Subty A B) : Eqv pureEff Γ a b B

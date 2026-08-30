@@ -44,6 +44,14 @@ def lift (t : Tm ν Φ n) : Tm ν Φ (n + 1) := rename Fin.succ t
 def underBinder (t : Tm ν Φ (n + 1)) : Tm ν Φ (n + 2) :=
   rename (Fin.cases 0 (fun i => Fin.succ (Fin.succ i))) t
 
+/-- The newest variable of a one-binder term is redirected to the new binder,
+not to the binder underneath it.  This is the scoping fact used by the
+uniformity square: under the continuation branch, `underBinder h` denotes
+`h z`, rather than `h x`. -/
+@[simp] theorem underBinder_bv_zero :
+    underBinder (ν := ν) (Φ := Φ) (.bv (0 : Fin (n + 1))) =
+      .bv (0 : Fin (n + 2)) := rfl
+
 /-- Insert one ambient binder under the top two binders. -/
 def underTwoBinders (t : Tm ν Φ (n + 2)) : Tm ν Φ (n + 3) :=
   rename (Fin.cases 0 (Fin.cases 1 (fun i => Fin.succ (Fin.succ (Fin.succ i))))) t

@@ -104,6 +104,8 @@ inductive Pure [HasEff Φ ε] (pureEff : ε) : {n : Nat} → Tm ν Φ n → Prop
   | inr : Pure pureEff a → Pure pureEff (.inr a)
   | case : Pure pureEff e → Pure pureEff l → Pure pureEff r → Pure pureEff (.case e l r)
   | abort : Pure pureEff a → Pure pureEff (.abort a)
-  | iter : Pure pureEff a → Pure pureEff b → Pure pureEff (.iter a b)
+  /- Iteration is deliberately absent. A loop built from pure instructions may
+  still diverge, and hence is not necessarily in the pure subcategory of an
+  abstract Elgot model. -/
 
 end Isotope.LambdaIter.LocallyNameless

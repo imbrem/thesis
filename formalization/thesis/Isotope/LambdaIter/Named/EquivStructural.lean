@@ -26,9 +26,10 @@ theorem Eqv.strictWk (pureEff : ε) {Γ Δ : Ctx ν τ} {a b : Tm ν Φ} {A : τ
   | iter _ _ iha ihb => exact .iter (iha w hw) (ihb _ (hw.snoc _ _))
   | ax hax ha hb => exact .ax hax (ha.strictWk w hw) (hb.strictWk w hw)
   | alpha hab ha hb => exact .alpha hab (ha.strictWk w hw) (hb.strictWk w hw)
-  | uniformity hp ha hh _ ih =>
+  | uniformity hp ha hh hcapture hcapture' _ ih =>
       exact .uniformity hp (ha.strictWk w hw)
-        (hh.strictWk _ (hw.snoc _ _)) (ih _ (hw.snoc _ _))
+        (hh.strictWk _ (hw.snoc _ _)) hcapture hcapture'
+        (ih _ (hw.snoc _ _))
   | sub _ hAB ih => exact .sub (ih w hw) hAB
 
 theorem Eqv.wk (pureEff : ε) {Γ Δ : Ctx ν τ} {a b : Tm ν Φ} {A : τ}
@@ -50,9 +51,10 @@ theorem Eqv.wk (pureEff : ε) {Γ Δ : Ctx ν τ} {a b : Tm ν Φ} {A : τ}
   | iter _ _ iha ihb => exact .iter (iha w hw) (ihb _ (hw.snoc _ _))
   | ax hax ha hb => exact .ax hax (ha.wk w hw) (hb.wk w hw)
   | alpha hab ha hb => exact .alpha hab (ha.wk w hw) (hb.wk w hw)
-  | uniformity hp ha hh _ ih =>
+  | uniformity hp ha hh hcapture hcapture' _ ih =>
       exact .uniformity hp (ha.wk w hw)
-        (hh.wk _ (hw.snoc _ _)) (ih _ (hw.snoc _ _))
+        (hh.wk _ (hw.snoc _ _)) hcapture hcapture'
+        (ih _ (hw.snoc _ _))
   | sub _ hAB ih => exact .sub (ih w hw) hAB
 
 theorem Eqv.lookupEq (pureEff : ε) {Γ Δ : Ctx ν τ} {a b : Tm ν Φ} {A : τ}
@@ -80,9 +82,10 @@ theorem Eqv.lookupEq (pureEff : ε) {Γ Δ : Ctx ν τ} {a b : Tm ν Φ} {A : τ
       exact .iter (iha heq) (ihb (lookup_snoc_eq heq _ _))
   | ax hax ha hb => exact .ax hax (ha.lookupEq heq) (hb.lookupEq heq)
   | alpha hab ha hb => exact .alpha hab (ha.lookupEq heq) (hb.lookupEq heq)
-  | uniformity hp ha hh _ ih =>
+  | uniformity hp ha hh hcapture hcapture' _ ih =>
       exact .uniformity hp (ha.lookupEq heq)
         (hh.lookupEq (lookup_snoc_eq heq _ _))
+        hcapture hcapture'
         (ih (lookup_snoc_eq heq _ _))
   | sub _ hAB ih => exact .sub (ih heq) hAB
 
