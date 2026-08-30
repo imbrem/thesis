@@ -82,6 +82,9 @@ noncomputable def leftIso (X Y Z : C) :
     (X ⊗ Y) ⨿ (X ⊗ Z) ≅ X ⊗ (Y ⨿ Z) :=
   asIso (leftHom X Y Z)
 
+/-- Conventional notation for the left distributor isomorphism. -/
+scoped notation "∂L" => DistributiveTensor.leftIso
+
 end DistributiveTensor
 
 /-- Distributive premonoidal computations additionally require the coproduct injections to be
@@ -105,6 +108,74 @@ theorem central_inl {X Y : C} :
 theorem central_inr {X Y : C} :
     PremonoidalCategory.IsCentral (coprod.inr : Y ⟶ X ⨿ Y) :=
   DistributivePremonoidalCategory.inr_central
+
+section Symmetric
+
+variable [SymmetricPremonoidalCategory C]
+
+/-- In a symmetric premonoidal category, right distributivity is obtained from left
+distributivity by conjugating with the braiding. -/
+noncomputable def rightIsoViaBraiding (X Y Z : C) :
+    (X ⊗ Z) ⨿ (Y ⊗ Z) ≅ (X ⨿ Y) ⊗ Z :=
+  (coprod.mapIso (BraidedPremonoidalCategory.braiding X Z)
+      (BraidedPremonoidalCategory.braiding Y Z)).trans
+    ((DistributiveTensor.leftIso Z X Y).trans
+      (BraidedPremonoidalCategory.braiding Z (X ⨿ Y)))
+
+@[reassoc] theorem rightIsoViaBraiding_hom (X Y Z : C) :
+    (rightIsoViaBraiding X Y Z).hom = DistributiveTensor.rightHom X Y Z := by
+  apply coprod.hom_ext
+  · calc
+      coprod.inl ≫ (rightIsoViaBraiding X Y Z).hom =
+          (BraidedPremonoidalCategory.braiding X Z).hom ≫
+            Z ◁ (coprod.inl : X ⟶ X ⨿ Y) ≫
+              (BraidedPremonoidalCategory.braiding Z (X ⨿ Y)).hom := by
+                simp [rightIsoViaBraiding, coprod.mapIso, DistributiveTensor.leftIso]
+      _ = (BraidedPremonoidalCategory.braiding X Z).hom ≫
+            (BraidedPremonoidalCategory.braiding Z X).hom ≫
+              (coprod.inl : X ⟶ X ⨿ Y) ▷ Z := by
+                rw [BraidedPremonoidalCategory.naturality_right]
+      _ = (coprod.inl : X ⟶ X ⨿ Y) ▷ Z := by simp
+      _ = coprod.inl ≫ DistributiveTensor.rightHom X Y Z :=
+        (DistributiveTensor.inl_rightHom X Y Z).symm
+  · calc
+      coprod.inr ≫ (rightIsoViaBraiding X Y Z).hom =
+          (BraidedPremonoidalCategory.braiding Y Z).hom ≫
+            Z ◁ (coprod.inr : Y ⟶ X ⨿ Y) ≫
+              (BraidedPremonoidalCategory.braiding Z (X ⨿ Y)).hom := by
+                simp [rightIsoViaBraiding, coprod.mapIso, DistributiveTensor.leftIso]
+      _ = (BraidedPremonoidalCategory.braiding Y Z).hom ≫
+            (BraidedPremonoidalCategory.braiding Z Y).hom ≫
+              (coprod.inr : Y ⟶ X ⨿ Y) ▷ Z := by
+                rw [BraidedPremonoidalCategory.naturality_right]
+      _ = (coprod.inr : Y ⟶ X ⨿ Y) ▷ Z := by simp
+      _ = coprod.inr ≫ DistributiveTensor.rightHom X Y Z :=
+        (DistributiveTensor.inr_rightHom X Y Z).symm
+
+instance rightHom_isIso (X Y Z : C) :
+    IsIso (DistributiveTensor.rightHom X Y Z) := by
+  rw [← rightIsoViaBraiding_hom]
+  infer_instance
+
+/-- The right distributor, derived rather than required as an independent law. -/
+noncomputable def rightIso (X Y Z : C) :
+    (X ⊗ Z) ⨿ (Y ⊗ Z) ≅ (X ⨿ Y) ⊗ Z :=
+  asIso (DistributiveTensor.rightHom X Y Z)
+
+/-- Conventional notation for the symmetry-derived right distributor isomorphism. -/
+scoped notation "∂R" => DistributivePremonoidalCategory.rightIso
+
+/-- Inverse of the left distributor, used to thread an environment into coproduct branches. -/
+noncomputable abbrev leftInv (X Y Z : C) :
+    X ⊗ (Y ⨿ Z) ⟶ (X ⊗ Y) ⨿ (X ⊗ Z) :=
+  (DistributiveTensor.leftIso X Y Z).inv
+
+/-- Inverse of the symmetry-derived right distributor. -/
+noncomputable abbrev rightInv (X Y Z : C) :
+    (X ⨿ Y) ⊗ Z ⟶ (X ⊗ Z) ⨿ (Y ⊗ Z) :=
+  (rightIso X Y Z).inv
+
+end Symmetric
 
 end DistributivePremonoidalCategory
 
