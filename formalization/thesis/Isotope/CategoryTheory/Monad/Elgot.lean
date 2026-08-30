@@ -409,6 +409,88 @@ noncomputable instance elgotFreydCategory [Isotope.Elgot.Iterate m]
       Isotope.Elgot.kcomp (m := m) (Isotope.Elgot.liftPure (m := m) h) _ at hc
     exact hc
 
+theorem threadedBody_of {X Y Z : Kleisli (TM m)} (f : X ⟶ Y ⨿ X) (z : Z.of) (x : X.of) :
+    (((Z ◁ f) ≫ DistributivePremonoidalCategory.leftInv Z Y X) ≫
+      (coprodIsoSum m (Z ⊗ Y) (Z ⊗ X)).hom).of (z, x) =
+      Isotope.Elgot.kcomp (m := m) (f ≫ (coprodIsoSum m Y X).hom).of
+        (Sum.elim
+          (fun y ↦ (pure (Sum.inl (z, y)) : m _))
+          (fun x' ↦ (pure (Sum.inr (z, x')) : m _))) x := by
+  have hi : DistributivePremonoidalCategory.leftInv Z Y X =
+      (kleisliLeftDistribIso m Z Y X).inv := by
+    have hiso : DistributiveTensor.leftIso Z Y X = kleisliLeftDistribIso m Z Y X := by
+      apply Iso.ext
+      exact (kleisliLeftDistribIso_hom m Z Y X).symm
+    exact congrArg Iso.inv hiso
+  rw [hi]
+  simp [kleisliLeftDistribIso, typeLeftDistribIso, coprodIsoSum,
+    PremonoidalCategory.whiskerLeftIso, Kleisli.whiskerLeft_of,
+    typeMonadStrength, ofTypeMonadStrong, Isotope.Elgot.kcomp,
+    joinM, bind_map_left, ← bind_pure_comp, bind_assoc]
+  congr 1
+  funext s
+  congr 1
+  funext a
+  cases a <;> rfl
+
+theorem iter_threaded [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+    {A B Z : Type u} (q : A → m (B ⊕ A)) (z : Z) (x : A) :
+    Isotope.Elgot.iter (m := m) (fun p : Z × A ↦ q p.2 >>= Sum.elim
+      (fun b ↦ (pure (Sum.inl (p.1, b)) : m _))
+      (fun a ↦ (pure (Sum.inr (p.1, a)) : m _))) (z, x) =
+      Isotope.Elgot.kcomp (m := m) (Isotope.Elgot.iter (m := m) q)
+        (Isotope.Elgot.liftPure (m := m) (Prod.mk z)) x := by
+  let F : Z × A → m ((Z × B) ⊕ (Z × A)) := fun p ↦ q p.2 >>= Sum.elim
+    (fun b ↦ pure (Sum.inl (p.1, b))) (fun a ↦ pure (Sum.inr (p.1, a)))
+  let g : A → m ((Z × B) ⊕ A) :=
+    Isotope.Elgot.mapReturn (m := m) q
+      (Isotope.Elgot.liftPure (m := m) (Prod.mk z))
+  have comm : Isotope.Elgot.kcomp (m := m) g
+      (Isotope.Elgot.liftPure (m := m) (Sum.map id (Prod.mk z))) =
+      Isotope.Elgot.kcomp (m := m) (Isotope.Elgot.liftPure (m := m) (Prod.mk z)) F := by
+    funext a
+    simp [g, F, Isotope.Elgot.mapReturn, Isotope.Elgot.kcomp,
+      Isotope.Elgot.liftPure, Function.comp_def, bind_assoc]
+    congr 1
+    funext s
+    cases s <;> simp
+  have hu := Isotope.Elgot.LawfulElgotMonad.uniformity (m := m) g F (Prod.mk z) comm
+  have hn := Isotope.Elgot.LawfulElgotMonad.naturality (m := m) q
+    (Isotope.Elgot.liftPure (m := m) (Prod.mk z))
+  change Isotope.Elgot.iter (m := m) F (z, x) = _
+  calc
+    _ = Isotope.Elgot.iter (m := m) g x := by
+      simpa [Isotope.Elgot.kcomp, Isotope.Elgot.liftPure, Function.comp_def] using
+        (congrFun hu x).symm
+    _ = _ := congrFun hn.symm x
+
+noncomputable instance strongElgotFreydCategory [Isotope.Elgot.Iterate m]
+    [Isotope.Elgot.LawfulElgotMonad m] :
+    StrongElgotFreydCategory (Kleisli.Adjunction.toKleisli (TM m)) where
+  iterate_whiskerLeft Z f := by
+    apply Kleisli.hom_ext
+    funext p
+    rw [iterate_of]
+    have hb :
+        (((Z ◁ f) ≫ DistributivePremonoidalCategory.leftInv Z _ _) ≫
+          (coprodIsoSum m (Z ⊗ _) (Z ⊗ _)).hom).of =
+        fun p : Z.of × _ ↦ Isotope.Elgot.kcomp (m := m)
+          (f ≫ (coprodIsoSum m _ _).hom).of
+          (Sum.elim
+            (fun y ↦ (pure (Sum.inl (p.1, y)) : m _))
+            (fun x ↦ (pure (Sum.inr (p.1, x)) : m _))) p.2 := by
+      funext p
+      exact threadedBody_of m f p.1 p.2
+    rw [hb]
+    rcases p with ⟨z, x⟩
+    change Isotope.Elgot.iter (m := m) (fun p ↦
+      (f ≫ (coprodIsoSum m _ _).hom).of p.2 >>= Sum.elim
+        (fun y ↦ (pure (Sum.inl (p.1, y)) : m _))
+        (fun x ↦ (pure (Sum.inr (p.1, x)) : m _))) (z, x) = _
+    rw [iter_threaded m]
+    simp [Kleisli.whiskerLeft_of, typeMonadStrength, Isotope.Elgot.kcomp,
+      Isotope.Elgot.liftPure, Function.comp_def]
+
 end Kleisli.Type
 
 end CategoryTheory
