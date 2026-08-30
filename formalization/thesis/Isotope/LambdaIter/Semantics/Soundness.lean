@@ -228,4 +228,138 @@ theorem sound_emptyInitial {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
   intro z
   exact (TypeModel.emptyEquiv z).elim
 
+theorem sound_iterBind {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+    {a : Tm ν Φ n} {b : Tm ν Φ (n + 1)} {A B : τ}
+    (ha : HasType Φ Γ β a A)
+    (hb : HasType Φ Γ (.snoc β A) b (TypeFormers.coprod B A))
+    (γ : CtxDen Γ) (ρ : BoundDen β) :
+    denote (m := m) (ε := ε) (.iter ha hb) γ ρ =
+      denote (m := m) (ε := ε)
+        (.let₁ ha (.iter HasType.newest hb.underBinder)) γ ρ := by
+  simp only [denote, denote_underBinder]
+  apply bind_congr
+  intro a
+  have hn : denote (m := m) (ε := ε)
+      (HasType.newest (Φ := Φ) (Γ := Γ) (β := β) (A := A)) γ (ρ, a) = pure a :=
+    denote_newest (m := m) (ε := ε) γ ρ a
+  let body := fun x : TyDen A =>
+    denote (m := m) (ε := ε) hb γ (ρ, x) >>= fun s =>
+      pure (TypeModel.coprodEquiv B A s)
+  calc
+    Elgot.iter body a = (pure a : m _) >>= Elgot.iter body :=
+      (LawfulMonad.pure_bind a (Elgot.iter body)).symm
+    _ = denote (m := m) (ε := ε)
+          (HasType.newest (Φ := Φ) (Γ := Γ) (β := β) (A := A)) γ (ρ, a) >>=
+            Elgot.iter body := congrArg (fun x => x >>= Elgot.iter body) hn.symm
+    _ = _ := by
+      apply bind_congr
+      intro _
+      congr 1
+      funext x
+      unfold body
+      exact congrArg
+        (fun z => z >>= fun s => pure (TypeModel.coprodEquiv B A s))
+        (denote_underBinder (m := m) (ε := ε) hb γ ρ a x).symm
+
+theorem sound_iterFixpoint [LawfulElgotMonad m]
+    {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+    {a : Tm ν Φ n} {b : Tm ν Φ (n + 1)} {A B : τ}
+    (ha : HasType Φ Γ β a A)
+    (hb : HasType Φ Γ (.snoc β A) b (TypeFormers.coprod B A))
+    (γ : CtxDen Γ) (ρ : BoundDen β) :
+    denote (m := m) (ε := ε) (.iter ha hb) γ ρ =
+      denote (m := m) (ε := ε)
+        (.let₁ ha
+          (.case hb HasType.newest
+            (.iter HasType.newest hb.underBinder.underBinder))) γ ρ := by
+  simp only [denote]
+  apply bind_congr
+  intro a
+  let body := fun x : TyDen A =>
+    denote (m := m) (ε := ε) hb γ (ρ, x) >>= fun s =>
+      pure (TypeModel.coprodEquiv B A s)
+  change Elgot.iter body a = _
+  rw [show Elgot.iter body a =
+      (body a >>= Sum.elim pure (Elgot.iter body)) from
+    congrFun (LawfulElgotMonad.fixpoint body) a]
+  unfold body
+  rw [LawfulMonad.bind_assoc]
+  apply bind_congr
+  intro s
+  rw [LawfulMonad.pure_bind]
+  cases hs : TypeModel.coprodEquiv B A s with
+  | inl x =>
+      exact (denote_newest (m := m) (ε := ε) (β := .snoc β A)
+        γ (ρ, a) x).symm
+  | inr x =>
+      have hn : denote (m := m) (ε := ε)
+          (HasType.newest (Φ := Φ) (Γ := Γ) (β := .snoc β A) (A := A))
+            γ ((ρ, a), x) = pure x :=
+        denote_newest (m := m) (ε := ε) (β := .snoc β A) γ (ρ, a) x
+      let loopBody := fun y : TyDen A =>
+        denote (m := m) (ε := ε) hb γ (ρ, y) >>= fun t =>
+          pure (TypeModel.coprodEquiv B A t)
+      calc
+        Elgot.iter loopBody x = (pure x : m _) >>= Elgot.iter loopBody :=
+          (LawfulMonad.pure_bind x (Elgot.iter loopBody)).symm
+        _ = denote (m := m) (ε := ε)
+              (HasType.newest (Φ := Φ) (Γ := Γ) (β := .snoc β A) (A := A))
+                γ ((ρ, a), x) >>= Elgot.iter loopBody :=
+          congrArg (fun z => z >>= Elgot.iter loopBody) hn.symm
+        _ = _ := by
+          apply bind_congr
+          intro _
+          congr 1
+          funext y
+          unfold loopBody
+          apply congrArg (fun z => z >>= fun t => pure (TypeModel.coprodEquiv B A t))
+          calc
+            denote (m := m) (ε := ε) hb γ (ρ, y) =
+                denote (m := m) (ε := ε) (hb.underBinder (X := A))
+                  γ ((ρ, a), y) :=
+              (denote_underBinder (m := m) (ε := ε) (X := A)
+                hb γ ρ a y).symm
+            _ = denote (m := m) (ε := ε)
+                ((hb.underBinder (X := A)).underBinder (X := A)) γ
+                (((ρ, a), x), y) :=
+              (denote_underBinder (m := m) (ε := ε) (X := A)
+                (hb.underBinder (X := A)) γ (ρ, a) x y).symm
+
+theorem sound_iterNaturality [LawfulElgotMonad m]
+    {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+    {a : Tm ν Φ n} {b c : Tm ν Φ (n + 1)} {A B C : τ}
+    (ha : HasType Φ Γ β a A)
+    (hb : HasType Φ Γ (.snoc β A) b (TypeFormers.coprod B A))
+    (hc : HasType Φ Γ (.snoc β B) c C)
+    (γ : CtxDen Γ) (ρ : BoundDen β) :
+    denote (m := m) (ε := ε) (.let₁ (.iter ha hb) hc) γ ρ =
+      denote (m := m) (ε := ε)
+        (.iter ha (.case hb (.inl hc.underBinder) (.inr HasType.newest))) γ ρ := by
+  simp only [denote, LawfulMonad.bind_assoc]
+  apply bind_congr
+  intro a
+  let body := fun x : TyDen A =>
+    denote (m := m) (ε := ε) hb γ (ρ, x) >>= fun s =>
+      pure (TypeModel.coprodEquiv B A s)
+  let post := fun x : TyDen B => denote (m := m) (ε := ε) hc γ (ρ, x)
+  change Elgot.kcomp (Elgot.iter body) post a = _
+  rw [show Elgot.kcomp (Elgot.iter body) post =
+      Elgot.iter (Elgot.mapReturn body post) from
+    LawfulElgotMonad.naturality body post]
+  congr 1
+  funext x
+  unfold Elgot.mapReturn body post
+  rw [LawfulMonad.bind_assoc]
+  apply bind_congr
+  intro s
+  rw [LawfulMonad.pure_bind]
+  cases hs : TypeModel.coprodEquiv B A s with
+  | inl y =>
+      simp [denote_underBinder]
+      simpa [Function.comp_def] using
+        (bind_pure_comp (m := m) (fun z : TyDen C => Sum.inl z)
+          (denote (m := m) (ε := ε) hc γ (ρ, y)))
+  | inr y =>
+      simp [denote_newest]
+
 end Isotope.LambdaIter.Semantics
