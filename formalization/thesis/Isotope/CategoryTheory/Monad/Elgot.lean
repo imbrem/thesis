@@ -204,6 +204,58 @@ noncomputable instance iteration [Isotope.Elgot.Iterate m] : Iteration (Kleisli 
     (CategoryTheory.iterate f).of =
       Isotope.Elgot.iter (m := m) (f ≫ (coprodIsoSum m Y X).hom).of := rfl
 
+theorem coprodIsoSum_hom_sumElim {X Y Z : Kleisli (TM m)}
+    (f : X ⟶ Z) (g : Y ⟶ Z) :
+    (coprodIsoSum m X Y).hom ≫ Kleisli.Hom.mk (Sum.elim f.of g.of) = coprod.desc f g := by
+  apply coprod.hom_ext
+  · rw [inl_coprodIsoSum_hom_assoc]
+    rw [coprod.inl_desc]
+    apply Kleisli.hom_ext
+    funext x
+    simp [binaryCofan, Kleisli.Adjunction.toKleisli]
+  · rw [inr_coprodIsoSum_hom_assoc]
+    rw [coprod.inr_desc]
+    apply Kleisli.hom_ext
+    funext y
+    simp [binaryCofan, Kleisli.Adjunction.toKleisli]
+
+theorem comp_of_eq_kcomp {X Y Z : Kleisli (TM m)} (f : X ⟶ Y) (g : Y ⟶ Z) :
+    (f ≫ g).of = Isotope.Elgot.kcomp (m := m) f.of g.of := by
+  funext x
+  simp [Isotope.Elgot.kcomp, joinM, bind_map_left]
+
+theorem iterate_fixpoint [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+    {X Y : Kleisli (TM m)} (f : X ⟶ Y ⨿ X) :
+    iterate f = f ≫ coprod.desc (𝟙 Y) (iterate f) := by
+  rw [← coprodIsoSum_hom_sumElim m (𝟙 _) (iterate f), ← Category.assoc]
+  apply Kleisli.hom_ext
+  rw [iterate_of]
+  change Isotope.Elgot.iter (m := m) _ =
+    ((f ≫ (coprodIsoSum m Y X).hom) ≫
+      Kleisli.Hom.mk (Sum.elim ((𝟙 Y : Y ⟶ Y).of) (Isotope.Elgot.iter (m := m) _))).of
+  conv_rhs => rw [comp_of_eq_kcomp]
+  simp only [ofTypeMonad]
+  change Isotope.Elgot.iter (m := m) _ = Isotope.Elgot.kcomp (m := m) _
+    (Sum.elim (fun x ↦ (pure x : m _)) (Isotope.Elgot.iter (m := m) _))
+  exact Isotope.Elgot.LawfulElgotMonad.fixpoint (m := m) _
+
+theorem coprodMap_coprodIsoSum_hom {X Y Z : Kleisli (TM m)} (g : Y ⟶ Z) :
+    coprod.map g (𝟙 X) ≫ (coprodIsoSum m Z X).hom =
+      (coprodIsoSum m Y X).hom ≫ Kleisli.Hom.mk
+        (Sum.elim (fun y ↦ g.of y >>= fun z ↦ pure (Sum.inl z))
+          (fun x ↦ pure (Sum.inr x))) := by
+  apply coprod.hom_ext
+  · simp only [Category.assoc, coprod.inl_map, inl_coprodIsoSum_hom,
+      inl_coprodIsoSum_hom_assoc]
+    apply Kleisli.hom_ext
+    funext y
+    simp [binaryCofan, Kleisli.Adjunction.toKleisli]
+  · simp only [Category.assoc, coprod.inr_map, inr_coprodIsoSum_hom,
+      inr_coprodIsoSum_hom_assoc]
+    apply Kleisli.hom_ext
+    funext x
+    simp [binaryCofan, Kleisli.Adjunction.toKleisli]
+
 end Kleisli.Type
 
 end CategoryTheory
