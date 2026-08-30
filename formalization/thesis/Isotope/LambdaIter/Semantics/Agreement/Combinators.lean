@@ -55,6 +55,16 @@ theorem pair_of {R A B : Type v}
     Isotope.Elgot.kcomp, joinM, bind_assoc,
     Kleisli.Adjunction.toKleisli, Functor.StrongPremonoidal.tensorIso]
 
+theorem comp_map_of {R A B : Type v}
+    (f : (J (m := m)).obj R ⟶ (J (m := m)).obj A) (g : A → B) (r : R) :
+    (f ≫ (J (m := m)).map g).of r =
+      Isotope.Elgot.kcomp (m := m) f.of (Isotope.Elgot.liftPure (m := m) g) r := by
+  rw [CategoryTheory.Kleisli.Type.comp_of_eq_kcomp]
+  rfl
+
+theorem map_of {A B : Type v} (f : A → B) (a : A) :
+    ((J (m := m)).map f).of a = (pure (f a) : m B) := rfl
+
 end Categorical
 
 end Isotope.LambdaIter.Semantics
