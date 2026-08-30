@@ -75,23 +75,76 @@ theorem comp_whiskerRight {X Y Z : Kleisli T} (f : X ⟶ Y) (g : Y ⟶ Z)
   rw [Monad.Strong.costrength_naturality_left_assoc]
   simp only [Functor.map_comp, Category.assoc]
 
-theorem toKleisli_map_whiskerRight {X Y : C} (f : X ⟶ Y) (Z : C) :
-    (Kleisli.Adjunction.toKleisli T).map f ▷ (.mk T Z) =
-      (Kleisli.Adjunction.toKleisli T).map (f ▷ Z) := by
+theorem toKleisli_map_whiskerRight {X Y : C} (f : X ⟶ Y) (Z : Kleisli T) :
+    (Kleisli.Adjunction.toKleisli T).map f ▷ Z =
+      (Kleisli.Adjunction.toKleisli T).map (f ▷ Z.of) := by
   apply Kleisli.hom_ext
   dsimp [whiskerRight, Kleisli.Adjunction.toKleisli]
   rw [MonoidalCategory.comp_whiskerRight_assoc]
-  have hunit := Monad.Strong.costrength_unit T Y Z
+  have hunit := Monad.Strong.costrength_unit T Y Z.of
   slice_lhs 2 3 => exact hunit
 
-theorem whiskerLeft_toKleisli_map (X : C) {Y Z : C} (f : Y ⟶ Z) :
-    (.mk T X) ◁ (Kleisli.Adjunction.toKleisli T).map f =
-      (Kleisli.Adjunction.toKleisli T).map (X ◁ f) := by
+theorem whiskerLeft_toKleisli_map (X : Kleisli T) {Y Z : C} (f : Y ⟶ Z) :
+    X ◁ (Kleisli.Adjunction.toKleisli T).map f =
+      (Kleisli.Adjunction.toKleisli T).map (X.of ◁ f) := by
   apply Kleisli.hom_ext
   dsimp [whiskerLeft, Kleisli.Adjunction.toKleisli]
   rw [MonoidalCategory.whiskerLeft_comp_assoc]
-  have hunit := Monad.Strong.unit (T := T) X Z
+  have hunit := Monad.Strong.unit (T := T) X.of Z
   slice_lhs 2 3 => exact hunit
+
+omit [MonoidalCategory C] [T.Strong] [SymmetricCategory C] in
+theorem toKleisli_map_comp {X Y : C} (f : X ⟶ Y) {Z : Kleisli T}
+    (g : (Kleisli.Adjunction.toKleisli T).obj Y ⟶ Z) :
+    ((Kleisli.Adjunction.toKleisli T).map f ≫ g).of = f ≫ g.of := by
+  dsimp [Kleisli.Adjunction.toKleisli]
+  have hunit : T.η.app Y ≫ T.map g.of ≫ T.μ.app Z.of = g.of := by
+    rw [← T.η.naturality_assoc, T.left_unit]
+    simp
+  slice_lhs 2 4 => exact hunit
+
+omit [MonoidalCategory C] [T.Strong] [SymmetricCategory C] in
+theorem comp_toKleisli_map {X Y : Kleisli T} (f : X ⟶ Y) {Z : C}
+    (g : Y.of ⟶ Z) :
+    (f ≫ (Kleisli.Adjunction.toKleisli T).map g).of = f.of ≫ T.map g := by
+  dsimp [Kleisli.Adjunction.toKleisli]
+  rw [Functor.map_comp]
+  simp only [Category.assoc]
+  have hunit := T.right_unit Z
+  slice_lhs 3 4 => exact hunit
+  simp
+
+/-- Every morphism from the base category becomes central in the Kleisli category. -/
+theorem toKleisli_map_isCentral {X Y : C} (f : X ⟶ Y) :
+    PremonoidalCategory.IsCentral ((Kleisli.Adjunction.toKleisli T).map f) := by
+  constructor
+  · intro X' Y' g
+    apply Kleisli.hom_ext
+    simp only [PremonoidalCategory.leftTensor, PremonoidalCategory.rightTensor]
+    rw [toKleisli_map_whiskerRight, toKleisli_map_whiskerRight]
+    have hmiddle :
+        (f ▷ X'.of) ≫ ((Kleisli.Adjunction.toKleisli T).obj Y ◁ g).of =
+          ((Kleisli.Adjunction.toKleisli T).obj X ◁ g).of ≫ T.map (f ▷ Y'.of) := by
+      dsimp [whiskerLeft]
+      rw [← MonoidalCategory.whisker_exchange_assoc]
+      rw [Monad.Strong.naturality_left]
+      simp only [Category.assoc]
+    exact (toKleisli_map_comp T (f ▷ X'.of) _).trans
+      (hmiddle.trans (comp_toKleisli_map T _ (f ▷ Y'.of)).symm)
+  · intro X' Y' g
+    apply Kleisli.hom_ext
+    simp only [PremonoidalCategory.leftTensor, PremonoidalCategory.rightTensor]
+    rw [whiskerLeft_toKleisli_map, whiskerLeft_toKleisli_map]
+    have hmiddle :
+        (g ▷ (Kleisli.Adjunction.toKleisli T).obj X).of ≫ T.map (Y'.of ◁ f) =
+          (X'.of ◁ f) ≫ (g ▷ (Kleisli.Adjunction.toKleisli T).obj Y).of := by
+      dsimp [whiskerRight]
+      simp only [Category.assoc]
+      have hcostr := (Monad.Strong.costrength_naturality_right (T := T) Y'.of f).symm
+      slice_lhs 2 3 => exact hcostr
+      rw [MonoidalCategory.whisker_exchange_assoc]
+    exact (comp_toKleisli_map T _ (Y'.of ◁ f)).trans
+      (hmiddle.trans (toKleisli_map_comp T (X'.of ◁ f) _).symm)
 
 end Kleisli
 
