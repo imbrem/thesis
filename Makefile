@@ -12,7 +12,7 @@ TEX_PDFS := $(TEX_SOURCES:.tex=.pdf)
 
 # --- Targets ---
 
-.PHONY: all thesis parts papers submodules clean todo status lint help
+.PHONY: all thesis parts papers submodules clean todo status queue numbering lint help
 
 thesis: thesis/main.pdf
 
@@ -39,6 +39,12 @@ todo:
 status:
 	@python3 scripts/thesis.py status
 
+queue:
+	@python3 scripts/thesis.py queue --check
+
+numbering:
+	@python3 scripts/thesis.py numbering
+
 lint:
 	@python3 scripts/thesis.py lint
 
@@ -60,6 +66,8 @@ help:
 	@echo "Utilities:"
 	@echo "  todo        List all #todo items in the thesis"
 	@echo "  status      Summarize TODO ownership and old-syntax migration"
+	@echo "  queue       List chapter decisions and verify cited Lean evidence"
+	@echo "  numbering   Audit full-thesis figure numbering configuration"
 	@echo "  lint        Count known conversion artifacts"
 	@echo "  submodules  Clone/update git submodules"
 	@echo "  clean       Remove generated PDFs and LaTeX aux files"

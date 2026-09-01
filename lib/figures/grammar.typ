@@ -14,6 +14,12 @@
   alts: alts.pos(),
 )
 
+// Render a grammar metavariable without the literal TeX-style angle brackets
+// left behind by the paper conversion. Keep this separate from `production`
+// so calculi can retain their own metavariable conventions while sharing the
+// display treatment.
+#let grammar-metavar(body) = $#body$
+
 // Attach a side condition to a grammar alternative, e.g.
 // `cond($Γ, x : A$, $x ∉ Γ$)` renders as `Γ, x : A  where x ∉ Γ`.
 //   alt:  the alternative the condition qualifies

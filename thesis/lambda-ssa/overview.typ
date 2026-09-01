@@ -45,8 +45,6 @@ adjustments to the usual presentation:
   Likewise, for uniformity, a return-statement may appear in the branch
   of a conditional branch.
 
-#standalone-bibliography()
-
 #figure([#block[
   #block[
   \<$v$\> ::= $x$ | $\( v \, v' \)$ | $\( \)$
@@ -85,7 +83,7 @@ $10 !$ given in @fig:fact-program. We can normalize our code into
   columns: (1fr, 1fr),
   gutter: 1.5em,
   align: (left, top),
-  [#figure([$  & sans("let") #h(0em) n = 10 ;\
+  [#semi-math-panel([$  & sans("let") #h(0em) n = 10 ;\
      & sans("let mut") #h(0em) i = 1 ;\
      & sans("let mut") #h(0em) a = 1 ;\
      & sans("while") #h(0em) i < n #h(0em) {\
@@ -95,13 +93,11 @@ $10 !$ given in @fig:fact-program. We can normalize our code into
      & sans("ret") #h(0em) a\
      $],
     caption: [As an imperative program],
-    kind: "program-panel",
-    supplement: [],
     numbering: "(a)",
   )
   <fig:fact-imp>],
 
-  [#figure([$  & n = 10 ;\
+  [#semi-math-panel([$  & n = 10 ;\
      & i = 1 ;\
      & a = 1 ;\
      & sans("br") #h(0em) sans("loop") ;\
@@ -111,8 +107,6 @@ $10 !$ given in @fig:fact-program. We can normalize our code into
      & i = i + 1 ;\
      & sans("br") #h(0em) sans("loop") $],
     caption: [As 3-address code],
-    kind: "program-panel",
-    supplement: [],
     numbering: "(a)",
   )
   <fig:fact-3addr>],
@@ -468,7 +462,7 @@ isomorphism between lexical SSA and standard SSA.
 )
 <fig:lex-ssa>
 
-#figure([```
+#code-figure([```cpp
   struct BasicBlock {
         // unary/binary let-bindings, collected into a list
         vector<Instruction> instructions;             
@@ -625,3 +619,5 @@ dramatically simplifies the form of the rules themselves.
   ]
 )
 <fig:ssa-grammar>
+
+#standalone-bibliography()

@@ -22,7 +22,7 @@ The rules for this relation can be roughly split into #emph[rewriting
 rules], which denote when two particular expressions have equivalent
 semantics, and #emph[congruence rules], which govern how rewrites can
 be composed to enable equational reasoning. In particular, our
-congruence rules, given in Figure~#todo[Resolve source reference `fig:ssa-expr-congr-rules` during integration.], consist of:
+congruence rules, given in Figure~@fig:ssa-expr-congr-rules, consist of:
 
 - refl, symm, trans, which state that
   $Gamma tack.r_epsilon.alt dot.op approx dot.op : A$ is reflexive,
@@ -69,7 +69,7 @@ congruence relation:
 We may group the rest of our rules according to the relevant
 constructor, i.e. $sans(l e t)$ (unary and binary) and $sans(c a s e)$.
 In particular, for unary $sans(l e t)$, we have the following rules,
-summarized in Figure~#todo[Resolve source reference `fig:ssa-unary-let-expr:` during integration.]
+summarized in Figure~@fig:ssa-unary-let-expr
 
 - let$""_1$-$beta$, which allows us to substitute the bound variable in
   $x$ the let-statement $kw("let") med x = a ; #h(0em) b$ with its
@@ -121,7 +121,7 @@ Handling the other type constructors is a little simpler: by providing a
 "binding" rule, we generally only need to specify how to interact with
 $sans(l e t)_1$, as well as an $eta$ and $beta$ rule; interactions with
 the other constructors can then be derived. For example, consider the
-rules for $sans(l e t)_2$ given in #todo[Resolve source reference `fig:ssa-let2-case-expr` during integration.]; we have:
+rules for $sans(l e t)_2$ given in @fig:ssa-let2-case-expr; we have:
 
 - let$""_2$-$eta$, which is the standard $eta$-rule for binary
   $sans(l e t)$-bindings
@@ -203,7 +203,7 @@ that for terms, except that we also need to support control-flow graphs.
 As before, we will split our rules into a set of #emph[congruence rules]
 and, for each region constructor, #emph[rewriting rules] based on that
 constructor's semantics. Our congruence rules, given in
-Figure~#todo[Resolve source reference `fig:ssa-reg-congr-rules` during integration.], are quite standard; we have:
+Figure~@fig:ssa-reg-congr-rules, are quite standard; we have:
 
 - As for terms, refl, trans, and symm state that
   $Gamma tack.r dot.op approx dot.op gt.tri sans(L)$ is an equivalence
@@ -224,7 +224,7 @@ Figure~#todo[Resolve source reference `fig:ssa-reg-congr-rules` during integrati
   has not yet been defined.
 
 Our rewriting rules for unary $sans(l e t)$-statements, given in
-Figure~#todo[Resolve source reference `fig:ssa-reg-unary-let` during integration.], are analogous to those for unary
+Figure~@fig:ssa-reg-unary-let, are analogous to those for unary
 $sans(l e t)$-expressions:
 
 - let$""_1$-$beta$ allows us to perform $beta$-reduction of #emph[pure]
@@ -240,7 +240,7 @@ $sans(l e t)$-expressions:
 Similarly to expressions, binary $sans(l e t)$-statements and
 $sans(c a s e)$-statements need only the obvious $beta$ rule and binding
 rule, with all the interactions with other constructors derivable; these
-rules are given in Figure~#todo[Resolve source reference `fig:ssa-reg-let2-case-expr.` during integration.] Note in
+rules are given in Figure~@fig:ssa-reg-let2-case-expr Note in
 particular that $eta$-rules are not necessary, as these are derivable
 from binding and the $eta$-rules for expressions.
 
@@ -283,7 +283,7 @@ from binding and the $eta$-rules for expressions.
 
 Dealing with $sans(w h e r e)$-blocks, on the other hand, is a little
 bit more complicated, as shown by the number of rules in
-Figure~#todo[Resolve source reference `fig:ssa-where-rules.` during integration.] One difficulty is that, unlike the other
+Figure~@fig:ssa-where-rules One difficulty is that, unlike the other
 region constructors, we will need an $eta$-rule as well as #emph[two]
 $beta$-rules. The latter are simple enough to state:
 
@@ -343,7 +343,7 @@ essence, this lets us commute pure expressions with loop bodies,
 enabling rewrites (in imperative style) like
 $ sans(l o o p) #h(0em) { x = x + 1 ; sans(i f) #h(0em) p #h(0em) 3 x #h(0em) { sans(r e t) #h(0em) 3 x } } #h(2em) approx #h(2em) y = 3 x ; sans(l o o p) #h(0em) { y = y + 3 ; sans(i f) #h(0em) p #h(0em) y #h(0em) { sans(r e t) #h(0em) y } } $<eqn:simple-loop-comm>
 Note that substitution alone would not allow us to derive
-Equation~#todo[Resolve source reference `eqn:simple-loop-comm` during integration.] above, since $x$ and $y$ change each
+Equation~@eqn:simple-loop-comm above, since $x$ and $y$ change each
 iteration, and hence, in SSA, would need to become parameters as
 follows:
 $ kw("br") med ell #h(0em) x #h(0em) kw("where") med ell \( y \) : { kw("let") med x' = y + 1 ; sans(i f) #h(0em) p #h(0em) 3 x' #h(0em) { sans(r e t) #h(0em) 3 x' } #h(0em) sans(e l s e) #h(0em) { kw("br") med ell #h(0em) x' } }\
@@ -401,7 +401,7 @@ rule
 ]
 <eqn:uni-variant>
 Going back to our concrete example from
-Equation~#todo[Resolve source reference `eqn:loop-comm-ssa` during integration.], if we first substitute the let-binding
+Equation~@eqn:loop-comm-ssa, if we first substitute the let-binding
 $y = 3 x$ on the RHS, we get
 $ kw("br") med ell #h(0em) x #h(0em) kw("where") med ell \( y \) : { kw("let") med x' = y + 1 ; sans(i f) #h(0em) p #h(0em) 3 x' #h(0em) { sans(r e t) #h(0em) 3 x' } #h(0em) sans(e l s e) #h(0em) { kw("br") med ell #h(0em) x' } }\
 approx kw("br") med kappa #h(0em) 3 x #h(0em) kw("where") med kappa \( y \) : { kw("let") med y' = y + 3 ; sans(i f) #h(0em) p #h(0em) y' #h(0em) { sans(r e t) #h(0em) y' } #h(0em) sans(e l s e) #h(0em) { kw("br") med kappa #h(0em) y' } } $<eqn:loop-comm-red>
@@ -421,7 +421,7 @@ It's easy to see that
 $\( \( \[ ell \( x \) mapsto kw("br") med kappa #h(0em) e \] r \) #h(0em) kw("where") med kappa \( y \) : { s } \)$
 and $\( r #h(0em) kw("where") med t \)$ are syntactically equal
 to the #emph[RHS] and #emph[LHS] of our desired result
-(Equation~#todo[Resolve source reference `eqn:loop-comm-red` during integration.]). So, it suffices to verify that
+(Equation~@eqn:loop-comm-red). So, it suffices to verify that
 $ Gamma \, x : A tack.r & \[ e \/ y \] s approx kw("let") med y' = 3 x + 3 ; #h(0em) sans(i f) #h(0em) p #h(0em) y' #h(0em) { sans(r e t) #h(0em) y' } #h(0em) sans(e l s e) #h(0em) { kw("br") med kappa #h(0em) y' }\
  & approx kw("let") med y' = 3 \( x + 1 \) ; #h(0em) sans(i f) #h(0em) p #h(0em) y' #h(0em) { sans(r e t) #h(0em) y' } #h(0em) sans(e l s e) #h(0em) { kw("br") med kappa #h(0em) y' }\
  & approx kw("let") med x' = x + 1 ; #h(0em) kw("let") med y' = 3 x' ; #h(0em) sans(i f) #h(0em) p #h(0em) y' #h(0em) { sans(r e t) #h(0em) y' } #h(0em) sans(e l s e) #h(0em) { kw("br") med kappa #h(0em) y' }\
@@ -487,7 +487,7 @@ executed.
 
     ],
     caption: [
-      Equivalent to Figure #todo[Resolve source reference `fig:fact-zero` during integration.] by #emph[dinaturality]
+      Equivalent to @fig:fact-zero by #emph[dinaturality]
     ]
   )
   <fig:fact-dinat>
@@ -511,16 +511,16 @@ executed.
 
     ],
     caption: [
-      Equivalent to Figure #todo[Resolve source reference `fig:fact-subst-2` during integration.] by congruence
+      Equivalent to @fig:fact-subst-2 by congruence
     ]
   )
   <fig:fact-zero>
 
   ],
   caption: [
-    Decomposing multi-block rewrites (from #todo[Resolve source reference `fig:fact-zero` during integration.] to
-    #todo[Resolve source reference `fig:fact-subst-2` during integration.], and therefore to the more optimal program
-    #todo[Resolve source reference `fig:fact-dinat` during integration.]) into simple algebraic steps. By verifying each
+    Decomposing multi-block rewrites (from @fig:fact-zero to
+    @fig:fact-subst-2, and therefore to the more optimal program
+    @fig:fact-dinat) into simple algebraic steps. By verifying each
     step, we can verify complex optimizations through decomposition.
   ]
 )
@@ -528,7 +528,7 @@ executed.
 
 The derivable rule uni' (Equation~#todo[Resolve source reference `eqn:uni-variant` during integration.]) illuminates a very
 important potential use for uniformity; namely, formalizing rewrites
-like those in Figure~#todo[Resolve source reference `fig:fact-dinat-rewrites.` during integration.] In particular, consider a
+like those in Figure~@fig:fact-dinat-rewrites In particular, consider a
 program of the form
 $ Gamma tack.r \( \[ ell \( x \) mapsto kw("br") med kappa #h(0em) e \] r \) #h(0em) kw("where") med kappa \( y \) : { \[ ell \( x \) mapsto kw("br") med kappa #h(0em) e \] s } gt.tri sans(L) $
 where
@@ -548,7 +548,7 @@ $ Gamma tack.r \( \[ ell \( x \) mapsto kw("br") med kappa #h(0em) e \] r \) #h(
 approx r #h(0em) kw("where") med ell \( x \) : { \[ e \/ y \] s }\
 approx r #h(0em) kw("where") med ell \( x \) : { kw("let") med y = e ; s } $
 In particular, for example, we can then easily derive the rewrite from
-Figure~#todo[Resolve source reference `fig:fact-dinat` during integration.] to Figure~#todo[Resolve source reference `fig:fact-zero` during integration.] by noting the
+Figure~@fig:fact-dinat to Figure~@fig:fact-zero by noting the
 #emph[equalities] (an equivalence would be enough, of course)
 $  & sans(i f) #h(0em) i_0 < n #h(0em) {\
  & quad kw("br") med sans(l o o p) \( kw("let") med \( x \, y \) = \( i_0 \, a_0 \) ; #h(0em) \( x + 1 \, y \* x + 1 \) \)\
@@ -563,7 +563,7 @@ $ kw("let") med n = 10 ; kw("br") med sans(l o o p) \( kw("let") med \( x \, y \
 Rewrites like this are an instance of the principle we call
 #emph[dinaturality], which, for structured control-flow, can be best
 expressed as an equivalence between the control-flow graphs in
-Figure~#todo[Resolve source reference `fig:dinat-struct-cfg.` during integration.] Unlike in the case of uniformity, however,
+Figure~@fig:dinat-struct-cfg Unlike in the case of uniformity, however,
 this is true even when the program fragment $P$ is #emph[impure],
 since, unlike in the case of general uniformity, we do not commute $P$
 over an infinite number of iterations. Our final rewriting rule, dinat,
@@ -681,7 +681,7 @@ In particular, note that this lemma uses an equivalence relation on
 substitutions and label-substitutions: this is just the obvious
 pointwise extension of the equivalence relation on terms and regions
 respectively. We give the rules for this relation in
-Figure~#todo[Resolve source reference `fig:ssa-subst-equiv` during integration.] in the interests of explicitness.
+Figure~@fig:ssa-subst-equiv in the interests of explicitness.
 
 #block[
 Given
@@ -776,7 +776,7 @@ Our first step is to extend the work of
 #todo[Restore prose citation `chakravarty-functional-ssa-2003` during integration.];, by providing
 an algorithm for converting between #lssa and ANF in an
 equivalence-preserving way. We define the ANF regions, whose grammar is
-given in Figure~#todo[Resolve source reference `fig:anf-grammar` during integration.], to be #lssa regions
+given in Figure~@fig:anf-grammar, to be #lssa regions
 with expressions restricted to operations $o$; equivalently, we can view
 ANF regions as lexical SSA regions with the syntactic category of
 regions $r$ and terminators $tau$ fused. We may now introduce the

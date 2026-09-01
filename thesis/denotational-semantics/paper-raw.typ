@@ -135,7 +135,7 @@ Since in a distributive Freyd category $cal(C)_tack.t$ must be distributive (and
 
 = String Diagrams
 <string-diagrams>
-#emph[String diagrams] provide a graphical calculus for reasoning about (symmetric) monoidal categories, which allows us to succinctly express complex morphisms and rewrites. Since both cartesian and co-cartesian categories are monoidal (with the product and coproduct as tensor, respectively), we can use string diagrams to reason about both. In the co-cartesian case, string diagrams behave much like control-flow diagrams, with boxes representing sub-programs, input wires entry points, and output wires exit points. In particular, a #emph[region] is just a box with a single input wire. Continuing this analogy, we draw the codiagonal morphism $\[ sans("id")_A   sans("id")_A \]$ as joining two wires, and the zero morphism as a wire coming from nowhere, as in Figure~#todo[Cross-reference: \@fig:coproduct-string-diagrams.]
+#emph[String diagrams] provide a graphical calculus for reasoning about (symmetric) monoidal categories, which allows us to succinctly express complex morphisms and rewrites. Since both cartesian and co-cartesian categories are monoidal (with the product and coproduct as tensor, respectively), we can use string diagrams to reason about both. In the co-cartesian case, string diagrams behave much like control-flow diagrams, with boxes representing sub-programs, input wires entry points, and output wires exit points. In particular, a #emph[region] is just a box with a single input wire. Continuing this analogy, we draw the codiagonal morphism $\[ sans("id")_A   sans("id")_A \]$ as joining two wires, and the zero morphism as a wire coming from nowhere, as in Figure~@fig:coproduct-string-diagrams.
 
 #figure(coproduct-cfg-diagram(),
   caption: [
@@ -144,7 +144,7 @@ Since in a distributive Freyd category $cal(C)_tack.t$ must be distributive (and
 )
 <fig:coproduct-string-diagrams>
 
-The power of string diagrams comes from the fact that many syntactically distinct ways to write equal values are obviously graphically equivalent by #emph[isotopy]: essentially, moving boxes and wires around. String diagrams also give us an elegant way to represent and reason about Elgot structures. It turns out that Elgot structures induce a #emph[trace] on the coproduct @hasegawa-trace-02: given $f : A + C arrow.r B + C$, we can define $ sans("Tr")_(A   B)^C ( f ) = iota_l ; \[ f ; B + iota_r \]^dagger = iota_l ; f ; \[ sans("id")   ( iota_l ; f )^dagger \] : A arrow.r B $ Since this satisfies the axioms of a trace over a symmetric monoidal category, we can draw it, and therefore the Elgot operator, as in Figure~#todo[Cross-reference: \@fig:elgot-string-diagrams.] Continuing with the control-flow diagram analogy, such traces can be interpreted as #emph[loops], with the Elgot axioms, now drawn as diagrams in Figure~#todo[Cross-reference: \@fig:elgot-ax-string-diagrams.]
+The power of string diagrams comes from the fact that many syntactically distinct ways to write equal values are obviously graphically equivalent by #emph[isotopy]: essentially, moving boxes and wires around. String diagrams also give us an elegant way to represent and reason about Elgot structures. It turns out that Elgot structures induce a #emph[trace] on the coproduct @hasegawa-trace-02: given $f : A + C arrow.r B + C$, we can define $ sans("Tr")_(A   B)^C ( f ) = iota_l ; \[ f ; B + iota_r \]^dagger = iota_l ; f ; \[ sans("id")   ( iota_l ; f )^dagger \] : A arrow.r B $ Since this satisfies the axioms of a trace over a symmetric monoidal category, we can draw it, and therefore the Elgot operator, as in Figure~@fig:elgot-string-diagrams. Continuing with the control-flow diagram analogy, such traces can be interpreted as #emph[loops], with the Elgot axioms, now drawn as diagrams in Figure~#todo[Cross-reference: \@fig:elgot-ax-string-diagrams.]
 
 #figure([#grid(
   columns: (1fr, 1fr),
@@ -193,7 +193,7 @@ The power of string diagrams comes from the fact that many syntactically distinc
 )
 <dssa:fig:elgot-ax-string-diagrams>
 
-Unfortunately, unmodified string diagrams do not work for premonoidal categories, and hence for Freyd categories. The reason is because, since not all morphisms are central, premonoidal categories do not in general validate #emph[sliding]. However, this is easy enough to fix: we can postulate a (dashed red) "state" wire which all impure morphisms require as an input and output, as in Figure~#todo[Cross-reference: \@fig:premonoidal-string-diagram.] Since the state wire linearly threads through all impure boxes, it establishes a unique order in which they must be executed; this construction is shown to be sound in #cite(<promonad>, form: "prose"). Pure morphisms do not have a state wire, so a diagram representing a pure morphism will simply have a dashed red "stripe" on the side. This gives us a convenient way to distinguish between string diagrams using the monoidal structure induced by the coproduct and those using the premonoidal structure induced by the tensor product in a category having both (such as a distributive premonoidal category): the latter will have a state wire, while the former will not.
+Unfortunately, unmodified string diagrams do not work for premonoidal categories, and hence for Freyd categories. The reason is because, since not all morphisms are central, premonoidal categories do not in general validate #emph[sliding]. However, this is easy enough to fix: we can postulate a (dashed red) "state" wire which all impure morphisms require as an input and output, as in Figure~@fig:premonoidal-string-diagram. Since the state wire linearly threads through all impure boxes, it establishes a unique order in which they must be executed; this construction is shown to be sound in #cite(<promonad>, form: "prose"). Pure morphisms do not have a state wire, so a diagram representing a pure morphism will simply have a dashed red "stripe" on the side. This gives us a convenient way to distinguish between string diagrams using the monoidal structure induced by the coproduct and those using the premonoidal structure induced by the tensor product in a category having both (such as a distributive premonoidal category): the latter will have a state wire, while the former will not.
 
 #figure(premonoidal-state-diagram(),
   caption: [
@@ -220,7 +220,7 @@ We now have all the ingredients we need to give a semantics to $lambda_(sans("SS
 
   - Sum types $A + B$ are modelled as coproducts $⟦ A ⟧ + ⟦ B ⟧$
 
-If an $lambda_(sans("SSA"))$ expression model additionally has an Elgot structure on $cal(C)$, we will refer to it simply as an $lambda_(sans("SSA"))$ model. We will model #emph[contexts] and #emph[label contexts] as tensor products and coproducts of the denotations of their parameters, respectively, as in Figure~#todo[Cross-reference: \@fig:ssa-ty-sem.]
+If an $lambda_(sans("SSA"))$ expression model additionally has an Elgot structure on $cal(C)$, we will refer to it simply as an $lambda_(sans("SSA"))$ model. We will model #emph[contexts] and #emph[label contexts] as tensor products and coproducts of the denotations of their parameters, respectively, as in Figure~@fig:ssa-ty-sem.
 
 #figure([$ #box(stroke: black, inset: 3pt, [$ ⟦ A ⟧ : bar.v cal(C) bar.v $]) $ $ ⟦ upright(bold(1)) ⟧ = I #h(2em) ⟦ A ⊗ B ⟧ = ⟦ A ⟧ ⊗ ⟦ B ⟧ #h(2em) ⟦ upright(bold(0)) ⟧ = upright(bold(0)) #h(2em) ⟦ A + B ⟧ = ⟦ A ⟧ + ⟦ B ⟧\
    $ $ #box(stroke: black, inset: 3pt, [$ ⟦ Gamma ⟧ : bar.v cal(C) bar.v $]) $ $ ⟦ dot.op ⟧ = I #h(2em) ⟦ Gamma   x : A ⟧ = ⟦ Gamma ⟧ ⊗ ⟦ A ⟧\
@@ -235,7 +235,7 @@ If an $lambda_(sans("SSA"))$ expression model additionally has an Elgot structur
 )
 <fig:ssa-ty-sem>
 
-We can now interpret $lambda_(sans("SSA"))$-expressions $Gamma tack.r_epsilon.alt a : A$ over a given signature $S g$ as morphisms $⟦ Gamma ⟧ arrow.r_epsilon.alt ⟦ A ⟧$ using the rules in Figure~#todo[Cross-reference: \@fig:ssa-expr-sem.] Up to this point, both our syntax and semantics are quite standard; in particular:
+We can now interpret $lambda_(sans("SSA"))$-expressions $Gamma tack.r_epsilon.alt a : A$ over a given signature $S g$ as morphisms $⟦ Gamma ⟧ arrow.r_epsilon.alt ⟦ A ⟧$ using the rules in Figure~@fig:ssa-expr-sem. Up to this point, both our syntax and semantics are quite standard; in particular:
 
 - Variables $x$ are modelled as projections from the appropriate index in the context's denotation $pi_(Gamma   x) : ⟦ Gamma ⟧ arrow.r_tack.t ⟦ A ⟧$
 
@@ -284,7 +284,7 @@ We can now interpret $lambda_(sans("SSA"))$-expressions $Gamma tack.r_epsilon.al
 )
 <fig:ssa-expr-sem>
 
-Similarly, if we in fact have an $lambda_(sans("SSA"))$ model, we can interpret $lambda_(sans("SSA"))$ regions $Gamma tack.r r gt.tri sans(L)$ as morphisms $⟦ Gamma ⟧ arrow.r ⟦ sans(L) ⟧$; note that we don't assume anything about the effect of these morphisms. As $sans(L)$ is a coproduct, we can view the result object of a region $r$ as encoding both #emph[data] and #emph[control-flow] information. In particular, we interpret a branch $sans("br") #h(0em) ell #h(0em) a$ as simply the injection of the (pure) expression $Gamma tack.r_tack.t a : A$, our #emph[data], into the element of the coproduct corresponding to $ell$, which encodes the point in control-flow the rest of the program should jump to next. This is in contrast to #emph[expressions], which purely encode data, with no particular instructions on how to use it afterwards. Our interpretation of $sans("let")$-statements and $sans("case")$-statements, given in Figure~#todo[Cross-reference: \@fig:ssa-reg-sem], is exactly the same as that of the corresponding expressions.
+Similarly, if we in fact have an $lambda_(sans("SSA"))$ model, we can interpret $lambda_(sans("SSA"))$ regions $Gamma tack.r r gt.tri sans(L)$ as morphisms $⟦ Gamma ⟧ arrow.r ⟦ sans(L) ⟧$; note that we don't assume anything about the effect of these morphisms. As $sans(L)$ is a coproduct, we can view the result object of a region $r$ as encoding both #emph[data] and #emph[control-flow] information. In particular, we interpret a branch $sans("br") #h(0em) ell #h(0em) a$ as simply the injection of the (pure) expression $Gamma tack.r_tack.t a : A$, our #emph[data], into the element of the coproduct corresponding to $ell$, which encodes the point in control-flow the rest of the program should jump to next. This is in contrast to #emph[expressions], which purely encode data, with no particular instructions on how to use it afterwards. Our interpretation of $sans("let")$-statements and $sans("case")$-statements, given in Figure~@fig:ssa-reg-sem, is exactly the same as that of the corresponding expressions.
 
 Finally, we come to the interpretation of $sans("where")$-statements, which is where the Elgot structure comes in. The semantics of a $sans("where")$-block $Gamma tack.r r #h(0em) sans("where") #h(0em) ( ell_i ( x_i ) : { t_i }   )_i gt.tri sans(L)$ can be broken down into two major components:
 
@@ -330,7 +330,7 @@ This simplifies significantly in the case of a $sans("where")$-block defining ju
 <metatheory>
 We can now begin to state the metatheoretic properties of our denotational semantics. Before we do so, we establish the convention that whenever we have an equation involving the interpretation of a derivation (e.g., $⟦ cal(D) ⟧ = ⟦ cal(D)' ⟧$), we assume that all the derivations (e.g., $cal(D)$ and $cal(D)'$) exist and are well-formed.
 
-We begin with weakening: as shown in Figure~#todo[Cross-reference: \@fig:ssa-ty-sem], weakenings are modelled, essentially, as projections from a larger product $⟦ Gamma ⟧$ to a smaller product $⟦ Delta ⟧$, while label-weakenings are modelled as injections from a smaller coproduct $⟦ sans(L) ⟧$ to a larger coproduct $⟦ sans(K) ⟧$; in particular, in both cases, the morphisms are pure. A simple induction can then be used to derive the following weakening lemmas:
+We begin with weakening: as shown in Figure~@fig:ssa-ty-sem, weakenings are modelled, essentially, as projections from a larger product $⟦ Gamma ⟧$ to a smaller product $⟦ Delta ⟧$, while label-weakenings are modelled as injections from a smaller coproduct $⟦ sans(L) ⟧$ to a larger coproduct $⟦ sans(K) ⟧$; in particular, in both cases, the morphisms are pure. A simple induction can then be used to derive the following weakening lemmas:
 
 #block[
 Given $Gamma lt.eq Gamma'$ and $sans(L)' lt.eq sans(L)$, $sans(K)' lt.eq sans(K)$, we have
@@ -354,7 +354,7 @@ Given $Gamma lt.eq Gamma'$ and $sans(L)' lt.eq sans(L)$, $sans(K)' lt.eq sans(K)
 #emph[Proof.] See Appendix~#todo[Cross-reference: \@proof:weakening.]~◻
 
 ]
-We can now give a denotational semantics to substitutions in which a substitution $gamma : Gamma mapsto Delta$ is interpreted as a pure morphism from $⟦ Gamma ⟧$ to $⟦ Delta ⟧$, as in Figure~#todo[Cross-reference: \@fig:ssa-subst-sem.] We can now state the soundness of variable substitution as follows:
+We can now give a denotational semantics to substitutions in which a substitution $gamma : Gamma mapsto Delta$ is interpreted as a pure morphism from $⟦ Gamma ⟧$ to $⟦ Delta ⟧$, as in Figure~@fig:ssa-subst-sem. We can now state the soundness of variable substitution as follows:
 
 #block[
 Given $⟦ gamma : Gamma mapsto Delta ⟧ : ⟦ Gamma ⟧ arrow.r ⟦ Delta ⟧$ pure, we have that
@@ -400,7 +400,7 @@ Given $Gamma tack.r_tack.t a : A$, we have
 )
 <fig:ssa-subst-sem>
 
-We can now move on to stating the metatheoretic properties of label-substitutions in much the same manner. In particular, in Figure~#todo[Cross-reference: \@fig:ssa-subst-sem], we interpret label substitutions $Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K)$ as morphisms taking a copy of the context $⟦ Gamma ⟧$ and an element of the coproduct $⟦ sans(L) ⟧$ to an element of the coproduct $⟦ sans(K) ⟧$, with an arbitrary effect. Label substitution is then sound in general, as stated in the following theorem:
+We can now move on to stating the metatheoretic properties of label-substitutions in much the same manner. In particular, in Figure~@fig:ssa-subst-sem, we interpret label substitutions $Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K)$ as morphisms taking a copy of the context $⟦ Gamma ⟧$ and an element of the coproduct $⟦ sans(L) ⟧$ to an element of the coproduct $⟦ sans(K) ⟧$, with an arbitrary effect. Label substitution is then sound in general, as stated in the following theorem:
 
 #block[
 Given $Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K)$, we have
