@@ -1,6 +1,7 @@
 // Document templates and standalone compilation logic.
 
 #import "@preview/ctheorems:1.1.3": thmrules
+#import "/lib/todos.typ": todo
 
 /// Thesis metadata defaults.
 #let thesis-info = (
@@ -32,6 +33,35 @@
 #let standalone-bibliography() = context {
   if _nesting-depth.get() == 0 {
     _standalone-bibliography()
+  }
+}
+
+/// Render a live, number-only reference when `target` exists in a containing
+/// document, and an explicit TODO when this source is compiled as a leaf.
+/// Call sites retain their authored supplements ("Figure", "Section", etc.),
+/// so the live reference deliberately suppresses Typst's automatic supplement.
+#let conditional-ref(target, fallback: none, supplement: none) = context {
+  let nested = _nesting-depth.get() > 0
+  let target-label = label(target)
+  let matches = if nested { query(target-label) } else { () }
+  if nested and matches.len() == 1 {
+    ref(target-label, supplement: supplement)
+  } else {
+    let message = if fallback == none {
+      [Cross-reference: `#target`]
+    } else {
+      fallback
+    }
+    todo(
+      message,
+      kind: "cross-reference",
+      owner: "agent",
+      audience: "agent",
+      source: "integration",
+      status: "open",
+      priority: "normal",
+      target: target,
+    )
   }
 }
 

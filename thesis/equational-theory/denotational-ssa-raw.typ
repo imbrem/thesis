@@ -193,7 +193,7 @@ operations as follows:
 $ f #h(0em) a approx \( kw("let") med y = f #h(0em) a ; #h(0em) y \) approx \( kw("let") med x = a ; #h(0em) kw("let") med y = f #h(0em) x ; #h(0em) y \) approx \( kw("let") med x = a ; #h(0em) f #h(0em) x \) $
 
 This completes the equational theory for #lssa terms;
-in Section #todo[Resolve source reference `ssec:completeness` during integration.], we will show that this is enough to state
+in Section #conditional-ref("ssec:completeness"), we will show that this is enough to state
 a completeness theorem.
 
 == Regions
@@ -480,7 +480,7 @@ executed.
 
     ],
     caption: [
-      Program from Figure #todo[Resolve source reference `fig:dominance-to-lexical` during integration.] after substituting
+      Program from Figure #conditional-ref("fig:dominance-to-lexical") after substituting
       $sans(l e t)$s.
     ]
   )
@@ -607,7 +607,7 @@ flattening of nested $sans(w h e r e)$-blocks:
 ))])) <eqn:where-fusion-1> Rather than directly giving
 derivation trees for such auxilliary rules, it is more convenient to
 give a denotational proof. However, the completeness of our equational
-theory (proved in Section~#todo[Resolve source reference `ssec:completeness` during integration.]) means that the semantic
+theory (proved in Section~#conditional-ref("ssec:completeness")) means that the semantic
 equality implies the existence of the requisite derivation tree. A proof
 can be found in Lemma~#todo[Resolve source reference `lem:where-fusion` during integration.] in the appendix. This is one of
 the benefits of having a completeness result: it lets us switch freely
@@ -718,7 +718,7 @@ we have that
 This means, in particular, that, substitution and label-substitution are
 well-defined operators on equivalence classes of terms, which will come
 in handy later as we set out to prove completeness in
-Section~#todo[Resolve source reference `ssec:completeness.` during integration.]
+Section~#conditional-ref("ssec:completeness").
 
 #figure([
   #rule-set(
@@ -853,7 +853,7 @@ $r$ If we are also given an arbitrary expression $a$, then
 
 ]
 #block[
-#emph[Proof.] See Appendix~#todo[Resolve source reference `proof:anf-conversion` during integration.]~◻
+#emph[Proof.] See Appendix~#conditional-ref("proof:anf-conversion")~◻
 
 ]
 #figure([#grammar(
@@ -917,8 +917,8 @@ In particular,
 <from-lexical-ssa-to-ssa>
 We now come to the final part of our argument: that lexical SSA is
 equivalent to standard SSA, where we take the
-basic-blocks-with-arguments dialect described in Figure~#todo[Resolve source reference `fig:bba-grammar` during integration.]
-as standard. We begin by recalling how, in Figure~#todo[Resolve source reference `fig:ssa-data` during integration.], we
+basic-blocks-with-arguments dialect described in Figure~#conditional-ref("fig:bba-grammar")
+as standard. We begin by recalling how, in Figure~#conditional-ref("fig:ssa-data"), we
 illustrated how a lexical SSA region can alternatively be interpreted as
 a tuple of:
 
