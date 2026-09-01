@@ -66,7 +66,7 @@ $
 
 #let prfn = $⇸$
 
-#import "/lib/todos.typ": todo
+#import "/lib/todos.typ": todo, question, suggestion, plan, error, old-syntax
 
 #let hasty(ctx, exp, ty) = $ctx ⊢ exp : ty$
 
