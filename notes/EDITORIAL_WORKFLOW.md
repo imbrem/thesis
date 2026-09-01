@@ -35,13 +35,10 @@ work reportable without multiplying nearly identical categories.
    python3 scripts/thesis.py review --file thesis/path/to/section.typ
    ```
 
-3. Answer the five prompts, edit the displayed source block, then run the
+3. Answer the four prompts, edit the displayed source block, then run the
    printed command for the next block. The tool displays existing source but
    never proposes replacement prose.
-4. When a block makes a mechanization claim, cite an exact active declaration
-   in a TODO/queue record. `partial`, `interface-only`, and `paper-only` are not
-   interchangeable with proved.
-5. Build the leaf, then the chapter. At chapter boundaries run `make status`,
+4. Build the leaf, then the chapter. At chapter boundaries run `make status`,
    `make lint`, `make xrefs`, `make queue`, and `make thesis`.
 
 The queue's evidence check proves only that cited files/declaration names still
