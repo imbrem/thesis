@@ -23,7 +23,7 @@ variable {Φ : Type u₅} [HasTy Φ τ]
 
 /-- Embed an exact typing derivation into the older generic judgment. Every
 constructor is preserved and, crucially, no `sub` node is inserted. -/
-def HasType.toGeneric : {Γ : Ctx ν τ} → {n : Nat} →
+@[simp] def HasType.toGeneric : {Γ : Ctx ν τ} → {n : Nat} →
     {β : BoundCtx τ n} → {t : Tm ν Φ n} → {A : τ} →
     HasType Φ Γ β t A →
       Isotope.LambdaIter.LocallyNameless.HasType Φ Γ β t A
