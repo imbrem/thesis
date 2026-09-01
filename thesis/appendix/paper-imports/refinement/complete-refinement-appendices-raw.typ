@@ -1307,4 +1307,4 @@ operators can allow us to model weak memory models. In particular,
 model of TSO, while #cite(<release-acquire>, form: "prose") gives a
 Brookes model of release-acquire.
 
-#hide(bibliography("/thesis/refs.bib", full: false))
+#standalone-bibliography()

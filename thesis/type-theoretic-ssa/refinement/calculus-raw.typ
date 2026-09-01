@@ -914,4 +914,4 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
 )
 <refall:fig:unif-cfg>
 
-#hide(bibliography("/thesis/refs.bib", full: false))
+#standalone-bibliography()
