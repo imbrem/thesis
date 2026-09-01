@@ -61,8 +61,7 @@ $epsilon.alt$, because the effect is a property of the semantics: the
 same term with two different effect typings will have the same
 denotation.
 
-#figure([#block[
-  minipage=1.1,scale=0.9
+#figure([#fit-to-width([#block[
   $ #box(stroke: black, inset: 3pt, [$ ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt a : A ⟧ : cal(C)_epsilon.alt \( ⟦ Gamma^(upright(bold(q))) ⟧ \, ⟦ A ⟧ \) $])\
   ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt x : A ⟧ = ⟦ Gamma^(upright(bold(q))) mapsto x : A_epsilon.alt^1 ⟧ #h(2em) ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt f #h(0em) a : B ⟧ = ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt a : A ⟧ ; ⟦ f ⟧\
   ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt sans(l e t) #h(0em) x = a ; #h(0em) b : B ⟧ = ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; ⟦ Gamma^(upright(bold(q))_l) ⟧ ⊗ ⟦ Gamma^(upright(bold(q))_r) tack.r_epsilon.alt a : A ⟧ ; ⟦ Gamma^(upright(bold(q))_l) \, x : A tack.r_epsilon.alt b : B ⟧\
@@ -76,7 +75,7 @@ denotation.
    & ; \( ⟦ Gamma tack.r upright(bold(q))_l = upright(bold(q))_l + upright(bold(q))_l ⟧ ⊗ ⟦ A ⟧ ; alpha ; ⟦ Gamma^(upright(bold(q))_l) ⟧ ⊗ ⟦ Gamma^(upright(bold(q))_l) \, x : A tack.r_epsilon.alt b : B + A ⟧ ; delta^(- 1) \)^dagger\
    & ; ⟦ Gamma^(upright(bold(q))_l) mapsto dot.op ⟧ ⊗ ⟦ B ⟧ ; rho $
 
-  ]],
+  ]])],
   caption: [
     Denotational semantics for $lambda_(sans(i t e r))$ expressions
   ]
@@ -105,14 +104,13 @@ manner, which is standard except that we prove an #emph[inequality]
 whose direction is determined by the commutativity of the effects of the
 term and of the substitution.
 
-#figure([#block[
-  minipage=1.1,scale=0.9
+#figure([#fit-to-width([#block[
   $ #box(stroke: black, inset: 3pt, [$ ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt sigma gt.tri Delta^(upright(bold(q))') ⟧ : cal(C)_epsilon.alt \( ⟦ Gamma^(upright(bold(q))) ⟧ \, ⟦ Delta^(upright(bold(q))') ⟧ \) $])\
   ⟦ dot.op tack.r_epsilon.alt dot.op gt.tri dot.op ⟧ = sans(i d)_I\
   ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt sigma \, x mapsto a gt.tri Delta^(upright(bold(q))') \, x : A^q ⟧ = {⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; ⟦ Gamma_(upright(bold(e))_l)^(upright(bold(q))_l) tack.r_epsilon.alt sigma gt.tri Delta^(upright(bold(q))') ⟧ ⊗ ⟦ Gamma^(upright(bold(q))_r) tack.r_epsilon.alt a : A ⟧ upright(" if ") q eq.not 0\
   ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt sigma gt.tri Delta^(upright(bold(q))') ⟧ ; lambda^(- 1) upright(" otherwise") $
 
-  ]],
+  ]])],
   caption: [
     Semantics of $lambda_(sans(i t e r))$ substitutions
   ]

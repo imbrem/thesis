@@ -181,21 +181,19 @@ The semantics for regions is in Figure~@refall:fig:ssa-densem:
   $⟦ sans(L)^(upright(bold(Q))) ⟧ \( Gamma \) + ⟦ sans(R)^(upright(bold(Q))) ⟧ \( Gamma \)$,
   feeding recursive calls back into the where-block's body.
 
-#figure([#block[
-  minipage=1.1,scale=0.9
+#figure([#fit-to-width([#block[
   $ #box(stroke: black, inset: 3pt, [$ ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(K)^(upright(bold(Q))') ⟧ : cal(C)_tack.t \( ⟦ \[ Gamma mapsto sans(L)^(upright(bold(Q))) \] ⟧ \, ⟦ \[ Gamma mapsto sans(K)^(upright(bold(Q))') \] ⟧ \) $])\
   ⟦ Gamma tack.r dot.op arrow.r.squiggly dot.op ⟧ = sans(i d)_(upright(bold(0))) #h(2em) ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) \, ell \( A \)^(upright(bold(q))) arrow.r.squiggly sans(K)^(upright(bold(Q))') \, ell \( A \)^(upright(bold(q))') ⟧ = ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(K)^(upright(bold(Q))') ⟧ + ⟦ Gamma^(upright(bold(q))) mapsto Gamma^(upright(bold(q))') ⟧ ⊗ ⟦ A ⟧\
   ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(K)^(upright(bold(Q))') \, ell \( A \)^(upright(bold(q))) ⟧ = ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(K)^(upright(bold(Q))') ⟧ ; iota_l $
 
-  ]],
+  ]])],
   caption: [
     Denotational semantics for label contexts and label weakenings
   ]
 )
 <refall:fig:lwk-densem>
 
-#figure([#block[
-  minipage=1.1,scale=0.9
+#figure([#fit-to-width([#block[
   $ #box(stroke: black, inset: 3pt, [$ ⟦ Gamma tack.r_epsilon.alt t gt.tri sans(L)^(upright(bold(Q))) ⟧ : cal(C)_epsilon.alt \( ⟦ Gamma^(upright(bold(q))) ⟧ \, \[ Gamma mapsto ⟦ sans(L)^(upright(bold(Q))) ⟧ \] \) $])\
   ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt sans(b r) #h(0em) ell #h(0em) a gt.tri sans(L)^(upright(bold(Q))) ⟧ = ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; - ⊗ ⟦ Gamma^(upright(bold(q))_r) tack.r_tack.t a : A ⟧ ; iota_r ; ⟦ Gamma tack.r ell \( A \)^(upright(bold(q))_l) arrow.r.squiggly sans(L)^(upright(bold(Q))) ⟧\
   ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt sans(l e t) #h(0em) x = o ; t gt.tri sans(L)^(upright(bold(Q))) ⟧ = ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; - ⊗ ⟦ Gamma^(upright(bold(q))_r) tack.r_epsilon.alt o : A ⟧ ; ⟦ Gamma^(upright(bold(q))_l) \, x : A tack.r_epsilon.alt t : sans(L)^(upright(bold(Q))^arrow.t) ⟧ ; alpha^arrow.b\
@@ -208,7 +206,7 @@ The semantics for regions is in Figure~@refall:fig:ssa-densem:
   ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt kappa #h(0em) sans(w h e r e)_(sans(r e c)) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q))) ⟧ = ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt kappa gt.tri sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))') ⟧ ; alpha^(+)\
   #h(2em) ; \[ sans(i d)_(⟦ \[ Gamma mapsto sans(L)^(upright(bold(Q))) \] ⟧) \, \[ ⟦ Gamma^(upright(bold(q))_i) \, x_i : A_i tack.r_epsilon.alt t_i : sans(L)^(upright(bold(Q))^arrow.t) \, sans(R)^(upright(bold(Q))'^arrow.t) ⟧ ; alpha^arrow.b ; alpha^(+) \, \]_(ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))'))^dagger \] $
 
-  ]],
+  ]])],
   caption: [
     Denotational semantics for $lambda_(sans(S S A))$
   ]

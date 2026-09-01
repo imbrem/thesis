@@ -44,8 +44,7 @@ and $rho_r : A + B arrow.r_arrow.zigzag B$ which take the other branch
 to $arrow.zigzag$. These satisfy the usual rewrite rules for UB, some of
 which are given in Figure~@refall:fig:ub-rewrites.
 
-#figure([#block[
-  minipage=1.1,scale=0.9
+#figure([#fit-to-width([#block[
 
   #figure(
     align(center)[#table(
@@ -62,7 +61,7 @@ which are given in Figure~@refall:fig:ub-rewrites.
     , kind: table
     )
 
-  ]],
+  ]])],
   caption: [
     Submonads of $sans(U B)$, along with their commutativity information
     (i.e. whether they are a left or right mover w.r.t. other effects)

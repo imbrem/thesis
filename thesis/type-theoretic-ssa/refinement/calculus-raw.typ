@@ -246,7 +246,7 @@ as being simply SSA with additional annotations.
 )
 <refall:fig:ssa-syntax>
 
-#figure([```c++
+#code-figure([```cpp
   struct BasicBlock {
         vector<refall:Instruction> instructions;             // unary/binary let-bindings
         Terminator terminator;                        // LHS of where-block
