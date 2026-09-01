@@ -501,3 +501,5 @@ We have that, for all pure $sans("eff") ( Gamma ) = tack.t$, $ Gamma tack.r r ap
 #emph[Proof.] See Appendix~#todo[Cross-reference: \@proof:complete-reg]~◻
 
 ]
+
+#standalone-bibliography()

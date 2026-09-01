@@ -189,3 +189,5 @@ do not have UB.
   ]
 )
 <refall:fig:weak-refinements>
+
+#standalone-bibliography()

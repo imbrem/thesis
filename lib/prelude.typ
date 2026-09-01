@@ -2,7 +2,7 @@
 // Usage: #import "/lib/prelude.typ": *
 
 #import "/lib/thesis-template/mod.typ": appendix, thesis
-#import "/lib/template.typ": part, chapter, thesis-info
+#import "/lib/template.typ": part, chapter, thesis-info, standalone-bibliography
 
 #import "@preview/curryst:0.6.0": rule, prooftree, rule-set
 

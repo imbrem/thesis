@@ -913,3 +913,5 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
   ]
 )
 <refall:fig:unif-cfg>
+
+#standalone-bibliography()

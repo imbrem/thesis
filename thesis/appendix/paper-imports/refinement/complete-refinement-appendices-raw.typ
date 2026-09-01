@@ -1306,3 +1306,5 @@ operators can allow us to model weak memory models. In particular,
 #cite(<jagadeesan-brookes-relaxed-12>, form: "prose") gives a Brookes
 model of TSO, while #cite(<release-acquire>, form: "prose") gives a
 Brookes model of release-acquire.
+
+#standalone-bibliography()

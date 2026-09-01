@@ -45,6 +45,8 @@ adjustments to the usual presentation:
   Likewise, for uniformity, a return-statement may appear in the branch
   of a conditional branch.
 
+#standalone-bibliography()
+
 #figure([#block[
   #block[
   \<$v$\> ::= $x$ | $\( v \, v' \)$ | $\( \)$
