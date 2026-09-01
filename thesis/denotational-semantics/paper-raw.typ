@@ -131,7 +131,7 @@ If $( - )^dagger$ is an iteration operator which satisfies naturality and codiag
 #emph[Proof.] See Lemma 31 of #cite(<goncharov-18-guarded-traced>, form: "prose")~◻
 
 ]
-Since in a distributive Freyd category $cal(C)_tack.t$ must be distributive (and hence co-cartesian), dinaturality follows from the other axioms of an Elgot category. Given a distributive Freyd category equipped with a (strong) Elgot structure, we will often want to consider the fixpoint of a morphism $f : R ⊗ A arrow.r B + A$, where our "context" $R$ does not change between iterations. To do this, we first need to build up a morphism $ sans("rcase") ( f ) := sans("let") ( f ) ; pi_l ⊗ ( B + A ) ; delta^(- 1) : R ⊗ A arrow.r R ⊗ B + R ⊗ A $ which computes $f$ and then distributes a copy of the read-only state $R$ to each branch of the result. We may then define the fixpoint $ sans("rfix") ( f ) := ( sans("rcase") ( f ) )^dagger ; pi_r : R ⊗ A arrow.r B $ We consider some more properties of $sans("rcase") ( f )$ and $sans("rfix") ( f )$ in Appendix~@apx:environment.
+Since in a distributive Freyd category $cal(C)_tack.t$ must be distributive (and hence co-cartesian), dinaturality follows from the other axioms of an Elgot category. Given a distributive Freyd category equipped with a (strong) Elgot structure, we will often want to consider the fixpoint of a morphism $f : R ⊗ A arrow.r B + A$, where our "context" $R$ does not change between iterations. To do this, we first need to build up a morphism $ sans("rcase") ( f ) := sans("let") ( f ) ; pi_l ⊗ ( B + A ) ; delta^(- 1) : R ⊗ A arrow.r R ⊗ B + R ⊗ A $ which computes $f$ and then distributes a copy of the read-only state $R$ to each branch of the result. We may then define the fixpoint $ sans("rfix") ( f ) := ( sans("rcase") ( f ) )^dagger ; pi_r : R ⊗ A arrow.r B $ We consider some more properties of $sans("rcase") ( f )$ and $sans("rfix") ( f )$ in Appendix~#todo[Cross-reference: \@apx:environment.]
 
 = String Diagrams
 <string-diagrams>
@@ -144,7 +144,7 @@ Since in a distributive Freyd category $cal(C)_tack.t$ must be distributive (and
 )
 <fig:coproduct-string-diagrams>
 
-The power of string diagrams comes from the fact that many syntactically distinct ways to write equal values are obviously graphically equivalent by #emph[isotopy]: essentially, moving boxes and wires around. String diagrams also give us an elegant way to represent and reason about Elgot structures. It turns out that Elgot structures induce a #emph[trace] on the coproduct @hasegawa-trace-02: given $f : A + C arrow.r B + C$, we can define $ sans("Tr")_(A   B)^C ( f ) = iota_l ; \[ f ; B + iota_r \]^dagger = iota_l ; f ; \[ sans("id")   ( iota_l ; f )^dagger \] : A arrow.r B $ Since this satisfies the axioms of a trace over a symmetric monoidal category, we can draw it, and therefore the Elgot operator, as in Figure~@fig:elgot-string-diagrams. Continuing with the control-flow diagram analogy, such traces can be interpreted as #emph[loops], with the Elgot axioms, now drawn as diagrams in Figure~@fig:elgot-ax-string-diagrams.
+The power of string diagrams comes from the fact that many syntactically distinct ways to write equal values are obviously graphically equivalent by #emph[isotopy]: essentially, moving boxes and wires around. String diagrams also give us an elegant way to represent and reason about Elgot structures. It turns out that Elgot structures induce a #emph[trace] on the coproduct @hasegawa-trace-02: given $f : A + C arrow.r B + C$, we can define $ sans("Tr")_(A   B)^C ( f ) = iota_l ; \[ f ; B + iota_r \]^dagger = iota_l ; f ; \[ sans("id")   ( iota_l ; f )^dagger \] : A arrow.r B $ Since this satisfies the axioms of a trace over a symmetric monoidal category, we can draw it, and therefore the Elgot operator, as in Figure~@fig:elgot-string-diagrams. Continuing with the control-flow diagram analogy, such traces can be interpreted as #emph[loops], with the Elgot axioms, now drawn as diagrams in Figure~#todo[Cross-reference: \@fig:elgot-ax-string-diagrams.]
 
 #figure([#grid(
   columns: (1fr, 1fr),
@@ -416,7 +416,7 @@ Given $Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K)$, we have
 ]
 = Equational Theory
 <ssec:completeness>
-Using the metatheory in the previous section, our goal is now to prove the equational theory given in Section~@sec:equations sound with respect to any valid $lambda_(sans("SSA"))$ model. Stated more precisely, we have the following:
+Using the metatheory in the previous section, our goal is now to prove the equational theory given in Section~#todo[Cross-reference: \@sec:equations] sound with respect to any valid $lambda_(sans("SSA"))$ model. Stated more precisely, we have the following:
 
 #block[
 We have that
@@ -431,7 +431,7 @@ We have that
 
 ]
 #block[
-#emph[Proof.] See Appendix~@proof:soundness-eqn~◻
+#emph[Proof.] See Appendix~#todo[Cross-reference: \@proof:soundness-eqn]~◻
 
 ]
 Now that we've proved the #emph[soundness] of our equational theory, what remains is to prove that it is #emph[complete], i.e., that every equation which holds in all $lambda_(sans("SSA"))$ models can be derived from it, or, stated more categorically, that our syntax quotiented by the equational theory forms an initial $lambda_(sans("SSA"))$ model. Our strategy for doing this is as follows:
@@ -473,7 +473,7 @@ We have that, for all pure $sans("eff") ( Gamma ) = tack.t$, $ Gamma tack.r_epsi
 
 ]
 #block[
-#emph[Proof.] See Appendix~@proof:complete-expr~◻
+#emph[Proof.] See Appendix~#todo[Cross-reference: \@proof:complete-expr]~◻
 
 ]
 = Regions

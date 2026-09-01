@@ -186,7 +186,7 @@ as desired.
 
 We now proceed to give a sketch of the construction of
 $sans(T m) \( cal(R) \)$ and the proof of completeness; full details are
-given in Appendix~@refall:apx:completeness. As is standard, our syntactic model
+given in Appendix~#todo[Cross-reference: `refall:apx:completeness`]. As is standard, our syntactic model
 $sans(T m) \( cal(R) \)$ will have types as objects. To construct
 morphisms, we start with terms with a single free variable. We stratify
 these terms by type and effect as follows:
@@ -205,7 +205,7 @@ We can equip $sans(T m) \( cal(R) \)$ with the structure of a
 poset-enriched category by using the refinement relation as a partial
 order; it is trivial to see that this is well-defined. The rest of the
 structure of a $lambda_(sans(i t e r))$-model is given in
-Appendix~@refall:apx:syn-model. To prove completeness, it then suffices to show
+Appendix~#todo[Cross-reference: `refall:apx:syn-model`]. To prove completeness, it then suffices to show
 that $⟦ dot.op ⟧_(sans(T m) \( cal(R) \))$
 #emph[reflects] refinement. The details of how to do so are given in
-Appendix~@refall:apx:packing.
+Appendix~#todo[Cross-reference: `refall:apx:packing`].

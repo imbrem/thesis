@@ -24,13 +24,17 @@ SOURCE_REF = re.compile(
 )
 
 
+def labels_in_text(text: str) -> set[str]:
+    return {
+        label for label in LABEL.findall(text)
+        if LABEL_NAME.fullmatch(label)
+    }
+
+
 def source_labels() -> set[str]:
     labels: set[str] = set()
     for path in THESIS.rglob("*.typ"):
-        labels.update(
-            label for label in LABEL.findall(path.read_text())
-            if LABEL_NAME.fullmatch(label)
-        )
+        labels.update(labels_in_text(path.read_text()))
     return labels
 
 
@@ -119,7 +123,10 @@ def main() -> None:
     changed: list[tuple[Path, str]] = []
     for path in sorted(THESIS.rglob("*.typ")):
         original = path.read_text()
-        updated, count = resolve(original, labels)
+        # CI compiles every imported leaf independently, so an apparently
+        # valid full-document reference is safe only when its target is also
+        # present in that leaf.
+        updated, count = resolve(original, labels & labels_in_text(original))
         if count:
             total += count
             changed.append((path, updated))

@@ -221,7 +221,7 @@ it follows that
 $ sans(r e g) \( sans(c f g) \( r \) \) approx sans(b b) \( beta \, \( kappa_i \( y_i \) : { r_i } \, \)_i \) $
 Define
 $ T_i = \( kappa_j \( y_j \) : { r_j } \, \)_(j < i) \, \( kappa_j \( y_j \) : { t_j } \, \( kappa_(j \, k) \( y_(j \, k) \) : { t_(rho_(j \, k)) } \, \)_k \, \)_(j gt.eq i) $
-Using Equation~@eqn:pull-where, we may show that, for all $i$,
+Using Equation~#todo[Resolve source reference `eqn:pull-where` during integration.], we may show that, for all $i$,
 $sans(b b) \( beta \, T_(i + 1) \) approx sans(b b) \( beta \, T_i \)$,
 since
 
