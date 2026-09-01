@@ -66,7 +66,11 @@ theorem resolve_push_rename [DecidableEq ν] {ρ σ : Scope ν n}
       simp only [Option.some.injEq, ne_eq] at hqx hqy
       by_cases e : x = z
       · subst z
-        simp [resolve_push_ne, hqx.symm, hqy.symm, h]
+        have h' : ρ.resolve x = σ.resolve y := by simpa using h
+        rw [if_pos rfl]
+        rw [resolve_push_ne _ (fun e => hqx e.symm)]
+        rw [resolve_push_ne _ (fun e => hqy e.symm)]
+        exact congrArg (Sum.map Fin.succ id) h'
       · by_cases ew : z = w
         · subst z; simp [e]
         · simp [resolve_push_ne, ew, e, h]
@@ -117,7 +121,7 @@ theorem translate_congr [DecidableEq ν] {ρ σ : Scope ν n} (a : Named.Tm ν �
       rw [ihb]
       intro x hx
       by_cases e : q = some x
-      · cases q <;> simp_all [Scope.resolve]
+      · rw [e]; simp
       · exact Scope.resolve_push_eq q x (h x (Or.inr ⟨e, hx⟩))
   | unit => rfl
   | pair a b iha ihb =>
@@ -129,10 +133,10 @@ theorem translate_congr [DecidableEq ν] {ρ σ : Scope ν n} (a : Named.Tm ν �
       rw [ihb]
       intro x hx
       by_cases er : r = some x
-      · cases r <;> simp_all [Scope.resolve]
+      · rw [er]; simp
       · apply Scope.resolve_push_eq
         by_cases eq : q = some x
-        · cases q <;> simp_all [Scope.resolve]
+        · rw [eq]; simp
         · exact Scope.resolve_push_eq q x (h x (Or.inr ⟨eq, er, hx⟩))
   | inl a ih | inr a ih | abort a ih =>
       simp only [translate]
@@ -144,11 +148,11 @@ theorem translate_congr [DecidableEq ν] {ρ σ : Scope ν n} (a : Named.Tm ν �
       · rw [ihb]
         intro x hx
         by_cases er : r = some x
-        · cases r <;> simp_all [Scope.resolve]
+        · rw [er]; simp
         · exact Scope.resolve_push_eq r x (h x (Or.inr (Or.inr ⟨er, hx⟩)))
       · intro x hx
         by_cases eq : q = some x
-        · cases q <;> simp_all [Scope.resolve]
+        · rw [eq]; simp
         · exact Scope.resolve_push_eq q x (h x (Or.inr (Or.inl ⟨eq, hx⟩)))
   | iter a q b iha ihb =>
       simp only [translate]
@@ -156,7 +160,7 @@ theorem translate_congr [DecidableEq ν] {ρ σ : Scope ν n} (a : Named.Tm ν �
       rw [ihb]
       intro x hx
       by_cases eq : q = some x
-      · cases q <;> simp_all [Scope.resolve]
+      · rw [eq]; simp
       · exact Scope.resolve_push_eq q x (h x (Or.inr ⟨eq, hx⟩))
 
 def translateClosed [DecidableEq ν] (a : Named.Tm ν Φ) :
@@ -179,7 +183,8 @@ variable [DecidableEq ν] {a b c : Named.Tm ν Φ}
   fun ρ => (h₁ ρ).trans (h₂ ρ)
 
 theorem op (h : SameLocallyNameless a b) :
-    SameLocallyNameless (.op f a) (.op f b) := fun ρ => congrArg _ (h ρ)
+    SameLocallyNameless (.op f a) (.op f b) :=
+  fun ρ => congrArg (LocallyNameless.Tm.op f) (h ρ)
 theorem let₁ (ha : SameLocallyNameless a a') (hb : SameLocallyNameless b b') :
     SameLocallyNameless (.let₁ x a b) (.let₁ x a' b') :=
   fun ρ => by simp only [translate, ha ρ, hb (.push x ρ)]
@@ -190,15 +195,22 @@ theorem let₂ (ha : SameLocallyNameless a a') (hb : SameLocallyNameless b b') :
     SameLocallyNameless (.let₂ x y a b) (.let₂ x y a' b') :=
   fun ρ => by simp only [translate, ha ρ, hb (.push y (.push x ρ))]
 theorem inl (h : SameLocallyNameless a b) :
-    SameLocallyNameless (.inl a) (.inl b) := fun ρ => congrArg _ (h ρ)
+    SameLocallyNameless (.inl a) (.inl b) :=
+  fun ρ => congrArg
+    (fun t : LocallyNameless.Tm ν Φ _ => LocallyNameless.Tm.inl t) (h ρ)
 theorem inr (h : SameLocallyNameless a b) :
-    SameLocallyNameless (.inr a) (.inr b) := fun ρ => congrArg _ (h ρ)
-theorem case (he : SameLocallyNameless e e')
+    SameLocallyNameless (.inr a) (.inr b) :=
+  fun ρ => congrArg
+    (fun t : LocallyNameless.Tm ν Φ _ => LocallyNameless.Tm.inr t) (h ρ)
+theorem case {e e' l l' r r' : Named.Tm ν Φ}
+    (he : SameLocallyNameless e e')
     (hl : SameLocallyNameless l l') (hr : SameLocallyNameless r r') :
     SameLocallyNameless (.case e x l y r) (.case e' x l' y r') :=
   fun ρ => by simp only [translate, he ρ, hl (.push x ρ), hr (.push y ρ)]
 theorem abort (h : SameLocallyNameless a b) :
-    SameLocallyNameless (.abort a) (.abort b) := fun ρ => congrArg _ (h ρ)
+    SameLocallyNameless (.abort a) (.abort b) :=
+  fun ρ => congrArg
+    (fun t : LocallyNameless.Tm ν Φ _ => LocallyNameless.Tm.abort t) (h ρ)
 theorem iter (ha : SameLocallyNameless a a') (hb : SameLocallyNameless b b') :
     SameLocallyNameless (.iter a x b) (.iter a' x b') :=
   fun ρ => by simp only [translate, ha ρ, hb (.push x ρ)]
