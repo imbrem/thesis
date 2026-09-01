@@ -12,6 +12,11 @@
 /// Nesting depth: 0 at top level, incremented by each document wrapper.
 #let _nesting-depth = state("_nesting-depth", 0)
 
+#let _compact-heading-numbering = (..numbers) => numbering(
+  "1.",
+  ..numbers.pos().filter(number => number != 0),
+)
+
 /// Bibliography emitted at the end of a standalone (top-level) part/chapter,
 /// so that `@key` citations resolve when a leaf file is compiled on its own.
 /// Typst suppresses an empty bibliography automatically. Do not condition its
@@ -36,7 +41,7 @@
 /// are shifted down by the nesting offset.
 #let part(title: none, body) = {
   _nesting-depth.update(n => n + 1)
-  set heading(numbering: "1.")
+  set heading(numbering: _compact-heading-numbering)
   show: thmrules
   context {
     let depth = _nesting-depth.get()
@@ -66,7 +71,7 @@
 /// Same nesting logic as `part`.
 #let chapter(title: none, body) = {
   _nesting-depth.update(n => n + 1)
-  set heading(numbering: "1.")
+  set heading(numbering: _compact-heading-numbering)
   show: thmrules
   context {
     let depth = _nesting-depth.get()

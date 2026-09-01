@@ -12,7 +12,7 @@ TEX_PDFS := $(TEX_SOURCES:.tex=.pdf)
 
 # --- Targets ---
 
-.PHONY: all thesis parts papers submodules clean todo status queue numbering lint help
+.PHONY: all thesis parts papers submodules clean todo status queue xrefs numbering lint help
 
 thesis: thesis/main.pdf
 
@@ -42,6 +42,9 @@ status:
 queue:
 	@python3 scripts/thesis.py queue --check
 
+xrefs:
+	@python3 scripts/resolve_crossrefs.py --fail-resolvable
+
 numbering:
 	@python3 scripts/thesis.py numbering
 
@@ -67,6 +70,7 @@ help:
 	@echo "  todo        List all #todo items in the thesis"
 	@echo "  status      Summarize TODO ownership and old-syntax migration"
 	@echo "  queue       List chapter decisions and verify cited Lean evidence"
+	@echo "  xrefs       Classify unresolved imported cross-references"
 	@echo "  numbering   Audit full-thesis figure numbering configuration"
 	@echo "  lint        Count known conversion artifacts"
 	@echo "  submodules  Clone/update git submodules"

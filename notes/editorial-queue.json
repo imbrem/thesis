@@ -1,11 +1,27 @@
 {
   "schema": 1,
-  "statuses": ["open", "decided", "blocked", "deferred"],
+  "statuses": ["proposed", "open", "decided", "blocked", "deferred"],
   "priorities": ["critical", "high", "normal", "low"],
   "items": [
     {
+      "id": "NEEL-001",
+      "kind": "plan",
+      "audience": "author",
+      "source": "Neel",
+      "status": "proposed",
+      "priority": "high",
+      "target": "thesis/intro/main.typ:55",
+      "question": "Treat the current Neel's Recs / MVP Thesis material as a planning input rather than settled introduction text?",
+      "options": ["move to non-rendered notes and map items to chapters", "retain temporarily with an editorial boundary"],
+      "lean": {
+        "status": "partial",
+        "evidence": ["formalization/thesis/Isotope/LambdaIter.lean"],
+        "missing": ["The proposed SSA translations, completeness results, and model equivalences are not all active Lean capstones"]
+      }
+    },
+    {
       "id": "ORDER-001",
-      "kind": "potential-plan",
+      "kind": "plan",
       "audience": "author",
       "source": "author-request-2026-09-01",
       "status": "open",
@@ -39,7 +55,7 @@
     },
     {
       "id": "ORDER-003",
-      "kind": "potential-plan",
+      "kind": "plan",
       "audience": "author",
       "source": "author-request-2026-09-01",
       "status": "open",
@@ -88,7 +104,7 @@
     },
     {
       "id": "ORDER-006",
-      "kind": "potential-plan",
+      "kind": "plan",
       "audience": "author",
       "source": "author-request-2026-09-01",
       "status": "open",
@@ -116,9 +132,9 @@
     },
     {
       "id": "FORMAL-001",
-      "kind": "agent-question",
+      "kind": "question",
       "audience": "formalization-agent",
-      "source": "claim-audit",
+      "source": "editorial-agent/claim-audit",
       "status": "open",
       "priority": "critical",
       "target": "formalization/thesis/Isotope/LambdaIter",

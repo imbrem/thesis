@@ -10,7 +10,7 @@
 == Semantics of $lambda_(sans(i t e r))$ Expressions
 <refall:semantics-of-lambda_ensuremathmathsfiter-expressions>
 We now give the semantics of each of our term formers in
-Figure~@refall:fig:expr-densem by induction on derivations; we write
+@refall:fig:expr-densem by induction on derivations; we write
 $⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) a : A ⟧$
 to denote the appropriate derivation/sub-derivation. Each of them
 corresponds quite closely to the the underlying categorical structure.
@@ -96,7 +96,7 @@ $ ⟦ Gamma^(upright(bold(q))) mapsto Delta^(upright(bold(q))') ⟧ ; ⟦ Delta^
 ==== Substitution
 <refall:substitution>
 We proceed to give a semantics for substitution in
-Figure~@refall:fig:subst-den. We split up the input context into subcontexts
+@refall:fig:subst-den. We split up the input context into subcontexts
 for each #emph[used] variable, which are then simply interpreted using
 their denotation. Unused variables are simply represented via the left
 unitor. We can then state soundness of substitution in the following
