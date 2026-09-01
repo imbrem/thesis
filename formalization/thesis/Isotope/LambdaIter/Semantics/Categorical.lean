@@ -30,6 +30,40 @@ class TypeModel (τ : Type u₃) [TypeFormers τ] [Subtyping τ]
   emptyIsInitial : IsInitial (obj (empty : τ))
   subty {A B : τ} : Subty A B → (obj A ⟶ obj B)
 
+/-- Structural coherence laws for a categorical interpretation of subtyping.
+This class deliberately does not identify arbitrary subtype derivations; that
+stronger, optional condition is `SubtyProofIrrelevant`. -/
+class LawfulTypeModel (τ : Type u₃) [TypeFormers τ] [Subtyping τ]
+    (V : Type u₁) [Category.{v₁} V] [CartesianMonoidalCategory V]
+    [HasFiniteCoproducts V] (M : TypeModel τ V) : Prop where
+  subty_refl (A : τ) : M.subty (Subty.refl A) = 𝟙 (M.obj A)
+  subty_trans {A B C : τ} (f : Subty A B) (g : Subty B C) :
+    M.subty (Subty.trans f g) = M.subty f ≫ M.subty g
+  subty_tensor {A A' B B' : τ} (f : Subty A A') (g : Subty B B') :
+    M.subty (Subty.tensor f g) ≫ (M.tensorIso A' B').hom =
+      (M.tensorIso A B).hom ≫ (M.subty f ⊗ₘ M.subty g)
+  subty_coprod {A A' B B' : τ} (f : Subty A A') (g : Subty B B') :
+    M.subty (Subty.coprod f g) ≫ (M.coprodIso A' B').hom =
+      (M.coprodIso A B).hom ≫ coprod.map (M.subty f) (M.subty g)
+  subty_empty (A : τ) : M.subty (Subty.empty A) = M.emptyIsInitial.to (M.obj A)
+  subty_unit (A : τ) :
+    M.subty (Subty.unit A) ≫ M.unitIso.hom =
+      CartesianMonoidalCategory.toUnit (M.obj A)
+
+/-- Optional semantic proof irrelevance for subtype derivations.  Keeping this
+separate permits both proof-relevant refinement models and coherent ordinary
+subtyping models to use the same weak `TypeModel` interface. -/
+class SubtyProofIrrelevant (τ : Type u₃) [TypeFormers τ] [Subtyping τ]
+    (V : Type u₁) [Category.{v₁} V] [CartesianMonoidalCategory V]
+    [HasFiniteCoproducts V] (M : TypeModel τ V) : Prop where
+  subty_eq {A B : τ} (f g : Subty A B) : M.subty f = M.subty g
+
+theorem subty_comp_eq [LawfulTypeModel τ V M] [SubtyProofIrrelevant τ V M]
+    {A B C : τ} (f : Subty A B) (g : Subty B C) (h : Subty A C) :
+    M.subty f ≫ M.subty g = M.subty h := by
+  rw [← LawfulTypeModel.subty_trans]
+  exact SubtyProofIrrelevant.subty_eq _ _
+
 /-- Interpretation of primitive instructions as computation morphisms. -/
 class InstructionModel [TypeFormers τ] [Subtyping τ]
     [Category.{v₁} V] [Category.{v₂} C] (J : Functor V C)

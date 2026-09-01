@@ -42,6 +42,39 @@ variable [Semantics.TypeModel.{u, v} τ]
     (fun X f => by funext z; exact Empty.elim (Semantics.TypeModel.emptyEquiv z))
   subty d := Semantics.TypeModel.coe d
 
+/-- The structural laws of a set-valued type model transport to the
+categorical model in `Type`. -/
+noncomputable instance ofTypeModelLawful [Semantics.LawfulTypeModel.{u, v} τ] :
+    Categorical.LawfulTypeModel τ (Type v) (ofTypeModel (τ := τ)) where
+  subty_refl A := by
+    simpa [ofTypeModel] using Semantics.LawfulTypeModel.coe_refl (v := v) A
+  subty_trans f g := by
+    simpa [ofTypeModel, Function.comp_def] using
+      Semantics.LawfulTypeModel.coe_trans (v := v) f g
+  subty_tensor f g := by
+    funext p
+    simpa [ofTypeModel] using
+      Semantics.LawfulTypeModel.coe_tensor (v := v) f g p
+  subty_coprod f g := by
+    funext s
+    simpa [ofTypeModel] using
+      Semantics.LawfulTypeModel.coe_coprod (v := v) f g s
+  subty_empty A := by
+    funext z
+    simpa [ofTypeModel] using
+      Semantics.LawfulTypeModel.coe_empty (v := v) A z
+  subty_unit A := by
+    funext a
+    simpa [ofTypeModel] using
+      Semantics.LawfulTypeModel.coe_unit (v := v) A a
+
+/-- Optional proof irrelevance transports independently of the structural
+laws. -/
+noncomputable instance ofTypeModelSubtyProofIrrelevant
+    [Semantics.SubtyProofIrrelevant.{u, v} τ] :
+    Categorical.SubtyProofIrrelevant τ (Type v) (ofTypeModel (τ := τ)) where
+  subty_eq f g := Semantics.SubtyProofIrrelevant.coe_eq f g
+
 variable {Φ : Type q} [HasTy Φ τ]
 variable {ε : Type r} [HasEff Φ ε] [Bot ε]
 variable {m : Type v → Type v} [Monad m] [LawfulMonad m]
