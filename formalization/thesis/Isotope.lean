@@ -6,3 +6,4 @@ import Isotope.Elgot.Basic
 import Isotope.LambdaIter
 import Isotope.LambdaSSA
 import Isotope.LambdaCase
+import Isotope.LambdaSeq
