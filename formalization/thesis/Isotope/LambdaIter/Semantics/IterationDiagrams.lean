@@ -68,7 +68,7 @@ variable {V : Type u₂} [Category.{v₂} V]
 /-- Threading a fixed context through a bare loop is supplied by strong Elgot
 iteration, rather than being an additional language-model law. -/
 theorem loop_strength (R : C) {X Y : C} (f : X ⟶ Y ⨿ X) :
-    threadLoop R f = R ◁ (loop f) :=
+    threadLoop R f = MonoidalCategoryStruct.whiskerLeft R (loop f) :=
   threadLoop_eq J R f
 
 end Strong
