@@ -1,0 +1,168 @@
+{
+  "schema": 1,
+  "statuses": ["proposed", "open", "decided", "blocked", "deferred"],
+  "priorities": ["critical", "high", "normal", "low"],
+  "items": [
+    {
+      "id": "NEEL-001",
+      "kind": "plan",
+      "audience": "author",
+      "source": "Neel",
+      "status": "proposed",
+      "priority": "high",
+      "target": "thesis/intro/main.typ:55",
+      "question": "Treat the current Neel's Recs / MVP Thesis material as a planning input rather than settled introduction text?",
+      "options": ["move to non-rendered notes and map items to chapters", "retain temporarily with an editorial boundary"],
+      "lean": {
+        "status": "partial",
+        "evidence": ["formalization/thesis/Isotope/LambdaIter.lean"],
+        "missing": ["The proposed SSA translations, completeness results, and model equivalences are not all active Lean capstones"]
+      }
+    },
+    {
+      "id": "ORDER-001",
+      "kind": "plan",
+      "audience": "author",
+      "source": "author-request-2026-09-01",
+      "status": "open",
+      "priority": "high",
+      "target": "thesis/main.typ",
+      "question": "Use the proposed unrefined-first chapter spine as the working ordering?",
+      "options": ["lambda_iter before lambda_SSA", "lambda_SSA before lambda_iter"],
+      "lean": {
+        "status": "partial",
+        "evidence": ["formalization/thesis/Isotope/LambdaIter.lean"],
+        "missing": ["No lambda_SSA thesis module is imported by Isotope.lean"]
+      }
+    },
+    {
+      "id": "ORDER-002",
+      "kind": "question",
+      "audience": "author",
+      "source": "author-request-2026-09-01",
+      "status": "open",
+      "priority": "high",
+      "target": "unrefined lambda_iter chapters",
+      "question": "Place equational theory before semantics for motivation, or after soundness?",
+      "options": ["before semantics", "after soundness", "split laws from metatheory"],
+      "lean": {
+        "status": "checked",
+        "evidence": [
+          "formalization/thesis/Isotope/LambdaIter/LocallyNameless/Equiv.lean",
+          "formalization/thesis/Isotope/LambdaIter/Semantics/Soundness.lean"
+        ]
+      }
+    },
+    {
+      "id": "ORDER-003",
+      "kind": "plan",
+      "audience": "author",
+      "source": "author-request-2026-09-01",
+      "status": "open",
+      "priority": "normal",
+      "target": "abstract models chapters",
+      "question": "Use semantics, soundness, then abstract models/morphisms/completeness for each calculus?",
+      "lean": {
+        "status": "partial",
+        "evidence": [
+          "formalization/thesis/Isotope/LambdaIter/Semantics/Model.lean",
+          "formalization/thesis/Isotope/LambdaIter/Semantics/Categorical.lean",
+          "formalization/thesis/Isotope/LambdaIter/Semantics/Soundness.lean"
+        ],
+        "missing": ["No initiality or completeness declaration found in active LambdaIter modules"]
+      }
+    },
+    {
+      "id": "ORDER-004",
+      "kind": "question",
+      "audience": "author",
+      "source": "author-request-2026-09-01",
+      "status": "open",
+      "priority": "high",
+      "target": "lambda_SSA equational theory",
+      "question": "Move the full sound-and-complete SSA equational theory to an appendix, retaining translation soundness in the main development?",
+      "lean": {
+        "status": "paper-only",
+        "evidence": ["formalization/CLAIM_AUDIT.md"],
+        "missing": ["No active lambda_SSA translation, semantic soundness, or completeness theorem"]
+      }
+    },
+    {
+      "id": "ORDER-005",
+      "kind": "question",
+      "audience": "author",
+      "source": "author-request-2026-09-01",
+      "status": "open",
+      "priority": "high",
+      "target": "refinement transition",
+      "question": "What theorem should state equivalence to previous work when refinement is symmetric?",
+      "lean": {
+        "status": "missing",
+        "evidence": ["formalization/thesis/Isotope/LambdaIter/Subtyping.lean"],
+        "missing": ["No theorem-level bridge to the historical refinement formalization"]
+      }
+    },
+    {
+      "id": "ORDER-006",
+      "kind": "plan",
+      "audience": "author",
+      "source": "author-request-2026-09-01",
+      "status": "open",
+      "priority": "normal",
+      "target": "related work",
+      "question": "Create one Related Work chapter from both imported sections, with relocation decisions tracked before any fusion rewrite?",
+      "options": ["single chapter", "topic-local passages plus synthesis chapter"],
+      "lean": {"status": "not-applicable", "evidence": []}
+    },
+    {
+      "id": "SYNTAX-001",
+      "kind": "question",
+      "audience": "author",
+      "source": "author-request-2026-09-01",
+      "status": "open",
+      "priority": "normal",
+      "target": "lambda_SSA surface syntax",
+      "question": "When does brace-block syntax replace imported where-block syntax?",
+      "options": ["after a comparison theorem and migration map", "presentation-only migration first"],
+      "lean": {
+        "status": "missing",
+        "evidence": [],
+        "missing": ["Neither SSA surface-syntax variant has an active thesis module"]
+      }
+    },
+    {
+      "id": "FORMAL-001",
+      "kind": "question",
+      "audience": "formalization-agent",
+      "source": "editorial-agent/claim-audit",
+      "status": "open",
+      "priority": "critical",
+      "target": "formalization/thesis/Isotope/LambdaIter",
+      "question": "Which exact active declarations are intended as the public capstones for unrefined lambda_iter soundness?",
+      "lean": {
+        "status": "checked",
+        "evidence": [
+          "Isotope.LambdaIter.Semantics.sound",
+          "Isotope.LambdaIter.Semantics.related_sound",
+          "Isotope.LambdaIter.Semantics.Agreement.categorical_denote_eq"
+        ],
+        "missing": ["A checked #print axioms transcript and stable capstone manifest"]
+      }
+    },
+    {
+      "id": "FORMAL-002",
+      "kind": "error",
+      "audience": "author",
+      "source": "claim-audit",
+      "status": "open",
+      "priority": "critical",
+      "target": "all mechanization claims in thesis prose",
+      "question": "Does each mechanization claim name an exact declaration or explicitly say partial/paper-only?",
+      "lean": {
+        "status": "blocked",
+        "evidence": ["formalization/CLAIM_AUDIT.md"],
+        "missing": ["Historical Lake builds and axiom transcripts remain unavailable"]
+      }
+    }
+  ]
+}

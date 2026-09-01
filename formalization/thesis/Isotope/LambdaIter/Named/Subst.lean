@@ -22,7 +22,8 @@ def Tm.rename (ρ : ν → κ) : Tm ν Φ → Tm κ Φ
 
 variable [DecidableEq ν]
 
-private def Binder.blocks (b : Binder ν) (x : ν) : Bool :=
+/-- Whether a named binder shadows a particular name. -/
+def Binder.blocks (b : Binder ν) (x : ν) : Bool :=
   match b with
   | none => false
   | some y => decide (x = y)

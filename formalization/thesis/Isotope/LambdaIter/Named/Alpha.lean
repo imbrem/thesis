@@ -26,7 +26,8 @@ inductive Alpha : Tm ν Φ → Tm ν Φ → Prop where
   | let₁Rename (hfree : ¬b.Free y) (hsafe : CaptureSafe (.var y) b) :
       Alpha (.let₁ (some x) a b)
         (.let₁ (some y) a (Tm.substSafe x (.var y) b hsafe))
-  | let₂RenameLeft (hfree : ¬b.Free z) (hsafe : CaptureSafe (.var z) b) :
+  | let₂RenameLeft (hsiblingOld : y ≠ some x) (hsiblingNew : y ≠ some z)
+      (hfree : ¬b.Free z) (hsafe : CaptureSafe (.var z) b) :
       Alpha (.let₂ (some x) y a b)
         (.let₂ (some z) y a (Tm.substSafe x (.var z) b hsafe))
   | let₂RenameRight (hfree : ¬b.Free z) (hsafe : CaptureSafe (.var z) b) :

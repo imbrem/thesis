@@ -4,8 +4,6 @@
 // Source section: Denotational Semantics, lines 3085–4533
 
 #import "/lib/prelude.typ": *
-#show: chapter.with(title: "Denotational Semantics")
-
 <sec:densem>
 Now that we have given an equational theory for SSA, we would like to build a denotational semantics for SSA: a mapping from well-typed programs $Gamma tack.r r gt.tri sans(L)$ to mathematical objects $⟦ Gamma tack.r r gt.tri sans(L) ⟧$. This naturally gives us another way to reason about whether two programs "$r$, $r'$" are "the same:" we can ask whether $⟦ Gamma tack.r r gt.tri sans(L) ⟧ = ⟦ Gamma tack.r r' gt.tri sans(L) ⟧$. Our goal is to build a denotational semantics which is both #emph[sound] and #emph[complete]; that is, such that $ Gamma tack.r r approx r' gt.tri sans(L) arrow.l.r.double ⟦ Gamma tack.r r gt.tri sans(L) ⟧ = ⟦ Gamma tack.r r' gt.tri sans(L) ⟧ $ More specifically, we'll begin by defining a notion of a #emph[model] $cal(M)$ of SSA, and then define the denotational semantics w.r.t. a model $⟦ Gamma tack.r r gt.tri sans(L) ⟧_(cal(M))$. We'll then prove that, for #emph[any] model of SSA, if $Gamma tack.r r approx r' gt.tri sans(L)$, then $ ⟦ Gamma tack.r r gt.tri sans(L) ⟧_(cal(M)) = ⟦ Gamma tack.r r' gt.tri sans(L) ⟧_(cal(M)) $ In other words, our equational theory is #emph[sound], and so never allows us to prove an equation which does not in fact hold. We'll then give an model $cal(M)$ such that $ ⟦ Gamma tack.r r gt.tri sans(L) ⟧_(cal(M)) = ⟦ Gamma tack.r r' gt.tri sans(L) ⟧_(cal(M)) ==> Gamma tack.r r approx r' gt.tri sans(L) $ showing that our equational theory is also #emph[complete]: if an equation holds in an #emph[arbitrary] model of SSA, it must in fact be derivable via our theory.
 
@@ -17,7 +15,7 @@ Before we begin, we fix some notational conventions:
 
 - We denote the coproduct of a morphism $f : B arrow.r C$ with the identity $sans("id")_A$ as $f + A : B + A arrow.r C + A$ or $A + f : A + B arrow.r A + C$.
 
-== Freyd-Elgot Categories
+= Freyd-Elgot Categories
 <freyd-elgot-categories>
 #cite(<moggi-91-monad>, form: "prose") showed that the Kleisli category of a strong monad over a CCC interprets effectful higher-order functional programs. There are two mismatches in using this as a semantics for SSA. On one hand, SSA has features not necessarily supported by Moggi models such as arbitrary, unstructured cyclic control-flow. On the other hand Moggi models support features SSA (as a first-order language) does not have, such as higher-order functions and first-class computation values.
 
@@ -133,11 +131,11 @@ If $( - )^dagger$ is an iteration operator which satisfies naturality and codiag
 #emph[Proof.] See Lemma 31 of #cite(<goncharov-18-guarded-traced>, form: "prose")~◻
 
 ]
-Since in a distributive Freyd category $cal(C)_tack.t$ must be distributive (and hence co-cartesian), dinaturality follows from the other axioms of an Elgot category. Given a distributive Freyd category equipped with a (strong) Elgot structure, we will often want to consider the fixpoint of a morphism $f : R ⊗ A arrow.r B + A$, where our "context" $R$ does not change between iterations. To do this, we first need to build up a morphism $ sans("rcase") ( f ) := sans("let") ( f ) ; pi_l ⊗ ( B + A ) ; delta^(- 1) : R ⊗ A arrow.r R ⊗ B + R ⊗ A $ which computes $f$ and then distributes a copy of the read-only state $R$ to each branch of the result. We may then define the fixpoint $ sans("rfix") ( f ) := ( sans("rcase") ( f ) )^dagger ; pi_r : R ⊗ A arrow.r B $ We consider some more properties of $sans("rcase") ( f )$ and $sans("rfix") ( f )$ in Appendix~#todo[Cross-reference: \@apx:environment.]
+Since in a distributive Freyd category $cal(C)_tack.t$ must be distributive (and hence co-cartesian), dinaturality follows from the other axioms of an Elgot category. Given a distributive Freyd category equipped with a (strong) Elgot structure, we will often want to consider the fixpoint of a morphism $f : R ⊗ A arrow.r B + A$, where our "context" $R$ does not change between iterations. To do this, we first need to build up a morphism $ sans("rcase") ( f ) := sans("let") ( f ) ; pi_l ⊗ ( B + A ) ; delta^(- 1) : R ⊗ A arrow.r R ⊗ B + R ⊗ A $ which computes $f$ and then distributes a copy of the read-only state $R$ to each branch of the result. We may then define the fixpoint $ sans("rfix") ( f ) := ( sans("rcase") ( f ) )^dagger ; pi_r : R ⊗ A arrow.r B $ We consider some more properties of $sans("rcase") ( f )$ and $sans("rfix") ( f )$ in Appendix~#conditional-ref("apx:environment").
 
-== String Diagrams
+= String Diagrams
 <string-diagrams>
-#emph[String diagrams] provide a graphical calculus for reasoning about (symmetric) monoidal categories, which allows us to succinctly express complex morphisms and rewrites. Since both cartesian and co-cartesian categories are monoidal (with the product and coproduct as tensor, respectively), we can use string diagrams to reason about both. In the co-cartesian case, string diagrams behave much like control-flow diagrams, with boxes representing sub-programs, input wires entry points, and output wires exit points. In particular, a #emph[region] is just a box with a single input wire. Continuing this analogy, we draw the codiagonal morphism $\[ sans("id")_A   sans("id")_A \]$ as joining two wires, and the zero morphism as a wire coming from nowhere, as in Figure~#todo[Cross-reference: \@fig:coproduct-string-diagrams.]
+#emph[String diagrams] provide a graphical calculus for reasoning about (symmetric) monoidal categories, which allows us to succinctly express complex morphisms and rewrites. Since both cartesian and co-cartesian categories are monoidal (with the product and coproduct as tensor, respectively), we can use string diagrams to reason about both. In the co-cartesian case, string diagrams behave much like control-flow diagrams, with boxes representing sub-programs, input wires entry points, and output wires exit points. In particular, a #emph[region] is just a box with a single input wire. Continuing this analogy, we draw the codiagonal morphism $\[ sans("id")_A   sans("id")_A \]$ as joining two wires, and the zero morphism as a wire coming from nowhere, as in @fig:coproduct-string-diagrams.
 
 #figure(coproduct-cfg-diagram(),
   caption: [
@@ -146,19 +144,19 @@ Since in a distributive Freyd category $cal(C)_tack.t$ must be distributive (and
 )
 <fig:coproduct-string-diagrams>
 
-The power of string diagrams comes from the fact that many syntactically distinct ways to write equal values are obviously graphically equivalent by #emph[isotopy]: essentially, moving boxes and wires around. String diagrams also give us an elegant way to represent and reason about Elgot structures. It turns out that Elgot structures induce a #emph[trace] on the coproduct @hasegawa-trace-02: given $f : A + C arrow.r B + C$, we can define $ sans("Tr")_(A   B)^C ( f ) = iota_l ; \[ f ; B + iota_r \]^dagger = iota_l ; f ; \[ sans("id")   ( iota_l ; f )^dagger \] : A arrow.r B $ Since this satisfies the axioms of a trace over a symmetric monoidal category, we can draw it, and therefore the Elgot operator, as in Figure~#todo[Cross-reference: \@fig:elgot-string-diagrams.] Continuing with the control-flow diagram analogy, such traces can be interpreted as #emph[loops], with the Elgot axioms, now drawn as diagrams in Figure~#todo[Cross-reference: \@fig:elgot-ax-string-diagrams.]
+The power of string diagrams comes from the fact that many syntactically distinct ways to write equal values are obviously graphically equivalent by #emph[isotopy]: essentially, moving boxes and wires around. String diagrams also give us an elegant way to represent and reason about Elgot structures. It turns out that Elgot structures induce a #emph[trace] on the coproduct @hasegawa-trace-02: given $f : A + C arrow.r B + C$, we can define $ sans("Tr")_(A   B)^C ( f ) = iota_l ; \[ f ; B + iota_r \]^dagger = iota_l ; f ; \[ sans("id")   ( iota_l ; f )^dagger \] : A arrow.r B $ Since this satisfies the axioms of a trace over a symmetric monoidal category, we can draw it, and therefore the Elgot operator, as in @fig:elgot-string-diagrams. Continuing with the control-flow diagram analogy, such traces can be interpreted as #emph[loops], with the Elgot axioms, now drawn as diagrams in Figure~#conditional-ref("fig:elgot-ax-string-diagrams").
 
-#figure([#figure(elgot-trace-diagram(kind: "trace"),
-    caption: [
-      The trace of $f : A + C arrow.r B + C$
-    ]
-  )
-
-  #figure(elgot-trace-diagram(kind: "fixpoint"),
-    caption: [
-      The fixpoint of $f : A arrow.r B + A$
-    ]
-  )
+#figure([#grid(
+  columns: (1fr, 1fr),
+  gutter: 1em,
+  align: (center, top),
+  [#elgot-trace-diagram(kind: "trace")
+  #linebreak()
+  #align(center)[(a) The trace of $f : A + C arrow.r B + C$]],
+  [#elgot-trace-diagram(kind: "fixpoint")
+  #linebreak()
+  #align(center)[(b) The fixpoint of $f : A arrow.r B + A$]],
+)
 
   ],
   caption: [
@@ -167,29 +165,26 @@ The power of string diagrams comes from the fact that many syntactically distinc
 )
 <fig:elgot-string-diagrams>
 
-#figure([#figure(conway-axiom-diagram("fixpoint"),
-    caption: [
-      Fixpoint
-    ]
-  )
+#figure([#grid(
+  columns: (1fr, 1fr),
+  gutter: 1em,
+  align: (center, top),
+  [#conway-axiom-diagram("fixpoint")
+  #linebreak()
+  #align(center)[(a) Fixpoint]],
 
-  #figure(conway-axiom-diagram("naturality"),
-    caption: [
-      Naturality
-    ]
-  )
+  [#conway-axiom-diagram("naturality")
+  #linebreak()
+  #align(center)[(b) Naturality]],
 
-  #figure(conway-axiom-diagram("codiagonal"),
-    caption: [
-      Codiagonal
-    ]
-  )
+  [#conway-axiom-diagram("codiagonal")
+  #linebreak()
+  #align(center)[(c) Codiagonal]],
 
-  #figure(conway-axiom-diagram("dinaturality"),
-    caption: [
-      Dinaturality
-    ]
-  )
+  [#conway-axiom-diagram("dinaturality")
+  #linebreak()
+  #align(center)[(d) Dinaturality]],
+)
 
   ],
   caption: [
@@ -198,7 +193,7 @@ The power of string diagrams comes from the fact that many syntactically distinc
 )
 <dssa:fig:elgot-ax-string-diagrams>
 
-Unfortunately, unmodified string diagrams do not work for premonoidal categories, and hence for Freyd categories. The reason is because, since not all morphisms are central, premonoidal categories do not in general validate #emph[sliding]. However, this is easy enough to fix: we can postulate a (dashed red) "state" wire which all impure morphisms require as an input and output, as in Figure~#todo[Cross-reference: \@fig:premonoidal-string-diagram.] Since the state wire linearly threads through all impure boxes, it establishes a unique order in which they must be executed; this construction is shown to be sound in #cite(<promonad>, form: "prose"). Pure morphisms do not have a state wire, so a diagram representing a pure morphism will simply have a dashed red "stripe" on the side. This gives us a convenient way to distinguish between string diagrams using the monoidal structure induced by the coproduct and those using the premonoidal structure induced by the tensor product in a category having both (such as a distributive premonoidal category): the latter will have a state wire, while the former will not.
+Unfortunately, unmodified string diagrams do not work for premonoidal categories, and hence for Freyd categories. The reason is because, since not all morphisms are central, premonoidal categories do not in general validate #emph[sliding]. However, this is easy enough to fix: we can postulate a (dashed red) "state" wire which all impure morphisms require as an input and output, as in @fig:premonoidal-string-diagram. Since the state wire linearly threads through all impure boxes, it establishes a unique order in which they must be executed; this construction is shown to be sound in #cite(<promonad>, form: "prose"). Pure morphisms do not have a state wire, so a diagram representing a pure morphism will simply have a dashed red "stripe" on the side. This gives us a convenient way to distinguish between string diagrams using the monoidal structure induced by the coproduct and those using the premonoidal structure induced by the tensor product in a category having both (such as a distributive premonoidal category): the latter will have a state wire, while the former will not.
 
 #figure(premonoidal-state-diagram(),
   caption: [
@@ -207,7 +202,7 @@ Unfortunately, unmodified string diagrams do not work for premonoidal categories
 )
 <fig:premonoidal-string-diagram>
 
-== Semantics
+= Semantics
 <semantics>
 We now have all the ingredients we need to give a semantics to $lambda_(sans("SSA"))$ expressions and regions. In particular, an $lambda_(sans("SSA"))$ expression model of a signature $S g = ( cal(T)   cal(I) )$ consists of:
 
@@ -225,7 +220,7 @@ We now have all the ingredients we need to give a semantics to $lambda_(sans("SS
 
   - Sum types $A + B$ are modelled as coproducts $⟦ A ⟧ + ⟦ B ⟧$
 
-If an $lambda_(sans("SSA"))$ expression model additionally has an Elgot structure on $cal(C)$, we will refer to it simply as an $lambda_(sans("SSA"))$ model. We will model #emph[contexts] and #emph[label contexts] as tensor products and coproducts of the denotations of their parameters, respectively, as in Figure~#todo[Cross-reference: \@fig:ssa-ty-sem.]
+If an $lambda_(sans("SSA"))$ expression model additionally has an Elgot structure on $cal(C)$, we will refer to it simply as an $lambda_(sans("SSA"))$ model. We will model #emph[contexts] and #emph[label contexts] as tensor products and coproducts of the denotations of their parameters, respectively, as in @fig:ssa-ty-sem.
 
 #figure([$ #box(stroke: black, inset: 3pt, [$ ⟦ A ⟧ : bar.v cal(C) bar.v $]) $ $ ⟦ upright(bold(1)) ⟧ = I #h(2em) ⟦ A ⊗ B ⟧ = ⟦ A ⟧ ⊗ ⟦ B ⟧ #h(2em) ⟦ upright(bold(0)) ⟧ = upright(bold(0)) #h(2em) ⟦ A + B ⟧ = ⟦ A ⟧ + ⟦ B ⟧\
    $ $ #box(stroke: black, inset: 3pt, [$ ⟦ Gamma ⟧ : bar.v cal(C) bar.v $]) $ $ ⟦ dot.op ⟧ = I #h(2em) ⟦ Gamma   x : A ⟧ = ⟦ Gamma ⟧ ⊗ ⟦ A ⟧\
@@ -240,7 +235,7 @@ If an $lambda_(sans("SSA"))$ expression model additionally has an Elgot structur
 )
 <fig:ssa-ty-sem>
 
-We can now interpret $lambda_(sans("SSA"))$-expressions $Gamma tack.r_epsilon.alt a : A$ over a given signature $S g$ as morphisms $⟦ Gamma ⟧ arrow.r_epsilon.alt ⟦ A ⟧$ using the rules in Figure~#todo[Cross-reference: \@fig:ssa-expr-sem.] Up to this point, both our syntax and semantics are quite standard; in particular:
+We can now interpret $lambda_(sans("SSA"))$-expressions $Gamma tack.r_epsilon.alt a : A$ over a given signature $S g$ as morphisms $⟦ Gamma ⟧ arrow.r_epsilon.alt ⟦ A ⟧$ using the rules in @fig:ssa-expr-sem. Up to this point, both our syntax and semantics are quite standard; in particular:
 
 - Variables $x$ are modelled as projections from the appropriate index in the context's denotation $pi_(Gamma   x) : ⟦ Gamma ⟧ arrow.r_tack.t ⟦ A ⟧$
 
@@ -272,13 +267,13 @@ We can now interpret $lambda_(sans("SSA"))$-expressions $Gamma tack.r_epsilon.al
 
 #figure([$ #box(stroke: black, inset: 3pt, [$ ⟦ Gamma tack.r_epsilon.alt a : A ⟧ : ⟦ Gamma ⟧ arrow.r_epsilon.alt ⟦ A ⟧ $]) $ $ ⟦ Gamma tack.r_epsilon.alt x : A ⟧ & = pi_(Gamma   x)\
   ⟦ Gamma tack.r_epsilon.alt f #h(0em) a : B ⟧ & = ⟦ f ⟧ compose ⟦ Gamma tack.r_epsilon.alt a : A ⟧\
-  ⟦ Gamma tack.r_epsilon.alt sans("let") #h(0em) x = a ; #h(0em) b : B ⟧ & = sans("let") ( ⟦ Gamma tack.r_epsilon.alt a : A ⟧ ) ; ⟦ Gamma   x : A tack.r_epsilon.alt b : B ⟧\
+  ⟦ Gamma tack.r_epsilon.alt kw("let") med x = a ; #h(0em) b : B ⟧ & = sans("let") ( ⟦ Gamma tack.r_epsilon.alt a : A ⟧ ) ; ⟦ Gamma   x : A tack.r_epsilon.alt b : B ⟧\
   ⟦ Gamma tack.r_epsilon.alt ( a   b ) : A ⊗ B ⟧ & = Delta_(⟦ Gamma ⟧) ; ⟦ Gamma tack.r_epsilon.alt a : A ⟧ times.l ⟦ Gamma tack.r_epsilon.alt b : B ⟧\
-  ⟦ Gamma tack.r_epsilon.alt sans("let") #h(0em) ( x   y ) = e ; #h(0em) c : C ⟧ & = sans("let") ( ⟦ Gamma tack.r_epsilon.alt e : A ⊗ B ⟧ ) ; alpha ; ⟦ Gamma   x : A   y : B tack.r_epsilon.alt c : C ⟧\
+  ⟦ Gamma tack.r_epsilon.alt kw("let") med ( x   y ) = e ; #h(0em) c : C ⟧ & = sans("let") ( ⟦ Gamma tack.r_epsilon.alt e : A ⊗ B ⟧ ) ; alpha ; ⟦ Gamma   x : A   y : B tack.r_epsilon.alt c : C ⟧\
   ⟦ Gamma tack.r_epsilon.alt ( ) : upright(bold(1)) ⟧ & = 1_(⟦ Gamma ⟧)\
   ⟦ Gamma tack.r_epsilon.alt iota_l #h(0em) a : A + B ⟧ & = ⟦ Gamma tack.r_epsilon.alt a : A ⟧ ; iota_l\
   ⟦ Gamma tack.r_epsilon.alt iota_r #h(0em) b : A + B ⟧ & = ⟦ Gamma tack.r_epsilon.alt b : B ⟧ ; iota_r\
-  ⟦ Gamma tack.r_epsilon.alt sans("case") #h(0em) e #h(0em) { iota_l #h(0em) x : a   iota_r #h(0em) y : b } : C ⟧ & = sans("let") ( ⟦ Gamma tack.r_epsilon.alt e : A + B ⟧ ) ; delta_(⟦ Gamma ⟧)^(- 1) ;\
+  ⟦ Gamma tack.r_epsilon.alt kw("case") med e #h(0em) { iota_l #h(0em) x : a   iota_r #h(0em) y : b } : C ⟧ & = sans("let") ( ⟦ Gamma tack.r_epsilon.alt e : A + B ⟧ ) ; delta_(⟦ Gamma ⟧)^(- 1) ;\
    & #h(2em) \[ ⟦ Gamma   x : A tack.r_epsilon.alt a : C ⟧   ⟦ Gamma   y : B tack.r_epsilon.alt b : C ⟧ \]\
   ⟦ Gamma tack.r_epsilon.alt sans("abort") #h(0em) a : A ⟧ & = ⟦ Gamma tack.r_epsilon.alt a : upright(bold(0)) ⟧ ; 0_(⟦ A ⟧) $ $ upright("where") quad #box(stroke: black, inset: 3pt, [$ pi_(Gamma   x) : ⟦ Gamma ⟧ arrow.r_tack.t ⟦ A ⟧ $]) #h(2em) pi_(( Gamma   x : A )   x) = pi_r #h(2em) pi_(( Gamma   y : B )   x) = pi_l ; pi_(Gamma   x) $
 
@@ -289,9 +284,9 @@ We can now interpret $lambda_(sans("SSA"))$-expressions $Gamma tack.r_epsilon.al
 )
 <fig:ssa-expr-sem>
 
-Similarly, if we in fact have an $lambda_(sans("SSA"))$ model, we can interpret $lambda_(sans("SSA"))$ regions $Gamma tack.r r gt.tri sans(L)$ as morphisms $⟦ Gamma ⟧ arrow.r ⟦ sans(L) ⟧$; note that we don't assume anything about the effect of these morphisms. As $sans(L)$ is a coproduct, we can view the result object of a region $r$ as encoding both #emph[data] and #emph[control-flow] information. In particular, we interpret a branch $sans("br") #h(0em) ell #h(0em) a$ as simply the injection of the (pure) expression $Gamma tack.r_tack.t a : A$, our #emph[data], into the element of the coproduct corresponding to $ell$, which encodes the point in control-flow the rest of the program should jump to next. This is in contrast to #emph[expressions], which purely encode data, with no particular instructions on how to use it afterwards. Our interpretation of $sans("let")$-statements and $sans("case")$-statements, given in Figure~#todo[Cross-reference: \@fig:ssa-reg-sem], is exactly the same as that of the corresponding expressions.
+Similarly, if we in fact have an $lambda_(sans("SSA"))$ model, we can interpret $lambda_(sans("SSA"))$ regions $Gamma tack.r r gt.tri sans(L)$ as morphisms $⟦ Gamma ⟧ arrow.r ⟦ sans(L) ⟧$; note that we don't assume anything about the effect of these morphisms. As $sans(L)$ is a coproduct, we can view the result object of a region $r$ as encoding both #emph[data] and #emph[control-flow] information. In particular, we interpret a branch $sans("br") #h(0em) ell #h(0em) a$ as simply the injection of the (pure) expression $Gamma tack.r_tack.t a : A$, our #emph[data], into the element of the coproduct corresponding to $ell$, which encodes the point in control-flow the rest of the program should jump to next. This is in contrast to #emph[expressions], which purely encode data, with no particular instructions on how to use it afterwards. Our interpretation of $sans("let")$-statements and $sans("case")$-statements, given in @fig:ssa-reg-sem, is exactly the same as that of the corresponding expressions.
 
-Finally, we come to the interpretation of $sans("where")$-statements, which is where the Elgot structure comes in. The semantics of a $sans("where")$-block $Gamma tack.r r #h(0em) sans("where") #h(0em) ( ell_i ( x_i ) : { t_i }   )_i gt.tri sans(L)$ can be broken down into two major components:
+Finally, we come to the interpretation of $sans("where")$-statements, which is where the Elgot structure comes in. The semantics of a $sans("where")$-block $Gamma tack.r r med kw("where") med ( ell_i ( x_i ) : { t_i }   )_i gt.tri sans(L)$ can be broken down into two major components:
 
 - The #emph[terminator] $sans("esem")_(Gamma   sans(L)) ( r ) : ⟦ Gamma ⟧ arrow.r ⟦ sans(L) ⟧ + Sigma_i ⟦ A_i ⟧$, which, given as input the context $⟦ Gamma ⟧$, executes $r$ and then re-associates the output. The output type $⟦ sans(L) ⟧ + Sigma_i ⟦ A_i ⟧$ expresses that $r$ may either:
 
@@ -311,14 +306,14 @@ We glue these together in the obvious manner to get the semantics for a where-bl
 
 - Otherwise, compute $sans("lsem")_(Gamma   sans(L)) ( ( ell_i ( x_i ) : { t_i }   )_i )$ in a loop, passing in a fresh copy of the context each time. This is implemented with $sans("rfix")$.
 
-This simplifies significantly in the case of a $sans("where")$-block defining just a single label, yielding $ ⟦ Gamma tack.r r #h(0em) sans("where") #h(0em) ell ( x ) : { s } gt.tri sans(L) ⟧ = sans("let") ( ⟦ Gamma tack.r r gt.tri sans(L)   ell ( A ) ⟧ ) ; delta^(- 1) ; \[ pi_r   sans("rfix") ( ⟦ Gamma   x : A tack.r s gt.tri sans(L)   ell ( A ) ⟧ ) \] $ In particular, it is a consequence of label weakening (Lemma~#todo[Cross-reference: \@lem:wk]) that, in the case where $s$ does not call $ell$, this simplifies further to $ ⟦ Gamma tack.r r #h(0em) sans("where") #h(0em) ell ( x ) : { s } gt.tri sans(L) ⟧ = sans("let") ( ⟦ Gamma tack.r r gt.tri sans(L)   ell ( A ) ⟧ ) ; delta^(- 1) ; \[ pi_r   ⟦ Gamma   x : A tack.r s gt.tri sans(L) ⟧ \] $
+This simplifies significantly in the case of a $sans("where")$-block defining just a single label, yielding $ ⟦ Gamma tack.r r med kw("where") med ell ( x ) : { s } gt.tri sans(L) ⟧ = sans("let") ( ⟦ Gamma tack.r r gt.tri sans(L)   ell ( A ) ⟧ ) ; delta^(- 1) ; \[ pi_r   sans("rfix") ( ⟦ Gamma   x : A tack.r s gt.tri sans(L)   ell ( A ) ⟧ ) \] $ In particular, it is a consequence of label weakening (Lemma~#todo[Cross-reference: \@lem:wk]) that, in the case where $s$ does not call $ell$, this simplifies further to $ ⟦ Gamma tack.r r med kw("where") med ell ( x ) : { s } gt.tri sans(L) ⟧ = sans("let") ( ⟦ Gamma tack.r r gt.tri sans(L)   ell ( A ) ⟧ ) ; delta^(- 1) ; \[ pi_r   ⟦ Gamma   x : A tack.r s gt.tri sans(L) ⟧ \] $
 
 #figure([$ #box(stroke: black, inset: 3pt, [$ ⟦ Gamma tack.r r gt.tri sans(L) ⟧ : ⟦ Gamma ⟧ arrow.r ⟦ sans(L) ⟧ $]) $ $ ⟦ Gamma tack.r sans("br") #h(0em) ell #h(0em) a gt.tri sans(L) ⟧ & = ⟦ Gamma tack.r_tack.t a : A ⟧ ; iota_(sans(L)   ell)\
-  ⟦ Gamma tack.r sans("let") #h(0em) x = a ; r gt.tri sans(L) ⟧ & = sans("let") ( ⟦ Gamma tack.r_epsilon.alt a : A ⟧ ) ; ⟦ Gamma   x : A tack.r r gt.tri sans(L) ⟧\
-  ⟦ Gamma tack.r sans("let") #h(0em) ( x   y ) = e ; r gt.tri sans(L) ⟧ & = sans("let") ( ⟦ Gamma tack.r_epsilon.alt e : A ⊗ B ⟧ ) ; alpha ; ⟦ Gamma   x : A   y : B tack.r r gt.tri sans(L) ⟧\
-  ⟦ Gamma tack.r sans("case") #h(0em) e #h(0em) { iota_l #h(0em) x : r   iota_r #h(0em) y : s } gt.tri sans(L) ⟧ & = sans("let") ( ⟦ Gamma tack.r_epsilon.alt e : A + B ⟧ ) ; delta^(- 1) ;\
+  ⟦ Gamma tack.r kw("let") med x = a ; r gt.tri sans(L) ⟧ & = sans("let") ( ⟦ Gamma tack.r_epsilon.alt a : A ⟧ ) ; ⟦ Gamma   x : A tack.r r gt.tri sans(L) ⟧\
+  ⟦ Gamma tack.r kw("let") med ( x   y ) = e ; r gt.tri sans(L) ⟧ & = sans("let") ( ⟦ Gamma tack.r_epsilon.alt e : A ⊗ B ⟧ ) ; alpha ; ⟦ Gamma   x : A   y : B tack.r r gt.tri sans(L) ⟧\
+  ⟦ Gamma tack.r kw("case") med e #h(0em) { iota_l #h(0em) x : r   iota_r #h(0em) y : s } gt.tri sans(L) ⟧ & = sans("let") ( ⟦ Gamma tack.r_epsilon.alt e : A + B ⟧ ) ; delta^(- 1) ;\
    & quad #h(0em) \[ ⟦ Gamma   x : A tack.r r gt.tri sans(L) ⟧   ⟦ Gamma   y : B tack.r s gt.tri sans(L) ⟧ \]\
-  ⟦ Gamma tack.r r #h(0em) sans("where") #h(0em) ( ell_i ( x_i ) : { t_i }   )_i gt.tri sans(L) ⟧ & = sans("let") ( sans("esem")_(Gamma   sans(L)) ( r ) ) ; delta^(- 1) ; \[ pi_r   sans("rfix") ( sans("lsem")_(Gamma   sans(L)) ( ( ell_i ( x_i ) : { t_i }   )_i ) ) \] $ $ upright("where") #h(2em) & #box(stroke: black, inset: 3pt, [$ iota_(sans(L)   ell) : ⟦ A ⟧ arrow.r_tack.t ⟦ sans(L) ⟧ $]) #h(2em) #h(2em) #h(2em) iota_(( sans(L)   ell ( A ) )   ell) = iota_r #h(2em) iota_(( sans(L)   kappa ( B ) )   x) = iota_l ; iota_(sans(L)   ell)\
+  ⟦ Gamma tack.r r med kw("where") med ( ell_i ( x_i ) : { t_i }   )_i gt.tri sans(L) ⟧ & = sans("let") ( sans("esem")_(Gamma   sans(L)) ( r ) ) ; delta^(- 1) ; \[ pi_r   sans("rfix") ( sans("lsem")_(Gamma   sans(L)) ( ( ell_i ( x_i ) : { t_i }   )_i ) ) \] $ $ upright("where") #h(2em) & #box(stroke: black, inset: 3pt, [$ iota_(sans(L)   ell) : ⟦ A ⟧ arrow.r_tack.t ⟦ sans(L) ⟧ $]) #h(2em) #h(2em) #h(2em) iota_(( sans(L)   ell ( A ) )   ell) = iota_r #h(2em) iota_(( sans(L)   kappa ( B ) )   x) = iota_l ; iota_(sans(L)   ell)\
    & #box(stroke: black, inset: 3pt, [$ sans("esem")_(Gamma   sans(L)) ( r ) : ⟦ Gamma ⟧ arrow.r ⟦ L ⟧ + Sigma_i ⟦ A_i ⟧ $])\
    & sans("esem")_(Gamma   sans(L)) ( r ) = ⟦ Gamma tack.r r gt.tri sans(L)   ( ell_i ( A_i )   )_i ⟧ ; alpha_(⟦ sans(L) ⟧ + Sigma_i ⟦ A_i ⟧)^(+)\
    & #box(stroke: black, inset: 3pt, [$ sans("lsem")_(Gamma   sans(L)) ( ell_i ( x_i ) : { t_i }   )_i ) : ⟦ Gamma ⟧ ⊗ Sigma_i ⟦ A_i ⟧ arrow.r ⟦ sans(L) ⟧ + Sigma_i ⟦ A_i ⟧ $])\
@@ -331,11 +326,11 @@ This simplifies significantly in the case of a $sans("where")$-block defining ju
 )
 <fig:ssa-reg-sem>
 
-== Metatheory
+= Metatheory
 <metatheory>
 We can now begin to state the metatheoretic properties of our denotational semantics. Before we do so, we establish the convention that whenever we have an equation involving the interpretation of a derivation (e.g., $⟦ cal(D) ⟧ = ⟦ cal(D)' ⟧$), we assume that all the derivations (e.g., $cal(D)$ and $cal(D)'$) exist and are well-formed.
 
-We begin with weakening: as shown in Figure~#todo[Cross-reference: \@fig:ssa-ty-sem], weakenings are modelled, essentially, as projections from a larger product $⟦ Gamma ⟧$ to a smaller product $⟦ Delta ⟧$, while label-weakenings are modelled as injections from a smaller coproduct $⟦ sans(L) ⟧$ to a larger coproduct $⟦ sans(K) ⟧$; in particular, in both cases, the morphisms are pure. A simple induction can then be used to derive the following weakening lemmas:
+We begin with weakening: as shown in @fig:ssa-ty-sem, weakenings are modelled, essentially, as projections from a larger product $⟦ Gamma ⟧$ to a smaller product $⟦ Delta ⟧$, while label-weakenings are modelled as injections from a smaller coproduct $⟦ sans(L) ⟧$ to a larger coproduct $⟦ sans(K) ⟧$; in particular, in both cases, the morphisms are pure. A simple induction can then be used to derive the following weakening lemmas:
 
 #block[
 Given $Gamma lt.eq Gamma'$ and $sans(L)' lt.eq sans(L)$, $sans(K)' lt.eq sans(K)$, we have
@@ -359,7 +354,7 @@ Given $Gamma lt.eq Gamma'$ and $sans(L)' lt.eq sans(L)$, $sans(K)' lt.eq sans(K)
 #emph[Proof.] See Appendix~#todo[Cross-reference: \@proof:weakening.]~◻
 
 ]
-We can now give a denotational semantics to substitutions in which a substitution $gamma : Gamma mapsto Delta$ is interpreted as a pure morphism from $⟦ Gamma ⟧$ to $⟦ Delta ⟧$, as in Figure~#todo[Cross-reference: \@fig:ssa-subst-sem.] We can now state the soundness of variable substitution as follows:
+We can now give a denotational semantics to substitutions in which a substitution $gamma : Gamma mapsto Delta$ is interpreted as a pure morphism from $⟦ Gamma ⟧$ to $⟦ Delta ⟧$, as in @fig:ssa-subst-sem. We can now state the soundness of variable substitution as follows:
 
 #block[
 Given $⟦ gamma : Gamma mapsto Delta ⟧ : ⟦ Gamma ⟧ arrow.r ⟦ Delta ⟧$ pure, we have that
@@ -384,9 +379,9 @@ In particular, this implies that the semantics of substitution composition $\[ g
 #block[
 Given $Gamma tack.r_tack.t a : A$, we have
 
-+ Given $Gamma   x : A tack.r_tack.t b : B$, $ ⟦ Gamma tack.r_epsilon.alt \[ a \/ x \] b : B ⟧ = sans("let") ( ⟦ Gamma tack.r_tack.t a : A ⟧ ) ; ⟦ Gamma   x : A tack.r_epsilon.alt b : B ⟧ = ⟦ Gamma tack.r_epsilon.alt sans("let") #h(0em) x = a ; #h(0em) b : B ⟧ $
++ Given $Gamma   x : A tack.r_tack.t b : B$, $ ⟦ Gamma tack.r_epsilon.alt \[ a \/ x \] b : B ⟧ = sans("let") ( ⟦ Gamma tack.r_tack.t a : A ⟧ ) ; ⟦ Gamma   x : A tack.r_epsilon.alt b : B ⟧ = ⟦ Gamma tack.r_epsilon.alt kw("let") med x = a ; #h(0em) b : B ⟧ $
 
-+ Given $Gamma   x : A tack.r r gt.tri sans(L)$, we have $ ⟦ Gamma tack.r \[ a \/ x \] r gt.tri sans(L) ⟧ = sans("let") ( ⟦ Gamma tack.r_tack.t a : A ⟧ ) ; ⟦ Gamma   x : A tack.r r gt.tri sans(L) ⟧ = ⟦ Gamma tack.r sans("let") #h(0em) x = a ; r gt.tri sans(L) ⟧ $
++ Given $Gamma   x : A tack.r r gt.tri sans(L)$, we have $ ⟦ Gamma tack.r \[ a \/ x \] r gt.tri sans(L) ⟧ = sans("let") ( ⟦ Gamma tack.r_tack.t a : A ⟧ ) ; ⟦ Gamma   x : A tack.r r gt.tri sans(L) ⟧ = ⟦ Gamma tack.r kw("let") med x = a ; r gt.tri sans(L) ⟧ $
 
 <corr:single-subst>
 
@@ -405,7 +400,7 @@ Given $Gamma tack.r_tack.t a : A$, we have
 )
 <fig:ssa-subst-sem>
 
-We can now move on to stating the metatheoretic properties of label-substitutions in much the same manner. In particular, in Figure~#todo[Cross-reference: \@fig:ssa-subst-sem], we interpret label substitutions $Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K)$ as morphisms taking a copy of the context $⟦ Gamma ⟧$ and an element of the coproduct $⟦ sans(L) ⟧$ to an element of the coproduct $⟦ sans(K) ⟧$, with an arbitrary effect. Label substitution is then sound in general, as stated in the following theorem:
+We can now move on to stating the metatheoretic properties of label-substitutions in much the same manner. In particular, in @fig:ssa-subst-sem, we interpret label substitutions $Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K)$ as morphisms taking a copy of the context $⟦ Gamma ⟧$ and an element of the coproduct $⟦ sans(L) ⟧$ to an element of the coproduct $⟦ sans(K) ⟧$, with an arbitrary effect. Label substitution is then sound in general, as stated in the following theorem:
 
 #block[
 Given $Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K)$, we have
@@ -419,9 +414,9 @@ Given $Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K)$, we have
 #emph[Proof.] See Appendix~#todo[Cross-reference: \@proof:soundness-lsubst]~◻
 
 ]
-== Equational Theory
+= Equational Theory
 <ssec:completeness>
-Using the metatheory in the previous section, our goal is now to prove the equational theory given in Section~#todo[Cross-reference: \@sec:equations] sound with respect to any valid $lambda_(sans("SSA"))$ model. Stated more precisely, we have the following:
+Using the metatheory in the previous section, our goal is now to prove the equational theory given in Section~#conditional-ref("sec:equations") sound with respect to any valid $lambda_(sans("SSA"))$ model. Stated more precisely, we have the following:
 
 #block[
 We have that
@@ -436,7 +431,7 @@ We have that
 
 ]
 #block[
-#emph[Proof.] See Appendix~#todo[Cross-reference: \@proof:soundness-eqn]~◻
+#emph[Proof.] See Appendix~#conditional-ref("proof:soundness-eqn")~◻
 
 ]
 Now that we've proved the #emph[soundness] of our equational theory, what remains is to prove that it is #emph[complete], i.e., that every equation which holds in all $lambda_(sans("SSA"))$ models can be derived from it, or, stated more categorically, that our syntax quotiented by the equational theory forms an initial $lambda_(sans("SSA"))$ model. Our strategy for doing this is as follows:
@@ -455,7 +450,7 @@ Now that we've proved the #emph[soundness] of our equational theory, what remain
   Gamma   square.stroked.tiny : \[ Delta \] tack.r ⟦ Delta tack.r_epsilon.alt a : A ⟧_(sans("Th") ( Gamma   sans(L) )) approx sans("ret") #h(0em) ⟨ a ⟩ gt.tri sans(L)   square.filled.medium ( A )\
   Gamma   square.stroked.tiny : \[ Delta \] tack.r ⟦ Delta tack.r r gt.tri sans(K) ⟧_(sans("Th") ( Gamma   sans(L) )) approx ⟨ r ⟩ gt.tri sans(L)   square.filled.medium ( ⟨ sans(K) ⟩ ) $ where $sans("ret") #h(0em) a := sans("br") #h(0em) square.filled.medium #h(0em) a$. Since the packing operator $⟨ dot.op ⟩$ on terms and regions from Appendix~#todo[Cross-reference: \@apx:records-enums] is injective for pure contexts $sans("eff") ( Gamma ) = tack.t$, and hence in particular for $Gamma = dot.op$, $sans(L) = dot.op$, it follows that in this case the category of expressions and the category of regions are the initial distributive $lambda_(sans("SSA"))$ expression model and $lambda_(sans("SSA"))$ model respectively.
 
-== Expressions
+= Expressions
 <expressions>
 We'll begin by going over the entire proof of completeness for expressions, which is the simpler case. In particular, we may define the category $sans("Th")_epsilon.alt^⊗ ( Gamma )$ of expressions with effect $epsilon.alt$ as follows:
 
@@ -465,23 +460,23 @@ We'll begin by going over the entire proof of completeness for expressions, whic
 
 - Identity $( Gamma   square.stroked.tiny : A tack.r_tack.t square.stroked.tiny : A ) in sans("Th")^⊗ ( Gamma )_epsilon.alt ( A   A )$
 
-- Composition $e ; e' = ( sans("let") #h(0em) square.stroked.tiny = e ; e' )$, which satisfies $ Gamma   square.stroked.tiny : A tack.r_epsilon.alt e : B   quad Gamma   square.stroked.tiny : B tack.r_epsilon.alt e' : C #h(2em) ==> #h(2em) Gamma   square.stroked.tiny : A tack.r_epsilon.alt e ; e' : C $ We may verify that this satisfies the axioms of a category w.r.t. our equational theory
+- Composition $e ; e' = ( kw("let") med square.stroked.tiny = e ; e' )$, which satisfies $ Gamma   square.stroked.tiny : A tack.r_epsilon.alt e : B   quad Gamma   square.stroked.tiny : B tack.r_epsilon.alt e' : C #h(2em) ==> #h(2em) Gamma   square.stroked.tiny : A tack.r_epsilon.alt e ; e' : C $ We may verify that this satisfies the axioms of a category w.r.t. our equational theory
 
 In general, the category of expressions $sans("Th")^⊗ ( Gamma )$ is simply then given by $sans("Th")_top^⊗ ( Gamma )$, which can be viewed as the union of all $sans("Th")_epsilon.alt^⊗ ( Gamma )$.
 
-We now need to equip $sans("Th")_epsilon.alt^⊗ ( Gamma )$ with the structure of a premonoidal category. Obviously, we wish to define the tensor product of types $A$ and $B$ to be simply $A ⊗ B$; we can then begin by defining projections $ Gamma   square.stroked.tiny : A ⊗ B tack.r_epsilon.alt pi_l := sans("let") #h(0em) ( x   y ) = square.stroked.tiny ; x : A #h(2em) Gamma   square.stroked.tiny : A ⊗ B tack.r_epsilon.alt sans("let") #h(0em) ( x   y ) = square.stroked.tiny ; y : B $ By simply using the pair constructor as a cartesian product $⟨ a   b ⟩ = ( a   b )$, this can be shown to endow $sans("Th")_tack.t^⊗ ( Gamma )$ with the structure of a cartesian category, allowing us to define the associators, symmetries, and unitors in the natural manner. If we then define tensor functors $ - ⊗ X : e mapsto sans("let") #h(0em) ( square.stroked.tiny   x ) = square.stroked.tiny ; ( e ; ( square.stroked.tiny   x ) ) #h(2em) X ⊗ - : e mapsto sans("let") #h(0em) ( x   square.stroked.tiny ) = square.stroked.tiny ; ( e ; ( x   square.stroked.tiny ) ) $ we find that $sans("Th")_epsilon.alt^⊗ ( Gamma )$ and hence in particular $sans("Th")^⊗ ( Gamma )$ is endowed with the structure of a Freyd category with pure subcategory $sans("Th")_tack.t^⊗ ( Gamma )$.
+We now need to equip $sans("Th")_epsilon.alt^⊗ ( Gamma )$ with the structure of a premonoidal category. Obviously, we wish to define the tensor product of types $A$ and $B$ to be simply $A ⊗ B$; we can then begin by defining projections $ Gamma   square.stroked.tiny : A ⊗ B tack.r_epsilon.alt pi_l := kw("let") med ( x   y ) = square.stroked.tiny ; x : A #h(2em) Gamma   square.stroked.tiny : A ⊗ B tack.r_epsilon.alt kw("let") med ( x   y ) = square.stroked.tiny ; y : B $ By simply using the pair constructor as a cartesian product $⟨ a   b ⟩ = ( a   b )$, this can be shown to endow $sans("Th")_tack.t^⊗ ( Gamma )$ with the structure of a cartesian category, allowing us to define the associators, symmetries, and unitors in the natural manner. If we then define tensor functors $ - ⊗ X : e mapsto kw("let") med ( square.stroked.tiny   x ) = square.stroked.tiny ; ( e ; ( square.stroked.tiny   x ) ) #h(2em) X ⊗ - : e mapsto kw("let") med ( x   square.stroked.tiny ) = square.stroked.tiny ; ( e ; ( x   square.stroked.tiny ) ) $ we find that $sans("Th")_epsilon.alt^⊗ ( Gamma )$ and hence in particular $sans("Th")^⊗ ( Gamma )$ is endowed with the structure of a Freyd category with pure subcategory $sans("Th")_tack.t^⊗ ( Gamma )$.
 
-Similarly, we wish to show that $A + B$ is the coproduct of $A$ and $B$ in $sans("Th")_epsilon.alt^⊗ ( Gamma )$. Since we already have obvious injection morphisms $ Gamma   square.stroked.tiny : A tack.r_epsilon.alt iota_l := iota_l #h(0em) square.stroked.tiny : A + B #h(2em) Gamma   square.stroked.tiny : B tack.r_epsilon.alt iota_r := iota_r #h(0em) square.stroked.tiny : A + B $ we can define the coproduct of morphisms $Gamma   square.stroked.tiny : A tack.r_epsilon.alt a : C$ and $Gamma   square.stroked.tiny : B tack.r_epsilon.alt b : C$ to be simply given by $ Gamma   square.stroked.tiny : A + B tack.r_epsilon.alt \[ a   b \] := sans("case") #h(0em) square.stroked.tiny #h(0em) { iota_l #h(0em) square.stroked.tiny : a   iota_r #h(0em) square.stroked.tiny : b } : C $ It is straightforward to verify that this indeed induces a coproduct on $sans("Th")_epsilon.alt^⊗ ( Gamma )$ and hence on $sans("Th")^⊗ ( Gamma )$ All that remains is to show that $sans("Th")_epsilon.alt^⊗ ( Gamma )$ is in fact a #emph[distributive] Freyd category. To do so, we may define an inverse distributor morphism $ Gamma   square.stroked.tiny : A ⊗ ( B + C ) tack.r_epsilon.alt delta^(- 1) := sans("let") #h(0em) ( x   y ) = square.stroked.tiny ; sans("case") #h(0em) y #h(0em) { iota_l #h(0em) z : iota_l ( x   z )   iota_r #h(0em) z : iota_r ( x   z ) } : A ⊗ B + A ⊗ C $ which can easily be shown to be an inverse to the obvious distributor morphism. We may now note that $ ⟦ dot.op ⟧_(sans("Th")^⊗ ( Gamma )) = upright(bold(1))   quad ⟦ Delta   x : A ⟧_(sans("Th")^⊗ ( Gamma )) = ⟦ Delta ⟧_(sans("Th")^⊗ ( Gamma )) ⊗ A #h(2em) ==> #h(2em) ⟦ Delta ⟧_(sans("Th")^⊗ ( Gamma )) = ⟨ Gamma ⟩ $ Therefore, it follows that, as expected, that $Gamma   square.stroked.tiny : ⟨ Delta ⟩ tack.r_epsilon.alt ⟦ Delta tack.r_epsilon.alt a : A ⟧_(sans("Th")^⊗ ( Gamma )) : A$ and it remains to show that we in fact have $ Gamma   square.stroked.tiny : ⟨ Delta ⟩ tack.r_epsilon.alt ⟦ Delta tack.r_epsilon.alt a : A ⟧_(sans("Th")^⊗ ( Gamma )) approx \[ a \] : A $ which can be done by a relatively straightforward induction, implying, since $\[ dot.op \]$ is injective w.r.t. our equational theory for pure contexts, the following theorem:
+Similarly, we wish to show that $A + B$ is the coproduct of $A$ and $B$ in $sans("Th")_epsilon.alt^⊗ ( Gamma )$. Since we already have obvious injection morphisms $ Gamma   square.stroked.tiny : A tack.r_epsilon.alt iota_l := iota_l #h(0em) square.stroked.tiny : A + B #h(2em) Gamma   square.stroked.tiny : B tack.r_epsilon.alt iota_r := iota_r #h(0em) square.stroked.tiny : A + B $ we can define the coproduct of morphisms $Gamma   square.stroked.tiny : A tack.r_epsilon.alt a : C$ and $Gamma   square.stroked.tiny : B tack.r_epsilon.alt b : C$ to be simply given by $ Gamma   square.stroked.tiny : A + B tack.r_epsilon.alt \[ a   b \] := kw("case") med square.stroked.tiny #h(0em) { iota_l #h(0em) square.stroked.tiny : a   iota_r #h(0em) square.stroked.tiny : b } : C $ It is straightforward to verify that this indeed induces a coproduct on $sans("Th")_epsilon.alt^⊗ ( Gamma )$ and hence on $sans("Th")^⊗ ( Gamma )$ All that remains is to show that $sans("Th")_epsilon.alt^⊗ ( Gamma )$ is in fact a #emph[distributive] Freyd category. To do so, we may define an inverse distributor morphism $ Gamma   square.stroked.tiny : A ⊗ ( B + C ) tack.r_epsilon.alt delta^(- 1) := kw("let") med ( x   y ) = square.stroked.tiny ; kw("case") med y #h(0em) { iota_l #h(0em) z : iota_l ( x   z )   iota_r #h(0em) z : iota_r ( x   z ) } : A ⊗ B + A ⊗ C $ which can easily be shown to be an inverse to the obvious distributor morphism. We may now note that $ ⟦ dot.op ⟧_(sans("Th")^⊗ ( Gamma )) = upright(bold(1))   quad ⟦ Delta   x : A ⟧_(sans("Th")^⊗ ( Gamma )) = ⟦ Delta ⟧_(sans("Th")^⊗ ( Gamma )) ⊗ A #h(2em) ==> #h(2em) ⟦ Delta ⟧_(sans("Th")^⊗ ( Gamma )) = ⟨ Gamma ⟩ $ Therefore, it follows that, as expected, that $Gamma   square.stroked.tiny : ⟨ Delta ⟩ tack.r_epsilon.alt ⟦ Delta tack.r_epsilon.alt a : A ⟧_(sans("Th")^⊗ ( Gamma )) : A$ and it remains to show that we in fact have $ Gamma   square.stroked.tiny : ⟨ Delta ⟩ tack.r_epsilon.alt ⟦ Delta tack.r_epsilon.alt a : A ⟧_(sans("Th")^⊗ ( Gamma )) approx \[ a \] : A $ which can be done by a relatively straightforward induction, implying, since $\[ dot.op \]$ is injective w.r.t. our equational theory for pure contexts, the following theorem:
 
 #block[
 We have that, for all pure $sans("eff") ( Gamma ) = tack.t$, $ Gamma tack.r_epsilon.alt e approx e' : A arrow.l.r.double ⟦ Gamma tack.r_epsilon.alt e : A ⟧_(sans("Th")^⊗ ( dot.op )) = ⟦ Gamma tack.r_epsilon.alt e' : A ⟧_(sans("Th")^⊗ ( dot.op )) $ In particular, this implies that $sans("Th") ( dot.op )$ is the initial $lambda_(sans("SSA"))$ expression model <thm:complete-expr>
 
 ]
 #block[
-#emph[Proof.] See Appendix~#todo[Cross-reference: \@proof:complete-expr]~◻
+#emph[Proof.] See Appendix~#conditional-ref("proof:complete-expr")~◻
 
 ]
-== Regions
+= Regions
 <regions>
 We define the category $sans("Th") ( Gamma   sans(L) )$ of regions as follows:
 
@@ -493,9 +488,9 @@ We define the category $sans("Th") ( Gamma   sans(L) )$ of regions as follows:
 
 - Composition $r ; r' = \[ ( square.filled.medium ( square.stroked.tiny ) mapsto r' )^harpoon.tl \] r$
 
-In particular, we may view $sans("ret")$ as an identity-on-objects functor $sans("Th")_tack.t^⊗ ( Gamma ) arrow.r sans("Th") ( Gamma   sans(L) )$ with action on morphisms given by given by $ Gamma   square.stroked.tiny : A tack.r_tack.t e : B #h(2em) mapsto #h(2em) Gamma   square.stroked.tiny ( A ) tack.r sans("ret") #h(0em) e gt.tri sans(L)   square.filled.medium ( B ) $ We will use this to equip $sans("Th") ( Gamma   sans(L) )$ with the structure of a Freyd category. In particular, taking our subcategory of pure morphisms to be the image of $sans("ret")$ in $sans("Th") ( Gamma   sans(L) )$, we may define the obvious tensor functors $ - ⊗ X : r mapsto sans("let") #h(0em) ( square.stroked.tiny   x ) = square.stroked.tiny ; ( r ; sans("ret") #h(0em) ( square.stroked.tiny   x ) ) #h(2em) X ⊗ - : r mapsto sans("let") #h(0em) ( x   square.stroked.tiny ) = square.stroked.tiny ; ( r ; sans("ret") #h(0em) ( x   square.stroked.tiny ) ) $ Our premonoidal structure is then completely described by requiring that $sans("ret")$ preserves all relevant structure, i.e., that we have $ alpha = sans("ret") #h(0em) alpha #h(2em) lambda = sans("ret") #h(0em) lambda #h(2em) rho = sans("ret") #h(0em) rho #h(2em) sigma = sans("ret") #h(0em) sigma #h(2em) Delta = sans("ret") #h(0em) Delta $ Just like for expressions, we can write the coproduct of $Gamma   square.stroked.tiny : A tack.r s gt.tri sans(L)   square.filled.medium ( C )$ and $Gamma   square.stroked.tiny : B tack.r t gt.tri sans(L)   square.filled.medium ( C )$ in $sans("Th") ( Gamma   sans(L) )$ as $ Gamma   square.stroked.tiny : A + B tack.r \[ s   t \] := sans("case") #h(0em) square.stroked.tiny #h(0em) { iota_l #h(0em) square.stroked.tiny : s   iota_r #h(0em) square.stroked.tiny : t } gt.tri sans(L)   square.filled.medium ( C ) $ with the obvious injections $iota_l := sans("ret") #h(0em) iota_l$ and $iota_r = sans("ret") #h(0em) iota_r$. It turns out that in this case $sans("ret")$ preserves coproducts as well, and we can therefore easily conclude that our category is distributive by taking inverse distributor $delta^(- 1) = sans("ret") #h(0em) delta^(- 1)$.
+In particular, we may view $sans("ret")$ as an identity-on-objects functor $sans("Th")_tack.t^⊗ ( Gamma ) arrow.r sans("Th") ( Gamma   sans(L) )$ with action on morphisms given by given by $ Gamma   square.stroked.tiny : A tack.r_tack.t e : B #h(2em) mapsto #h(2em) Gamma   square.stroked.tiny ( A ) tack.r sans("ret") #h(0em) e gt.tri sans(L)   square.filled.medium ( B ) $ We will use this to equip $sans("Th") ( Gamma   sans(L) )$ with the structure of a Freyd category. In particular, taking our subcategory of pure morphisms to be the image of $sans("ret")$ in $sans("Th") ( Gamma   sans(L) )$, we may define the obvious tensor functors $ - ⊗ X : r mapsto kw("let") med ( square.stroked.tiny   x ) = square.stroked.tiny ; ( r ; sans("ret") #h(0em) ( square.stroked.tiny   x ) ) #h(2em) X ⊗ - : r mapsto kw("let") med ( x   square.stroked.tiny ) = square.stroked.tiny ; ( r ; sans("ret") #h(0em) ( x   square.stroked.tiny ) ) $ Our premonoidal structure is then completely described by requiring that $sans("ret")$ preserves all relevant structure, i.e., that we have $ alpha = sans("ret") #h(0em) alpha #h(2em) lambda = sans("ret") #h(0em) lambda #h(2em) rho = sans("ret") #h(0em) rho #h(2em) sigma = sans("ret") #h(0em) sigma #h(2em) Delta = sans("ret") #h(0em) Delta $ Just like for expressions, we can write the coproduct of $Gamma   square.stroked.tiny : A tack.r s gt.tri sans(L)   square.filled.medium ( C )$ and $Gamma   square.stroked.tiny : B tack.r t gt.tri sans(L)   square.filled.medium ( C )$ in $sans("Th") ( Gamma   sans(L) )$ as $ Gamma   square.stroked.tiny : A + B tack.r \[ s   t \] := kw("case") med square.stroked.tiny #h(0em) { iota_l #h(0em) square.stroked.tiny : s   iota_r #h(0em) square.stroked.tiny : t } gt.tri sans(L)   square.filled.medium ( C ) $ with the obvious injections $iota_l := sans("ret") #h(0em) iota_l$ and $iota_r = sans("ret") #h(0em) iota_r$. It turns out that in this case $sans("ret")$ preserves coproducts as well, and we can therefore easily conclude that our category is distributive by taking inverse distributor $delta^(- 1) = sans("ret") #h(0em) delta^(- 1)$.
 
-All that remains now is to take $sans("Th") ( Gamma   sans(L) )$ from an $lambda_(sans("SSA"))$ expression model to an $lambda_(sans("SSA"))$ model by giving it an Elgot structure. We do so by defining the fixpoint of a morphism $Gamma   square.stroked.tiny : A tack.r r gt.tri sans(L)   square.filled.medium ( B + A )$ as follows: $ Gamma   square.stroked.tiny : A tack.r r^dagger := sans("br") #h(0em) sans("go") #h(0em) square.stroked.tiny #h(0em) sans("where") #h(0em) sans("go") ( square.stroked.tiny : A ) : { r ; sans("case") #h(0em) square.stroked.tiny #h(0em) { iota_l #h(0em) x : sans("ret") #h(0em) x   iota_r #h(0em) y : sans("br") #h(0em) sans("go") #h(0em) y } } gt.tri sans(L)   square.filled.medium ( B ) $ where $sans("go")$ is an (arbitrary) fresh label. We can verify this indeed satisfies the axioms of an Elgot structure through a somewhat tedious calculation. We may now note that $ ⟦ dot.op ⟧_(sans("Th") ( Gamma   sans(L) )) & = upright(bold(1))   & ⟦ Delta   x : A ⟧_(sans("Th") ( Gamma   sans(L) )) & = ⟦ Delta ⟧_(sans("Th") ( Gamma   sans(L) )) ⊗ A & #h(2em) ==> #h(2em) ⟦ Delta ⟧_(sans("Th") ( Gamma   sans(L) )) & = ⟨ Gamma ⟩\
+All that remains now is to take $sans("Th") ( Gamma   sans(L) )$ from an $lambda_(sans("SSA"))$ expression model to an $lambda_(sans("SSA"))$ model by giving it an Elgot structure. We do so by defining the fixpoint of a morphism $Gamma   square.stroked.tiny : A tack.r r gt.tri sans(L)   square.filled.medium ( B + A )$ as follows: $ Gamma   square.stroked.tiny : A tack.r r^dagger := sans("br") #h(0em) sans("go") #h(0em) square.stroked.tiny med kw("where") med sans("go") ( square.stroked.tiny : A ) : { r ; kw("case") med square.stroked.tiny #h(0em) { iota_l #h(0em) x : sans("ret") #h(0em) x   iota_r #h(0em) y : sans("br") #h(0em) sans("go") #h(0em) y } } gt.tri sans(L)   square.filled.medium ( B ) $ where $sans("go")$ is an (arbitrary) fresh label. We can verify this indeed satisfies the axioms of an Elgot structure through a somewhat tedious calculation. We may now note that $ ⟦ dot.op ⟧_(sans("Th") ( Gamma   sans(L) )) & = upright(bold(1))   & ⟦ Delta   x : A ⟧_(sans("Th") ( Gamma   sans(L) )) & = ⟦ Delta ⟧_(sans("Th") ( Gamma   sans(L) )) ⊗ A & #h(2em) ==> #h(2em) ⟦ Delta ⟧_(sans("Th") ( Gamma   sans(L) )) & = ⟨ Gamma ⟩\
 ⟦ dot.op^(+) ⟧_(sans("Th") ( Gamma   sans(L) )) & = upright(bold(0))   & ⟦ sans(K)   ell ( A ) ⟧_(sans("Th") ( Gamma   sans(L) )) & = ⟦ sans(K) ⟧_(sans("Th") ( Gamma   sans(L) )) + A & #h(2em) ==> #h(2em) ⟦ sans(K) ⟧_(sans("Th") ( Gamma   sans(L) )) & = ⟨ sans(K) ⟩ $ and hence that $ Gamma   square.stroked.tiny : ⟨ Delta ⟩ tack.r ⟦ Delta tack.r_epsilon.alt a : A ⟧_(sans("Th") ( Gamma   sans(L) )) gt.tri sans(L)   square.filled.medium ( A ) #h(2em) Gamma   square.stroked.tiny : ⟨ Delta ⟩ tack.r ⟦ Delta tack.r r gt.tri sans(K) ⟧_(sans("Th") ( Gamma   sans(L) )) gt.tri sans(L)   square.filled.medium ( ⟨ sans(K) ⟩ ) $ as expected. It is relatively easy to derive that $ Gamma   square.stroked.tiny : ⟨ Delta ⟩ tack.r ⟦ Delta tack.r_epsilon.alt a : A ⟧_(sans("Th") ( Gamma   sans(L) )) approx sans("ret") #h(0em) ⟨ a ⟩ gt.tri sans(L)   square.filled.medium ( A ) $ by a relatively straightforward induction. A much more tedious induction is required to prove that $ Gamma   square.stroked.tiny : ⟨ Delta ⟩ tack.r ⟦ Delta tack.r r gt.tri sans(K) ⟧_(sans("Th") ( Gamma   sans(L) )) approx \[ r \] gt.tri sans(L)   square.filled.medium ( ⟨ sans(K) ⟩ ) $ since the case for $sans("where")$-statements is particularly complex. With a little bit more book-keeping (which can be found in the mechanization), we can state the completeness theorem as follows:
 
 #block[
@@ -506,3 +501,5 @@ We have that, for all pure $sans("eff") ( Gamma ) = tack.t$, $ Gamma tack.r r ap
 #emph[Proof.] See Appendix~#todo[Cross-reference: \@proof:complete-reg]~◻
 
 ]
+
+#standalone-bibliography()
