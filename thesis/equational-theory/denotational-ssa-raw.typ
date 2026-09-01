@@ -450,7 +450,7 @@ executed.
     prooftree(rule(label: msc("codiag"), $Gamma tack.r r gt.tri sans("L"), ell(A)$, $Gamma, y : A tack.r s gt.tri sans("L"), ell(A), kappa(A)$, $Gamma tack.r r sans("where") ell(x) : {sans("br") kappa x sans("where") kappa(y) : {s}} approx r sans("where") ell(y) : {[ell/kappa]s} gt.tri sans("L")$)),
     prooftree(rule(label: msc("uni"), $Gamma tack.r r gt.tri sans("L"), ell(A)$, $Gamma, x : A tack.r sans("let") y = e; s approx t sans("where") ell(x) : {sans("br") kappa e} gt.tri sans("L"), kappa(B)$, $Gamma tack.r (r sans("where") ell(x) : {sans("br") kappa e}) sans("where") kappa(y) : {s} approx r sans("where") t gt.tri sans("L")$)),
     $upright("where") quad #eff-typing($Gamma, x : A$, $bot$, $e$, $B$), quad Gamma, y : B tack.r s gt.tri sans("L"), kappa(B), quad upright("and") quad Gamma, x : A tack.r t gt.tri sans("L"), ell(A)$,
-    prooftree(rule(label: msc("dinat"), $Gamma tack.r r gt.tri sans("L"), (ell_i(A_i),)_(i in I)$, $Gamma tack.r sigma : (ell_i(A_i),)_(i in I) arrow.r.squiggly (kappa_j(B_j),)_(j in J)$, $forall j in J. Gamma, x_j : B_j tack.r t_j gt.tri sans("L"), (ell_i(A_i),)_(i in I)$, $Gamma tack.r ([sigma^harpoon.tl]r) sans("where") (kappa_j(x_j) : {[sigma^harpoon.tl]t_j},)_(j in J) approx r sans("where") (ell_i(x_i) : {[(kappa_j(x_j) mapsto t_j,)_(j in J)^harpoon.tl](sigma ell_i x_i)},)_(i in I)$)),
+    text(size: 7.5pt)[#prooftree(rule(label: msc("dinat"), $Gamma tack.r r gt.tri sans("L"), (ell_i(A_i),)_(i in I)$, $Gamma tack.r sigma : (ell_i(A_i),)_(i in I) arrow.r.squiggly (kappa_j(B_j),)_(j in J)$, $forall j in J. Gamma, x_j : B_j tack.r t_j gt.tri sans("L"), (ell_i(A_i),)_(i in I)$, $Gamma tack.r ([sigma^harpoon.tl]r) sans("where") (kappa_j(x_j) : {[sigma^harpoon.tl]t_j},)_(j in J) approx r sans("where") (ell_i(x_i) : {[(kappa_j(x_j) mapsto t_j,)_(j in J)^harpoon.tl](sigma ell_i x_i)},)_(i in I)$))],
   )
 ], caption: [Rewriting rules for #lssa $sans("where")$-blocks])
 <fig:ssa-where-rules>
@@ -583,7 +583,7 @@ relate unary and $n$-ary $sans(w h e r e)$-blocks and, in particular,
 use this relationship to interconvert between data-flow and
 control-flow. This means we now have enough equations to derive the
 flattening of nested $sans(w h e r e)$-blocks:
-#align(center, prooftree(rule(
+#align(center, text(size: 7.5pt)[#prooftree(rule(
   label: msc("cfg-fuse"),
   $Gamma tack.r r gt.tri sans("L"), (ell_i(A_i),)_(i in I), (kappa_j(B_j),)_(j in I)$,
   $forall i in I. Gamma, x_i : A_i tack.r t_i gt.tri sans("L"), (ell_j(A_j),)_(j in I)$,
@@ -592,7 +592,7 @@ flattening of nested $sans(w h e r e)$-blocks:
     sans("where") (ell_i(x_i) : {t_i}),)_(i in I)
     approx r sans("where") (kappa_k(y_k) : {s_k},)_(k in K),
       (ell_i(x_i) : {t_i}),)_(i in I) gt.tri sans("L")$,
-))) <eqn:where-fusion-1> Rather than directly giving
+))]) <eqn:where-fusion-1> Rather than directly giving
 derivation trees for such auxilliary rules, it is more convenient to
 give a denotational proof. However, the completeness of our equational
 theory (proved in Section~#todo[Resolve source reference `ssec:completeness` during integration.]) means that the semantic

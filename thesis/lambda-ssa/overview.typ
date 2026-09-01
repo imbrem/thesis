@@ -79,7 +79,11 @@ $10 !$ given in @fig:fact-program. We can normalize our code into
   like $a + b$ are syntactic sugar for primitive operations
   $+ \( a \, b \)$.
 
-#figure([#figure([$  & sans("let") #h(0em) n = 10 ;\
+#figure([#grid(
+  columns: (1fr, 1fr),
+  gutter: 1.5em,
+  align: (left, top),
+  [#figure([$  & sans("let") #h(0em) n = 10 ;\
      & sans("let mut") #h(0em) i = 1 ;\
      & sans("let mut") #h(0em) a = 1 ;\
      & sans("while") #h(0em) i < n #h(0em) {\
@@ -87,16 +91,15 @@ $10 !$ given in @fig:fact-program. We can normalize our code into
      & quad i = i + 1 ;\
      & }\
      & sans("ret") #h(0em) a\
-     $
-
-    ],
-    caption: [
-      As an imperative program
-    ]
+     $],
+    caption: [As an imperative program],
+    kind: "program-panel",
+    supplement: [],
+    numbering: "(a)",
   )
-  <fig:fact-imp>
+  <fig:fact-imp>],
 
-  #figure([$  & n = 10 ;\
+  [#figure([$  & n = 10 ;\
      & i = 1 ;\
      & a = 1 ;\
      & sans("br") #h(0em) sans("loop") ;\
@@ -104,14 +107,15 @@ $10 !$ given in @fig:fact-program. We can normalize our code into
     sans("body") : quad & t = i + 1 ;\
      & a = a \* t ;\
      & i = i + 1 ;\
-     & sans("br") #h(0em) sans("loop") $
-
-    ],
-    caption: [
-      As 3-address code
-    ]
+     & sans("br") #h(0em) sans("loop") $],
+    caption: [As 3-address code],
+    kind: "program-panel",
+    supplement: [],
+    numbering: "(a)",
   )
-  <fig:fact-3addr>
+  <fig:fact-3addr>],
+
+  )
 
   ],
   caption: [
@@ -516,7 +520,8 @@ isomorphism between lexical SSA and standard SSA.
     caption: [
       Lexical scoping
     ]
-  )
+  ),
+)
 
   ],
   caption: [
