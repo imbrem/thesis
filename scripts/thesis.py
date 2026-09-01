@@ -196,6 +196,7 @@ LINT_PATTERNS = {
     "latex-layout-residue": re.compile(r"(?:minipage\s*=|scale\s*=)"),
     "zero-width-keyword-spacing": re.compile(
         r'(?:sans\((?:"(?:case|let|where)"|[cwl] [aeh] [set] [er])\))\s*#h\(0em\)'
+        r'|#h\(0em\)\s*kw\("where"\)'
     ),
     "raw-angle-grammar": re.compile(r"\\?<[^>\n]+>\s*::="),
 }

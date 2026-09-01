@@ -73,9 +73,9 @@ which are given in Figure~@refall:fig:ub-rewrites.
 
 #figure([#block[
 #rule-set(
-  prooftree(rule(label: msc("ub-then"), $Gamma \, x : A tack.r epsilon.alt b : B$, $Gamma tack.r sans(l e t) #h(0em) x = arrow.zigzag ; #h(0em) b approx arrow.zigzag : B$)),
-  prooftree(rule(label: msc("ub-left"), $Gamma tack.r epsilon.alt a : A + B$, $Gamma \, x : A tack.r epsilon.alt c : C$, $Gamma tack.r sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : c \, iota_r #h(0em) y : arrow.zigzag } approx sans(l e t) #h(0em) x = rho_l #h(0em) a ; #h(0em) c : C$)),
-  prooftree(rule(label: msc("ub-right"), $Gamma tack.r epsilon.alt a : A + B$, $Gamma \, y : B tack.r epsilon.alt c : C$, $Gamma tack.r sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : arrow.zigzag \, iota_r #h(0em) y : c } approx sans(l e t) #h(0em) y = rho_r #h(0em) a ; #h(0em) c : C$)),
+  prooftree(rule(label: msc("ub-then"), $Gamma \, x : A tack.r epsilon.alt b : B$, $Gamma tack.r kw("let") med x = arrow.zigzag ; #h(0em) b approx arrow.zigzag : B$)),
+  prooftree(rule(label: msc("ub-left"), $Gamma tack.r epsilon.alt a : A + B$, $Gamma \, x : A tack.r epsilon.alt c : C$, $Gamma tack.r kw("case") med a #h(0em) { iota_l #h(0em) x : c \, iota_r #h(0em) y : arrow.zigzag } approx kw("let") med x = rho_l #h(0em) a ; #h(0em) c : C$)),
+  prooftree(rule(label: msc("ub-right"), $Gamma tack.r epsilon.alt a : A + B$, $Gamma \, y : B tack.r epsilon.alt c : C$, $Gamma tack.r kw("case") med a #h(0em) { iota_l #h(0em) x : arrow.zigzag \, iota_r #h(0em) y : c } approx kw("let") med y = rho_r #h(0em) a ; #h(0em) c : C$)),
 )
 
   ]],
@@ -113,10 +113,10 @@ writes are relevant, and reads are eliminable and commutative.
 #figure([#block[
 #rule-set(
   prooftree(rule(label: msc("st-ld"), $Gamma tack.r tack.t p : bb(N)$, $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r sans(s t) #h(0em) \( p \, a \) ; sans(l d) #h(0em) p approx sans(s t) #h(0em) \( p \, a \) ; a : bb(N)$)),
-  prooftree(rule(label: msc("mk-ld"), $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r sans(l e t) #h(0em) p = sans(m k) #h(0em) a ; #h(0em) \( p \, sans(l d) #h(0em) p \) approx \( sans(m k) #h(0em) a ; a \) : bb(N) ⊗ bb(N)$)),
+  prooftree(rule(label: msc("mk-ld"), $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r kw("let") med p = sans(m k) #h(0em) a ; #h(0em) \( p \, sans(l d) #h(0em) p \) approx \( sans(m k) #h(0em) a ; a \) : bb(N) ⊗ bb(N)$)),
   prooftree(rule(label: msc("st-st"), $Gamma tack.r tack.t p : bb(N)$, $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r tack.t b : bb(N)$, $Gamma tack.r sans(s t) #h(0em) \( p \, a \) ; sans(s t) #h(0em) \( p \, b \) approx sans(s t) #h(0em) \( p \, b \) : upright(bold(1))$)),
-  prooftree(rule(label: msc("mk-st"), $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r tack.t b : bb(N)$, $Gamma tack.r sans(l e t) #h(0em) p = sans(m k) #h(0em) a ; #h(0em) sans(s t) #h(0em) \( p \, b \) ; p approx sans(m k #h(0em) b) : bb(N)$)),
-  prooftree(rule(label: msc("mk-rm"), $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r sans(l e t) #h(0em) p = sans(m k) #h(0em) a ; #h(0em) sans(r m) #h(0em) p approx \( \) : upright(bold(1))$)),
+  prooftree(rule(label: msc("mk-st"), $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r tack.t b : bb(N)$, $Gamma tack.r kw("let") med p = sans(m k) #h(0em) a ; #h(0em) sans(s t) #h(0em) \( p \, b \) ; p approx sans(m k #h(0em) b) : bb(N)$)),
+  prooftree(rule(label: msc("mk-rm"), $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r kw("let") med p = sans(m k) #h(0em) a ; #h(0em) sans(r m) #h(0em) p approx \( \) : upright(bold(1))$)),
   prooftree(rule(label: msc("st-rm"), $Gamma tack.r tack.t p : bb(N)$, $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r sans(s t) #h(0em) \( p \, a \) ; sans(r m) #h(0em) p approx sans(r m) #h(0em) p : upright(bold(1))$)),
 )
 
@@ -178,7 +178,7 @@ do not have UB.
 #rule-set(
   prooftree(rule(label: msc("st-ld"), $Gamma tack.r tack.t p : bb(N)$, $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r sans(s t) #h(0em) \( p \, a \) ; sans(l d) #h(0em) p arrow.r.twohead sans(s t) #h(0em) \( p \, a \) ; a : bb(N)$)),
   prooftree(rule(label: msc("st-st"), $Gamma tack.r tack.t p : bb(N)$, $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r tack.t b : bb(N)$, $Gamma tack.r sans(s t) #h(0em) \( p \, a \) ; sans(s t) #h(0em) \( p \, b \) arrow.r.twohead sans(s t) #h(0em) \( p \, b \) : upright(bold(1))$)),
-  prooftree(rule(label: msc("ld-st"), $Gamma tack.r tack.t p : bb(N)$, $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r sans(l e t) #h(0em) x = sans(l d) #h(0em) p ; #h(0em) sans(s t) #h(0em) p #h(0em) \( x + a \) ; x arrow.r.twohead sans(f a a) #h(0em) \( p \, a \) : bb(N)$)),
+  prooftree(rule(label: msc("ld-st"), $Gamma tack.r tack.t p : bb(N)$, $Gamma tack.r tack.t a : bb(N)$, $Gamma tack.r kw("let") med x = sans(l d) #h(0em) p ; #h(0em) sans(s t) #h(0em) p #h(0em) \( x + a \) ; x arrow.r.twohead sans(f a a) #h(0em) \( p \, a \) : bb(N)$)),
 )
 
   ]],

@@ -45,22 +45,15 @@ adjustments to the usual presentation:
   Likewise, for uniformity, a return-statement may appear in the branch
   of a conditional branch.
 
-#figure([#block[
-  #block[
-  \<$v$\> ::= $x$ | $\( v \, v' \)$ | $\( \)$
-
-  \<$o$\> ::= $v$ | $f #h(0em) v$ | $iota_l #h(0em) v$ |
-  $iota_r #h(0em) v$ | $sans("abort") #h(0em) v$
-
-  \<$beta$\> ::= $x = o ; beta$ | $\( x \, y \) = o ; beta$ | $tau$
-
-  \<$tau$\> ::= $sans("br") #h(0em) ell$ | $sans("ret") #h(0em) v$ |
-  $sans("if") #h(0em) o #h(0em) { tau } #h(0em) sans("else") #h(0em) { tau' }$
-
-  \<$G$\> ::= $beta$ | $G ; #h(0em) ell : beta$
-
-  ]
-  ]],
+#figure([#grammar(
+  production($v$, $x$, $\(v, v'\)$, $\(\)$),
+  production($o$, $v$, $f #h(0em) v$, $iota_l #h(0em) v$,
+    $iota_r #h(0em) v$, $#kw("abort") med v$),
+  production($beta$, $x = o; beta$, $\(x, y\) = o; beta$, $tau$),
+  production($tau$, $#kw("br") med ell$, $#kw("ret") med v$,
+    $#kw("if") med o med {tau} med #kw("else") med {tau'}$),
+  production($G$, $beta$, $G; ell : beta$),
+)],
   caption: [
     Grammar for 3-address code
   ]
@@ -83,7 +76,7 @@ $10 !$ given in @fig:fact-program. We can normalize our code into
   columns: (1fr, 1fr),
   gutter: 1.5em,
   align: (left, top),
-  [#semi-math-panel([$  & sans("let") #h(0em) n = 10 ;\
+  [#semi-math-panel([$  & kw("let") med n = 10 ;\
      & sans("let mut") #h(0em) i = 1 ;\
      & sans("let mut") #h(0em) a = 1 ;\
      & sans("while") #h(0em) i < n #h(0em) {\
@@ -205,7 +198,7 @@ rather than only those paths which also go through $S$.
      & a = 1 ;\
      & sans("br") #h(0em) sans("loop") ;\
     sans("loop") : quad & sans("if") #h(0em) i < n #h(0em) { #h(0em) sans("br") #h(0em) sans("body") #h(0em) } #h(0em) sans("else") #h(0em) { #h(0em) sans("ret") #h(0em) a #h(0em) } ;\
-    sans("body") : quad & sans("let") #h(0em) t = i + 1 ;\
+    sans("body") : quad & kw("let") med t = i + 1 ;\
      & a = a \* t ;\
      & i = i + 1 ;\
      & sans("br") #h(0em) sans("loop") $
@@ -216,14 +209,14 @@ rather than only those paths which also go through $S$.
     ]
   )
 
-  #figure([$  & sans("let") #h(0em) n = 10 ;\
+  #figure([$  & kw("let") med n = 10 ;\
      & sans("br") #h(0em) sans("loop")\
-    sans("loop") : quad & sans("let") #h(0em) i_0 = phi.alt \( sans("entry") : 1 \, sans("body") : i_1 \) ;\
-     & sans("let") #h(0em) a_0 = phi.alt \( sans("entry") : 1 \, sans("body") : a_1 \) ;\
+    sans("loop") : quad & kw("let") med i_0 = phi.alt \( sans("entry") : 1 \, sans("body") : i_1 \) ;\
+     & kw("let") med a_0 = phi.alt \( sans("entry") : 1 \, sans("body") : a_1 \) ;\
      & sans("if") #h(0em) i_0 < n #h(0em) { #h(0em) sans("br") #h(0em) sans("body") #h(0em) } #h(0em) sans("else") #h(0em) { #h(0em) sans("ret") #h(0em) a_0 #h(0em) } ;\
-    sans("body") : quad & sans("let") #h(0em) t = i_0 + 1\
-     & sans("let") #h(0em) a_1 = a_0 \* t\
-     & sans("let") #h(0em) i_1 = i_0 + 1\
+    sans("body") : quad & kw("let") med t = i_0 + 1\
+     & kw("let") med a_1 = a_0 \* t\
+     & kw("let") med i_1 = i_0 + 1\
      & sans("br") #h(0em) sans("loop") $
 
     ],
@@ -272,7 +265,7 @@ instead.]. One of the other changes we make is replacing conditional
 branches
 $sans("if") #h(0em) o #h(0em) { tau } #h(0em) sans("else") #h(0em) { tau' }$
 with #emph[case-statements]
-$sans("case") #h(0em) o #h(0em) { iota_l #h(0em) y : tau \, iota_r #h(0em) z : tau' }$.
+$kw("case") med o #h(0em) { iota_l #h(0em) y : tau \, iota_r #h(0em) z : tau' }$.
 In particular, a case-statement
 $sans("if") #h(0em) o #h(0em) { tau } #h(0em) sans("else") #h(0em) { tau' }$
 may be desugared into a case-statement on a Boolean value
@@ -282,23 +275,16 @@ Note that this grammar no longer needs a separate terminator for
 returns: we can treat the return point as a distinguished label (with
 argument) that a program can jump to.
 
-#figure([#block[
-  #block[
-  \<$v$\> ::= $x$ | $\( v \, v' \)$ | $\( \)$
-
-  \<$o$\> ::= $v$ | $f #h(0em) v$ | $iota_l #h(0em) v$ |
-  $iota_r #h(0em) v$ | $sans("abort") #h(0em) v$
-
-  \<$beta$\> ::= $sans("let") #h(0em) x = o ; beta$ |
-  $sans("let") #h(0em) \( x \, y \) = o ; beta$ | $tau$
-
-  \<$tau$\> ::= $sans("br") #h(0em) ell #h(0em) o$ |
-  $sans("case") #h(0em) o #h(0em) { iota_l #h(0em) y : tau \, iota_r #h(0em) z : tau' }$
-
-  \<$G$\> ::= $G #h(0em) #h(0em) ell \( x \) : beta$ | $beta$
-
-  ]
-  ]],
+#figure([#grammar(
+  production($v$, $x$, $\(v, v'\)$, $\(\)$),
+  production($o$, $v$, $f #h(0em) v$, $iota_l #h(0em) v$,
+    $iota_r #h(0em) v$, $#kw("abort") med v$),
+  production($beta$, $#kw("let") med x = o; beta$,
+    $#kw("let") med \(x, y\) = o; beta$, $tau$),
+  production($tau$, $#kw("br") med ell med o$,
+    $#kw("case") med o med {iota_l med y : tau, iota_r med z : tau'}$),
+  production($G$, $G, ell(x) : beta$, $beta$),
+)],
   caption: [
     Grammar for basic blocks-with-arguments SSA
   ]
@@ -413,7 +399,7 @@ In particular, a #emph[region] $r$ generalizes a basic block $beta$ by
 annotating the terminator $tau$ with a list $L$ of #emph[labeled
 branches] "$ell_i \( x_i \) : { t_i }$," yielding a
 #emph[$sans("where")$-block]
-"$tau #h(0em) sans("where") #h(0em) L$". Each $ell_i$ can only be
+"$tau med kw("where") med L$". Each $ell_i$ can only be
 branched to by $tau$ and the regions $t_i$, thus syntactically enforcing
 that the basic block at the root of $r$ (made up of its instructions and
 terminators) #emph[dominates] all the basic blocks in the subregions
@@ -438,24 +424,16 @@ $sans("where")$-blocks from a region $r$ and giving the root a name
 trivially yields a (topologically sorted!) SSA program, establishing an
 isomorphism between lexical SSA and standard SSA.
 
-#figure([#block[
-  #block[
-  \<$v$\> ::= $x$ | $\( v \, v' \)$ | $\( \)$
-
-  \<$o$\> ::= $v$ | $f #h(0em) v$ | $iota_l #h(0em) v$ |
-  $iota_r #h(0em) v$ | $sans("abort") #h(0em) v$
-
-  \<$r \, s \, t$\> ::= $sans("let") #h(0em) x = o ; t$ |
-  $sans("let") #h(0em) \( x \, y \) = o ; t$ |
-  $tau #h(0em) sans("where") #h(0em) L$
-
-  \<$tau$\> ::= $sans("br") #h(0em) ell #h(0em) o$ |
-  $sans("case") #h(0em) o #h(0em) { iota_l #h(0em) y : tau \, iota_r #h(0em) z : tau' }$
-
-  \<$L$\> ::= $dot.op$ | $L \, ell \( x \) : { t }$
-
-  ]
-  ]],
+#figure([#grammar(
+  production($v$, $x$, $\(v, v'\)$, $\(\)$),
+  production($o$, $v$, $f #h(0em) v$, $iota_l #h(0em) v$,
+    $iota_r #h(0em) v$, $#kw("abort") med v$),
+  production($r, s, t$, $#kw("let") med x = o; t$,
+    $#kw("let") med \(x, y\) = o; t$, $tau med #kw("where") med L$),
+  production($tau$, $#kw("br") med ell med o$,
+    $#kw("case") med o med {iota_l med y : tau, iota_r med z : tau'}$),
+  production($L$, $dot.op$, $L, ell(x) : {t}$),
+)],
   caption: [
     Grammar for lexically-scoped SSA
   ]
@@ -480,13 +458,13 @@ isomorphism between lexical SSA and standard SSA.
 )
 <fig:ssa-data>
 
-#figure([#figure([$  & sans("let") #h(0em) n = 10 ;\
+#figure([#figure([$  & kw("let") med n = 10 ;\
      & sans("br") #h(0em) sans("loop") \( 1 \, 1 \)\
     sans("loop") \( i_0 \, a_0 \) : quad & sans("if") #h(0em) i_0 < n #h(0em) { #h(0em) sans("br") #h(0em) sans("body") #h(0em) }\
      & sans("else") #h(0em) { #h(0em) sans("ret") #h(0em) a_0 #h(0em) }\
-    sans("body") : quad & sans("let") #h(0em) t = i_0 + 1\
-     & sans("let") #h(0em) a_1 = a_0 \* t\
-     & sans("let") #h(0em) i_1 = i_0 + 1\
+    sans("body") : quad & kw("let") med t = i_0 + 1\
+     & kw("let") med a_1 = a_0 \* t\
+     & kw("let") med i_1 = i_0 + 1\
      & sans("br") #h(0em) sans("loop") \( i_1 \, a_1 \)\
     \
     \
@@ -499,15 +477,15 @@ isomorphism between lexical SSA and standard SSA.
     ]
   )
 
-  #figure([$  & sans("let") #h(0em) n = 10 ;\
+  #figure([$  & kw("let") med n = 10 ;\
      & sans("br") #h(0em) sans("loop") \( 1 \, 1 \)\
-     & sans("where") #h(0em) sans("loop") \( i_0 \, a_0 \) : {\
+     & kw("where") med sans("loop") \( i_0 \, a_0 \) : {\
      & quad sans("if") #h(0em) i_0 < n #h(0em) { #h(0em) sans("br") #h(0em) sans("body") #h(0em) }\
      & quad sans("else") #h(0em) { #h(0em) sans("ret") #h(0em) a_0 #h(0em) }\
-     & quad sans("where") #h(0em) sans("body") : {\
-     & #h(2em) sans("let") #h(0em) t = i_0 + 1\
-     & #h(2em) sans("let") #h(0em) a_1 = a_0 \* t\
-     & #h(2em) sans("let") #h(0em) i_1 = i_0 + 1\
+     & quad kw("where") med sans("body") : {\
+     & #h(2em) kw("let") med t = i_0 + 1\
+     & #h(2em) kw("let") med a_1 = a_0 \* t\
+     & #h(2em) kw("let") med i_1 = i_0 + 1\
      & #h(2em) sans("br") #h(0em) sans("loop") \( i_1 \, a_1 \)\
      & quad }\
      & } $
@@ -556,8 +534,8 @@ To help achieve this, we will slightly generalize our syntax by:
   #metadata(none) <ssa-change-reg>
 
 + Extending expressions $a$ to allow #emph[let-expressions]
-  "$sans("let") #h(0em) x = a ; #h(0em) b$" and #emph[case-expressions]
-  "$sans("case") #h(0em) a #h(0em) { iota_l #h(0em) x : b \, iota_r #h(0em) y : c }$"
+  "$kw("let") med x = a ; #h(0em) b$" and #emph[case-expressions]
+  "$kw("case") med a #h(0em) { iota_l #h(0em) x : b \, iota_r #h(0em) y : c }$"
   #metadata(none) <ssa-change-expr>
 
 This leaves us with our final language, #lssa, the
@@ -582,38 +560,32 @@ On the other hand, #link(<ssa-change-reg>)[2] lets us replace an unconditional
 branch $sans("br") #h(0em) ell #h(0em) a$ (which is a terminator $tau$)
 with the code #emph[pointed to] by the label $ell$ (which is a region
 $r$), allowing us to perform the jump-threading optimization
-$ sans("let") #h(0em) x = a ; sans("br") #h(0em) ell #h(0em) b #h(0em) sans("where") #h(0em) ell \( y \) : { r } approx sans("let") #h(0em) x = a ; sans("let") #h(0em) y = b ; r #h(0em) sans("where") #h(0em) ell \( y \) : { r } $
+$ kw("let") med x = a ; sans("br") #h(0em) ell #h(0em) b med kw("where") med ell \( y \) : { r } approx kw("let") med x = a ; kw("let") med y = b ; r med kw("where") med ell \( y \) : { r } $
 While both sides of this equation are valid lexical SSA programs, by
 loosening our syntax slightly, we can #emph[unconditionally] replace
 jumps with regions, without worrying about jumps nested in case
 statements or fusing $sans("where")$-blocks. This, especially combined
 with change #link(<ssa-change-expr>)[3], makes it much easier to verify
 optimizations such as
-$  & sans("case") #h(0em) a #h(0em) { iota_l #h(0em) x : sans("br") #h(0em) ell #h(0em) \( iota_r #h(0em) x \) \, iota_r #h(0em) x : sans("br") #h(0em) ell #h(0em) \( iota_l #h(0em) x \) } #h(0em) sans("where") #h(0em) ell \( y \) : { sans("case") #h(0em) y #h(0em) { iota_l #h(0em) z : sans("ret") #h(0em) \( iota_r #h(0em) z \) \, iota_r #h(0em) z : sans("ret") #h(0em) \( iota_l #h(0em) z \) } }\
- & approx sans("case") #h(0em) a #h(0em) { iota_l #h(0em) x : sans("case") #h(0em) iota_r #h(0em) x #h(0em) { iota_l #h(0em) z : sans("ret") #h(0em) \( iota_r #h(0em) z \) \, iota_r #h(0em) z : sans("ret") #h(0em) \( iota_l #h(0em) z \) }\
- & #h(2em) #h(0em) #h(0em) \, iota_r #h(0em) x : sans("case") #h(0em) iota_l #h(0em) x #h(0em) { iota_l #h(0em) z : sans("ret") #h(0em) \( iota_r #h(0em) z \) \, iota_r #h(0em) z : sans("ret") #h(0em) \( iota_l #h(0em) z \) } }\
- & approx sans("case") #h(0em) a #h(0em) { iota_l #h(0em) x : sans("ret") \( iota_l #h(0em) x \) \, iota_r #h(0em) x : sans("ret") \( iota_r #h(0em) x \) } approx sans("ret") #h(0em) \( sans("case") #h(0em) a #h(0em) { iota_l #h(0em) x : iota_l #h(0em) x \, iota_r #h(0em) x : iota_r #h(0em) x } \) approx sans("ret") #h(0em) a $
+$  & kw("case") med a #h(0em) { iota_l #h(0em) x : sans("br") #h(0em) ell #h(0em) \( iota_r #h(0em) x \) \, iota_r #h(0em) x : sans("br") #h(0em) ell #h(0em) \( iota_l #h(0em) x \) } med kw("where") med ell \( y \) : { kw("case") med y #h(0em) { iota_l #h(0em) z : sans("ret") #h(0em) \( iota_r #h(0em) z \) \, iota_r #h(0em) z : sans("ret") #h(0em) \( iota_l #h(0em) z \) } }\
+ & approx kw("case") med a #h(0em) { iota_l #h(0em) x : kw("case") med iota_r #h(0em) x #h(0em) { iota_l #h(0em) z : sans("ret") #h(0em) \( iota_r #h(0em) z \) \, iota_r #h(0em) z : sans("ret") #h(0em) \( iota_l #h(0em) z \) }\
+ & #h(2em) #h(0em) #h(0em) \, iota_r #h(0em) x : kw("case") med iota_l #h(0em) x #h(0em) { iota_l #h(0em) z : sans("ret") #h(0em) \( iota_r #h(0em) z \) \, iota_r #h(0em) z : sans("ret") #h(0em) \( iota_l #h(0em) z \) } }\
+ & approx kw("case") med a #h(0em) { iota_l #h(0em) x : sans("ret") \( iota_l #h(0em) x \) \, iota_r #h(0em) x : sans("ret") \( iota_r #h(0em) x \) } approx sans("ret") #h(0em) \( kw("case") med a #h(0em) { iota_l #h(0em) x : iota_l #h(0em) x \, iota_r #h(0em) x : iota_r #h(0em) x } \) approx sans("ret") #h(0em) a $
 by repeatedly applying a set of known-good rules, and, moreover,
 dramatically simplifies the form of the rules themselves.
 
-#figure([#block[
-  #block[
-  \<$a \, b \, c \, e$\> ::= $x$ | $f #h(0em) a$ |
-  $sans("let") #h(0em) x = a ; #h(0em) e$ $\( \)$ | $\( a \, b \)$ |
-  $sans("let") #h(0em) \( x \, y \) = a ; #h(0em) e$ $iota_l #h(0em) a$
-  | $iota_r #h(0em) a$ | $sans("abort") #h(0em) a$ |
-  $sans("case") #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b }$
-
-  \<$r \, s \, t$\> ::= $sans("let") #h(0em) x = a ; t$ |
-  $sans("let") #h(0em) \( x \, y \) = a ; t$ |
-  $t #h(0em) sans("where") #h(0em) L$ |
-  $sans("br") #h(0em) ell #h(0em) a$ |
-  $sans("case") #h(0em) e #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t }$
-
-  \<$L$\> ::= $dot.op$ | $L \, ell \( x \) : { t }$
-
-  ]
-  ]],
+#figure([#grammar(
+  production($a, b, c, e$, $x$, $f #h(0em) a$,
+    $#kw("let") med x = a; e$, $\(\)$, $\(a, b\)$,
+    $#kw("let") med \(x, y\) = a; e$, $iota_l med a$, $iota_r med a$,
+    $#kw("abort") med a$,
+    $#kw("case") med e med {iota_l med x : a, iota_r med y : b}$),
+  production($r, s, t$, $#kw("let") med x = a; t$,
+    $#kw("let") med \(x, y\) = a; t$, $t med #kw("where") med L$,
+    $#kw("br") med ell med a$,
+    $#kw("case") med e med {iota_l med x : s, iota_r med y : t}$),
+  production($L$, $dot.op$, $L, ell(x) : {t}$),
+)],
   caption: [
     Grammar for #lssa
   ]
