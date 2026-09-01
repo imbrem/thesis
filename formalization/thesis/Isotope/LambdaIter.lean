@@ -9,3 +9,4 @@ import Isotope.LambdaIter.Weakening
 import Isotope.LambdaIter.Named
 import Isotope.LambdaIter.NoSubtyping
 import Isotope.LambdaIter.Semantics
+import Isotope.LambdaIter.Subtyping.Minimal
