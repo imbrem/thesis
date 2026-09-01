@@ -7,4 +7,5 @@ import Isotope.LambdaIter.Subtyping
 import Isotope.LambdaIter.Ty
 import Isotope.LambdaIter.Weakening
 import Isotope.LambdaIter.Named
+import Isotope.LambdaIter.NoSubtyping
 import Isotope.LambdaIter.Semantics
