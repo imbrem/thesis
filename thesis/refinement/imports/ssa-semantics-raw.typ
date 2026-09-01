@@ -28,7 +28,7 @@ $upright(bold(Q))$ is a list of quantity vectors $upright(bold(q))_i$
 which we call the #emph[quantity matrix].
 
 We may define a weakening judgement on annotated label contexts using
-the rules in Figure~@refall:fig:label-wk; the judgement is with respect to a
+the rules in @refall:fig:label-wk; the judgement is with respect to a
 particular context $Gamma$ used to interpret the quantity vectors in
 $upright(bold(Q))$. In particular, weakening allows us to insert
 arbitrary labels using skip, as well as weaken the quantities associated
@@ -40,7 +40,7 @@ obtain its #emph[lifting] $upright(bold(Q))^arrow.t$. In particular, we
 define this inductively with $dot.op^arrow.t = dot.op$ and
 $\( upright(bold(Q)) ; upright(bold(q)) \)^arrow.t = upright(bold(Q))^arrow.t ; \( upright(bold(q)) \, 0 \)$.
 With this, we give typing rules for $lambda_(sans(S S A))$, which we do
-in Figure~@refall:fig:ssa-typing.
+in @refall:fig:ssa-typing.
 
 - We begin with the typing rule for branches, br. This states that, if
   $o$ is a pure expression of type $A$, and
@@ -135,12 +135,12 @@ $\[ Gamma mapsto sans(L)^(upright(bold(Q))) \, ell \( A \)^(upright(bold(q))) \]
 Here, the label is encoded as the branch of the coproduct we end up in,
 with each branch carrying the argument and any leftover variables as
 data. We may now give a denotational semantics for label contexts and
-label weakenings in Figure~@refall:fig:lwk-densem. It is easy to verify that we
+label weakenings in @refall:fig:lwk-densem. It is easy to verify that we
 can reassociate
 $alpha^(+) : cal(C)_tack.t \( ⟦ sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))') ⟧ \( Gamma \) \, ⟦ sans(L)^(upright(bold(Q))) ⟧ \( Gamma \) + ⟦ sans(R)^(upright(bold(Q))') ⟧ \( Gamma \) \)$.
 We also note that we can apply the associator "pointwise" to reassociate
 $alpha^arrow.b : cal(C)_tack.t \( ⟦ \[ Gamma \, x : A mapsto sans(L)^(upright(bold(Q))^arrow.t) \] ⟧ \, ⟦ \[ Gamma mapsto sans(L)^(upright(bold(Q))) \] ⟧ \)$.
-The semantics for regions is in Figure~@refall:fig:ssa-densem:
+The semantics for regions is in @refall:fig:ssa-densem:
 
 - Branches are interpreted by splitting the context, evaluating the
   argument, and then passing the remainder of the context and the result

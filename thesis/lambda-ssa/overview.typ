@@ -72,18 +72,19 @@ $10 !$ given in @fig:fact-program. We can normalize our code into
   like $a + b$ are syntactic sugar for primitive operations
   $+ \( a \, b \)$.
 
+#counter(figure.where(kind: "program-panel")).update(0)
 #figure([#grid(
   columns: (1fr, 1fr),
   gutter: 1.5em,
   align: (left, top),
   [#semi-math-panel([$  & kw("let") med n = 10 ;\
-     & sans("let mut") #h(0em) i = 1 ;\
-     & sans("let mut") #h(0em) a = 1 ;\
-     & sans("while") #h(0em) i < n #h(0em) {\
+     & kw("let mut") med i = 1 ;\
+     & kw("let mut") med a = 1 ;\
+     & kw("while") med i < n med {\
      & quad a = a \* \( i + 1 \)\
      & quad i = i + 1 ;\
      & }\
-     & sans("ret") #h(0em) a\
+     & kw("ret") med a\
      $],
     caption: [As an imperative program],
     numbering: "(a)",
@@ -93,12 +94,12 @@ $10 !$ given in @fig:fact-program. We can normalize our code into
   [#semi-math-panel([$  & n = 10 ;\
      & i = 1 ;\
      & a = 1 ;\
-     & sans("br") #h(0em) sans("loop") ;\
-    sans("loop") : quad & sans("if") #h(0em) i < n #h(0em) { #h(0em) sans("br") #h(0em) sans("body") #h(0em) } #h(0em) sans("else") #h(0em) { #h(0em) sans("ret") #h(0em) a #h(0em) } ;\
+     & kw("br") med sans("loop") ;\
+    sans("loop") : quad & kw("if") med i < n med { kw("br") med sans("body") } med kw("else") med { kw("ret") med a } ;\
     sans("body") : quad & t = i + 1 ;\
      & a = a \* t ;\
      & i = i + 1 ;\
-     & sans("br") #h(0em) sans("loop") $],
+     & kw("br") med sans("loop") $],
     caption: [As 3-address code],
     numbering: "(a)",
   )
@@ -458,46 +459,34 @@ isomorphism between lexical SSA and standard SSA.
 )
 <fig:ssa-data>
 
-#figure([#figure([$  & kw("let") med n = 10 ;\
-     & sans("br") #h(0em) sans("loop") \( 1 \, 1 \)\
-    sans("loop") \( i_0 \, a_0 \) : quad & sans("if") #h(0em) i_0 < n #h(0em) { #h(0em) sans("br") #h(0em) sans("body") #h(0em) }\
-     & sans("else") #h(0em) { #h(0em) sans("ret") #h(0em) a_0 #h(0em) }\
+#counter(figure.where(kind: "program-panel")).update(0)
+#figure([#grid(
+  columns: (1fr, 1fr),
+  gutter: 1.2em,
+  align: (left, top),
+  [#semi-math-panel([$  & kw("let") med n = 10 ;\
+     & kw("br") med sans("loop") \( 1 \, 1 \)\
+    sans("loop") \( i_0 \, a_0 \) : quad & kw("if") med i_0 < n med { kw("br") med sans("body") }\
+     & kw("else") med { kw("ret") med a_0 }\
     sans("body") : quad & kw("let") med t = i_0 + 1\
      & kw("let") med a_1 = a_0 \* t\
      & kw("let") med i_1 = i_0 + 1\
-     & sans("br") #h(0em) sans("loop") \( i_1 \, a_1 \)\
-    \
-    \
-    \
-     $
-
-    ],
-    caption: [
-      Dominance-based scoping
-    ]
-  )
-
-  #figure([$  & kw("let") med n = 10 ;\
-     & sans("br") #h(0em) sans("loop") \( 1 \, 1 \)\
+     & kw("br") med sans("loop") \( i_1 \, a_1 \) $
+    ], caption: [Dominance-based scoping], numbering: "(a)")],
+  [#semi-math-panel([$  & kw("let") med n = 10 ;\
+     & kw("br") med sans("loop") \( 1 \, 1 \)\
      & kw("where") med sans("loop") \( i_0 \, a_0 \) : {\
-     & quad sans("if") #h(0em) i_0 < n #h(0em) { #h(0em) sans("br") #h(0em) sans("body") #h(0em) }\
-     & quad sans("else") #h(0em) { #h(0em) sans("ret") #h(0em) a_0 #h(0em) }\
+     & quad kw("if") med i_0 < n med { kw("br") med sans("body") }\
+     & quad kw("else") med { kw("ret") med a_0 }\
      & quad kw("where") med sans("body") : {\
      & #h(2em) kw("let") med t = i_0 + 1\
      & #h(2em) kw("let") med a_1 = a_0 \* t\
      & #h(2em) kw("let") med i_1 = i_0 + 1\
-     & #h(2em) sans("br") #h(0em) sans("loop") \( i_1 \, a_1 \)\
+     & #h(2em) kw("br") med sans("loop") \( i_1 \, a_1 \)\
      & quad }\
      & } $
-
-    ],
-    caption: [
-      Lexical scoping
-    ]
-  ),
-)
-
-  ],
+    ], caption: [Lexical scoping], numbering: "(a)")],
+)],
   caption: [
     Conversion of an SSA program from dominance-based scoping to
     explicit lexical scoping

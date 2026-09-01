@@ -1166,17 +1166,21 @@ omitted.~◻
 #block[
 The rewrite rules cfg-fuse$""_1$ (Eqn.~#todo[Resolve source reference `eqn:where-fusion-1` during integration.]) and
 cfg-fuse$""_2$ are sound, where we define
-#align(center, prooftree(rule(
+#align(center, fit-to-width(prooftree(rule(
   label: msc("cfg-fuse2"),
-  $Gamma tack.r r gt.tri sans("L"), (ell_i(A_i),)_i, kappa(B)$,
-  $forall i in I. Gamma, x_i : A_i tack.r t_i gt.tri sans("L"), (ell_j(A_j),)_(j in I), kappa(B)$,
-  $Gamma, y : B tack.r s gt.tri sans("L"), (ell_j(A_j),)_(j in I), kappa(B), (ell_(j')'(A_(j')'),)_(j' in I')$,
-  $forall i' in I'. Gamma, x_(i')' : A_(i')' tack.r t_(i')' gt.tri sans("L"), (ell_j(A_j),)_(j in I), kappa(B), (ell_(j')'(A_(j')'),)_(j' in I')$,
-  $Gamma tack.r r sans("where") (ell_i(x_i) : {t_i},)_(i in I),
-      kappa(y) : {s sans("where") (ell_(i')'(x_(i')') : {t_(i')'},)_(i' in I')}
-    approx r sans("where") (ell_i(x_i) : {t_i},)_(i in I),
-      kappa(y) : {s}, (ell_(i')'(x_(i')') : {t_(i')'},)_(i' in I') gt.tri sans("L")$,
-))) <eqn:where-fusion-2>
+  stack(dir: ttb, spacing: 0.25em,
+    $Gamma tack.r r gt.tri sans("L"), (ell_i(A_i),)_i, kappa(B)$,
+    $forall i in I. Gamma, x_i : A_i tack.r t_i gt.tri sans("L"), (ell_j(A_j),)_(j in I), kappa(B)$,
+  ),
+  stack(dir: ttb, spacing: 0.25em,
+    $Gamma, y : B tack.r s gt.tri sans("L"), (ell_j(A_j),)_(j in I), kappa(B), (ell_(j')'(A_(j')'),)_(j' in I')$,
+    $forall i' in I'. Gamma, x_(i')' : A_(i')' tack.r t_(i')' gt.tri sans("L"), (ell_j(A_j),)_(j in I), kappa(B), (ell_(j')'(A_(j')'),)_(j' in I')$,
+  ),
+  stack(dir: ttb, spacing: 0.25em,
+    $Gamma tack.r r sans("where") (ell_i(x_i) : {t_i},)_(i in I), kappa(y) : {s sans("where") (ell_(i')'(x_(i')') : {t_(i')'},)_(i' in I')}$,
+    $approx r sans("where") (ell_i(x_i) : {t_i},)_(i in I), kappa(y) : {s}, (ell_(i')'(x_(i')') : {t_(i')'},)_(i' in I') gt.tri sans("L")$,
+  ),
+)))) <eqn:where-fusion-2>
  <lem:where-fusion>
 
 ]
@@ -1218,9 +1222,9 @@ $C_(k + 1 . . n) = B_(1 . . n - k)$. We note in particular that
 $bracket.l sans(R) lt.eq sans(R \, K) bracket.r$ is up to
 isomorphism the left injection
 $iota_l : Sigma_i bracket.l A_i bracket.r arrow.r Sigma_i bracket.l A_i bracket.r + Sigma_i bracket.l B_i bracket.r$.
-We can now derive Equation~@eqn:dgdt, and hence the soundness of
+We can now derive @eqn:dgdt, and hence the soundness of
 cfg-fuse$""_1$, via the string-diagrams in
-Figure~@fig:string-diagram-fusion, which are drawn in the co-Kleisli
+@fig:string-diagram-fusion, which are drawn in the co-Kleisli
 category inducted by $bracket.l Gamma bracket.r$.
 cfg-fuse$""_2$ then follows by repeated application of cfg-fuse$""_1$,
 as desired.~◻

@@ -9,7 +9,7 @@
 = Refinement Rules and Notation
 <refall:refinement-rules-and-notation>
 We begin by giving the congruence rules for $lambda_(sans(i t e r))$ in
-Figure~@refall:fig:congruence-refinement, which completes our presentation of
+@refall:fig:congruence-refinement, which completes our presentation of
 $lambda_(sans(i t e r))$'s type theory. We now wish to go over some
 basic derivable refinement rules, which we will make use of throughout
 the rest of the appendix. We begin with some useful lemmas and
@@ -36,7 +36,7 @@ properties of sequencing; for example, we have #rule-set(
 As stated in Section~#todo[Cross-reference: `refall:ssec:refinement-theory`], binding rules for the rest
 of our calculus are derivable from the rest of
 $lambda_(sans(i t e r))$'s refinement rules. We give these explicitly in
-Figure~@refall:fig:derivable-binding, along with the $eta$-rule for unary
+@refall:fig:derivable-binding, along with the $eta$-rule for unary
 let-bindings, which is similarly derived from let$""_1$-$beta$. We note
 the commutativity requirement for pair-right-bind, since on the
 left-hand side $a$ executes before $b$, while on the right-hand side $b$
@@ -689,7 +689,7 @@ define $sans(S S A)_ell$ by induction over such expressions.
 == ANF Expressions
 <refall:anf-expressions>
 We begin by defining ANF expressions $P \, Q \, R$ using the grammar in
-Figure~@refall:fig:anf-syntax; these are treated as a subset of
+@refall:fig:anf-syntax; these are treated as a subset of
 $lambda_(sans(i t e r))$ expressions. In particular, an ANF program
 consists of a sequence of instructions of the form
 $kw("let") med x = I ; #h(0em) P$ (along with destructurings
