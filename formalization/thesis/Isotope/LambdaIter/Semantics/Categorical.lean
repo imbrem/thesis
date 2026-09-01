@@ -58,11 +58,19 @@ class SubtyProofIrrelevant (τ : Type u₃) [TypeFormers τ] [Subtyping τ]
     [HasFiniteCoproducts V] (M : TypeModel τ V) : Prop where
   subty_eq {A B : τ} (f g : Subty A B) : M.subty f = M.subty g
 
+section SubtypingCoherence
+
+variable {τ : Type u₃} [TypeFormers τ] [Subtyping τ]
+  {V : Type u₁} [Category.{v₁} V] [CartesianMonoidalCategory V]
+  [HasFiniteCoproducts V] (M : TypeModel τ V)
+
 theorem subty_comp_eq [LawfulTypeModel τ V M] [SubtyProofIrrelevant τ V M]
     {A B C : τ} (f : Subty A B) (g : Subty B C) (h : Subty A C) :
     M.subty f ≫ M.subty g = M.subty h := by
   rw [← LawfulTypeModel.subty_trans]
   exact SubtyProofIrrelevant.subty_eq _ _
+
+end SubtypingCoherence
 
 /-- Interpretation of primitive instructions as computation morphisms. -/
 class InstructionModel [TypeFormers τ] [Subtyping τ]

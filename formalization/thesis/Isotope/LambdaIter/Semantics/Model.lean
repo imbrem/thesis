@@ -49,11 +49,17 @@ class SubtyProofIrrelevant (τ : Type u) [TypeFormers τ] [Subtyping τ]
     [TypeModel.{u, v} τ] : Prop where
   coe_eq {A B : τ} (f g : Subty A B) : TypeModel.coe f = TypeModel.coe g
 
-/-- Propositionally unique syntax-level witnesses automatically give
-semantic proof irrelevance, independently of the chosen interpretation. -/
-instance subtyProofIrrelevantOfSubsingleton
-    [∀ A B : τ, Subsingleton (Subty A B)] : SubtyProofIrrelevant.{u, v} τ where
-  coe_eq f g := by rw [Subsingleton.elim f g]
+/-- Propositionally unique syntax-level witnesses give semantic proof
+irrelevance, independently of the chosen interpretation.  This is a
+constructor rather than a global instance because Lean cannot infer the
+parameters of a higher-rank family of local `Subsingleton` instances. -/
+@[reducible] def subtyProofIrrelevantOfSubsingleton {τ : Type u} [TypeFormers τ]
+    [Subtyping τ] [TypeModel.{u, v} τ]
+    (h : ∀ A B : τ, Subsingleton (Subty A B)) :
+    SubtyProofIrrelevant.{u, v} τ where
+  coe_eq {A B} f g := by
+    letI := h A B
+    rw [Subsingleton.elim f g]
 
 /-- Interpretation of an object-language type. -/
 abbrev TyDen [TypeFormers τ] [Subtyping τ] [TypeModel.{u, v} τ] (A : τ) :=
