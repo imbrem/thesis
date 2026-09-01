@@ -377,8 +377,7 @@ def cmd_review(args: argparse.Namespace) -> None:
     print("  1. Keep, delete, move, or fuse this block?")
     print("  2. What single job must it do in the chapter argument?")
     print("  3. Which notation/imported-paper assumptions must be migrated?")
-    print("  4. Does it make a mechanization claim? If yes, name exact Lean evidence or add an error TODO.")
-    print("  5. Record unresolved choices in notes/editorial-queue.json or a structured #todo.")
+    print("  4. Record unresolved choices in notes/editorial-queue.json or a structured #todo.")
     print(f"\nNext: python3 scripts/thesis.py review --file {rel} --after-line {end}")
 
 
