@@ -1,0 +1,496 @@
+import Isotope.CategoryTheory.Freyd.Elgot
+import Isotope.CategoryTheory.Monad.Types
+import Isotope.Elgot.Basic
+import Mathlib.CategoryTheory.Adjunction.Limits
+import Mathlib.CategoryTheory.Monoidal.Closed.Types
+
+/-! # Elgot structure on Kleisli categories of type monads -/
+
+universe u
+
+namespace CategoryTheory
+
+open Category Limits
+open scoped MonoidalCategory
+
+namespace Kleisli.Type
+
+variable (m : Type u → Type u) [_root_.Monad m] [LawfulMonad m]
+
+abbrev TM (m : Type u → Type u) [_root_.Monad m] [LawfulMonad m] :
+    CategoryTheory.Monad (Type u) := ofTypeMonad m
+
+/-- The binary coproduct cocone in the Kleisli category is inherited objectwise from `Type`. -/
+def binaryCofan (X Y : Kleisli (TM m)) : BinaryCofan X Y :=
+  BinaryCofan.mk
+    ((Kleisli.Adjunction.toKleisli (TM m)).map (Sum.inl : X.of → X.of ⊕ Y.of))
+    ((Kleisli.Adjunction.toKleisli (TM m)).map (Sum.inr : Y.of → X.of ⊕ Y.of))
+
+/-- The objectwise sum satisfies the Kleisli coproduct universal property. -/
+def binaryCofanIsColimit (X Y : Kleisli (TM m)) : IsColimit (binaryCofan m X Y) :=
+  BinaryCofan.IsColimit.mk _
+    (fun f g ↦ .mk (Sum.elim f.of g.of))
+    (fun f g ↦ by
+      apply Kleisli.hom_ext
+      funext x
+      simp [binaryCofan, Kleisli.Adjunction.toKleisli])
+    (fun f g ↦ by
+      apply Kleisli.hom_ext
+      funext y
+      simp [binaryCofan, Kleisli.Adjunction.toKleisli])
+    (fun f g q hf hg ↦ by
+      apply Kleisli.hom_ext
+      funext z
+      cases z with
+      | inl x =>
+          have hx := congrArg Kleisli.Hom.of hf
+          simpa [binaryCofan, Kleisli.Adjunction.toKleisli] using congrFun hx x
+      | inr y =>
+          have hy := congrArg Kleisli.Hom.of hg
+          simpa [binaryCofan, Kleisli.Adjunction.toKleisli] using congrFun hy y)
+
+instance hasBinaryCoproduct (X Y : Kleisli (TM m)) : HasColimit (pair X Y) :=
+  ⟨⟨binaryCofan m X Y, binaryCofanIsColimit m X Y⟩⟩
+
+instance hasBinaryCoproducts : HasBinaryCoproducts (Kleisli (TM m)) :=
+  hasBinaryCoproducts_of_hasColimit_pair (C := Kleisli (TM m))
+
+/-- The empty type is initial in the Kleisli category. -/
+def initial : IsInitial (Kleisli.mk (TM m) PEmpty) :=
+  IsInitial.ofUniqueHom
+    (fun _ ↦ Kleisli.Hom.mk PEmpty.elim)
+    (fun _ f ↦ by
+      apply Kleisli.hom_ext
+      funext x
+      exact x.elim)
+
+instance emptyHomNonempty (X : Kleisli (TM m)) :
+    Nonempty ((Kleisli.mk (TM m) PEmpty) ⟶ X) := ⟨Kleisli.Hom.mk PEmpty.elim⟩
+
+instance emptyHomSubsingleton (X : Kleisli (TM m)) :
+    Subsingleton ((Kleisli.mk (TM m) PEmpty) ⟶ X) :=
+  ⟨fun f g ↦ by
+    apply Kleisli.hom_ext
+    funext x
+    exact x.elim⟩
+
+instance hasInitial : HasInitial (Kleisli (TM m)) :=
+  hasInitial_of_unique (Kleisli.mk (TM m) PEmpty)
+
+instance hasFiniteCoproducts : HasFiniteCoproducts (Kleisli (TM m)) :=
+  hasFiniteCoproducts_of_has_binary_and_initial
+
+/-- The pure embedding preserves finite coproducts, since it is the left adjoint in the Kleisli
+adjunction. -/
+noncomputable instance toKleisliPreservesFiniteCoproducts :
+    PreservesFiniteCoproducts (Kleisli.Adjunction.toKleisli (TM m)) := by
+  haveI : PreservesColimitsOfSize.{u, u} (Kleisli.Adjunction.toKleisli (TM m)) :=
+    (_root_.CategoryTheory.Kleisli.Adjunction.adj (TM m)).leftAdjoint_preservesColimits
+  infer_instance
+
+/-- Comparison between Mathlib's selected Kleisli coproduct and the objectwise sum cocone. -/
+noncomputable def coprodIsoSum (X Y : Kleisli (TM m)) :
+    X ⨿ Y ≅ Kleisli.mk (TM m) (X.of ⊕ Y.of) :=
+  (coprodIsCoprod X Y).coconePointUniqueUpToIso (binaryCofanIsColimit m X Y)
+
+@[reassoc (attr := simp)] theorem inl_coprodIsoSum_hom (X Y : Kleisli (TM m)) :
+    (coprod.inl : X ⟶ X ⨿ Y) ≫ (coprodIsoSum m X Y).hom =
+      (binaryCofan m X Y).inl :=
+  by
+    simpa [coprodIsoSum] using
+      (IsColimit.comp_coconePointUniqueUpToIso_hom (coprodIsCoprod X Y)
+        (binaryCofanIsColimit m X Y) (Discrete.mk WalkingPair.left))
+
+@[reassoc (attr := simp)] theorem inr_coprodIsoSum_hom (X Y : Kleisli (TM m)) :
+    (coprod.inr : Y ⟶ X ⨿ Y) ≫ (coprodIsoSum m X Y).hom =
+      (binaryCofan m X Y).inr :=
+  by
+    simpa [coprodIsoSum] using
+      (IsColimit.comp_coconePointUniqueUpToIso_hom (coprodIsCoprod X Y)
+        (binaryCofanIsColimit m X Y) (Discrete.mk WalkingPair.right))
+
+@[reassoc (attr := simp)] theorem binary_inl_coprodIsoSum_inv (X Y : Kleisli (TM m)) :
+    (binaryCofan m X Y).inl ≫ (coprodIsoSum m X Y).inv =
+      (coprod.inl : X ⟶ X ⨿ Y) := by
+  simpa [coprodIsoSum] using
+    (IsColimit.comp_coconePointUniqueUpToIso_inv (coprodIsCoprod X Y)
+      (binaryCofanIsColimit m X Y) (Discrete.mk WalkingPair.left))
+
+@[reassoc (attr := simp)] theorem binary_inr_coprodIsoSum_inv (X Y : Kleisli (TM m)) :
+    (binaryCofan m X Y).inr ≫ (coprodIsoSum m X Y).inv =
+      (coprod.inr : Y ⟶ X ⨿ Y) := by
+  simpa [coprodIsoSum] using
+    (IsColimit.comp_coconePointUniqueUpToIso_inv (coprodIsCoprod X Y)
+      (binaryCofanIsColimit m X Y) (Discrete.mk WalkingPair.right))
+
+/-- The ordinary type-theoretic distribution equivalence, viewed as an isomorphism in `Type`. -/
+def typeLeftDistribIso (X Y Z : Type u) :
+    (X × Y) ⊕ (X × Z) ≅ X × (Y ⊕ Z) where
+  hom := (Equiv.prodSumDistrib X Y Z).symm
+  inv := Equiv.prodSumDistrib X Y Z
+  hom_inv_id := by
+    funext w
+    exact (Equiv.prodSumDistrib X Y Z).apply_symm_apply w
+  inv_hom_id := by
+    funext w
+    exact (Equiv.prodSumDistrib X Y Z).symm_apply_apply w
+
+/-- Explicit left distributor in the Kleisli category: compare selected coproducts with sums,
+apply the pure distribution equivalence, then compare back under left whiskering. -/
+noncomputable def kleisliLeftDistribIso (X Y Z : Kleisli (TM m)) :
+    (X ⊗ Y) ⨿ (X ⊗ Z) ≅ X ⊗ (Y ⨿ Z) :=
+  ((coprodIsoSum m (X ⊗ Y) (X ⊗ Z)).trans
+    ((Kleisli.Adjunction.toKleisli (TM m)).mapIso
+      (typeLeftDistribIso X.of Y.of Z.of))).trans
+    (PremonoidalCategory.whiskerLeftIso X (coprodIsoSum m Y Z).symm)
+
+theorem kleisliLeftDistribIso_hom (X Y Z : Kleisli (TM m)) :
+    (kleisliLeftDistribIso m X Y Z).hom = DistributiveTensor.leftHom X Y Z := by
+  apply coprod.hom_ext
+  · simp only [kleisliLeftDistribIso, Iso.trans_hom]
+    simp only [Category.assoc]
+    rw [inl_coprodIsoSum_hom_assoc]
+    rw [DistributiveTensor.inl_leftHom]
+    have h : (binaryCofan m (X ⊗ Y) (X ⊗ Z)).inl ≫
+        ((Kleisli.Adjunction.toKleisli (TM m)).mapIso
+          (typeLeftDistribIso X.of Y.of Z.of)).hom =
+          X ◁ (binaryCofan m Y Z).inl := by
+      apply Kleisli.hom_ext
+      funext p
+      simp [binaryCofan, typeLeftDistribIso, Kleisli.Adjunction.toKleisli]
+      change pure (p.1, Sum.inl p.2) = (fun q ↦ (p.1, q)) <$> pure (Sum.inl p.2)
+      simp
+    slice_lhs 1 2 => exact h
+    change X ◁ (binaryCofan m Y Z).inl ≫
+      X ◁ (coprodIsoSum m Y Z).inv = X ◁ coprod.inl
+    rw [← PremonoidalCategory.whiskerLeft_comp]
+    rw [binary_inl_coprodIsoSum_inv]
+    rfl
+  · simp only [kleisliLeftDistribIso, Iso.trans_hom]
+    simp only [Category.assoc]
+    rw [inr_coprodIsoSum_hom_assoc]
+    rw [DistributiveTensor.inr_leftHom]
+    have h : (binaryCofan m (X ⊗ Y) (X ⊗ Z)).inr ≫
+        ((Kleisli.Adjunction.toKleisli (TM m)).mapIso
+          (typeLeftDistribIso X.of Y.of Z.of)).hom =
+          X ◁ (binaryCofan m Y Z).inr := by
+      apply Kleisli.hom_ext
+      funext p
+      simp [binaryCofan, typeLeftDistribIso, Kleisli.Adjunction.toKleisli]
+      change pure (p.1, Sum.inr p.2) = (fun q ↦ (p.1, q)) <$> pure (Sum.inr p.2)
+      simp
+    slice_lhs 1 2 => exact h
+    change X ◁ (binaryCofan m Y Z).inr ≫
+      X ◁ (coprodIsoSum m Y Z).inv = X ◁ coprod.inr
+    rw [← PremonoidalCategory.whiskerLeft_comp]
+    rw [binary_inr_coprodIsoSum_inv]
+    rfl
+
+noncomputable instance distributiveTensor : DistributiveTensor (Kleisli (TM m)) where
+  left_isIso X Y Z := by
+    rw [← kleisliLeftDistribIso_hom m]
+    infer_instance
+
+/-- Pure functions and Kleisli computations form a distributive Freyd category. -/
+noncomputable instance distributiveFreydCategory :
+    DistributiveFreydCategory (Kleisli.Adjunction.toKleisli (TM m)) := {}
+
+noncomputable instance iteration [Isotope.Elgot.Iterate m] : Iteration (Kleisli (TM m)) where
+  iterate f := Kleisli.Hom.mk
+    (Isotope.Elgot.iter (m := m) (f ≫ (coprodIsoSum m _ _).hom).of)
+
+@[simp] theorem iterate_of [Isotope.Elgot.Iterate m]
+    {X Y : Kleisli (TM m)} (f : X ⟶ Y ⨿ X) :
+    (CategoryTheory.iterate f).of =
+      Isotope.Elgot.iter (m := m) (f ≫ (coprodIsoSum m Y X).hom).of := rfl
+
+theorem coprodIsoSum_hom_sumElim {X Y Z : Kleisli (TM m)}
+    (f : X ⟶ Z) (g : Y ⟶ Z) :
+    (coprodIsoSum m X Y).hom ≫ Kleisli.Hom.mk (Sum.elim f.of g.of) = coprod.desc f g := by
+  apply coprod.hom_ext
+  · rw [inl_coprodIsoSum_hom_assoc]
+    rw [coprod.inl_desc]
+    apply Kleisli.hom_ext
+    funext x
+    simp [binaryCofan, Kleisli.Adjunction.toKleisli, Isotope.Elgot.kcomp,
+      Isotope.Elgot.liftPure, Function.comp_def, joinM, bind_map_left]
+  · rw [inr_coprodIsoSum_hom_assoc]
+    rw [coprod.inr_desc]
+    apply Kleisli.hom_ext
+    funext y
+    simp [binaryCofan, Kleisli.Adjunction.toKleisli, Isotope.Elgot.kcomp,
+      Isotope.Elgot.liftPure, Function.comp_def, joinM, bind_map_left]
+
+theorem comp_of_eq_kcomp {X Y Z : Kleisli (TM m)} (f : X ⟶ Y) (g : Y ⟶ Z) :
+    (f ≫ g).of = Isotope.Elgot.kcomp (m := m) f.of g.of := by
+  funext x
+  simp [Isotope.Elgot.kcomp, joinM, bind_map_left]
+
+theorem iterate_fixpoint [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+    {X Y : Kleisli (TM m)} (f : X ⟶ Y ⨿ X) :
+    iterate f = f ≫ coprod.desc (𝟙 Y) (iterate f) := by
+  rw [← coprodIsoSum_hom_sumElim m (𝟙 _) (iterate f), ← Category.assoc]
+  apply Kleisli.hom_ext
+  rw [iterate_of]
+  change Isotope.Elgot.iter (m := m) _ =
+    ((f ≫ (coprodIsoSum m Y X).hom) ≫
+      Kleisli.Hom.mk (Sum.elim ((𝟙 Y : Y ⟶ Y).of) (Isotope.Elgot.iter (m := m) _))).of
+  conv_rhs => rw [comp_of_eq_kcomp]
+  simp only [ofTypeMonad]
+  change Isotope.Elgot.iter (m := m) _ = Isotope.Elgot.kcomp (m := m) _
+    (Sum.elim (fun x ↦ (pure x : m _)) (Isotope.Elgot.iter (m := m) _))
+  exact Isotope.Elgot.LawfulElgotMonad.fixpoint (m := m) _
+
+theorem coprodMap_coprodIsoSum_hom {X Y Z : Kleisli (TM m)} (g : Y ⟶ Z) :
+    coprod.map g (𝟙 X) ≫ (coprodIsoSum m Z X).hom =
+      (coprodIsoSum m Y X).hom ≫ Kleisli.Hom.mk
+        (Sum.elim
+          (Isotope.Elgot.kcomp (m := m) g.of
+            (Isotope.Elgot.liftPure (m := m) (Sum.inl : Z.of → Z.of ⊕ X.of)))
+          (Isotope.Elgot.liftPure (m := m) (Sum.inr : X.of → Z.of ⊕ X.of))) := by
+  apply coprod.hom_ext
+  · simp only [Category.assoc, coprod.inl_map, inl_coprodIsoSum_hom,
+      inl_coprodIsoSum_hom_assoc]
+    apply Kleisli.hom_ext
+    funext y
+    simp [binaryCofan, Kleisli.Adjunction.toKleisli, Isotope.Elgot.kcomp,
+      Isotope.Elgot.liftPure, Function.comp_def, joinM, bind_map_left]
+  · simp only [Category.assoc, coprod.inr_map, inr_coprodIsoSum_hom,
+      inr_coprodIsoSum_hom_assoc]
+    apply Kleisli.hom_ext
+    funext x
+    simp [binaryCofan, Kleisli.Adjunction.toKleisli, Isotope.Elgot.kcomp,
+      Isotope.Elgot.liftPure, Function.comp_def, joinM, bind_map_left]
+
+theorem iterate_naturality [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+    {X Y Z : Kleisli (TM m)} (f : X ⟶ Y ⨿ X) (g : Y ⟶ Z) :
+    iterate f ≫ g = iterate (f ≫ coprod.map g (𝟙 X)) := by
+  apply Kleisli.hom_ext
+  rw [comp_of_eq_kcomp, iterate_of, iterate_of]
+  have h : (f ≫ coprod.map g (𝟙 X)) ≫ (coprodIsoSum m Z X).hom =
+      (f ≫ (coprodIsoSum m Y X).hom) ≫ Kleisli.Hom.mk
+        (Sum.elim
+          (Isotope.Elgot.kcomp (m := m) g.of
+            (Isotope.Elgot.liftPure (m := m) (Sum.inl : Z.of → Z.of ⊕ X.of)))
+          (Isotope.Elgot.liftPure (m := m) (Sum.inr : X.of → Z.of ⊕ X.of))) := by
+    simp only [Category.assoc, coprodMap_coprodIsoSum_hom]
+  have hof := congrArg Kleisli.Hom.of h
+  rw [hof]
+  conv_rhs => rw [comp_of_eq_kcomp]
+  change Isotope.Elgot.kcomp (m := m) (Isotope.Elgot.iter (m := m) _) g.of =
+    Isotope.Elgot.iter (m := m) (Isotope.Elgot.mapReturn (m := m) _ g.of)
+  exact Isotope.Elgot.LawfulElgotMonad.naturality (m := m) _ _
+
+theorem codiagonal_comparison {X Y : Kleisli (TM m)} :
+    coprod.desc (𝟙 (Y ⨿ X)) (coprod.inr : X ⟶ Y ⨿ X) ≫
+        (coprodIsoSum m Y X).hom =
+      coprod.map (coprodIsoSum m Y X).hom (𝟙 X) ≫
+        (coprodIsoSum m (Kleisli.mk (TM m) (Y.of ⊕ X.of)) X).hom ≫
+          Kleisli.Hom.mk (Isotope.Elgot.liftPure (m := m)
+            (Isotope.Elgot.flatten (A := X.of) (B := Y.of))) := by
+  let S := Kleisli.mk (TM m) (Y.of ⊕ X.of)
+  let flat : Kleisli.mk (TM m) ((Y.of ⊕ X.of) ⊕ X.of) ⟶ S :=
+    Kleisli.Hom.mk (Isotope.Elgot.liftPure (m := m)
+      (Isotope.Elgot.flatten (A := X.of) (B := Y.of)))
+  have hl : (binaryCofan m S X).inl ≫ flat = 𝟙 S := by
+    apply Kleisli.hom_ext
+    funext s
+    cases s <;> simp [S, flat, binaryCofan, Kleisli.Adjunction.toKleisli,
+      Isotope.Elgot.flatten, Isotope.Elgot.liftPure, Function.comp_def]
+  have hr : (binaryCofan m S X).inr ≫ flat = (binaryCofan m Y X).inr := by
+    apply Kleisli.hom_ext
+    funext x
+    simp [S, flat, binaryCofan, Kleisli.Adjunction.toKleisli,
+      Isotope.Elgot.flatten, Isotope.Elgot.liftPure, Function.comp_def]
+  dsimp [S, flat] at hl hr
+  apply coprod.hom_ext
+  · rw [coprod.inl_desc_assoc, Category.id_comp]
+    rw [coprod.inl_map_assoc, inl_coprodIsoSum_hom_assoc]
+    exact (Category.comp_id _).symm.trans
+      (congrArg ((coprodIsoSum m Y X).hom ≫ ·) hl.symm)
+  · rw [coprod.inr_desc_assoc]
+    rw [coprod.inr_map_assoc, inr_coprodIsoSum_hom_assoc]
+    rw [inr_coprodIsoSum_hom, Category.id_comp]
+    exact hr.symm
+
+theorem iterate_codiagonal [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+    {X Y : Kleisli (TM m)} (f : X ⟶ (Y ⨿ X) ⨿ X) :
+    iterate (iterate f) =
+      iterate (f ≫ coprod.desc (𝟙 (Y ⨿ X)) (coprod.inr : X ⟶ Y ⨿ X)) := by
+  let b := (coprodIsoSum m Y X).hom
+  let S := Kleisli.mk (TM m) (Y.of ⊕ X.of)
+  let t := f ≫ coprod.map b (𝟙 X)
+  let r := (t ≫ (coprodIsoSum m S X).hom).of
+  have hr : r = Isotope.Elgot.mapReturn (m := m)
+      (f ≫ (coprodIsoSum m (Y ⨿ X) X).hom).of b.of := by
+    change ((f ≫ coprod.map (coprodIsoSum m Y X).hom (𝟙 X)) ≫
+      (coprodIsoSum m (Kleisli.mk (TM m) (Y.of ⊕ X.of)) X).hom).of = _
+    have h := congrArg Kleisli.Hom.of
+      (show (f ≫ coprod.map (coprodIsoSum m Y X).hom (𝟙 X)) ≫
+          (coprodIsoSum m (Kleisli.mk (TM m) (Y.of ⊕ X.of)) X).hom =
+        (f ≫ (coprodIsoSum m (Y ⨿ X) X).hom) ≫ Kleisli.Hom.mk
+          (Sum.elim
+            (Isotope.Elgot.kcomp (m := m) (coprodIsoSum m Y X).hom.of
+              (Isotope.Elgot.liftPure (m := m) (Sum.inl : (Y.of ⊕ X.of) → (Y.of ⊕ X.of) ⊕ X.of)))
+            (Isotope.Elgot.liftPure (m := m) (Sum.inr : X.of → (Y.of ⊕ X.of) ⊕ X.of))) by
+          simp only [Category.assoc, coprodMap_coprodIsoSum_hom])
+    rw [h, comp_of_eq_kcomp]
+    rfl
+  apply Kleisli.hom_ext
+  rw [iterate_of, iterate_of]
+  have hn := Isotope.Elgot.LawfulElgotMonad.naturality (m := m)
+    (f ≫ (coprodIsoSum m (Y ⨿ X) X).hom).of b.of
+  rw [← hr] at hn
+  have hc := Isotope.Elgot.LawfulElgotMonad.codiagonal (m := m) r
+  have hp : (iterate f ≫ b).of = Isotope.Elgot.iter (m := m) r := by
+    rw [comp_of_eq_kcomp, iterate_of]
+    exact hn
+  rw [hp, hc]
+  have hcmp :
+      (f ≫ coprod.desc (𝟙 (Y ⨿ X)) (coprod.inr : X ⟶ Y ⨿ X)) ≫ b =
+        (t ≫ (coprodIsoSum m S X).hom) ≫
+          Kleisli.Hom.mk (Isotope.Elgot.liftPure (m := m)
+            (Isotope.Elgot.flatten (A := X.of) (B := Y.of))) := by
+    dsimp [t, b, S]
+    simp only [Category.assoc, codiagonal_comparison]
+  rw [congrArg Kleisli.Hom.of hcmp]
+  rw [comp_of_eq_kcomp]
+  rfl
+
+noncomputable instance elgotCategory [Isotope.Elgot.Iterate m]
+    [Isotope.Elgot.LawfulElgotMonad m] : ElgotCategory (Kleisli (TM m)) where
+  fixpoint := iterate_fixpoint m
+  naturality := iterate_naturality m
+  codiagonal := iterate_codiagonal m
+
+theorem coprodMap_pureRight_comparison {A D : Type u} {B : Kleisli (TM m)}
+    (h : A → D) :
+    coprod.map (𝟙 B) ((Kleisli.Adjunction.toKleisli (TM m)).map h) ≫
+        (coprodIsoSum m B (Kleisli.mk (TM m) D)).hom =
+      (coprodIsoSum m B (Kleisli.mk (TM m) A)).hom ≫
+        (Kleisli.Adjunction.toKleisli (TM m)).map (Sum.map id h) := by
+  apply coprod.hom_ext
+  · simp only [Category.assoc, coprod.inl_map, inl_coprodIsoSum_hom_assoc]
+    apply Kleisli.hom_ext
+    funext b
+    simp [binaryCofan, Kleisli.Adjunction.toKleisli]
+  · simp only [Category.assoc, coprod.inr_map, inr_coprodIsoSum_hom_assoc]
+    apply Kleisli.hom_ext
+    funext a
+    simp [binaryCofan, Kleisli.Adjunction.toKleisli]
+
+noncomputable instance elgotFreydCategory [Isotope.Elgot.Iterate m]
+    [Isotope.Elgot.LawfulElgotMonad m] :
+    ElgotFreydCategory (Kleisli.Adjunction.toKleisli (TM m)) where
+  uniformity f g h comm := by
+    apply Kleisli.hom_ext
+    rw [iterate_of]
+    conv_rhs => rw [comp_of_eq_kcomp, iterate_of]
+    apply Isotope.Elgot.LawfulElgotMonad.uniformity (m := m)
+    have hcat :
+        (f ≫ (coprodIsoSum m _ _).hom) ≫
+            (Kleisli.Adjunction.toKleisli (TM m)).map (Sum.map id h) =
+          (Kleisli.Adjunction.toKleisli (TM m)).map h ≫
+            (g ≫ (coprodIsoSum m _ _).hom) := by
+      calc
+        _ = (f ≫ coprod.map (𝟙 _)
+              ((Kleisli.Adjunction.toKleisli (TM m)).map h)) ≫
+              (coprodIsoSum m _ _).hom := by
+                simpa only [Category.assoc] using congrArg (f ≫ ·)
+                  (coprodMap_pureRight_comparison m h).symm
+        _ = ((Kleisli.Adjunction.toKleisli (TM m)).map h ≫ g) ≫
+              (coprodIsoSum m _ _).hom := by rw [comm]
+        _ = _ := Category.assoc _ _ _
+    have hc := congrArg Kleisli.Hom.of hcat
+    conv_lhs at hc => rw [comp_of_eq_kcomp]
+    conv_rhs at hc => rw [comp_of_eq_kcomp]
+    change Isotope.Elgot.kcomp (m := m) _
+        (Isotope.Elgot.liftPure (m := m) (Sum.map id h)) =
+      Isotope.Elgot.kcomp (m := m) (Isotope.Elgot.liftPure (m := m) h) _ at hc
+    exact hc
+
+theorem threadedBody_of {X Y Z : Kleisli (TM m)} (f : X ⟶ Y ⨿ X) (z : Z.of) (x : X.of) :
+    (((Z ◁ f) ≫ DistributivePremonoidalCategory.leftInv Z Y X) ≫
+      (coprodIsoSum m (Z ⊗ Y) (Z ⊗ X)).hom).of (z, x) =
+      Isotope.Elgot.kcomp (m := m) (f ≫ (coprodIsoSum m Y X).hom).of
+        (Sum.elim
+          (fun y ↦ (pure (Sum.inl (z, y)) : m _))
+          (fun x' ↦ (pure (Sum.inr (z, x')) : m _))) x := by
+  have hi : DistributivePremonoidalCategory.leftInv Z Y X =
+      (kleisliLeftDistribIso m Z Y X).inv := by
+    have hiso : DistributiveTensor.leftIso Z Y X = kleisliLeftDistribIso m Z Y X := by
+      apply Iso.ext
+      exact (kleisliLeftDistribIso_hom m Z Y X).symm
+    exact congrArg Iso.inv hiso
+  rw [hi]
+  simp [kleisliLeftDistribIso, typeLeftDistribIso, coprodIsoSum,
+    PremonoidalCategory.whiskerLeftIso, Kleisli.whiskerLeft_of,
+    typeMonadStrength, ofTypeMonadStrong, Isotope.Elgot.kcomp,
+    joinM, bind_map_left, ← bind_pure_comp, bind_assoc]
+  congr 1
+  funext s
+  congr 1
+  funext a
+  cases a <;> rfl
+
+theorem iter_threaded [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+    {A B Z : Type u} (q : A → m (B ⊕ A)) (z : Z) (x : A) :
+    Isotope.Elgot.iter (m := m) (fun p : Z × A ↦ q p.2 >>= Sum.elim
+      (fun b ↦ (pure (Sum.inl (p.1, b)) : m _))
+      (fun a ↦ (pure (Sum.inr (p.1, a)) : m _))) (z, x) =
+      Isotope.Elgot.kcomp (m := m) (Isotope.Elgot.iter (m := m) q)
+        (Isotope.Elgot.liftPure (m := m) (Prod.mk z)) x := by
+  let F : Z × A → m ((Z × B) ⊕ (Z × A)) := fun p ↦ q p.2 >>= Sum.elim
+    (fun b ↦ pure (Sum.inl (p.1, b))) (fun a ↦ pure (Sum.inr (p.1, a)))
+  let g : A → m ((Z × B) ⊕ A) :=
+    Isotope.Elgot.mapReturn (m := m) q
+      (Isotope.Elgot.liftPure (m := m) (Prod.mk z))
+  have comm : Isotope.Elgot.kcomp (m := m) g
+      (Isotope.Elgot.liftPure (m := m) (Sum.map id (Prod.mk z))) =
+      Isotope.Elgot.kcomp (m := m) (Isotope.Elgot.liftPure (m := m) (Prod.mk z)) F := by
+    funext a
+    simp [g, F, Isotope.Elgot.mapReturn, Isotope.Elgot.kcomp,
+      Isotope.Elgot.liftPure, Function.comp_def, bind_assoc]
+    congr 1
+    funext s
+    cases s <;> simp
+  have hu := Isotope.Elgot.LawfulElgotMonad.uniformity (m := m) g F (Prod.mk z) comm
+  have hn := Isotope.Elgot.LawfulElgotMonad.naturality (m := m) q
+    (Isotope.Elgot.liftPure (m := m) (Prod.mk z))
+  change Isotope.Elgot.iter (m := m) F (z, x) = _
+  calc
+    _ = Isotope.Elgot.iter (m := m) g x := by
+      simpa [Isotope.Elgot.kcomp, Isotope.Elgot.liftPure, Function.comp_def] using
+        (congrFun hu x).symm
+    _ = _ := congrFun hn.symm x
+
+noncomputable instance strongElgotFreydCategory [Isotope.Elgot.Iterate m]
+    [Isotope.Elgot.LawfulElgotMonad m] :
+    StrongElgotFreydCategory (Kleisli.Adjunction.toKleisli (TM m)) where
+  iterate_whiskerLeft Z f := by
+    apply Kleisli.hom_ext
+    funext p
+    rw [iterate_of]
+    have hb :
+        (((Z ◁ f) ≫ DistributivePremonoidalCategory.leftInv Z _ _) ≫
+          (coprodIsoSum m (Z ⊗ _) (Z ⊗ _)).hom).of =
+        fun p : Z.of × _ ↦ Isotope.Elgot.kcomp (m := m)
+          (f ≫ (coprodIsoSum m _ _).hom).of
+          (Sum.elim
+            (fun y ↦ (pure (Sum.inl (p.1, y)) : m _))
+            (fun x ↦ (pure (Sum.inr (p.1, x)) : m _))) p.2 := by
+      funext p
+      exact threadedBody_of m f p.1 p.2
+    rw [hb]
+    rcases p with ⟨z, x⟩
+    change Isotope.Elgot.iter (m := m) (fun p ↦
+      (f ≫ (coprodIsoSum m _ _).hom).of p.2 >>= Sum.elim
+        (fun y ↦ (pure (Sum.inl (p.1, y)) : m _))
+        (fun x ↦ (pure (Sum.inr (p.1, x)) : m _))) (z, x) = _
+    rw [iter_threaded m]
+    simp [Kleisli.whiskerLeft_of, typeMonadStrength, Isotope.Elgot.kcomp,
+      Isotope.Elgot.liftPure, Function.comp_def]
+
+end Kleisli.Type
+
+end CategoryTheory

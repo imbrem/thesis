@@ -41,6 +41,9 @@ instance ofTypeMonadStrong : (ofTypeMonad m).Strong where
     funext p
     simp [typeMonadStrength, joinM]
 
+@[simp] theorem ofTypeMonad_strength_apply (X Y : Type u) (p : X × m Y) :
+    Monad.Strong.strength (T := ofTypeMonad m) X Y p = typeMonadStrength m X Y p := rfl
+
 /-- Kleisli arrows of every lawful monad on `Type` form a premonoidal category. -/
 @[reducible] def typeMonadKleisliPremonoidal :
     PremonoidalCategory (Kleisli (ofTypeMonad m)) := inferInstance
