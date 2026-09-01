@@ -114,6 +114,7 @@ def cmd_status(args: argparse.Namespace) -> None:
     """Summarize editorial TODOs and notation migration markers."""
     todos = [todo_record(item) for item in typst_query(args.entry, "<todo>")]
     legacy = typst_query(args.entry, "<old-syntax>")
+    migrations = typst_query(args.entry, "<notation-migration>")
     by_kind = Counter(kind for kind, _, _ in todos)
     by_owner = Counter(owner for _, owner, _ in todos)
     by_family = Counter(
@@ -121,12 +122,18 @@ def cmd_status(args: argparse.Namespace) -> None:
         if isinstance(item, dict) else "unclassified"
         for item in legacy
     )
+    by_migration = Counter(
+        f"{item.get('family', 'unclassified')}:{item.get('state', 'unknown')}"
+        if isinstance(item, dict) else "unclassified:unknown"
+        for item in migrations
+    )
     report = {
         "todos": len(todos),
         "todos_by_kind": dict(sorted(by_kind.items())),
         "todos_by_owner": dict(sorted(by_owner.items())),
         "old_syntax": len(legacy),
         "old_syntax_by_family": dict(sorted(by_family.items())),
+        "notation_migrations": dict(sorted(by_migration.items())),
     }
     if args.json_format:
         json.dump(report, sys.stdout, indent=2)
@@ -141,6 +148,9 @@ def cmd_status(args: argparse.Namespace) -> None:
     print(f"Old-syntax markers: {report['old_syntax']}")
     for family, count in report["old_syntax_by_family"].items():
         print(f"  {family}: {count}")
+    print("Notation migration uses:")
+    for family_state, count in report["notation_migrations"].items():
+        print(f"  {family_state}: {count}")
 
 
 LINT_PATTERNS = {
