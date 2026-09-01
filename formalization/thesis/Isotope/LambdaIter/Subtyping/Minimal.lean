@@ -20,10 +20,10 @@ structure MinimalTy (α : Type u) where
 namespace MinimalTy
 
 instance : TypeFormers (MinimalTy α) where
-  tensor A B := ⟨.ty.tensor A.val B.val⟩
-  unit := ⟨.ty.unit⟩
-  coprod A B := ⟨.ty.coprod A.val B.val⟩
-  empty := ⟨.ty.empty⟩
+  tensor A B := ⟨Ty.tensor A.val B.val⟩
+  unit := ⟨Ty.unit⟩
+  coprod A B := ⟨Ty.coprod A.val B.val⟩
+  empty := ⟨Ty.empty⟩
 
 /-- The least proposition-valued relation containing the two boundedness
 rules and closed under the object-language type formers. -/
@@ -37,19 +37,23 @@ inductive Le {α : Type u} : MinimalTy α → MinimalTy α → Prop where
 
 /-- A universe lift makes propositionally truncated witnesses fit the
 universe-polymorphic, proof-relevant `Subtyping` interface. -/
-abbrev Witness {α : Type u} (A B : MinimalTy α) : Type u := PLift (Le A B)
+abbrev Witness {α : Type u} (A B : MinimalTy α) : Type u :=
+  ULift.{u} (PLift (Le A B))
 
 instance : Subtyping (MinimalTy α) where
   Subty := Witness
-  refl A := ⟨.Le.refl A⟩
-  trans f g := ⟨.Le.trans f.down g.down⟩
-  tensor f g := ⟨.Le.tensor f.down g.down⟩
-  coprod f g := ⟨.Le.coprod f.down g.down⟩
-  empty A := ⟨.Le.empty A⟩
-  unit A := ⟨.Le.unit A⟩
+  refl A := ⟨⟨Le.refl A⟩⟩
+  trans f g := ⟨⟨Le.trans f.down.down g.down.down⟩⟩
+  tensor f g := ⟨⟨Le.tensor f.down.down g.down.down⟩⟩
+  coprod f g := ⟨⟨Le.coprod f.down.down g.down.down⟩⟩
+  empty A := ⟨⟨Le.empty A⟩⟩
+  unit A := ⟨⟨Le.unit A⟩⟩
 
-instance subtySubsingleton (A B : MinimalTy α) : Subsingleton (Subty A B) :=
-  inferInstance
+instance subtySubsingleton (A B : MinimalTy α) : Subsingleton (Subty A B) where
+  allEq f g := by
+    rcases f with ⟨⟨hf⟩⟩
+    rcases g with ⟨⟨hg⟩⟩
+    rw [proof_irrel hf hg]
 
 theorem subty_unique {A B : MinimalTy α} (f g : Subty A B) : f = g :=
   Subsingleton.elim _ _
@@ -73,8 +77,10 @@ witness of the composite judgment. -/
 theorem minimal_coe_comp [LawfulTypeModel.{u, v} (MinimalTy α)]
     {A B C : MinimalTy α} (f : Subty A B) (g : Subty B C) (h : Subty A C) :
     coeSub g ∘ coeSub f = coeSub h := by
-  rw [← LawfulTypeModel.coe_trans f g]
-  exact minimal_coe_proof_irrel (Subty.trans f g) h
+  calc
+    coeSub g ∘ coeSub f = coeSub (Subty.trans f g) := by
+      simpa [coeSub] using (LawfulTypeModel.coe_trans f g).symm
+    _ = coeSub h := minimal_coe_proof_irrel (Subty.trans f g) h
 
 end Minimal
 
