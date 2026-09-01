@@ -30,6 +30,9 @@ CROSSREF = re.compile(
 SOURCE_REF = re.compile(
     r"#todo\[Resolve source reference `(?P<label>[^`]+)` during integration\.\]"
 )
+CONDITIONAL_REF = re.compile(
+    r'#conditional-ref\("(?P<label>[\w:.-]+)"\)'
+)
 SELECTORS = ("heading", "figure", "math.equation")
 
 
@@ -92,6 +95,16 @@ def todo_refs(path: Path, text: str) -> list[TodoRef]:
                 punctuation=embedded or explicit,
                 source_kind=source_kind,
             ))
+    for match in CONDITIONAL_REF.finditer(text):
+        refs.append(TodoRef(
+            path=path,
+            start=match.start(),
+            end=match.end(),
+            line=text.count("\n", 0, match.start()) + 1,
+            label=match.group("label"),
+            punctuation="",
+            source_kind="conditional-reference",
+        ))
     return sorted(refs, key=lambda ref: ref.start)
 
 
@@ -125,14 +138,24 @@ def unique_numbered(targets: list[Target]) -> set[str]:
     }
 
 
-def rewrite(text: str, refs: list[TodoRef], safe: set[str]) -> tuple[str, int]:
+def rewrite(
+    text: str,
+    refs: list[TodoRef],
+    standalone_safe: set[str],
+    assembled_safe: set[str],
+) -> tuple[str, int]:
     parts: list[str] = []
     cursor = 0
     count = 0
     for ref in refs:
         parts.append(text[cursor:ref.start])
-        if ref.label in safe:
+        if ref.source_kind == "conditional-reference":
+            parts.append(text[ref.start:ref.end])
+        elif ref.label in standalone_safe:
             parts.append(f"@{ref.label}{ref.punctuation}")
+            count += 1
+        elif ref.label in assembled_safe:
+            parts.append(f'#conditional-ref("{ref.label}"){ref.punctuation}')
             count += 1
         else:
             parts.append(text[ref.start:ref.end])
@@ -179,20 +202,23 @@ def main() -> None:
     for path, text in texts.items():
         path_refs = [ref for ref in refs if ref.path == path]
         safe = leaf_safe.get(path, set())
-        updated, count = rewrite(text, path_refs, safe)
+        assembled_safe = full_numbered - safe
+        updated, count = rewrite(text, path_refs, safe, assembled_safe)
         resolvable += count
         if count:
             changed[path] = updated
         for ref in path_refs:
             source_count = len(label_paths.get(ref.label, []))
-            if ref.label in safe:
+            if ref.source_kind == "conditional-reference" and ref.label in full_numbered:
+                classification = "assembled-live-fallback"
+            elif ref.label in safe:
                 classification = "standalone-safe"
             elif source_count == 0:
                 classification = "missing-target"
             elif source_count > 1 or full_counts[ref.label] > 1:
                 classification = "duplicate"
             elif ref.label in full_numbered:
-                classification = "cross-leaf-only"
+                classification = "assembled-safe"
             else:
                 classification = "unnumbered"
             findings.append(Finding(
@@ -209,6 +235,12 @@ def main() -> None:
     report = {
         "total": len(findings),
         "source_lines": len({(finding.path, finding.line) for finding in findings}),
+        "raw_todos": sum(
+            finding.source_kind != "conditional-reference" for finding in findings
+        ),
+        "conditional_fallbacks": sum(
+            finding.source_kind == "conditional-reference" for finding in findings
+        ),
         "counts": dict(sorted(counts.items())),
         "findings": [asdict(finding) for finding in findings],
     }
@@ -217,9 +249,11 @@ def main() -> None:
         print()
     else:
         print(
-            f"Cross-reference TODOs: {len(findings)} occurrence(s) on "
+            f"Tracked cross-reference sites: {len(findings)} occurrence(s) on "
             f"{report['source_lines']} source line(s)"
         )
+        print(f"  raw TODOs: {report['raw_todos']}")
+        print(f"  conditional fallbacks: {report['conditional_fallbacks']}")
         for classification, count in sorted(counts.items()):
             print(f"  {classification}: {count}")
         for finding in findings:

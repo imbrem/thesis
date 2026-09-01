@@ -221,7 +221,7 @@ it follows that
 $ sans(r e g) \( sans(c f g) \( r \) \) approx sans(b b) \( beta \, \( kappa_i \( y_i \) : { r_i } \, \)_i \) $
 Define
 $ T_i = \( kappa_j \( y_j \) : { r_j } \, \)_(j < i) \, \( kappa_j \( y_j \) : { t_j } \, \( kappa_(j \, k) \( y_(j \, k) \) : { t_(rho_(j \, k)) } \, \)_k \, \)_(j gt.eq i) $
-Using Equation~#todo[Resolve source reference `eqn:pull-where` during integration.], we may show that, for all $i$,
+Using Equation~#conditional-ref("eqn:pull-where"), we may show that, for all $i$,
 $sans(b b) \( beta \, T_(i + 1) \) approx sans(b b) \( beta \, T_i \)$,
 since
 
@@ -610,7 +610,7 @@ $sans(e f f) \( Delta \) = tack.t$. We will begin by showing the
 soundness of substitution for expressions #todo[Resolve source reference `itm:tm-subst-sound:` during integration.] we
 proceed by induction on the derivation $Delta tack.r_epsilon.alt e : E$:
 
-- If $e = x$ is a variable, then by Lemma~@lem:subst-proj, we have
+- If $e = x$ is a variable, then by @lem:subst-proj, we have
   $ bracket.l gamma : Gamma mapsto Delta bracket.r ; bracket.l Delta tack.r_epsilon.alt x : A bracket.r = bracket.l gamma : Gamma mapsto Delta bracket.r ; pi_(Delta \, x) = bracket.l Gamma tack.r_epsilon.alt \[ gamma \] x : A bracket.r $
   as desired.
 
@@ -823,7 +823,7 @@ assuming $Gamma tack.r r gt.tri sans(L)$, we proceed by induction on $r$
 as follows:
 
 - If $r = sans(b r) #h(0em) ell #h(0em) a$, then by
-  Lemma~@lem:lsubst-inj we have that
+  @lem:lsubst-inj we have that
   $ bracket.l Gamma tack.r \[ sigma \] \( sans(b r) #h(0em) ell #h(0em) a \) gt.tri sans(K) bracket.r & = bracket.l Gamma tack.r \[ a \/ x \] \[ sigma \] \( sans(b r) #h(0em) ell #h(0em) x \) gt.tri sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_tack.t a : A bracket.r \) ; bracket.l Gamma \, x : A tack.r \[ sigma \] \( sans(b r) #h(0em) ell #h(0em) x \) gt.tri sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_tack.t a : A bracket.r \) ; bracket.l Gamma bracket.r times iota_(sans(L) \, ell) ; bracket.l Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K) bracket.r\
