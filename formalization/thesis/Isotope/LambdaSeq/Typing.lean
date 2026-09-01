@@ -20,14 +20,14 @@ inductive HasType : Ctx ν τ → Tm ν Φ → τ → Prop where
   | sub (ha : HasType Γ a A) (d : LambdaIter.Subty A B) : HasType Γ a B
 
 def HasType.embedCase {Γ : Ctx ν τ} {t : Tm ν Φ} {A : τ} :
-    HasType Γ t A → LambdaCase.Named.HasType Γ (Tm.embedCase t) A
+    HasType Γ t A → LambdaCase.Named.HasType Γ (LambdaSeq.Named.embedCase t) A
   | .var h => .var h
   | .op hf ha => .op hf ha.embedCase
   | .let₁ ha hb => .let₁ ha.embedCase hb.embedCase
   | .sub ha d => .sub ha.embedCase d
 
 def HasType.embedIter {Γ : Ctx ν τ} {t : Tm ν Φ} {A : τ} :
-    HasType Γ t A → LambdaIter.Named.HasType Γ (Tm.embedIter t) A :=
+    HasType Γ t A → LambdaIter.Named.HasType Γ (LambdaSeq.Named.embedIter t) A :=
   fun h => h.embedCase.embed
 
 end Named

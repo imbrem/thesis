@@ -50,7 +50,7 @@ noncomputable def denote : {Γ : Ctx ν τ} → {n : Nat} →
       pair J (denote ha) (denote hb) ≫ J.map (M.tensorIso _ _).inv
   | Γ, _, β, _, _, .let₂ ha hc => bind J (denote ha) <|
       J.map ((𝟙 _) ⊗ₘ (M.tensorIso _ _).hom) ≫
-        J.map (envPairHom J M Γ β _ _) ≫ denote hc
+        J.map (envPairHom M Γ β _ _) ≫ denote hc
   | _, _, _, _, _, .inl ha =>
       denote ha ≫ J.map (coprod.inl ≫ (M.coprodIso _ _).inv)
   | _, _, _, _, _, .inr hb =>
