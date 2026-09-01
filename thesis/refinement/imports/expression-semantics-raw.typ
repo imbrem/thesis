@@ -11,7 +11,7 @@
 <refall:semantics-of-lambda_ensuremathmathsfiter-expressions>
 We now give the semantics of each of our term formers in
 Figure~@refall:fig:expr-densem by induction on derivations; we write
-$⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt a : A ⟧$
+$⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) a : A ⟧$
 to denote the appropriate derivation/sub-derivation. Each of them
 corresponds quite closely to the the underlying categorical structure.
 In particular,
@@ -45,13 +45,13 @@ In particular,
   remainder of the context.
 
 We use the
-$⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt a : A ⟧$
+$⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) a : A ⟧$
 notation, rather than specifying a particular derivation, because
 #emph[coherence] holds:
 
 #block[
 Given derivations $D$ for
-$Gamma^(upright(bold(q))) tack.r_epsilon.alt a : A$ and $D'$ for
+$Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) a : A$ and $D'$ for
 $Gamma^(upright(bold(q))) tack.r_(epsilon.alt') a : A$, we have
 $⟦ D ⟧ = ⟦ D' ⟧$
 
@@ -61,22 +61,21 @@ $epsilon.alt$, because the effect is a property of the semantics: the
 same term with two different effect typings will have the same
 denotation.
 
-#figure([#block[
-  minipage=1.1,scale=0.9
-  $ #box(stroke: black, inset: 3pt, [$ ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt a : A ⟧ : cal(C)_epsilon.alt \( ⟦ Gamma^(upright(bold(q))) ⟧ \, ⟦ A ⟧ \) $])\
-  ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt x : A ⟧ = ⟦ Gamma^(upright(bold(q))) mapsto x : A_epsilon.alt^1 ⟧ #h(2em) ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt f #h(0em) a : B ⟧ = ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt a : A ⟧ ; ⟦ f ⟧\
-  ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt sans(l e t) #h(0em) x = a ; #h(0em) b : B ⟧ = ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; ⟦ Gamma^(upright(bold(q))_l) ⟧ ⊗ ⟦ Gamma^(upright(bold(q))_r) tack.r_epsilon.alt a : A ⟧ ; ⟦ Gamma^(upright(bold(q))_l) \, x : A tack.r_epsilon.alt b : B ⟧\
-  ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt \( a \, b \) : A ⊗ B ⟧ = ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; ⟦ Gamma^(upright(bold(q))_l) tack.r_epsilon.alt a : A ⟧ times.l ⟦ Gamma^(upright(bold(q))_r) tack.r_epsilon.alt b : B ⟧ #h(2em) ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt \( \) : upright(bold(1)) ⟧ = ⟦ Gamma^(upright(bold(q))) mapsto dot.op ⟧ $
-  $ ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) c : C ⟧ = & #h(0em) ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; ⟦ Gamma^(upright(bold(q))_l) ⟧ ⊗ ⟦ Gamma^(upright(bold(q))_r) tack.r_epsilon.alt a : A ⊗ B ⟧ ; alpha ; ⟦ Gamma^(upright(bold(q))_l) \, x : A \, y : B tack.r_epsilon.alt c : C ⟧ $
-  $ ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } : C ⟧ = & #h(0em) ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; ⟦ Gamma^(upright(bold(q))_l) ⟧ ⊗ ⟦ Gamma^(upright(bold(q))_r) tack.r_epsilon.alt e : A + B ⟧ ; delta^(- 1)\
-   & ; \[ ⟦ Gamma^(upright(bold(q))_l) \, x : A tack.r_epsilon.alt a : C ⟧ \, ⟦ Gamma^(upright(bold(q))_l) \, y : B tack.r_epsilon.alt b : C ⟧ \] $
-  $ ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt iota_l #h(0em) a : A + B ⟧ = ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt a : A ⟧ ; iota_l #h(2em) ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt iota_r #h(0em) b : A + B ⟧ = ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt b : B ⟧ ; iota_r\
-  ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt sans(a b o r t) #h(0em) a : A ⟧ = ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt a : upright(bold(0)) ⟧ ; 0_A $
-  $ ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } : B ⟧ & = ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; ⟦ Gamma^(upright(bold(q))_l) ⟧ ⊗ ⟦ Gamma^(upright(bold(q))_r) tack.r_epsilon.alt a : A ⟧\
-   & ; \( ⟦ Gamma tack.r upright(bold(q))_l = upright(bold(q))_l + upright(bold(q))_l ⟧ ⊗ ⟦ A ⟧ ; alpha ; ⟦ Gamma^(upright(bold(q))_l) ⟧ ⊗ ⟦ Gamma^(upright(bold(q))_l) \, x : A tack.r_epsilon.alt b : B + A ⟧ ; delta^(- 1) \)^dagger\
+#figure([#fit-to-width([#block[
+  $ #box(stroke: black, inset: 3pt, [$ ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) a : A ⟧ : cal(C)_epsilon.alt \( ⟦ Gamma^(upright(bold(q))) ⟧ \, ⟦ A ⟧ \) $])\
+  ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) x : A ⟧ = ⟦ Gamma^(upright(bold(q))) mapsto x : A_epsilon.alt^1 ⟧ #h(2em) ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) f #h(0em) a : B ⟧ = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) a : A ⟧ ; ⟦ f ⟧\
+  ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kw("let") med x = a ; #h(0em) b : B ⟧ = ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; ⟦ Gamma^(upright(bold(q))_l) ⟧ ⊗ ⟦ Gamma^(upright(bold(q))_r) #refinement-eff-turnstile($epsilon.alt$) a : A ⟧ ; ⟦ Gamma^(upright(bold(q))_l) \, x : A #refinement-eff-turnstile($epsilon.alt$) b : B ⟧\
+  ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) \( a \, b \) : A ⊗ B ⟧ = ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; ⟦ Gamma^(upright(bold(q))_l) #refinement-eff-turnstile($epsilon.alt$) a : A ⟧ times.l ⟦ Gamma^(upright(bold(q))_r) #refinement-eff-turnstile($epsilon.alt$) b : B ⟧ #h(2em) ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) \( \) : upright(bold(1)) ⟧ = ⟦ Gamma^(upright(bold(q))) mapsto dot.op ⟧ $
+  $ ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kw("let") med \( x \, y \) = a ; #h(0em) c : C ⟧ = & #h(0em) ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; ⟦ Gamma^(upright(bold(q))_l) ⟧ ⊗ ⟦ Gamma^(upright(bold(q))_r) #refinement-eff-turnstile($epsilon.alt$) a : A ⊗ B ⟧ ; alpha ; ⟦ Gamma^(upright(bold(q))_l) \, x : A \, y : B #refinement-eff-turnstile($epsilon.alt$) c : C ⟧ $
+  $ ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kw("case") med e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } : C ⟧ = & #h(0em) ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; ⟦ Gamma^(upright(bold(q))_l) ⟧ ⊗ ⟦ Gamma^(upright(bold(q))_r) #refinement-eff-turnstile($epsilon.alt$) e : A + B ⟧ ; delta^(- 1)\
+   & ; \[ ⟦ Gamma^(upright(bold(q))_l) \, x : A #refinement-eff-turnstile($epsilon.alt$) a : C ⟧ \, ⟦ Gamma^(upright(bold(q))_l) \, y : B #refinement-eff-turnstile($epsilon.alt$) b : C ⟧ \] $
+  $ ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) iota_l #h(0em) a : A + B ⟧ = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) a : A ⟧ ; iota_l #h(2em) ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) iota_r #h(0em) b : A + B ⟧ = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) b : B ⟧ ; iota_r\
+  ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) sans(a b o r t) #h(0em) a : A ⟧ = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) a : upright(bold(0)) ⟧ ; 0_A $
+  $ ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } : B ⟧ & = ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; ⟦ Gamma^(upright(bold(q))_l) ⟧ ⊗ ⟦ Gamma^(upright(bold(q))_r) #refinement-eff-turnstile($epsilon.alt$) a : A ⟧\
+   & ; \( ⟦ Gamma tack.r upright(bold(q))_l = upright(bold(q))_l + upright(bold(q))_l ⟧ ⊗ ⟦ A ⟧ ; alpha ; ⟦ Gamma^(upright(bold(q))_l) ⟧ ⊗ ⟦ Gamma^(upright(bold(q))_l) \, x : A #refinement-eff-turnstile($epsilon.alt$) b : B + A ⟧ ; delta^(- 1) \)^dagger\
    & ; ⟦ Gamma^(upright(bold(q))_l) mapsto dot.op ⟧ ⊗ ⟦ B ⟧ ; rho $
 
-  ]],
+  ]])],
   caption: [
     Denotational semantics for $lambda_(sans(i t e r))$ expressions
   ]
@@ -90,8 +89,8 @@ As a sanity check on our semantics, we can verify that it satisfies
 
 #block[
 Given $Gamma^(upright(bold(q))) mapsto Delta^(upright(bold(q))')$ and
-$Delta^(upright(bold(q))') tack.r_epsilon.alt a : A$, we have that
-$ ⟦ Gamma^(upright(bold(q))) mapsto Delta^(upright(bold(q))') ⟧ ; ⟦ Delta^(upright(bold(q))') tack.r_epsilon.alt a : A ⟧ = ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt a : A ⟧ $
+$Delta^(upright(bold(q))') #refinement-eff-turnstile($epsilon.alt$) a : A$, we have that
+$ ⟦ Gamma^(upright(bold(q))) mapsto Delta^(upright(bold(q))') ⟧ ; ⟦ Delta^(upright(bold(q))') #refinement-eff-turnstile($epsilon.alt$) a : A ⟧ = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) a : A ⟧ $
 
 ]
 ==== Substitution
@@ -105,14 +104,13 @@ manner, which is standard except that we prove an #emph[inequality]
 whose direction is determined by the commutativity of the effects of the
 term and of the substitution.
 
-#figure([#block[
-  minipage=1.1,scale=0.9
-  $ #box(stroke: black, inset: 3pt, [$ ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt sigma gt.tri Delta^(upright(bold(q))') ⟧ : cal(C)_epsilon.alt \( ⟦ Gamma^(upright(bold(q))) ⟧ \, ⟦ Delta^(upright(bold(q))') ⟧ \) $])\
-  ⟦ dot.op tack.r_epsilon.alt dot.op gt.tri dot.op ⟧ = sans(i d)_I\
-  ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt sigma \, x mapsto a gt.tri Delta^(upright(bold(q))') \, x : A^q ⟧ = {⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; ⟦ Gamma_(upright(bold(e))_l)^(upright(bold(q))_l) tack.r_epsilon.alt sigma gt.tri Delta^(upright(bold(q))') ⟧ ⊗ ⟦ Gamma^(upright(bold(q))_r) tack.r_epsilon.alt a : A ⟧ upright(" if ") q eq.not 0\
-  ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt sigma gt.tri Delta^(upright(bold(q))') ⟧ ; lambda^(- 1) upright(" otherwise") $
+#figure([#fit-to-width([#block[
+  $ #box(stroke: black, inset: 3pt, [$ ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) sigma gt.tri Delta^(upright(bold(q))') ⟧ : cal(C)_epsilon.alt \( ⟦ Gamma^(upright(bold(q))) ⟧ \, ⟦ Delta^(upright(bold(q))') ⟧ \) $])\
+  ⟦ dot.op #refinement-eff-turnstile($epsilon.alt$) dot.op gt.tri dot.op ⟧ = sans(i d)_I\
+  ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) sigma \, x mapsto a gt.tri Delta^(upright(bold(q))') \, x : A^q ⟧ = {⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; ⟦ Gamma_(upright(bold(e))_l)^(upright(bold(q))_l) #refinement-eff-turnstile($epsilon.alt$) sigma gt.tri Delta^(upright(bold(q))') ⟧ ⊗ ⟦ Gamma^(upright(bold(q))_r) #refinement-eff-turnstile($epsilon.alt$) a : A ⟧ upright(" if ") q eq.not 0\
+  ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) sigma gt.tri Delta^(upright(bold(q))') ⟧ ; lambda^(- 1) upright(" otherwise") $
 
-  ]],
+  ]])],
   caption: [
     Semantics of $lambda_(sans(i t e r))$ substitutions
   ]
@@ -122,9 +120,9 @@ term and of the substitution.
 #block[
 Given
 $Gamma^(upright(bold(q))) tack.r_eta sigma gt.tri Delta^(upright(bold(q')))$
-and $Delta^(upright(bold(q))') tack.r_epsilon.alt a : A$, we have
-$ eta harpoon.rt epsilon.alt arrow.r.double.long ⟦ Gamma^(upright(bold(q))) tack.r_eta sigma gt.tri Delta^(upright(bold(q'))) ⟧ ; ⟦ Delta^(upright(bold(q))') tack.r_epsilon.alt a : A ⟧ arrow.r.twohead ⟦ Gamma^(upright(bold(q))) tack.r_() \[ sigma \] a : A ⟧\
-eta harpoon.lb epsilon.alt arrow.r.double.long ⟦ Gamma^(upright(bold(q))) tack.r_eta sigma gt.tri Delta^(upright(bold(q'))) ⟧ ; ⟦ Delta^(upright(bold(q))') tack.r_epsilon.alt a : A ⟧ gt.eq ⟦ Gamma^(upright(bold(q))) tack.r_() \[ sigma \] a : A ⟧ $
+and $Delta^(upright(bold(q))') #refinement-eff-turnstile($epsilon.alt$) a : A$, we have
+$ eta harpoon.rt epsilon.alt arrow.r.double.long ⟦ Gamma^(upright(bold(q))) tack.r_eta sigma gt.tri Delta^(upright(bold(q'))) ⟧ ; ⟦ Delta^(upright(bold(q))') #refinement-eff-turnstile($epsilon.alt$) a : A ⟧ arrow.r.twohead ⟦ Gamma^(upright(bold(q))) tack.r_() \[ sigma \] a : A ⟧\
+eta harpoon.lb epsilon.alt arrow.r.double.long ⟦ Gamma^(upright(bold(q))) tack.r_eta sigma gt.tri Delta^(upright(bold(q'))) ⟧ ; ⟦ Delta^(upright(bold(q))') #refinement-eff-turnstile($epsilon.alt$) a : A ⟧ gt.eq ⟦ Gamma^(upright(bold(q))) tack.r_() \[ sigma \] a : A ⟧ $
 
 ]
 ==== Soundness
@@ -142,7 +140,7 @@ We say a model $cal(M)$ #emph[validates] a typed refinement family
 $cal(R)$, written $cal(M) tack.r.double cal(R)$, if, for all
 $\( Gamma^(upright(bold(q))) tack.r_() a arrow.r.twohead b : A \) in cal(R)$
 we have that
-$⟦ Gamma tack.r_epsilon.alt a : A ⟧ arrow.r.twohead ⟦ Gamma tack.r_epsilon.alt b : A ⟧$
+$⟦ Gamma #refinement-eff-turnstile($epsilon.alt$) a : A ⟧ arrow.r.twohead ⟦ Gamma #refinement-eff-turnstile($epsilon.alt$) b : A ⟧$
 
 ]
 We note that, for every model $cal(M)$, $cal(M) tack.r.double diameter$.
@@ -157,7 +155,7 @@ $cal(M) tack.r.double cal(R) arrow.l.r.double cal(M) tack.r.double sans(T h) \( 
 That is, given $cal(M) tack.r.double cal(R)$ and
 $Gamma^(upright(bold(q))) tack.r_(cal(R)) a arrow.r.twohead b : A$, we
 have
-$⟦ Gamma tack.r_epsilon.alt a : A ⟧_(cal(M)) arrow.r.twohead ⟦ Gamma tack.r_epsilon.alt b : A ⟧_(cal(M))$.
+$⟦ Gamma #refinement-eff-turnstile($epsilon.alt$) a : A ⟧_(cal(M)) arrow.r.twohead ⟦ Gamma #refinement-eff-turnstile($epsilon.alt$) b : A ⟧_(cal(M))$.
 
 ]
 In particular, we hence have that, for every model $cal(M)$,
@@ -192,7 +190,7 @@ given in Appendix~#todo[Cross-reference: `refall:apx:completeness`]. As is stand
 $sans(T m) \( cal(R) \)$ will have types as objects. To construct
 morphisms, we start with terms with a single free variable. We stratify
 these terms by type and effect as follows:
-$ sans(T e r m) \( cal(R) \)_epsilon.alt \( A \, B \) := { \( x \, a \) divides x : A^top tack.r_epsilon.alt a : B } $
+$ sans(T e r m) \( cal(R) \)_epsilon.alt \( A \, B \) := { \( x \, a \) divides x : A^top #refinement-eff-turnstile($epsilon.alt$) a : B } $
 We will quotient each $sans(T e r m)_epsilon.alt \( cal(R) \)$ by term
 equivalence $approx_(cal(R))$, as well as by renaming the free variable
 $x$, to define $sans(T m) \( cal(R) \)_epsilon.alt$; we will somewhat
@@ -202,7 +200,7 @@ yielding a term up to equivalence. The identity morphism is simply given
 as $sans(i d)_A = \( lambda x . x \)$, while composition is given not by
 substitution (since terms may be impure!) but rather by let-bindings as
 follows:
-$ \( lambda x . a \) ; \( lambda y . b \) := \( lambda x . sans(l e t) #h(0em) y = a ; #h(0em) b \) $
+$ \( lambda x . a \) ; \( lambda y . b \) := \( lambda x . kw("let") med y = a ; #h(0em) b \) $
 We can equip $sans(T m) \( cal(R) \)$ with the structure of a
 poset-enriched category by using the refinement relation as a partial
 order; it is trivial to see that this is well-defined. The rest of the

@@ -79,7 +79,11 @@ $10 !$ given in @fig:fact-program. We can normalize our code into
   like $a + b$ are syntactic sugar for primitive operations
   $+ \( a \, b \)$.
 
-#figure([#figure([$  & sans("let") #h(0em) n = 10 ;\
+#figure([#grid(
+  columns: (1fr, 1fr),
+  gutter: 1.5em,
+  align: (left, top),
+  [#semi-math-panel([$  & sans("let") #h(0em) n = 10 ;\
      & sans("let mut") #h(0em) i = 1 ;\
      & sans("let mut") #h(0em) a = 1 ;\
      & sans("while") #h(0em) i < n #h(0em) {\
@@ -87,16 +91,13 @@ $10 !$ given in @fig:fact-program. We can normalize our code into
      & quad i = i + 1 ;\
      & }\
      & sans("ret") #h(0em) a\
-     $
-
-    ],
-    caption: [
-      As an imperative program
-    ]
+     $],
+    caption: [As an imperative program],
+    numbering: "(a)",
   )
-  <fig:fact-imp>
+  <fig:fact-imp>],
 
-  #figure([$  & n = 10 ;\
+  [#semi-math-panel([$  & n = 10 ;\
      & i = 1 ;\
      & a = 1 ;\
      & sans("br") #h(0em) sans("loop") ;\
@@ -104,14 +105,13 @@ $10 !$ given in @fig:fact-program. We can normalize our code into
     sans("body") : quad & t = i + 1 ;\
      & a = a \* t ;\
      & i = i + 1 ;\
-     & sans("br") #h(0em) sans("loop") $
-
-    ],
-    caption: [
-      As 3-address code
-    ]
+     & sans("br") #h(0em) sans("loop") $],
+    caption: [As 3-address code],
+    numbering: "(a)",
   )
-  <fig:fact-3addr>
+  <fig:fact-3addr>],
+
+  )
 
   ],
   caption: [
@@ -462,7 +462,7 @@ isomorphism between lexical SSA and standard SSA.
 )
 <fig:lex-ssa>
 
-#figure([```
+#code-figure([```cpp
   struct BasicBlock {
         // unary/binary let-bindings, collected into a list
         vector<Instruction> instructions;             
@@ -516,7 +516,8 @@ isomorphism between lexical SSA and standard SSA.
     caption: [
       Lexical scoping
     ]
-  )
+  ),
+)
 
   ],
   caption: [
@@ -595,8 +596,6 @@ $  & sans("case") #h(0em) a #h(0em) { iota_l #h(0em) x : sans("br") #h(0em) ell 
 by repeatedly applying a set of known-good rules, and, moreover,
 dramatically simplifies the form of the rules themselves.
 
-#bibliography("/papers/isotope/references.bib", full: false)
-
 #figure([#block[
   #block[
   \<$a \, b \, c \, e$\> ::= $x$ | $f #h(0em) a$ |
@@ -620,3 +619,5 @@ dramatically simplifies the form of the rules themselves.
   ]
 )
 <fig:ssa-grammar>
+
+#standalone-bibliography()

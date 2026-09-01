@@ -477,8 +477,7 @@ of relevant type).
 
 #todo[Check the mechanically converted structural-semantics figure against source lines 2193--2242, and replace the Pandoc rendering with native Typst layout without changing its equations.]
 
-#figure([#block[
-  minipage=1.1,scale=0.9
+#figure([#fit-to-width([#block[
   $ #box(stroke: black, inset: 3pt, [$ ⟦ Gamma^(upright(bold(q))) mapsto Delta^(upright(bold(q))') ⟧ : cal(C)_tack.t \( ⟦ Gamma^(upright(bold(q))) ⟧ \, ⟦ Delta^(upright(bold(q))') ⟧ \) $])\
   ⟦ dot.op mapsto dot.op ⟧ = sans("id")_I #h(2em) ⟦ Gamma^(upright(bold(q))) \, x : A_epsilon.alt^q mapsto Delta^(upright(bold(q))') ⟧ = ⟦ Gamma^(upright(bold(q))) ⟧ ⊗ !_(A^q) ; lambda ; ⟦ Gamma^(upright(bold(q))) mapsto Delta^(upright(bold(q))') ⟧\
   ⟦ Gamma^(upright(bold(q))) \, x : A_epsilon.alt^q mapsto Delta^(upright(bold(q))') \, x : A_(epsilon.alt')^(q') ⟧ = ⟦ Gamma^(upright(bold(q))) mapsto Delta^(upright(bold(q))') ⟧ ⊗ cases(delim: "{", sans("id")_(⟦ A ⟧) & upright("if ") q \, q' ≠ 0, !_(A^q) & upright("otherwise"), ) $
@@ -487,7 +486,7 @@ of relevant type).
   ⟦ dot.op tack.r dot.op = dot.op + dot.op ⟧ = rho^(- 1)\
   ⟦ Gamma \, x : A tack.r \( upright(bold(q)) \, q \) = \( upright(bold(q))_l \, q_l \) + \( upright(bold(q))_r \, q_r \) ⟧ = ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ⊗ (cases(delim: "{", lambda^(- 1) & upright("if ") q_l = 0 upright(" else"), rho^(- 1) & upright("if ") q_r = 0 upright(" else"), Delta_A & upright("otherwise"))) ; sigma^(sans("mid")) $
 
-  ]],
+  ]])],
   caption: [
     Denotational semantics for structural #liter
     judgements
