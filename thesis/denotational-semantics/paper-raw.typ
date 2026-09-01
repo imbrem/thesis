@@ -148,17 +148,17 @@ Since in a distributive Freyd category $cal(C)_tack.t$ must be distributive (and
 
 The power of string diagrams comes from the fact that many syntactically distinct ways to write equal values are obviously graphically equivalent by #emph[isotopy]: essentially, moving boxes and wires around. String diagrams also give us an elegant way to represent and reason about Elgot structures. It turns out that Elgot structures induce a #emph[trace] on the coproduct @hasegawa-trace-02: given $f : A + C arrow.r B + C$, we can define $ sans("Tr")_(A   B)^C ( f ) = iota_l ; \[ f ; B + iota_r \]^dagger = iota_l ; f ; \[ sans("id")   ( iota_l ; f )^dagger \] : A arrow.r B $ Since this satisfies the axioms of a trace over a symmetric monoidal category, we can draw it, and therefore the Elgot operator, as in Figure~#todo[Cross-reference: \@fig:elgot-string-diagrams.] Continuing with the control-flow diagram analogy, such traces can be interpreted as #emph[loops], with the Elgot axioms, now drawn as diagrams in Figure~#todo[Cross-reference: \@fig:elgot-ax-string-diagrams.]
 
-#figure([#figure(elgot-trace-diagram(kind: "trace"),
-    caption: [
-      The trace of $f : A + C arrow.r B + C$
-    ]
-  )
-
-  #figure(elgot-trace-diagram(kind: "fixpoint"),
-    caption: [
-      The fixpoint of $f : A arrow.r B + A$
-    ]
-  )
+#figure([#grid(
+  columns: (1fr, 1fr),
+  gutter: 1em,
+  align: (center, top),
+  [#elgot-trace-diagram(kind: "trace")
+  #linebreak()
+  #align(center)[(a) The trace of $f : A + C arrow.r B + C$]],
+  [#elgot-trace-diagram(kind: "fixpoint")
+  #linebreak()
+  #align(center)[(b) The fixpoint of $f : A arrow.r B + A$]],
+)
 
   ],
   caption: [
@@ -167,29 +167,26 @@ The power of string diagrams comes from the fact that many syntactically distinc
 )
 <fig:elgot-string-diagrams>
 
-#figure([#figure(conway-axiom-diagram("fixpoint"),
-    caption: [
-      Fixpoint
-    ]
-  )
+#figure([#grid(
+  columns: (1fr, 1fr),
+  gutter: 1em,
+  align: (center, top),
+  [#conway-axiom-diagram("fixpoint")
+  #linebreak()
+  #align(center)[(a) Fixpoint]],
 
-  #figure(conway-axiom-diagram("naturality"),
-    caption: [
-      Naturality
-    ]
-  )
+  [#conway-axiom-diagram("naturality")
+  #linebreak()
+  #align(center)[(b) Naturality]],
 
-  #figure(conway-axiom-diagram("codiagonal"),
-    caption: [
-      Codiagonal
-    ]
-  )
+  [#conway-axiom-diagram("codiagonal")
+  #linebreak()
+  #align(center)[(c) Codiagonal]],
 
-  #figure(conway-axiom-diagram("dinaturality"),
-    caption: [
-      Dinaturality
-    ]
-  )
+  [#conway-axiom-diagram("dinaturality")
+  #linebreak()
+  #align(center)[(d) Dinaturality]],
+)
 
   ],
   caption: [
