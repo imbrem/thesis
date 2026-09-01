@@ -88,6 +88,7 @@ $10 !$ given in @fig:fact-program. We can normalize our code into
      $],
     caption: [As an imperative program],
     numbering: "(a)",
+    body-height: 10em,
   )
   <fig:fact-imp>],
 
@@ -102,6 +103,7 @@ $10 !$ given in @fig:fact-program. We can normalize our code into
      & kw("br") med sans("loop") $],
     caption: [As 3-address code],
     numbering: "(a)",
+    body-height: 10em,
   )
   <fig:fact-3addr>],
 
@@ -472,7 +474,7 @@ isomorphism between lexical SSA and standard SSA.
      & kw("let") med a_1 = a_0 \* t\
      & kw("let") med i_1 = i_0 + 1\
      & kw("br") med sans("loop") \( i_1 \, a_1 \) $
-    ], caption: [Dominance-based scoping], numbering: "(a)")],
+    ], caption: [Dominance-based scoping], numbering: "(a)", body-height: 15em)],
   [#semi-math-panel([$  & kw("let") med n = 10 ;\
      & kw("br") med sans("loop") \( 1 \, 1 \)\
      & kw("where") med sans("loop") \( i_0 \, a_0 \) : {\
@@ -485,7 +487,7 @@ isomorphism between lexical SSA and standard SSA.
      & #h(2em) kw("br") med sans("loop") \( i_1 \, a_1 \)\
      & quad }\
      & } $
-    ], caption: [Lexical scoping], numbering: "(a)")],
+    ], caption: [Lexical scoping], numbering: "(a)", body-height: 15em)],
 )],
   caption: [
     Conversion of an SSA program from dominance-based scoping to
