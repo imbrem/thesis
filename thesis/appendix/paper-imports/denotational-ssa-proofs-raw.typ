@@ -2,7 +2,6 @@
 // Source: papers/isotope/denotational-semantics-of-ssa.tex @ afa82558acf643f53a3e038e635ed9520ace88c6
 // Coverage: lines 6597–9481, “Definitions and Proofs” through “Completeness”.
 #import "/lib/prelude.typ": *
-#show: appendix
 
 #set math.equation(numbering: "(1)")
 = Definitions and Proofs

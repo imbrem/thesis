@@ -18,6 +18,8 @@
 
 #include "intro/main.typ"
 
+#todo[Decide whether the thesis spine should introduce the unrefined iteration calculus before the broader type-theoretic SSA development, matching the refinement paper's progression.]
+
 #include "type-theoretic-ssa/main.typ"
 
 #include "category-theory/main.typ"
@@ -34,8 +36,9 @@
 
 #include "related-work/main.typ"
 
-#pagebreak()
-#bibliography("refs.bib")
+#todo[Decide whether to move the two imported related-work discussions into one dedicated chapter, with topic-specific material floated to the relevant technical chapters only after their overlap has been mapped.]
+
+#todo[Decide whether the full soundness-and-completeness development for the SSA equational theory belongs in the main narrative or an appendix, especially if the main text later presents the distributive-Freyd-category account via an intermediate calculus.]
 
 // --- Appendix ---
 
@@ -43,3 +46,6 @@
 #show: appendix
 
 #include "appendix/main.typ"
+
+#pagebreak()
+#bibliography("refs.bib")

@@ -600,8 +600,6 @@ $  & sans("case") #h(0em) a #h(0em) { iota_l #h(0em) x : sans("br") #h(0em) ell 
 by repeatedly applying a set of known-good rules, and, moreover,
 dramatically simplifies the form of the rules themselves.
 
-#bibliography("/papers/isotope/references.bib", full: false)
-
 #figure([#block[
   #block[
   \<$a \, b \, c \, e$\> ::= $x$ | $f #h(0em) a$ |

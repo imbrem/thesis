@@ -189,5 +189,3 @@ do not have UB.
   ]
 )
 <refall:fig:weak-refinements>
-
-#hide(bibliography("/thesis/refs.bib", full: false))

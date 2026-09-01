@@ -4,8 +4,6 @@
 // Source section: Denotational Semantics, lines 3085–4533
 
 #import "/lib/prelude.typ": *
-#show: chapter.with(title: "Denotational Semantics")
-
 <sec:densem>
 Now that we have given an equational theory for SSA, we would like to build a denotational semantics for SSA: a mapping from well-typed programs $Gamma tack.r r gt.tri sans(L)$ to mathematical objects $⟦ Gamma tack.r r gt.tri sans(L) ⟧$. This naturally gives us another way to reason about whether two programs "$r$, $r'$" are "the same:" we can ask whether $⟦ Gamma tack.r r gt.tri sans(L) ⟧ = ⟦ Gamma tack.r r' gt.tri sans(L) ⟧$. Our goal is to build a denotational semantics which is both #emph[sound] and #emph[complete]; that is, such that $ Gamma tack.r r approx r' gt.tri sans(L) arrow.l.r.double ⟦ Gamma tack.r r gt.tri sans(L) ⟧ = ⟦ Gamma tack.r r' gt.tri sans(L) ⟧ $ More specifically, we'll begin by defining a notion of a #emph[model] $cal(M)$ of SSA, and then define the denotational semantics w.r.t. a model $⟦ Gamma tack.r r gt.tri sans(L) ⟧_(cal(M))$. We'll then prove that, for #emph[any] model of SSA, if $Gamma tack.r r approx r' gt.tri sans(L)$, then $ ⟦ Gamma tack.r r gt.tri sans(L) ⟧_(cal(M)) = ⟦ Gamma tack.r r' gt.tri sans(L) ⟧_(cal(M)) $ In other words, our equational theory is #emph[sound], and so never allows us to prove an equation which does not in fact hold. We'll then give an model $cal(M)$ such that $ ⟦ Gamma tack.r r gt.tri sans(L) ⟧_(cal(M)) = ⟦ Gamma tack.r r' gt.tri sans(L) ⟧_(cal(M)) ==> Gamma tack.r r approx r' gt.tri sans(L) $ showing that our equational theory is also #emph[complete]: if an equation holds in an #emph[arbitrary] model of SSA, it must in fact be derivable via our theory.
 
@@ -17,7 +15,7 @@ Before we begin, we fix some notational conventions:
 
 - We denote the coproduct of a morphism $f : B arrow.r C$ with the identity $sans("id")_A$ as $f + A : B + A arrow.r C + A$ or $A + f : A + B arrow.r A + C$.
 
-== Freyd-Elgot Categories
+= Freyd-Elgot Categories
 <freyd-elgot-categories>
 #cite(<moggi-91-monad>, form: "prose") showed that the Kleisli category of a strong monad over a CCC interprets effectful higher-order functional programs. There are two mismatches in using this as a semantics for SSA. On one hand, SSA has features not necessarily supported by Moggi models such as arbitrary, unstructured cyclic control-flow. On the other hand Moggi models support features SSA (as a first-order language) does not have, such as higher-order functions and first-class computation values.
 
@@ -135,7 +133,7 @@ If $( - )^dagger$ is an iteration operator which satisfies naturality and codiag
 ]
 Since in a distributive Freyd category $cal(C)_tack.t$ must be distributive (and hence co-cartesian), dinaturality follows from the other axioms of an Elgot category. Given a distributive Freyd category equipped with a (strong) Elgot structure, we will often want to consider the fixpoint of a morphism $f : R ⊗ A arrow.r B + A$, where our "context" $R$ does not change between iterations. To do this, we first need to build up a morphism $ sans("rcase") ( f ) := sans("let") ( f ) ; pi_l ⊗ ( B + A ) ; delta^(- 1) : R ⊗ A arrow.r R ⊗ B + R ⊗ A $ which computes $f$ and then distributes a copy of the read-only state $R$ to each branch of the result. We may then define the fixpoint $ sans("rfix") ( f ) := ( sans("rcase") ( f ) )^dagger ; pi_r : R ⊗ A arrow.r B $ We consider some more properties of $sans("rcase") ( f )$ and $sans("rfix") ( f )$ in Appendix~#todo[Cross-reference: \@apx:environment.]
 
-== String Diagrams
+= String Diagrams
 <string-diagrams>
 #emph[String diagrams] provide a graphical calculus for reasoning about (symmetric) monoidal categories, which allows us to succinctly express complex morphisms and rewrites. Since both cartesian and co-cartesian categories are monoidal (with the product and coproduct as tensor, respectively), we can use string diagrams to reason about both. In the co-cartesian case, string diagrams behave much like control-flow diagrams, with boxes representing sub-programs, input wires entry points, and output wires exit points. In particular, a #emph[region] is just a box with a single input wire. Continuing this analogy, we draw the codiagonal morphism $\[ sans("id")_A   sans("id")_A \]$ as joining two wires, and the zero morphism as a wire coming from nowhere, as in Figure~#todo[Cross-reference: \@fig:coproduct-string-diagrams.]
 
@@ -204,7 +202,7 @@ Unfortunately, unmodified string diagrams do not work for premonoidal categories
 )
 <fig:premonoidal-string-diagram>
 
-== Semantics
+= Semantics
 <semantics>
 We now have all the ingredients we need to give a semantics to $lambda_(sans("SSA"))$ expressions and regions. In particular, an $lambda_(sans("SSA"))$ expression model of a signature $S g = ( cal(T)   cal(I) )$ consists of:
 
@@ -328,7 +326,7 @@ This simplifies significantly in the case of a $sans("where")$-block defining ju
 )
 <fig:ssa-reg-sem>
 
-== Metatheory
+= Metatheory
 <metatheory>
 We can now begin to state the metatheoretic properties of our denotational semantics. Before we do so, we establish the convention that whenever we have an equation involving the interpretation of a derivation (e.g., $⟦ cal(D) ⟧ = ⟦ cal(D)' ⟧$), we assume that all the derivations (e.g., $cal(D)$ and $cal(D)'$) exist and are well-formed.
 
@@ -416,7 +414,7 @@ Given $Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K)$, we have
 #emph[Proof.] See Appendix~#todo[Cross-reference: \@proof:soundness-lsubst]~◻
 
 ]
-== Equational Theory
+= Equational Theory
 <ssec:completeness>
 Using the metatheory in the previous section, our goal is now to prove the equational theory given in Section~#todo[Cross-reference: \@sec:equations] sound with respect to any valid $lambda_(sans("SSA"))$ model. Stated more precisely, we have the following:
 
@@ -452,7 +450,7 @@ Now that we've proved the #emph[soundness] of our equational theory, what remain
   Gamma   square.stroked.tiny : \[ Delta \] tack.r ⟦ Delta tack.r_epsilon.alt a : A ⟧_(sans("Th") ( Gamma   sans(L) )) approx sans("ret") #h(0em) ⟨ a ⟩ gt.tri sans(L)   square.filled.medium ( A )\
   Gamma   square.stroked.tiny : \[ Delta \] tack.r ⟦ Delta tack.r r gt.tri sans(K) ⟧_(sans("Th") ( Gamma   sans(L) )) approx ⟨ r ⟩ gt.tri sans(L)   square.filled.medium ( ⟨ sans(K) ⟩ ) $ where $sans("ret") #h(0em) a := sans("br") #h(0em) square.filled.medium #h(0em) a$. Since the packing operator $⟨ dot.op ⟩$ on terms and regions from Appendix~#todo[Cross-reference: \@apx:records-enums] is injective for pure contexts $sans("eff") ( Gamma ) = tack.t$, and hence in particular for $Gamma = dot.op$, $sans(L) = dot.op$, it follows that in this case the category of expressions and the category of regions are the initial distributive $lambda_(sans("SSA"))$ expression model and $lambda_(sans("SSA"))$ model respectively.
 
-== Expressions
+= Expressions
 <expressions>
 We'll begin by going over the entire proof of completeness for expressions, which is the simpler case. In particular, we may define the category $sans("Th")_epsilon.alt^⊗ ( Gamma )$ of expressions with effect $epsilon.alt$ as follows:
 
@@ -478,7 +476,7 @@ We have that, for all pure $sans("eff") ( Gamma ) = tack.t$, $ Gamma tack.r_epsi
 #emph[Proof.] See Appendix~#todo[Cross-reference: \@proof:complete-expr]~◻
 
 ]
-== Regions
+= Regions
 <regions>
 We define the category $sans("Th") ( Gamma   sans(L) )$ of regions as follows:
 
