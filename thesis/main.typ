@@ -15,10 +15,9 @@
 #todo(kind: "question", owner: "author", source: "agent", visible: false)[Decide whether full SSA soundness and completeness belongs in an appendix, leaving translation soundness in the main development.]
 #todo(kind: "plan", owner: "author", source: "agent", visible: false)[Fuse the two imported related-work sections only after deciding which topic-specific passages should move beside the relevant technical sections.]
 #todo(kind: "question", owner: "author", source: "agent", visible: false)[Specify the theorem and abstraction layer for equivalence with previous work when refinement is symmetric.]
+#todo(kind: "question", owner: "author", source: "agent", visible: false)[Decide whether the unrefined iteration calculus comes before the broader type-theoretic SSA development, matching the refinement paper's progression.]
 
 #include "intro/main.typ"
-
-#todo[Decide whether the thesis spine should introduce the unrefined iteration calculus before the broader type-theoretic SSA development, matching the refinement paper's progression.]
 
 #include "type-theoretic-ssa/main.typ"
 
@@ -35,10 +34,6 @@
 #include "refinement/main.typ"
 
 #include "related-work/main.typ"
-
-#todo[Decide whether to move the two imported related-work discussions into one dedicated chapter, with topic-specific material floated to the relevant technical chapters only after their overlap has been mapped.]
-
-#todo[Decide whether the full soundness-and-completeness development for the SSA equational theory belongs in the main narrative or an appendix, especially if the main text later presents the distributive-Freyd-category account via an intermediate calculus.]
 
 // --- Appendix ---
 
