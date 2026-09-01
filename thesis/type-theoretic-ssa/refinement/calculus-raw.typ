@@ -259,7 +259,7 @@ as being simply SSA with additional annotations.
 
   ],
   caption: [
-    Data encoded by the grammar in Figure @refall:fig:ssa-syntax
+    Data encoded by the grammar in @refall:fig:ssa-syntax
   ]
 )
 <refall:fig:ssa-data>
@@ -281,7 +281,7 @@ expression-oriented variant of SSA. Essentially, it is a simple
 first-order expression language with support for binding/sequencing,
 branching, and loops. $lambda_(sans(i t e r))$ looks very different from
 traditional presentations of SSA, but we later prove in
-Subsection~#todo[Cross-reference: `refall:ssec:interconversion`] that the two syntaxes are completely
+Subsection~@refall:ssec:interconversion that the two syntaxes are completely
 equivalent to one another. The main novelty of $lambda_(sans(i t e r))$
 is in its type system and equational theory. It has a rich substructural
 type and effect system, which enables us to give a complete inequational
@@ -732,7 +732,7 @@ property~#link(<refall:item:includes-rewrites>)[1], by the following rules:
   prooftree(rule(label: msc("refl"), $Gamma^(upright(bold(q))) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))) tack.r cal(R) a arrow.r.twohead a : A$)),
   prooftree(rule(label: msc("trans"), $Gamma^(upright(bold(q))) tack.r cal(R) a arrow.r.twohead b : A$, $Gamma^(upright(bold(q))) tack.r cal(R) b arrow.r.twohead c : A$, $Gamma^(upright(bold(q))) tack.r cal(R) a arrow.r.twohead c : A$)),
 ) The other congruence rules (in the appendix in
-Figure~#todo[Cross-reference: `refall:fig:congruence-refinement`]) correspond one-to-one with our term
+Figure~@refall:fig:congruence-refinement) correspond one-to-one with our term
 formers to ensure property~#link(<refall:item:is-congruence>)[2].
 Property~#link(<refall:item:is-congruence>)[2] means that the induced equivalence $approx$
 is also a congruence.

@@ -33,7 +33,7 @@ properties of sequencing; for example, we have #rule-set(
   prooftree(rule(label: msc("rule"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_c$, $Gamma tack.r upright(bold(q))_c = upright(bold(q))_r + upright(bold(q))_m$, $Gamma^(upright(bold(q))_l) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_m) tack.r epsilon.alt b : B$, $0 lt.eq sans(q) \( A \) \, sans(q) \( B \)$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))) tack.r cal(R) \( a ; b \) ; c approx a ; \( b ; c \) : C$)),
 )
 
-As stated in Section~#todo[Cross-reference: `refall:ssec:refinement-theory`], binding rules for the rest
+As stated in Section~@refall:ssec:refinement-theory, binding rules for the rest
 of our calculus are derivable from the rest of
 $lambda_(sans(i t e r))$'s refinement rules. We give these explicitly in
 Figure~@refall:fig:derivable-binding, along with the $eta$-rule for unary
@@ -1084,7 +1084,7 @@ supports
   program which always terminates, never terminates, and is
   nondeterministically nonterminating)
 
-As described in Section~#todo[Cross-reference: `refall:ssec:ub`], we define
+As described in Section~@refall:ssec:ub, we define
 $sans(U B) \( A \) := cal(P)^(+) \( A union { oo } \) union { arrow.zigzag }$,
 with
 $ arrow.zigzag upright(">>=")_(sans("UB")) f &= arrow.zigzag #h(2em)
@@ -1145,8 +1145,8 @@ examples below:
   $ f^(dagger_(sans(S t)_S #h(0em) T)) := lambda a \, s . \( \( lambda \( s \, a \) . f #h(0em) a #h(0em) s \) ; delta^(- 1) \)^dagger \( s \, a \) $
 
 As a concrete example, we can build the heap monad from
-Section~#todo[Cross-reference: `refall:ssec:heaps`] by simply applying the state transformer to the UB
-monad from Appendix~#todo[Cross-reference: `refall:apx:ub`], with state
+Section~@refall:ssec:heaps by simply applying the state transformer to the UB
+monad from Appendix~@refall:apx:ub, with state
 $S := bb(N) harpoon.rt_(sans(f i n)) bb(N)$.
 
 == Brookes-Style Concurrency

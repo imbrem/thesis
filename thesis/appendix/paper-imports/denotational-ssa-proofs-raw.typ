@@ -221,7 +221,7 @@ it follows that
 $ sans(r e g) \( sans(c f g) \( r \) \) approx sans(b b) \( beta \, \( kappa_i \( y_i \) : { r_i } \, \)_i \) $
 Define
 $ T_i = \( kappa_j \( y_j \) : { r_j } \, \)_(j < i) \, \( kappa_j \( y_j \) : { t_j } \, \( kappa_(j \, k) \( y_(j \, k) \) : { t_(rho_(j \, k)) } \, \)_k \, \)_(j gt.eq i) $
-Using Equation~#todo[Resolve source reference `eqn:pull-where` during integration.], we may show that, for all $i$,
+Using Equation~@eqn:pull-where, we may show that, for all $i$,
 $sans(b b) \( beta \, T_(i + 1) \) approx sans(b b) \( beta \, T_i \)$,
 since
 
@@ -610,7 +610,7 @@ $sans(e f f) \( Delta \) = tack.t$. We will begin by showing the
 soundness of substitution for expressions #todo[Resolve source reference `itm:tm-subst-sound:` during integration.] we
 proceed by induction on the derivation $Delta tack.r_epsilon.alt e : E$:
 
-- If $e = x$ is a variable, then by Lemma~#todo[Resolve source reference `lem:subst-proj` during integration.], we have
+- If $e = x$ is a variable, then by Lemma~@lem:subst-proj, we have
   $ bracket.l gamma : Gamma mapsto Delta bracket.r ; bracket.l Delta tack.r_epsilon.alt x : A bracket.r = bracket.l gamma : Gamma mapsto Delta bracket.r ; pi_(Delta \, x) = bracket.l Gamma tack.r_epsilon.alt \[ gamma \] x : A bracket.r $
   as desired.
 
@@ -823,7 +823,7 @@ assuming $Gamma tack.r r gt.tri sans(L)$, we proceed by induction on $r$
 as follows:
 
 - If $r = sans(b r) #h(0em) ell #h(0em) a$, then by
-  Lemma~#todo[Resolve source reference `lem:lsubst-inj` during integration.] we have that
+  Lemma~@lem:lsubst-inj we have that
   $ bracket.l Gamma tack.r \[ sigma \] \( sans(b r) #h(0em) ell #h(0em) a \) gt.tri sans(K) bracket.r & = bracket.l Gamma tack.r \[ a \/ x \] \[ sigma \] \( sans(b r) #h(0em) ell #h(0em) x \) gt.tri sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_tack.t a : A bracket.r \) ; bracket.l Gamma \, x : A tack.r \[ sigma \] \( sans(b r) #h(0em) ell #h(0em) x \) gt.tri sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_tack.t a : A bracket.r \) ; bracket.l Gamma bracket.r times iota_(sans(L) \, ell) ; bracket.l Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K) bracket.r\
@@ -1218,9 +1218,9 @@ $C_(k + 1 . . n) = B_(1 . . n - k)$. We note in particular that
 $bracket.l sans(R) lt.eq sans(R \, K) bracket.r$ is up to
 isomorphism the left injection
 $iota_l : Sigma_i bracket.l A_i bracket.r arrow.r Sigma_i bracket.l A_i bracket.r + Sigma_i bracket.l B_i bracket.r$.
-We can now derive Equation~#todo[Resolve source reference `eqn:dgdt` during integration.], and hence the soundness of
+We can now derive Equation~@eqn:dgdt, and hence the soundness of
 cfg-fuse$""_1$, via the string-diagrams in
-Figure~#todo[Resolve source reference `fig:string-diagram-fusion` during integration.], which are drawn in the co-Kleisli
+Figure~@fig:string-diagram-fusion, which are drawn in the co-Kleisli
 category inducted by $bracket.l Gamma bracket.r$.
 cfg-fuse$""_2$ then follows by repeated application of cfg-fuse$""_1$,
 as desired.~◻
@@ -1229,14 +1229,14 @@ as desired.~◻
 #figure([#figure([],
     caption: [
       $sans(r f i x) \( D_G \)$, with $D_G$ drawn as per the right of
-      Eqn.~#todo[Resolve source reference `eqn:dg-rhs` during integration.]
+      Eqn.~@eqn:dg-rhs
     ]
   )
   <fig:rfix-dg>
 
   #figure([],
     caption: [
-      Equivalent to #todo[Resolve source reference `fig:rfix-dg` during integration.] by isotopy and associativity of the
+      Equivalent to @fig:rfix-dg by isotopy and associativity of the
       codiagonal. We highlight $sans(r f i x) \( D_T \)$, which is used
       in the next step.
     ]
@@ -1248,7 +1248,7 @@ as desired.~◻
 
       $\[ sans(r f i x) \( D_T \) \, sans(r f i x) \( D_S \) ; alpha_(bracket.l sans(L) bracket.r + Sigma_j bracket.l A_j bracket.r)^(+) gt.double_() \[ pi_r \, sans(r f i x) \( D_T \) \]_(bracket.l Gamma bracket.r) \]_(bracket.l Gamma bracket.r)$.
       \
-      Equivalent to #todo[Resolve source reference `fig:rfix-isotopy` during integration.] by duplication of
+      Equivalent to @fig:rfix-isotopy by duplication of
       $sans(r f i x) \( D_T \)$.
     ]
   )
