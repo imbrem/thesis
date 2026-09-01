@@ -12,10 +12,19 @@ prose. The author remains responsible for every replacement paragraph.
 - Put chapter-ordering decisions and cross-cutting formalization questions in
   `notes/editorial-queue.json`. These notes never render in the thesis.
 
-Keep the taxonomy small. Prefer `question`, `suggestion`, `potential-plan`,
+Keep the taxonomy small. Prefer `question`, `suggestion`, `plan`,
 `error`, and `task`; ownership/audience handles who should respond. Resolve an
 item by changing its status to `decided` or `deferred`, recording the decision
 as a new field, and retaining the original question for history.
+
+Questions and suggestions do not need person-specific kinds. Record direction
+with the independent `source` and `audience` fields: for example, a question
+from an agent to the author is `(kind: "question", source: "agent", audience:
+"author")`; a suggestion from Neel is `(kind: "suggestion", source: "Neel",
+audience: "author")`; and an author request to a formalization agent reverses
+those endpoints. Use `kind: "plan"` with `status: "proposed"` for possible
+plans, and `kind: "error"` for known faults. This keeps author, agent, and Neel
+work reportable without multiplying nearly identical categories.
 
 ## Short author loop
 
@@ -33,7 +42,7 @@ as a new field, and retaining the original question for history.
    in a TODO/queue record. `partial`, `interface-only`, and `paper-only` are not
    interchangeable with proved.
 5. Build the leaf, then the chapter. At chapter boundaries run `make status`,
-   `make lint`, `make queue`, and `make thesis`.
+   `make lint`, `make xrefs`, `make queue`, and `make thesis`.
 
 The queue's evidence check proves only that cited files/declaration names still
 exist. It does not inspect theorem types, assumptions, axioms, or whether a

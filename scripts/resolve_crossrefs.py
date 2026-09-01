@@ -1,12 +1,20 @@
 #!/usr/bin/env python3
-"""Resolve imported cross-reference TODOs when an exact Typst label exists."""
+"""Audit and resolve imported cross-reference TODOs.
+
+A reference is rewritten only when Typst reports one numbered target while
+compiling the containing leaf by itself. Residual TODOs are classified against
+the full thesis and source-label inventory.
+"""
 
 from __future__ import annotations
 
 import argparse
+from collections import Counter, defaultdict
+from dataclasses import asdict, dataclass
 import json
 import re
 import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -22,121 +30,205 @@ CROSSREF = re.compile(
 SOURCE_REF = re.compile(
     r"#todo\[Resolve source reference `(?P<label>[^`]+)` during integration\.\]"
 )
+SELECTORS = ("heading", "figure", "math.equation")
 
 
-def labels_in_text(text: str) -> set[str]:
-    return {
-        label for label in LABEL.findall(text)
-        if LABEL_NAME.fullmatch(label)
-    }
+@dataclass(frozen=True)
+class TodoRef:
+    path: Path
+    start: int
+    end: int
+    line: int
+    label: str
+    punctuation: str
+    source_kind: str
 
 
-def source_labels() -> set[str]:
-    labels: set[str] = set()
-    for path in THESIS.rglob("*.typ"):
-        labels.update(labels_in_text(path.read_text()))
-    return labels
+@dataclass(frozen=True)
+class Target:
+    label: str
+    selector: str
+    numbered: bool
 
 
-def todo_targets() -> set[str]:
-    targets: set[str] = set()
-    for path in THESIS.rglob("*.typ"):
-        text = path.read_text()
-        for match in CROSSREF.finditer(text):
-            raw = match.group("at") or match.group("tick")
-            targets.add(normalize(raw)[0])
-        for match in SOURCE_REF.finditer(text):
-            targets.add(normalize(match.group("label"))[0])
-    return targets
+@dataclass(frozen=True)
+class Finding:
+    path: str
+    line: int
+    label: str
+    classification: str
+    source_kind: str
 
 
-def referenceable_labels(labels: set[str], entry: str) -> set[str]:
-    """Ask Typst which exact labels uniquely target referenceable elements."""
-    occurrences: dict[str, int] = {}
-    for selector in ("heading", "figure", "math.equation"):
+def normalize(raw: str) -> tuple[str, str]:
+    """Separate punctuation accidentally imported as part of a label."""
+    if raw.endswith("."):
+        return raw[:-1], "."
+    if raw.endswith(":"):
+        return raw[:-1], ""
+    return raw, ""
+
+
+def labels_in_text(text: str) -> list[str]:
+    return [label for label in LABEL.findall(text) if LABEL_NAME.fullmatch(label)]
+
+
+def todo_refs(path: Path, text: str) -> list[TodoRef]:
+    refs: list[TodoRef] = []
+    for pattern, source_kind in ((CROSSREF, "cross-reference"), (SOURCE_REF, "source-reference")):
+        for match in pattern.finditer(text):
+            raw = (
+                (match.groupdict().get("at") or match.groupdict().get("tick"))
+                if source_kind == "cross-reference" else match.group("label")
+            )
+            label, embedded = normalize(raw)
+            explicit = match.groupdict().get("at_dot") or match.groupdict().get("tick_dot") or ""
+            refs.append(TodoRef(
+                path=path,
+                start=match.start(),
+                end=match.end(),
+                line=text.count("\n", 0, match.start()) + 1,
+                label=label,
+                punctuation=embedded or explicit,
+                source_kind=source_kind,
+            ))
+    return sorted(refs, key=lambda ref: ref.start)
+
+
+def query_targets(entry: Path) -> list[Target]:
+    targets: list[Target] = []
+    for selector in SELECTORS:
         result = subprocess.run(
-            [
-                "typst", "query", "--root", str(ROOT), entry, selector,
-            ],
-            cwd=ROOT,
-            text=True,
-            capture_output=True,
-            check=False,
+            ["typst", "query", "--root", str(ROOT), str(entry.relative_to(ROOT)), selector],
+            cwd=ROOT, text=True, capture_output=True, check=False,
         )
         if result.returncode != 0:
-            raise RuntimeError(result.stderr)
+            raise RuntimeError(f"Typst query failed for {entry}:\n{result.stderr}")
         for record in json.loads(result.stdout):
             label = record.get("label")
             if not isinstance(label, str):
                 continue
             label = label.removeprefix("<").removesuffix(">")
-            if label not in labels:
-                continue
-            if selector == "math.equation" and record.get("numbering") is None:
-                continue
-            occurrences[label] = occurrences.get(label, 0) + 1
-    return {label for label, count in occurrences.items() if count == 1}
+            targets.append(Target(
+                label=label,
+                selector=selector,
+                numbered=record.get("numbering") is not None,
+            ))
+    return targets
 
 
-def normalize(raw: str) -> tuple[str, str]:
-    """Return a likely label and punctuation accidentally imported with it."""
-    if raw.endswith((".", ":")):
-        return raw[:-1], "." if raw.endswith(".") else ""
-    return raw, ""
+def unique_numbered(targets: list[Target]) -> set[str]:
+    counts = Counter(target.label for target in targets)
+    return {
+        target.label for target in targets
+        if counts[target.label] == 1 and target.numbered
+    }
 
 
-def resolve(text: str, labels: set[str]) -> tuple[str, int]:
+def rewrite(text: str, refs: list[TodoRef], safe: set[str]) -> tuple[str, int]:
+    parts: list[str] = []
+    cursor = 0
     count = 0
-
-    def crossref(match: re.Match[str]) -> str:
-        nonlocal count
-        raw = match.group("at") or match.group("tick")
-        label, embedded = normalize(raw)
-        if label not in labels:
-            return match.group(0)
-        count += 1
-        explicit_dot = match.group("at_dot") or match.group("tick_dot") or ""
-        return f"@{label}{embedded or explicit_dot}"
-
-    def source_ref(match: re.Match[str]) -> str:
-        nonlocal count
-        label, _ = normalize(match.group("label"))
-        if label not in labels:
-            return match.group(0)
-        count += 1
-        return f"@{label}"
-
-    text = CROSSREF.sub(crossref, text)
-    text = SOURCE_REF.sub(source_ref, text)
-    return text, count
+    for ref in refs:
+        parts.append(text[cursor:ref.start])
+        if ref.label in safe:
+            parts.append(f"@{ref.label}{ref.punctuation}")
+            count += 1
+        else:
+            parts.append(text[ref.start:ref.end])
+        cursor = ref.end
+    parts.append(text[cursor:])
+    return "".join(parts), count
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--write", action="store_true", help="rewrite matching files")
+    parser.add_argument("--write", action="store_true", help="rewrite standalone-safe references")
     parser.add_argument("--entry", default="thesis/main.typ")
+    parser.add_argument("--json", action="store_true", dest="json_format")
+    parser.add_argument(
+        "--fail-resolvable", action="store_true",
+        help="exit nonzero if a TODO can safely be rewritten",
+    )
     args = parser.parse_args()
 
-    candidates = source_labels() & todo_targets()
-    labels = referenceable_labels(candidates, args.entry)
-    total = 0
-    changed: list[tuple[Path, str]] = []
-    for path in sorted(THESIS.rglob("*.typ")):
-        original = path.read_text()
-        # CI compiles every imported leaf independently, so an apparently
-        # valid full-document reference is safe only when its target is also
-        # present in that leaf.
-        updated, count = resolve(original, labels & labels_in_text(original))
-        if count:
-            total += count
-            changed.append((path, updated))
+    texts = {path: path.read_text() for path in sorted(THESIS.rglob("*.typ"))}
+    refs = [ref for path, text in texts.items() for ref in todo_refs(path, text)]
+    label_paths: dict[str, list[Path]] = defaultdict(list)
+    for path, text in texts.items():
+        for label in labels_in_text(text):
+            label_paths[label].append(path)
 
-    print(f"Resolvable exact cross-reference TODOs: {total}")
-    for path, _ in changed:
-        print(path.relative_to(ROOT))
+    full_targets = query_targets(ROOT / args.entry)
+    full_counts = Counter(target.label for target in full_targets)
+    full_numbered = unique_numbered(full_targets)
+
+    # Query only leaves which have a same-source candidate. A full-document
+    # target in another source is intentionally retained as cross-leaf-only.
+    leaf_candidates = {
+        ref.path for ref in refs
+        if ref.label in full_numbered and label_paths.get(ref.label) == [ref.path]
+    }
+    leaf_safe: dict[Path, set[str]] = {}
+    for path in sorted(leaf_candidates):
+        leaf_safe[path] = unique_numbered(query_targets(path))
+
+    findings: list[Finding] = []
+    resolvable = 0
+    changed: dict[Path, str] = {}
+    for path, text in texts.items():
+        path_refs = [ref for ref in refs if ref.path == path]
+        safe = leaf_safe.get(path, set())
+        updated, count = rewrite(text, path_refs, safe)
+        resolvable += count
+        if count:
+            changed[path] = updated
+        for ref in path_refs:
+            source_count = len(label_paths.get(ref.label, []))
+            if ref.label in safe:
+                classification = "standalone-safe"
+            elif source_count == 0:
+                classification = "missing-target"
+            elif source_count > 1 or full_counts[ref.label] > 1:
+                classification = "duplicate"
+            elif ref.label in full_numbered:
+                classification = "cross-leaf-only"
+            else:
+                classification = "unnumbered"
+            findings.append(Finding(
+                path=str(path.relative_to(ROOT)), line=ref.line,
+                label=ref.label, classification=classification,
+                source_kind=ref.source_kind,
+            ))
+
     if args.write:
-        for path, updated in changed:
+        for path, updated in changed.items():
             path.write_text(updated)
+
+    counts = Counter(finding.classification for finding in findings)
+    report = {
+        "total": len(findings),
+        "source_lines": len({(finding.path, finding.line) for finding in findings}),
+        "counts": dict(sorted(counts.items())),
+        "findings": [asdict(finding) for finding in findings],
+    }
+    if args.json_format:
+        json.dump(report, sys.stdout, indent=2)
+        print()
+    else:
+        print(
+            f"Cross-reference TODOs: {len(findings)} occurrence(s) on "
+            f"{report['source_lines']} source line(s)"
+        )
+        for classification, count in sorted(counts.items()):
+            print(f"  {classification}: {count}")
+        for finding in findings:
+            print(
+                f"{finding.path}:{finding.line}: {finding.classification}: "
+                f"{finding.label}"
+            )
+    if args.fail_resolvable and resolvable:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
