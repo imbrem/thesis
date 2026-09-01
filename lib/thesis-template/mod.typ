@@ -13,6 +13,14 @@
   ..numbers.pos(),
 )
 
+// Imported paper sections sometimes skip a Typst heading level, which leaves
+// zero-valued counter components such as 6.1.0.2. Preserve the semantic source
+// hierarchy while suppressing those conversion-only gaps in rendered numbers.
+#let _compact-heading-numbering(style) = (..numbers) => numbering(
+  style,
+  ..numbers.pos().filter(number => number != 0),
+)
+
 #let _reset-at-chapter(counter) = heading => {
   if heading.level == 1 {
     counter.update(0)
@@ -72,7 +80,7 @@
   _nesting-depth.update(n => n + 1)
   set document(title: title, author: author, date: date)
   set text(lang: "en")
-  set heading(numbering: "1.")
+  set heading(numbering: _compact-heading-numbering("1."))
   show: thmrules
   show heading.where(level: 1): set heading(supplement: [Chapter])
 
@@ -99,7 +107,7 @@
 /// Show rule for appendix sections.
 /// Use as `#show: appendix` before appendix content.
 #let appendix(body) = {
-  set heading(numbering: "A.", supplement: [Appendix])
+  set heading(numbering: _compact-heading-numbering("A."), supplement: [Appendix])
   set figure(numbering: _dependent-numbering("A.1"))
   counter(heading).update(0)
   body
