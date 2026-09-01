@@ -2,7 +2,6 @@
 // Source: papers/isotope/denotational-semantics-of-ssa.tex @ afa82558acf643f53a3e038e635ed9520ace88c6
 // Coverage: lines 6597–9481, “Definitions and Proofs” through “Completeness”.
 #import "/lib/prelude.typ": *
-#show: appendix
 
 #set math.equation(numbering: "(1)")
 = Definitions and Proofs
@@ -11,15 +10,15 @@
 <syntactic-metatheory>
 #figure([$ \( gamma \, x mapsto e \) \( x \) = e #h(2em) \( gamma \, y mapsto e \) \( x \) = gamma \( x \) #h(2em) \( dot.op \) \( x \) = x\
   \
-  \[ gamma \] x = gamma \( x \) #h(2em) \[ gamma \] \( sans(l e t) #h(0em) x = a ; #h(0em) e \) = sans(l e t) #h(0em) x = \[ gamma \] a ; #h(0em) \[ gamma \] e #h(2em) \[ gamma \] \( a \, b \) = \( \[ gamma \] a \, \[ gamma \] b \) #h(2em) \[ gamma \] \( \) = \( \)\
-  \[ gamma \] \( sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) e \) = sans(l e t) #h(0em) \( x \, y \) = \[ gamma \] a ; #h(0em) \[ gamma \] e #h(2em) \[ gamma \] \( iota_l #h(0em) a \) = iota_l #h(0em) \[ gamma \] a #h(2em) \[ gamma \] \( iota_r #h(0em) b \) = iota_r #h(0em) \[ gamma \] b\
-  \[ gamma \] \( sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } \) = sans(c a s e) #h(0em) \[ gamma \] e #h(0em) { iota_l #h(0em) x : \[ gamma \] a \, iota_r #h(0em) y : \[ gamma \] b }\
+  \[ gamma \] x = gamma \( x \) #h(2em) \[ gamma \] \( kw("let") med x = a ; #h(0em) e \) = kw("let") med x = \[ gamma \] a ; #h(0em) \[ gamma \] e #h(2em) \[ gamma \] \( a \, b \) = \( \[ gamma \] a \, \[ gamma \] b \) #h(2em) \[ gamma \] \( \) = \( \)\
+  \[ gamma \] \( kw("let") med \( x \, y \) = a ; #h(0em) e \) = kw("let") med \( x \, y \) = \[ gamma \] a ; #h(0em) \[ gamma \] e #h(2em) \[ gamma \] \( iota_l #h(0em) a \) = iota_l #h(0em) \[ gamma \] a #h(2em) \[ gamma \] \( iota_r #h(0em) b \) = iota_r #h(0em) \[ gamma \] b\
+  \[ gamma \] \( kw("case") med e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } \) = kw("case") med \[ gamma \] e #h(0em) { iota_l #h(0em) x : \[ gamma \] a \, iota_r #h(0em) y : \[ gamma \] b }\
   \[ gamma \] \( sans(a b o r t) #h(0em) a \) = sans(a b o r t) #h(0em) \[ gamma \] a\
   \
-  \[ gamma \] \( sans(b r) #h(0em) ell #h(0em) a \) = sans(b r) #h(0em) ell #h(0em) \[ gamma \] a #h(2em) \[ gamma \] \( sans(l e t) #h(0em) x = a ; r \) = sans(l e t) #h(0em) x = \[ gamma \] a ; \[ gamma \] r\
-  \[ gamma \] \( sans(l e t) #h(0em) \( x \, y \) = e ; r \) = sans(l e t) #h(0em) \( x \, y \) = \[ gamma \] e ; \[ gamma \] r\
-  \[ gamma \] \( sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : r \, iota_r #h(0em) y : s } \) = sans(c a s e) #h(0em) \[ gamma \] e #h(0em) { iota_l #h(0em) x : \[ gamma \] r \, iota_r #h(0em) y : \[ gamma \] s }\
-  \[ gamma \] \( r #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i \) = \[ gamma \] r #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { \[ gamma \] t_i } \, \)_i\
+  \[ gamma \] \( sans(b r) #h(0em) ell #h(0em) a \) = sans(b r) #h(0em) ell #h(0em) \[ gamma \] a #h(2em) \[ gamma \] \( kw("let") med x = a ; r \) = kw("let") med x = \[ gamma \] a ; \[ gamma \] r\
+  \[ gamma \] \( kw("let") med \( x \, y \) = e ; r \) = kw("let") med \( x \, y \) = \[ gamma \] e ; \[ gamma \] r\
+  \[ gamma \] \( kw("case") med e #h(0em) { iota_l #h(0em) x : r \, iota_r #h(0em) y : s } \) = kw("case") med \[ gamma \] e #h(0em) { iota_l #h(0em) x : \[ gamma \] r \, iota_r #h(0em) y : \[ gamma \] s }\
+  \[ gamma \] \( r med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i \) = \[ gamma \] r med kw("where") med \( ell_i \( x_i \) : { \[ gamma \] t_i } \, \)_i\
   \
   \[ gamma \] \( dot.op \) = dot.op #h(2em) \[ gamma \] \( gamma' \, x mapsto e \) = \( \[ gamma \] gamma' \, x mapsto \[ gamma \] e \)\
   \
@@ -52,19 +51,19 @@ expressions $a$:
 
 - If $a = f #h(0em) e$, then, since $e$ is a subterm of $a$, by
   induction, we have
-  $ sans(l e t) #h(0em) x = a ; r approx sans(l e t) #h(0em) y = e ; sans(l e t) #h(0em) x = f #h(0em) y ; r approx sans(A N F)_(sans(l e t)) \( y \, e \, sans(l e t) #h(0em) x = f #h(0em) y ; r \) = sans(A N F)_(sans(l e t)) \( x \, a \, r \) $
+  $ kw("let") med x = a ; r approx kw("let") med y = e ; kw("let") med x = f #h(0em) y ; r approx sans(A N F)_(sans(l e t)) \( y \, e \, kw("let") med x = f #h(0em) y ; r \) = sans(A N F)_(sans(l e t)) \( x \, a \, r \) $
   as desired.
 
 - The cases for pairs, injections, and aborts containing expressions are
   analogous
 
 - If
-  $a = sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) y : b \, iota_r #h(0em) z : c }$,
+  $a = kw("case") med e #h(0em) { iota_l #h(0em) y : b \, iota_r #h(0em) z : c }$,
   then we may rewrite
-  $ sans(l e t) #h(0em) x = a ; r approx sans(l e t) #h(0em) w = e ; sans(c a s e) #h(0em) w #h(0em) { iota_l #h(0em) y : sans(l e t) #h(0em) b = x ; #h(0em) r \, iota_r #h(0em) z : sans(l e t) #h(0em) c = x ; #h(0em) r } $
+  $ kw("let") med x = a ; r approx kw("let") med w = e ; kw("case") med w #h(0em) { iota_l #h(0em) y : kw("let") med b = x ; #h(0em) r \, iota_r #h(0em) z : kw("let") med c = x ; #h(0em) r } $
   Since $r$ is in ANF, by induction (since $b \, c$ are subterms of
   $a$), this is equivalent to
-  $ sans(l e t) #h(0em) w = e ; sans(c a s e) #h(0em) w #h(0em) { iota_l #h(0em) y : sans(A N F)_(sans(l e t)) \( b \, x \, r \) \, iota_r #h(0em) z : sans(A N F)_(sans(l e t)) \( c \, x \, r \) } $
+  $ kw("let") med w = e ; kw("case") med w #h(0em) { iota_l #h(0em) y : sans(A N F)_(sans(l e t)) \( b \, x \, r \) \, iota_r #h(0em) z : sans(A N F)_(sans(l e t)) \( c \, x \, r \) } $
   which is equal to $sans(A N F)_(sans(l e t)) \( x \, a \, r \)$, as
   desired.
 
@@ -76,18 +75,18 @@ straightforward induction on $r$:
 
 - If $r = sans(b r) #h(0em) ell #h(0em) a$, by $beta$-reduction, we have
   that
-  $ r approx sans(l e t) #h(0em) x = a ; #h(0em) sans(b r) #h(0em) ell #h(0em) x approx sans(A N F)_(sans(l e t)) \( x \, a \, sans(b r) #h(0em) ell #h(0em) x \) = sans(A N F) \( r \) $
+  $ r approx kw("let") med x = a ; #h(0em) sans(b r) #h(0em) ell #h(0em) x approx sans(A N F)_(sans(l e t)) \( x \, a \, sans(b r) #h(0em) ell #h(0em) x \) = sans(A N F) \( r \) $
 
-- If $r = sans(l e t) #h(0em) x = a ; r'$, then by induction we have
+- If $r = kw("let") med x = a ; r'$, then by induction we have
   that
-  $ r approx sans(l e t) #h(0em) x = a ; sans(A N F) \( r' \) approx sans(A N F)_(sans(l e t)) \( x \, a \, sans(A N F) \( r' \) \) = sans(A N F) \( r \) $
+  $ r approx kw("let") med x = a ; sans(A N F) \( r' \) approx sans(A N F)_(sans(l e t)) \( x \, a \, sans(A N F) \( r' \) \) = sans(A N F) \( r \) $
   as desired.
 
-- If $r = sans(l e t) #h(0em) \( x \, y \) = a ; r'$, then by induction
+- If $r = kw("let") med \( x \, y \) = a ; r'$, then by induction
   we have that
-  $ r & approx sans(l e t) #h(0em) z = a ; sans(l e t) #h(0em) \( x \, y \) = z ; r'\
-   & approx sans(l e t) #h(0em) z = a ; sans(l e t) #h(0em) \( x \, y \) = z ; sans(A N F) \( r' \)\
-   & approx sans(A N F)_(sans(l e t)) \( z \, a \, sans(l e t) #h(0em) \( x \, y \) = z ; sans(A N F) \( r' \) \) approx sans(A N F) \( r \) $
+  $ r & approx kw("let") med z = a ; kw("let") med \( x \, y \) = z ; r'\
+   & approx kw("let") med z = a ; kw("let") med \( x \, y \) = z ; sans(A N F) \( r' \)\
+   & approx sans(A N F)_(sans(l e t)) \( z \, a \, kw("let") med \( x \, y \) = z ; sans(A N F) \( r' \) \) approx sans(A N F) \( r \) $
   The proof for $sans(c a s e)$-statements is analogous
 
 - The case for control-flow graphs follows trivially by induction
@@ -99,33 +98,33 @@ straightforward induction on $r$:
 
 #block[
 #emph[Proof.] Given that
-$sans(S S A)_(sans(a)) \( r \, G \) approx r #h(0em) sans(w h e r e) #h(0em) G$
+$sans(S S A)_(sans(a)) \( r \, G \) approx r med kw("where") med G$
 for $r$ in ANF, it is trivial to see that
-$ sans(S S A) \( r \) := sans(S S A)_(sans(a)) \( sans(A N F) \( r \) \, dot.op \) approx \( sans(A N F) \( r \) #h(0em) sans(w h e r e) #h(0em) dot.op \) approx sans(A N F) \( r \) approx r $
+$ sans(S S A) \( r \) := sans(S S A)_(sans(a)) \( sans(A N F) \( r \) \, dot.op \) approx \( sans(A N F) \( r \) med kw("where") med dot.op \) approx sans(A N F) \( r \) approx r $
 We hence only need to prove the second part of the lemma. We proceed by
 induction on ANF regions $r$ as follows:
 
 - If $r$ is a terminator, this holds trivially by reflexivity
 
-- If $r = sans(l e t) #h(0em) x = a ; r'$, then by induction, we have
+- If $r = kw("let") med x = a ; r'$, then by induction, we have
   that
-  $ sans(S S A)_(sans(a)) \( r \, G \) := sans(l e t) #h(0em) x = a ; sans(S S A)_(sans(a)) \( r' \, G \) approx sans(l e t) #h(0em) x = a ; r' #h(0em) sans(w h e r e) #h(0em) G approx sans(l e t) #h(0em) x = a ; r' #h(0em) sans(w h e r e) #h(0em) G approx r #h(0em) sans(w h e r e) #h(0em) G $
+  $ sans(S S A)_(sans(a)) \( r \, G \) := kw("let") med x = a ; sans(S S A)_(sans(a)) \( r' \, G \) approx kw("let") med x = a ; r' med kw("where") med G approx kw("let") med x = a ; r' med kw("where") med G approx r med kw("where") med G $
   as desired. The case for binary $sans(l e t)$-statements is analogous.
 
 - If
-  $r = sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t }$,
+  $r = kw("case") med a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t }$,
   then by induction, we have that
-  $ sans(S S A)_(sans(a)) \( r \, G \) & := \( sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : sans(b r) #h(0em) ell_l #h(0em) x \, iota_r #h(0em) y : sans(b r) #h(0em) ell_r #h(0em) y } \) #h(0em) sans(w h e r e) #h(0em) G \, ell_l \( x \) : { sans(S S A) \( s \) } \, ell_r \( y \) : { sans(S S A) \( t \) }\
-   & := \( sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : sans(b r) #h(0em) ell_l #h(0em) x \, iota_r #h(0em) y : sans(b r) #h(0em) ell_r #h(0em) y } \) #h(0em) sans(w h e r e) #h(0em) G \, ell_l \( x \) : { s } \, ell_r \( y \) : { t }\
-   & approx \( \( sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : sans(b r) #h(0em) ell_l #h(0em) x \, iota_r #h(0em) y : sans(b r) #h(0em) ell_r #h(0em) y } \) #h(0em) sans(w h e r e) #h(0em) ell_l \( x \) : { s } \, ell_r \( y \) : { t } \) #h(0em) sans(w h e r e) #h(0em) G\
-   & approx sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t } #h(0em) sans(w h e r e) #h(0em) G approx r #h(0em) sans(w h e r e) #h(0em) G $
+  $ sans(S S A)_(sans(a)) \( r \, G \) & := \( kw("case") med a #h(0em) { iota_l #h(0em) x : sans(b r) #h(0em) ell_l #h(0em) x \, iota_r #h(0em) y : sans(b r) #h(0em) ell_r #h(0em) y } \) med kw("where") med G \, ell_l \( x \) : { sans(S S A) \( s \) } \, ell_r \( y \) : { sans(S S A) \( t \) }\
+   & := \( kw("case") med a #h(0em) { iota_l #h(0em) x : sans(b r) #h(0em) ell_l #h(0em) x \, iota_r #h(0em) y : sans(b r) #h(0em) ell_r #h(0em) y } \) med kw("where") med G \, ell_l \( x \) : { s } \, ell_r \( y \) : { t }\
+   & approx \( \( kw("case") med a #h(0em) { iota_l #h(0em) x : sans(b r) #h(0em) ell_l #h(0em) x \, iota_r #h(0em) y : sans(b r) #h(0em) ell_r #h(0em) y } \) med kw("where") med ell_l \( x \) : { s } \, ell_r \( y \) : { t } \) med kw("where") med G\
+   & approx kw("case") med a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t } med kw("where") med G approx r med kw("where") med G $
 
 - If
-  $r = r' #h(0em) sans(w h e r e) #h(0em) ell_i \( x_i \) : { t_i } \, \)_i$,
+  $r = r' med kw("where") med ell_i \( x_i \) : { t_i } \, \)_i$,
   then by induction, we have that
   $ sans(S S A)_(sans(a)) \( r \, G \) & := sans(S S A)_(sans(a)) \( r' \, G \, \( ell_i \( x_i \) : { sans(S S A) \( t_i \) } \, \)_i \)\
-   & approx r' #h(0em) sans(w h e r e) #h(0em) G \, \( ell_i \( x_i \) : { t_i } \, \)_i\
-   & approx \( r' #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i #h(0em) sans(w h e r e) #h(0em) G approx r #h(0em) sans(w h e r e) #h(0em) G\
+   & approx r' med kw("where") med G \, \( ell_i \( x_i \) : { t_i } \, \)_i\
+   & approx \( r' med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i med kw("where") med G approx r med kw("where") med G\
    $
 
 ~◻
@@ -222,7 +221,7 @@ it follows that
 $ sans(r e g) \( sans(c f g) \( r \) \) approx sans(b b) \( beta \, \( kappa_i \( y_i \) : { r_i } \, \)_i \) $
 Define
 $ T_i = \( kappa_j \( y_j \) : { r_j } \, \)_(j < i) \, \( kappa_j \( y_j \) : { t_j } \, \( kappa_(j \, k) \( y_(j \, k) \) : { t_(rho_(j \, k)) } \, \)_k \, \)_(j gt.eq i) $
-Using Equation~#todo[Resolve source reference `eqn:pull-where` during integration.], we may show that, for all $i$,
+Using Equation~#conditional-ref("eqn:pull-where"), we may show that, for all $i$,
 $sans(b b) \( beta \, T_(i + 1) \) approx sans(b b) \( beta \, T_i \)$,
 since
 
@@ -249,14 +248,14 @@ The following facts hold:
 - Given $Gamma tack.r r gt.tri square.filled.medium \( A \)$ and
   $Gamma \, square.stroked.tiny : A tack.r s gt.tri sans(L)$, we have
   that
-  $  & bracket.l Gamma tack.r sans(s e q) \( r \, s \) := \( \[ square.filled.medium \( x \) mapsto sans(b r) #h(0em) ell #h(0em) x \] r #h(0em) sans(w h e r e) #h(0em) ell \( square.stroked.tiny \) : { s } \) gt.tri sans(L) bracket.r\
+  $  & bracket.l Gamma tack.r sans(s e q) \( r \, s \) := \( \[ square.filled.medium \( x \) mapsto sans(b r) #h(0em) ell #h(0em) x \] r med kw("where") med ell \( square.stroked.tiny \) : { s } \) gt.tri sans(L) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r \[ square.filled.medium \( x \) mapsto sans(b r) #h(0em) ell #h(0em) x \] r gt.tri ell \( A \) bracket.r \) ; bracket.l Gamma bracket.r times alpha_A^(+) ; bracket.l Gamma \, square.stroked.tiny : A tack.r s gt.tri sans(L) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r r gt.tri ell \( A \) bracket.r \) ; bracket.l Gamma bracket.r times alpha_A^(+) ; bracket.l Gamma \, square.stroked.tiny : A tack.r s gt.tri sans(L) bracket.r $
 
 - Given $Gamma tack.r_epsilon.alt e : A$,
   $Gamma \, square.stroked.tiny : A tack.r r gt.tri square.filled.medium \( B + A \)$,
   we have that
-  $  & bracket.l Gamma tack.r sans(l o o p) \( e \, r \) := \( sans(b r) #h(0em) ell #h(0em) e #h(0em) sans(w h e r e) #h(0em) ell \( square.stroked.tiny \) : { sans(s e q) \( r \, sans(c a s e) #h(0em) square.stroked.tiny #h(0em) { iota_l #h(0em) x : sans(b r) #h(0em) square.filled.medium #h(0em) x \, iota_r #h(0em) y : sans(b r) #h(0em) ell #h(0em) y } \) } \) gt.tri square.filled.medium \( B \) bracket.r\
+  $  & bracket.l Gamma tack.r sans(l o o p) \( e \, r \) := \( sans(b r) #h(0em) ell #h(0em) e med kw("where") med ell \( square.stroked.tiny \) : { sans(s e q) \( r \, kw("case") med square.stroked.tiny #h(0em) { iota_l #h(0em) x : sans(b r) #h(0em) square.filled.medium #h(0em) x \, iota_r #h(0em) y : sans(b r) #h(0em) ell #h(0em) y } \) } \) gt.tri square.filled.medium \( B \) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt e : A bracket.r \) ; sans(r f i x) \( bracket.l Gamma \, square.stroked.tiny : A tack.r r gt.tri square.filled.medium \( B + A \) bracket.r ; alpha_(B + A)^(+) \) $
 
 - Given $sans(R) = \( ell_i \( A_i \) \, \)_i$ and
@@ -285,23 +284,23 @@ $sans(P W)_(sans(L)) \( r \)$ by induction on $r$:
   $sans(P W)_(sans(L)) \( a \) = sans(p a c k)^(+) \( sans(L) \)_ell \( a \) = \[ sans(b r) #h(0em) ell #h(0em) a \]^(+)$
   by definition
 
-- If $r = sans(l e t) #h(0em) x = a ; s$, we have by induction that
-  $ sans(P W)_(sans(L)) \( sans(l e t) #h(0em) x = a ; s \) = sans(l e t) #h(0em) x = a ; sans(P W)_(sans(L)) \( s \) approx sans(l e t) #h(0em) x = a ; \[ s \]^(+) = \[ sans(l e t) #h(0em) x = a ; s \]^(+) $
+- If $r = kw("let") med x = a ; s$, we have by induction that
+  $ sans(P W)_(sans(L)) \( kw("let") med x = a ; s \) = kw("let") med x = a ; sans(P W)_(sans(L)) \( s \) approx kw("let") med x = a ; \[ s \]^(+) = \[ kw("let") med x = a ; s \]^(+) $
 
-- If $r = sans(l e t) #h(0em) \( x \, y \) = a ; s$, we have by
+- If $r = kw("let") med \( x \, y \) = a ; s$, we have by
   induction that
-  $ sans(P W)_(sans(L)) \( sans(l e t) #h(0em) \( x \, y \) = a ; s \) = sans(l e t) #h(0em) \( x \, y \) = a ; sans(P W)_(sans(L)) \( s \) approx sans(l e t) #h(0em) \( x \, y \) = a ; 〈 s 〉^(+) = 〈 sans(l e t) #h(0em) \( x \, y \) = a ; s 〉^(+) $
+  $ sans(P W)_(sans(L)) \( kw("let") med \( x \, y \) = a ; s \) = kw("let") med \( x \, y \) = a ; sans(P W)_(sans(L)) \( s \) approx kw("let") med \( x \, y \) = a ; 〈 s 〉^(+) = 〈 kw("let") med \( x \, y \) = a ; s 〉^(+) $
 
 - If
-  $r = sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t }$,
+  $r = kw("case") med a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t }$,
   we have by induction that
-  $ sans(P W)_(sans(L)) \( sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t } \) & = sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : sans(P W)_(sans(L)) \( s \) \, iota_r #h(0em) y : sans(P W)_(sans(L)) \( t \) }\
-   & approx sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : 〈 s 〉^(+) \, iota_r #h(0em) y : 〈 t 〉^(+) }\
-   & = 〈 sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t } 〉^(+)\
+  $ sans(P W)_(sans(L)) \( kw("case") med a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t } \) & = kw("case") med a #h(0em) { iota_l #h(0em) x : sans(P W)_(sans(L)) \( s \) \, iota_r #h(0em) y : sans(P W)_(sans(L)) \( t \) }\
+   & approx kw("case") med a #h(0em) { iota_l #h(0em) x : 〈 s 〉^(+) \, iota_r #h(0em) y : 〈 t 〉^(+) }\
+   & = 〈 kw("case") med a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t } 〉^(+)\
    $
 
 - Assume
-  $r = s #h(0em) sans(w h e r e) #h(0em) \( ell_i \( t_i \) : { x_i } \, \)_i$.
+  $r = s med kw("where") med \( ell_i \( t_i \) : { x_i } \, \)_i$.
   Define $sans(R) = \( ell_i \( A_i \) \, \)_i$. By induction, we have
   that
   $forall i \, sans(P W)_(sans(L) \, sans(R)) \( t_i \) approx 〈 t_i 〉^(+)$,
@@ -321,19 +320,19 @@ $sans(P W)_(sans(L)) \( r \)$ by induction on $r$:
    & = sans(r f i x) \( bracket.l Gamma bracket.r times alpha_(Sigma_i bracket.l A_i bracket.r)^(+) ; delta_Sigma^(- 1) ; \[ bracket.l Gamma \, x_i : A_i tack.r t_i gt.tri 〈 sans(L) \, sans(R) 〉 bracket.r ; alpha_(\( upright(bold(0)) + bracket.l sans(L) bracket.r \) + bracket.l sans(R) bracket.r)^(+) \, \]_i \)\
    & = bracket.l Gamma bracket.r times alpha_(Sigma_i bracket.l A_i bracket.r)^(+) ; sans(r f i x) \( sans(l s e m)_(Gamma \, sans(L)) \( \( ell_i \( x_i \) : { t_i } \, \)_i \) \) ; alpha_(upright(bold(0)) + bracket.l sans(L) bracket.r)^(+) $
   Hence, we have that
-  $  & bracket.l Gamma \, square.stroked.tiny : 〈 sans(L) \, sans(R) 〉 tack.r sans(c a s e) #h(0em) sans(u a) #h(0em) square.stroked.tiny #h(0em) { iota_l #h(0em) x : sans(b r) #h(0em) square.filled.medium #h(0em) x \, iota_r #h(0em) y : L } gt.tri square.filled.medium \( \[ sans(L) \] \) bracket.r\
+  $  & bracket.l Gamma \, square.stroked.tiny : 〈 sans(L) \, sans(R) 〉 tack.r kw("case") med sans(u a) #h(0em) square.stroked.tiny #h(0em) { iota_l #h(0em) x : sans(b r) #h(0em) square.filled.medium #h(0em) x \, iota_r #h(0em) y : L } gt.tri square.filled.medium \( \[ sans(L) \] \) bracket.r\
    & = bracket.l Gamma bracket.r times alpha_(bracket.l sans(L) bracket.r + bracket.l sans(R) bracket.r)^(+) ; delta^(- 1) ; \[ bracket.l Gamma \, x : 〈 sans(L) 〉 tack.r sans(b r) #h(0em) square.filled.medium #h(0em) x gt.tri square.filled.medium \( 〈 sans(L) 〉 \) bracket.r \, bracket.l Gamma \, y : 〈 sans(R) 〉 tack.r L gt.tri square.filled.medium \( 〈 sans(L) 〉 \) bracket.r \]\
    & = bracket.l Gamma bracket.r times alpha_(bracket.l sans(L) bracket.r + bracket.l sans(R) bracket.r)^(+) ; delta^(- 1) ; \[ pi_r ; alpha_(upright(bold(0)) + bracket.l sans(L) bracket.r)^(+) \, bracket.l Gamma bracket.r times alpha_(Sigma_i bracket.l A_i bracket.r)^(+) ; sans(r f i x) \( sans(l s e m)_(Gamma \, sans(L)) \( \( ell_i \( x_i \) : { t_i } \, \)_i \) \) ; alpha_(upright(bold(0)) + bracket.l sans(L) bracket.r)^(+) \]\
    & = bracket.l Gamma bracket.r times alpha_(bracket.l sans(L) bracket.r + Sigma_i bracket.l A_i bracket.r)^(+) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( sans(l s e m)_(Gamma \, sans(L)) \( \( ell_i \( x_i \) : { t_i } \, \)_i \) \) \] ; alpha_(upright(bold(0)) + bracket.l sans(L) bracket.r)^(+) $
   It hence suffices by completeness (Theorem~#todo[Resolve source reference `thm:complete-reg` during integration.]) to show
   that
-  $  & bracket.l Gamma tack.r sans(s e q) \( sans(P W)_(sans(L)) \( r \) \, sans(c a s e) #h(0em) sans(u a) #h(0em) square.stroked.tiny #h(0em) { iota_l #h(0em) x : sans(b r) #h(0em) square.filled.medium #h(0em) x \, iota_r #h(0em) y : L } \) gt.tri square.filled.medium \( 〈 sans(L) 〉 \) bracket.r\
+  $  & bracket.l Gamma tack.r sans(s e q) \( sans(P W)_(sans(L)) \( r \) \, kw("case") med sans(u a) #h(0em) square.stroked.tiny #h(0em) { iota_l #h(0em) x : sans(b r) #h(0em) square.filled.medium #h(0em) x \, iota_r #h(0em) y : L } \) gt.tri square.filled.medium \( 〈 sans(L) 〉 \) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r sans(P W)_(sans(L)) \( r \) gt.tri square.filled.medium \( 〈 sans(L) \, sans(R) 〉 \) bracket.r \) ; bracket.l Gamma bracket.r times alpha_(bracket.l sans(L \, R) bracket.r)^(+) ;\
-   & #h(2em) bracket.l Gamma \, square.stroked.tiny : 〈 sans(L) \, sans(R) 〉 tack.r sans(c a s e) #h(0em) sans(u a) #h(0em) square.stroked.tiny #h(0em) { iota_l #h(0em) x : sans(b r) #h(0em) square.filled.medium #h(0em) x \, iota_r #h(0em) y : L } gt.tri square.filled.medium \( 〈 sans(L) 〉 \) bracket.r\
+   & #h(2em) bracket.l Gamma \, square.stroked.tiny : 〈 sans(L) \, sans(R) 〉 tack.r kw("case") med sans(u a) #h(0em) square.stroked.tiny #h(0em) { iota_l #h(0em) x : sans(b r) #h(0em) square.filled.medium #h(0em) x \, iota_r #h(0em) y : L } gt.tri square.filled.medium \( 〈 sans(L) 〉 \) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r sans(P W)_(sans(L)) \( r \) gt.tri square.filled.medium \( 〈 sans(L) \, sans(R) 〉 \) bracket.r \) ; bracket.l Gamma bracket.r times alpha_(bracket.l sans(L) bracket.r + Sigma_i bracket.l A_i bracket.r)^(+) ; delta^(- 1) ;\
    & #h(2em) \[ pi_r \, sans(r f i x) \( sans(l s e m)_(Gamma \, sans(L)) \( \( ell_i \( x_i \) : { t_i } \, \)_i \) \) \] ; alpha_(upright(bold(0)) + bracket.l sans(L) bracket.r)^(+)\
-   & = bracket.l Gamma tack.r r #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L) bracket.r ; alpha_(upright(bold(0)) + bracket.l sans(L) bracket.r)^(+)\
-   & = bracket.l Gamma tack.r \[ r #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i \]^(+) gt.tri sans(L) bracket.r $
+   & = bracket.l Gamma tack.r r med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L) bracket.r ; alpha_(upright(bold(0)) + bracket.l sans(L) bracket.r)^(+)\
+   & = bracket.l Gamma tack.r \[ r med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i \]^(+) gt.tri sans(L) bracket.r $
 
 ~◻
 
@@ -457,12 +456,12 @@ derivation as follows:
     $ bracket.l Gamma' \, y : B lt.eq Delta bracket.r ; pi_(Delta \, x) = pi_l ; bracket.l Gamma' lt.eq Delta bracket.r ; pi_(Delta \, x) = pi_l ; pi_(Gamma' \, x) = pi_(Gamma \, x) $
 
 - let$""_1$: we have
-  $  & bracket.l Gamma lt.eq Delta bracket.r ; bracket.l Delta tack.r_epsilon.alt sans(l e t) #h(0em) x = a ; #h(0em) b : B bracket.r\
+  $  & bracket.l Gamma lt.eq Delta bracket.r ; bracket.l Delta tack.r_epsilon.alt kw("let") med x = a ; #h(0em) b : B bracket.r\
    & = bracket.l Gamma lt.eq Delta bracket.r ; sans(l e t) \( bracket.l Delta tack.r_epsilon.alt a : A bracket.r \) ; bracket.l Delta \, x : A tack.r_epsilon.alt b : B bracket.r\
    & = sans(l e t) \( bracket.l Gamma lt.eq Delta bracket.r ; bracket.l Delta tack.r_epsilon.alt a : A bracket.r \) ; bracket.l Gamma lt.eq Delta bracket.r times bracket.l A bracket.r ; bracket.l Delta \, x : A tack.r_epsilon.alt b : B bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A bracket.r \) ; bracket.l Gamma \, x : A lt.eq Delta \, x : A bracket.r ; bracket.l Delta \, x : A tack.r_epsilon.alt b : B bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A bracket.r \) ; bracket.l Gamma \, x : A tack.r_epsilon.alt b : B bracket.r\
-   & = bracket.l Gamma tack.r_epsilon.alt sans(l e t) #h(0em) x = a ; #h(0em) b : B bracket.r $
+   & = bracket.l Gamma tack.r_epsilon.alt kw("let") med x = a ; #h(0em) b : B bracket.r $
 
 - unit: follows immediately since weakenings are pure and
   $upright(bold(1))$ is the terminal object.
@@ -475,15 +474,15 @@ derivation as follows:
    & = bracket.l Gamma tack.r_epsilon.alt \( a \, b \) : A times B bracket.r $
 
 - let$""_2$: we have
-  $  & bracket.l Gamma lt.eq Delta bracket.r ; bracket.l Delta tack.r_epsilon.alt sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) b : B bracket.r\
+  $  & bracket.l Gamma lt.eq Delta bracket.r ; bracket.l Delta tack.r_epsilon.alt kw("let") med \( x \, y \) = a ; #h(0em) b : B bracket.r\
    & = bracket.l Gamma lt.eq Delta bracket.r ; sans(l e t) \( bracket.l Delta tack.r_epsilon.alt a : A times B bracket.r \) ; alpha ; bracket.l Delta \, x : A \, y : B tack.r_epsilon.alt b : B bracket.r\
    & = sans(l e t) \( bracket.l Gamma lt.eq Delta bracket.r ; bracket.l Delta tack.r_epsilon.alt a : A times B bracket.r \) ; alpha ; bracket.l Gamma lt.eq Delta bracket.r times bracket.l A bracket.r times bracket.l B bracket.r ; bracket.l Delta \, x : A \, y : B tack.r_epsilon.alt b : B bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A times B bracket.r \) ; alpha ; bracket.l Gamma \, x : A \, y : B lt.eq Delta \, x : A \, y : B bracket.r ; bracket.l Delta \, x : A \, y : B tack.r_epsilon.alt b : B bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A times B bracket.r \) ; alpha ; bracket.l Gamma \, x : A \, y : B tack.r_epsilon.alt b : B bracket.r\
-   & = bracket.l Gamma tack.r_epsilon.alt sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) b : B bracket.r $
+   & = bracket.l Gamma tack.r_epsilon.alt kw("let") med \( x \, y \) = a ; #h(0em) b : B bracket.r $
 
 - case: we have
-  $  & bracket.l Gamma lt.eq Delta bracket.r ; bracket.l Delta tack.r_epsilon.alt sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t } : B bracket.r\
+  $  & bracket.l Gamma lt.eq Delta bracket.r ; bracket.l Delta tack.r_epsilon.alt kw("case") med a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t } : B bracket.r\
    & = bracket.l Gamma lt.eq Delta bracket.r ; sans(l e t) \( bracket.l Delta tack.r_epsilon.alt a : A bracket.r \) ; delta^(- 1) ; \[ bracket.l Delta \, x : A tack.r_epsilon.alt s : B bracket.r \, bracket.l Delta \, y : A tack.r_epsilon.alt t : B bracket.r \]\
    & = sans(l e t) \( bracket.l Gamma lt.eq Delta bracket.r ; bracket.l Gamma tack.r_epsilon.alt a : A bracket.r \) ; delta^(- 1) ;\
    & #h(2em) \[ bracket.l Gamma lt.eq Delta bracket.r times bracket.l A bracket.r ; bracket.l Delta \, x : A tack.r_epsilon.alt s : C bracket.r \, bracket.l Gamma lt.eq Delta bracket.r times bracket.l B bracket.r ; bracket.l Delta \, y : B tack.r_epsilon.alt t : C bracket.r \]\
@@ -527,22 +526,22 @@ derivation as follows:
        & = iota_(sans(K)' \, ell) ; iota_l & = iota_(sans(K) \, ell) $
 
 - let$""_1$-r: we have by induction that
-  $  & bracket.l Gamma lt.eq Delta bracket.r ; bracket.l Delta tack.r sans(l e t) #h(0em) x = a ; r gt.tri sans(L) bracket.r ; bracket.l sans(L) lt.eq sans(K) bracket.r\
+  $  & bracket.l Gamma lt.eq Delta bracket.r ; bracket.l Delta tack.r kw("let") med x = a ; r gt.tri sans(L) bracket.r ; bracket.l sans(L) lt.eq sans(K) bracket.r\
    & = bracket.l Gamma lt.eq Delta bracket.r ; sans(l e t) \( bracket.l Delta tack.r_epsilon.alt a : A bracket.r \) ; bracket.l Delta \, x : A tack.r r gt.tri sans(L) bracket.r ; bracket.l sans(L) lt.eq sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma lt.eq Delta bracket.r ; bracket.l Delta tack.r_epsilon.alt a : A bracket.r \) ; bracket.l Gamma lt.eq Delta bracket.r times bracket.l A bracket.r ; bracket.l Delta \, x : A tack.r r gt.tri sans(L) bracket.r ; bracket.l sans(L) lt.eq sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A bracket.r \) ; bracket.l Gamma \, x : A lt.eq Delta \, x : A bracket.r ; bracket.l Delta \, x : A tack.r r gt.tri sans(L) bracket.r ; bracket.l sans(L) lt.eq sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A bracket.r \) ; bracket.l Gamma \, x : A tack.r r gt.tri sans(K) bracket.r\
-   & = bracket.l Gamma tack.r sans(l e t) #h(0em) x = a ; r gt.tri sans(K) bracket.r $
+   & = bracket.l Gamma tack.r kw("let") med x = a ; r gt.tri sans(K) bracket.r $
 
 - let$""_2$-r: we have by induction that
-  $  & bracket.l Gamma lt.eq Delta bracket.r ; bracket.l Delta tack.r sans(l e t) #h(0em) \( x \, y \) = a ; r gt.tri sans(L) bracket.r ; bracket.l sans(L) lt.eq sans(K) bracket.r\
+  $  & bracket.l Gamma lt.eq Delta bracket.r ; bracket.l Delta tack.r kw("let") med \( x \, y \) = a ; r gt.tri sans(L) bracket.r ; bracket.l sans(L) lt.eq sans(K) bracket.r\
    & = bracket.l Gamma lt.eq Delta bracket.r ; sans(l e t) \( bracket.l Delta tack.r_epsilon.alt a : A times B bracket.r \) ; alpha ; bracket.l Delta \, x : A \, y : B tack.r r gt.tri sans(L) bracket.r ; bracket.l sans(L) lt.eq sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma lt.eq Delta bracket.r ; bracket.l Delta tack.r_epsilon.alt a : A times B bracket.r \) ; alpha ; bracket.l Gamma lt.eq Delta bracket.r times bracket.l A bracket.r times bracket.l B bracket.r ; bracket.l Delta \, x : A \, y : B tack.r r gt.tri sans(L) bracket.r ; bracket.l sans(L) lt.eq sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A times B bracket.r \) ; alpha ; bracket.l Gamma \, x : A \, y : B lt.eq Delta \, x : A \, y : B bracket.r ; bracket.l Delta \, x : A \, y : B tack.r r gt.tri sans(L) bracket.r ; bracket.l sans(L) lt.eq sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A times B bracket.r \) ; alpha ; bracket.l Gamma \, x : A \, y : B tack.r r gt.tri sans(K) bracket.r $
 
 - case-r: we have by induction that
-  $  & bracket.l Gamma lt.eq Delta bracket.r ; bracket.l Delta tack.r sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : r \, iota_r #h(0em) y : s } gt.tri sans(L) bracket.r ; bracket.l sans(L) lt.eq sans(K) bracket.r\
+  $  & bracket.l Gamma lt.eq Delta bracket.r ; bracket.l Delta tack.r kw("case") med a #h(0em) { iota_l #h(0em) x : r \, iota_r #h(0em) y : s } gt.tri sans(L) bracket.r ; bracket.l sans(L) lt.eq sans(K) bracket.r\
    & = bracket.l Gamma lt.eq Delta bracket.r ; sans(l e t) \( bracket.l Delta tack.r_epsilon.alt a : A bracket.r \) ; delta^(- 1) ;\
    & #h(2em) \[ bracket.l Delta \, x : A tack.r s gt.tri sans(L) bracket.r \, bracket.l Delta \, y : B tack.r t gt.tri sans(L) bracket.r \] ; bracket.l sans(L) lt.eq sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma lt.eq Delta bracket.r ; bracket.l Delta tack.r_epsilon.alt a : A bracket.r \) ; delta^(- 1) ; \[\
@@ -552,7 +551,7 @@ derivation as follows:
    & #h(2em) bracket.l Gamma \, x : A lt.eq Delta \, x : A bracket.r ; bracket.l Delta \, x : A tack.r s gt.tri sans(L) bracket.r ; bracket.l sans(L) lt.eq sans(K) bracket.r \,\
    & #h(2em) bracket.l Gamma \, y : B lt.eq Delta \, y : B bracket.r ; bracket.l Delta \, y : B tack.r t gt.tri sans(L) bracket.r ; bracket.l sans(L) lt.eq sans(K) bracket.r \]\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A bracket.r \) ; delta^(- 1) ; \[ bracket.l Gamma \, x : A tack.r s gt.tri sans(K) bracket.r \, bracket.l Gamma \, y : B tack.r t gt.tri sans(K) bracket.r \]\
-   & = bracket.l Gamma tack.r sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t } gt.tri sans(K) bracket.r $
+   & = bracket.l Gamma tack.r kw("case") med a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t } gt.tri sans(K) bracket.r $
 
 - cfg: Let
   $L = sans(l s e m)_(Delta \, sans(L)) \( \( ell_i \( x_i \) : { t_i } \, \)_i \)$
@@ -564,7 +563,7 @@ derivation as follows:
    & = delta_Sigma^(- 1) ; \[ \( bracket.l Gamma \, x_i : A_i tack.r t_i gt.tri sans(K) \, sans(R) bracket.r \, \)_i \] ; alpha_(bracket.l sans(L) bracket.r + Sigma_i bracket.l A_i bracket.r)^(+)\
    & = sans(l s e m)_(Gamma \, sans(K)) \( \( ell_i \( x_i \) : { t_i } \, \)_i \) $
   It follows that
-  $  & bracket.l Gamma lt.eq Delta bracket.r ; bracket.l Delta tack.r r #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L) bracket.r ; bracket.l sans(L) lt.eq sans(K) bracket.r\
+  $  & bracket.l Gamma lt.eq Delta bracket.r ; bracket.l Delta tack.r r med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L) bracket.r ; bracket.l sans(L) lt.eq sans(K) bracket.r\
    & = bracket.l Gamma lt.eq Delta bracket.r ; sans(l e t) \( bracket.l Delta tack.r r gt.tri sans(L) \, sans(R) bracket.r \) ; bracket.l Delta bracket.r times alpha_(bracket.l L bracket.r + Sigma_i bracket.l A_i bracket.r)^(+) \) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( L \) \] ; bracket.l sans(L) lt.eq sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma lt.eq Delta bracket.r ; bracket.l Delta tack.r r gt.tri sans(L) \, sans(R) bracket.r ; alpha_(bracket.l L bracket.r + Sigma_i bracket.l A_i bracket.r)^(+) \) ; delta^(- 1) ; \[ pi_r \, bracket.l Gamma lt.eq Delta bracket.r ; sans(r f i x) \( L \) \] ; bracket.l sans(L) lt.eq sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r r gt.tri sans(L) \, sans(R) bracket.r ; alpha_(bracket.l L bracket.r + Sigma_i bracket.l A_i bracket.r)^(+) \) ; \[ pi_r ; bracket.l sans(L) lt.eq sans(K) bracket.r \, sans(r f i x) \( sans(l s e m)_(Gamma \, sans(K)) \( \( ell_i \( x_i \) : { t_i } \, \)_i \) \) \]\
@@ -572,7 +571,7 @@ derivation as follows:
    & = sans(l e t) \( bracket.l Gamma tack.r r gt.tri sans(L) \, sans(R) bracket.r ; alpha_(bracket.l sans(L) bracket.r + Sigma_i bracket.l A_i bracket.r) ; bracket.l sans(L) lt.eq sans(K) bracket.r + Sigma_i bracket.l A_i bracket.r \) ; \[ pi_r \, sans(r f i x) \( sans(l s e m)_(Gamma \, sans(K)) \( \( ell_i \( x_i \) : { t_i } \, \)_i \) \) \]\
    & = sans(l e t) \( bracket.l Gamma tack.r r gt.tri sans(L) \, sans(R) bracket.r ; bracket.l sans(L) \, sans(R) lt.eq sans(K) \, sans(R) bracket.r ; alpha_(bracket.l sans(K) bracket.r + Sigma_i bracket.l A_i bracket.r) \) ; \[ pi_r \, sans(r f i x) \( sans(l s e m)_(Gamma \, sans(K)) \( \( ell_i \( x_i \) : { t_i } \, \)_i \) \) \]\
    & = sans(l e t) \( bracket.l Gamma tack.r r gt.tri sans(K) \, sans(R) bracket.r ; alpha_(bracket.l sans(K) bracket.r + Sigma_i bracket.l A_i bracket.r) \) ; \[ pi_r \, sans(r f i x) \( sans(l s e m)_(Gamma \, sans(K)) \( \( ell_i \( x_i \) : { t_i } \, \)_i \) \) \]\
-   & = bracket.l Gamma tack.r r #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(K) bracket.r $
+   & = bracket.l Gamma tack.r r med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(K) bracket.r $
 
 Weakening for substitutions #todo[Resolve source reference `itm:substwk` during integration.] and label substitututions
 #todo[Resolve source reference `itm:lbsubstwk` during integration.] then follow by a trivial induction.~◻
@@ -611,7 +610,7 @@ $sans(e f f) \( Delta \) = tack.t$. We will begin by showing the
 soundness of substitution for expressions #todo[Resolve source reference `itm:tm-subst-sound:` during integration.] we
 proceed by induction on the derivation $Delta tack.r_epsilon.alt e : E$:
 
-- If $e = x$ is a variable, then by Lemma~#todo[Resolve source reference `lem:subst-proj` during integration.], we have
+- If $e = x$ is a variable, then by @lem:subst-proj, we have
   $ bracket.l gamma : Gamma mapsto Delta bracket.r ; bracket.l Delta tack.r_epsilon.alt x : A bracket.r = bracket.l gamma : Gamma mapsto Delta bracket.r ; pi_(Delta \, x) = bracket.l Gamma tack.r_epsilon.alt \[ gamma \] x : A bracket.r $
   as desired.
 
@@ -621,17 +620,17 @@ proceed by induction on the derivation $Delta tack.r_epsilon.alt e : E$:
   as desired. The cases for left injections, right injections, and
   $sans(a b o r t)$ are analogous
 
-- If $e = \( sans(l e t) #h(0em) x = a ; #h(0em) b \)$ is a unary
+- If $e = \( kw("let") med x = a ; #h(0em) b \)$ is a unary
   $sans(l e t)$-binding, then by induction we have that
   $  & bracket.l gamma : Gamma mapsto Delta bracket.r times bracket.l A bracket.r ; bracket.l Delta \, x : A tack.r_epsilon.alt b : B bracket.r\
    & = bracket.l \( gamma \, x mapsto x \) : \( Gamma \, x : A \) mapsto \( Delta \, x : A \) bracket.r ; bracket.l Delta \, x : A tack.r_epsilon.alt b : B bracket.r\
    & = bracket.l Gamma \, x : A tack.r_epsilon.alt \[ gamma \, x mapsto x \] b : B bracket.r = bracket.l Gamma \, x : A tack.r_epsilon.alt \[ gamma \] b : B bracket.r $
   as we can assume that $x$ is a fresh variable. Hence, it follows that
-  $  & bracket.l gamma : Gamma mapsto Delta bracket.r ; bracket.l Delta tack.r_epsilon.alt sans(l e t) #h(0em) x = a ; #h(0em) b : B bracket.r\
+  $  & bracket.l gamma : Gamma mapsto Delta bracket.r ; bracket.l Delta tack.r_epsilon.alt kw("let") med x = a ; #h(0em) b : B bracket.r\
    & = bracket.l gamma : Gamma mapsto Delta bracket.r ; Delta_(bracket.l Delta bracket.r) ; bracket.l Delta bracket.r times bracket.l Delta tack.r_epsilon.alt a : A bracket.r ; bracket.l Delta \, x : A tack.r_epsilon.alt b : B bracket.r\
    & = Delta_(bracket.l Gamma bracket.r) ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt \[ gamma \] a : A bracket.r ; bracket.l gamma : Gamma mapsto Delta bracket.r times bracket.l A bracket.r ; bracket.l Delta \, x : A tack.r_epsilon.alt b : B bracket.r\
    & = Delta_(bracket.l Gamma bracket.r) ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt \[ gamma \] a : A bracket.r ; bracket.l Gamma \, x : A tack.r_epsilon.alt \[ gamma \] b : B bracket.r\
-   & = bracket.l Gamma tack.r_epsilon.alt \[ gamma \] \( sans(l e t) #h(0em) x = a ; #h(0em) b \) : B bracket.r $
+   & = bracket.l Gamma tack.r_epsilon.alt \[ gamma \] \( kw("let") med x = a ; #h(0em) b \) : B bracket.r $
   as desired.
 
 - If $e = \( a \, b \)$ is a pair, then by induction we have that
@@ -640,22 +639,22 @@ proceed by induction on the derivation $Delta tack.r_epsilon.alt e : E$:
    & = Delta_(bracket.l Gamma bracket.r) ; \( bracket.l gamma : Gamma mapsto Delta bracket.r times bracket.l Delta tack.r_epsilon.alt a : A bracket.r \) times.l \( bracket.l gamma : Gamma mapsto Delta bracket.r times bracket.l Delta tack.r_epsilon.alt b : B bracket.r \)\
    & = Delta_(bracket.l Gamma bracket.r) ; bracket.l Gamma tack.r_epsilon.alt \[ gamma \] a : A bracket.r times.l bracket.l Gamma tack.r_epsilon.alt \[ gamma \] b : B bracket.r = bracket.l Gamma tack.r_epsilon.alt \[ gamma \] \( a \, b \) : A times B bracket.r $
 
-- If $e = \( sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) b \)$ is a
+- If $e = \( kw("let") med \( x \, y \) = a ; #h(0em) b \)$ is a
   binary $sans(l e t)$-binding, then by induction we have that
   $  & bracket.l gamma : Gamma mapsto Delta bracket.r times \( bracket.l A bracket.r times bracket.l B bracket.r \) ; alpha ; bracket.l Delta \, x : A \, y : B tack.r_epsilon.alt b : C bracket.r\
    & = alpha ; bracket.l \( gamma \, x mapsto x \, y mapsto y \) : \( Gamma \, x : A \, y : B \) mapsto \( Delta \, x : A \, y : B \) bracket.r ; bracket.l Delta \, x : A \, y : B tack.r_epsilon.alt b : C bracket.r\
    & = bracket.l Gamma \, x : A \, y : B tack.r_epsilon.alt \[ gamma \, x mapsto x \, y mapsto y \] b : C bracket.r = bracket.l Gamma \, x : A \, y : B tack.r_epsilon.alt \[ gamma \] b : C bracket.r $
   as we can assume that $x \, y$ are fresh variables. Hence, it follows
   that
-  $  & bracket.l gamma : Gamma mapsto Delta bracket.r ; bracket.l Delta tack.r_epsilon.alt sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) b : C bracket.r\
+  $  & bracket.l gamma : Gamma mapsto Delta bracket.r ; bracket.l Delta tack.r_epsilon.alt kw("let") med \( x \, y \) = a ; #h(0em) b : C bracket.r\
    & = bracket.l gamma : Gamma mapsto Delta bracket.r ; Delta_(bracket.l Delta bracket.r) ; bracket.l Delta bracket.r times bracket.l Delta tack.r_epsilon.alt a : A times B bracket.r ; alpha ; bracket.l Delta \, x : A \, y : B tack.r_epsilon.alt b : C bracket.r\
    & = Delta_(bracket.l Gamma bracket.r) ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt \[ gamma \] a : A times B bracket.r ; bracket.l gamma : Gamma mapsto Delta bracket.r times \( bracket.l A bracket.r times bracket.l B bracket.r \) ; alpha ; bracket.l Delta \, x : A \, y : B tack.r_epsilon.alt b : C bracket.r\
    & = Delta_(bracket.l Gamma bracket.r) ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt \[ gamma \] a : A times B bracket.r ; bracket.l Gamma \, x : A \, y : B tack.r_epsilon.alt \[ gamma \] b : C bracket.r\
-   & = bracket.l Gamma tack.r_epsilon.alt \[ gamma \] \( sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) b \) : C bracket.r $
+   & = bracket.l Gamma tack.r_epsilon.alt \[ gamma \] \( kw("let") med \( x \, y \) = a ; #h(0em) b \) : C bracket.r $
   as desired.
 
 - If
-  $e = sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : b \, iota_r #h(0em) y : c }$
+  $e = kw("case") med a #h(0em) { iota_l #h(0em) x : b \, iota_r #h(0em) y : c }$
   is a $sans(c a s e)$-expression, then by induction we have that
   $  & bracket.l gamma : Gamma mapsto Delta bracket.r times bracket.l A bracket.r ; bracket.l Delta \, x : A tack.r_epsilon.alt b : C bracket.r\
    & = bracket.l \( gamma \, x mapsto x \) : \( Gamma \, x : A \) mapsto \( Delta \, x : A \) bracket.r ; bracket.l Delta \, x : A tack.r_epsilon.alt b : C bracket.r\
@@ -670,7 +669,7 @@ proceed by induction on the derivation $Delta tack.r_epsilon.alt e : E$:
    & = Delta_(bracket.l Gamma bracket.r) ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt \[ gamma \] a : A + B bracket.r ; delta_(bracket.l Gamma bracket.r)^(- 1) ;\
    & #h(2em) \[ bracket.l gamma : Gamma mapsto Delta bracket.r times bracket.l A bracket.r ; bracket.l Delta \, x : A tack.r_epsilon.alt b : C bracket.r \, bracket.l gamma : Gamma mapsto Delta bracket.r times bracket.l B bracket.r ; bracket.l Delta \, y : B tack.r_epsilon.alt c : C bracket.r \]\
    & = Delta_(bracket.l Gamma bracket.r) ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt \[ gamma \] a : A + B bracket.r ; delta_(bracket.l Gamma bracket.r)^(- 1) ; \[ bracket.l Gamma \, x : A tack.r_epsilon.alt \[ gamma \] b : C bracket.r \, bracket.l Gamma \, y : B tack.r_epsilon.alt \[ gamma \] c : C bracket.r \]\
-   & = bracket.l Gamma tack.r_epsilon.alt \[ gamma \] \( sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : b \, iota_r #h(0em) y : c } \) : C bracket.r $
+   & = bracket.l Gamma tack.r_epsilon.alt \[ gamma \] \( kw("case") med a #h(0em) { iota_l #h(0em) x : b \, iota_r #h(0em) y : c } \) : C bracket.r $
   as desired.
 
 - If $e = \( \)$ is the null expression, since
@@ -686,32 +685,32 @@ as follows:
   $ bracket.l gamma : Gamma mapsto Delta bracket.r ; bracket.l Delta tack.r sans(b r) #h(0em) ell #h(0em) A gt.tri sans(L) bracket.r & = bracket.l gamma : Gamma mapsto Delta bracket.r ; bracket.l Delta tack.r_tack.t a : A bracket.r ; iota_(sans(L) \, ell)\
    & = bracket.l Gamma tack.r_tack.t \[ gamma \] a : A bracket.r ; iota_(sans(L) \, ell) = bracket.l Gamma tack.r \[ gamma \] \( sans(b r) #h(0em) ell #h(0em) a \) gt.tri sans(L) bracket.r $
 
-- If $r = \( sans(l e t) #h(0em) x = a ; t \)$, then we have that, by
+- If $r = \( kw("let") med x = a ; t \)$, then we have that, by
   induction,
   $  & bracket.l gamma : Gamma mapsto Delta bracket.r times bracket.l A bracket.r ; bracket.l Delta \, x : A tack.r t gt.tri sans(L) bracket.r\
    & = bracket.l \( gamma \, x mapsto x \) : \( Gamma \, x : A \) mapsto \( Delta \, x : A \) bracket.r ; bracket.l Delta \, x : A tack.r t gt.tri sans(L) bracket.r\
    & = bracket.l Gamma \, x : A tack.r \[ gamma \, x mapsto x \] t gt.tri sans(L) bracket.r = bracket.l Gamma \, x : A tack.r \[ gamma \] t gt.tri sans(L) bracket.r $
   since $x$ can be taken to be a free variable. Hence,
-  $  & bracket.l gamma : Gamma mapsto Delta bracket.r ; bracket.l Delta tack.r sans(l e t) #h(0em) x = a ; #h(0em) t gt.tri sans(L) bracket.r\
+  $  & bracket.l gamma : Gamma mapsto Delta bracket.r ; bracket.l Delta tack.r kw("let") med x = a ; #h(0em) t gt.tri sans(L) bracket.r\
    & = bracket.l gamma : Gamma mapsto Delta bracket.r ; Delta_(bracket.l Delta bracket.r) ; bracket.l Delta bracket.r times bracket.l Delta tack.r_epsilon.alt a : A bracket.r ; bracket.l Delta \, x : A tack.r t gt.tri sans(L) bracket.r\
    & = Delta_(bracket.l Gamma bracket.r) ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt \[ gamma \] a : A bracket.r ; bracket.l gamma : Gamma mapsto Delta bracket.r times bracket.l A bracket.r ; bracket.l Delta \, x : A tack.r t gt.tri sans(L) bracket.r\
    & = Delta_(bracket.l Gamma bracket.r) ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt \[ gamma \] a : A bracket.r ; bracket.l Gamma \, x : A tack.r \[ gamma \] t gt.tri sans(L) bracket.r\
-   & = bracket.l Gamma tack.r \[ gamma \] \( sans(l e t) #h(0em) x = a ; #h(0em) t \) gt.tri sans(L) bracket.r $
+   & = bracket.l Gamma tack.r \[ gamma \] \( kw("let") med x = a ; #h(0em) t \) gt.tri sans(L) bracket.r $
 
-- If $r = \( sans(l e t) #h(0em) \( x \, y \) = a ; t \)$, then we have
+- If $r = \( kw("let") med \( x \, y \) = a ; t \)$, then we have
   that, by induction,
   $  & bracket.l gamma : Gamma mapsto Delta bracket.r times \( bracket.l A bracket.r times bracket.l B bracket.r \) ; alpha ; bracket.l Delta \, x : A \, y : B tack.r t gt.tri sans(L) bracket.r\
    & = alpha ; bracket.l \( gamma \, x mapsto x \, y mapsto y \) : \( Gamma \, x : A \, y : B \) mapsto \( Delta \, x : A \, y : B \) bracket.r ; bracket.l Delta \, x : A \, y : B tack.r t gt.tri sans(L) bracket.r\
    & = bracket.l Gamma \, x : A \, y : B tack.r \[ gamma \, x mapsto x \, y mapsto y \] t gt.tri sans(L) bracket.r = bracket.l Gamma \, x : A \, y : B tack.r \[ gamma \] t gt.tri sans(L) bracket.r $
   since $x \, y$ can be taken to be free variables. Hence,
-  $  & bracket.l gamma : Gamma mapsto Delta bracket.r ; bracket.l Delta tack.r sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) t gt.tri sans(L) bracket.r\
+  $  & bracket.l gamma : Gamma mapsto Delta bracket.r ; bracket.l Delta tack.r kw("let") med \( x \, y \) = a ; #h(0em) t gt.tri sans(L) bracket.r\
    & = bracket.l gamma : Gamma mapsto Delta bracket.r ; Delta_(bracket.l Delta bracket.r) ; bracket.l Delta bracket.r times bracket.l Delta tack.r_epsilon.alt a : A times B bracket.r ; alpha ; bracket.l Delta \, x : A \, y : B tack.r t gt.tri sans(L) bracket.r\
    & = Delta_(bracket.l Gamma bracket.r) ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt \[ gamma \] a : A times B bracket.r ; bracket.l gamma : Gamma mapsto Delta bracket.r times \( bracket.l A bracket.r times bracket.l B bracket.r \) ; alpha ; bracket.l Delta \, x : A \, y : B tack.r t gt.tri sans(L) bracket.r\
    & = Delta_(bracket.l Gamma bracket.r) ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt \[ gamma \] a : A times B bracket.r ; bracket.l Gamma \, x : A \, y : B tack.r \[ gamma \] t gt.tri sans(L) bracket.r\
-   & = bracket.l Gamma tack.r \[ gamma \] \( sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) t \) gt.tri sans(L) bracket.r $
+   & = bracket.l Gamma tack.r \[ gamma \] \( kw("let") med \( x \, y \) = a ; #h(0em) t \) gt.tri sans(L) bracket.r $
 
 - If
-  $r = sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t }$,
+  $r = kw("case") med a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t }$,
   then we have that, by induction
   $  & bracket.l gamma : Gamma mapsto Delta bracket.r times bracket.l A bracket.r ; bracket.l Delta \, x : A tack.r s gt.tri sans(L) bracket.r\
    & = bracket.l \( gamma \, x mapsto x \) : \( Gamma \, x : A \) mapsto \( Delta \, x : A \) bracket.r ; bracket.l Delta \, x : A tack.r s gt.tri sans(L) bracket.r\
@@ -725,11 +724,11 @@ as follows:
    & = Delta_(bracket.l Gamma bracket.r) ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt \[ gamma \] a : A + B bracket.r ; delta_(bracket.l Gamma bracket.r)^(- 1) ;\
    & #h(2em) \[ bracket.l gamma : Gamma mapsto Delta bracket.r times bracket.l A bracket.r ; bracket.l Delta \, x : A tack.r s gt.tri sans(L) bracket.r \, bracket.l gamma : Gamma mapsto Delta bracket.r times bracket.l B bracket.r ; bracket.l Delta \, y : B tack.r t gt.tri sans(L) bracket.r \]\
    & = Delta_(bracket.l Gamma bracket.r) ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt \[ gamma \] a : A + B bracket.r ; delta_(bracket.l Gamma bracket.r)^(- 1) ; \[ bracket.l Gamma \, x : A tack.r \[ gamma \] s gt.tri sans(L) bracket.r \, bracket.l Gamma \, y : B tack.r \[ gamma \] t gt.tri sans(L) bracket.r \]\
-   & = bracket.l Gamma tack.r \[ gamma \] \( sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t } \) gt.tri sans(L) bracket.r $
+   & = bracket.l Gamma tack.r \[ gamma \] \( kw("case") med a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t } \) gt.tri sans(L) bracket.r $
   as desired.
 
 - Assume
-  $r = s #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i$.
+  $r = s med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i$.
   Define $sans(R) = \( ell_i \( A_i \) \, \)_i$ and
   $S = bracket.l gamma : Gamma mapsto Delta bracket.r$. We
   have by induction that, for all $i$,
@@ -743,12 +742,12 @@ as follows:
    & = delta_Sigma^(- 1) ; \[ bracket.l Gamma \, x_i : A_i tack.r \[ gamma \] t_i gt.tri sans(L) \, sans(R) bracket.r \, \]_i ; alpha_(bracket.l sans(L) bracket.r + Sigma_i bracket.l A_i bracket.r)^(+)\
    & = sans(l s e m)_(Gamma \, sans(L)) \( \( ell_i \( x_i \) : { \[ gamma \] t_i } \, \)_i \) $
   It follows that
-  $  & S ; bracket.l Delta tack.r s #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L) bracket.r\
+  $  & S ; bracket.l Delta tack.r s med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L) bracket.r\
    & = S ; sans(l e t) \( bracket.l Delta tack.r s gt.tri sans(L) \, sans(R) bracket.r ; alpha_(bracket.l sans(L) bracket.r + Sigma_i bracket.l A_i bracket.r)^(+) \) ; delta^(- 1) ; \[ pi_r \, sans(l s e m)_(Delta \, sans(L)) \( \( ell_i \( x_i \) : { t_i } \, \)_i \) \]\
    & = sans(l e t) \( S ; bracket.l Delta tack.r s gt.tri sans(L) \, sans(R) bracket.r ; alpha_(bracket.l sans(L) bracket.r + Sigma_i bracket.l A_i bracket.r)^(+) \) ; S times \( bracket.l sans(L) bracket.r + Sigma_i bracket.l A_i bracket.r \) ; delta^(- 1) ; \[ pi_r \, sans(l s e m)_(Delta \, sans(L)) \( \( ell_i \( x_i \) : { t_i } \, \)_i \) \]\
    & = sans(l e t) \( bracket.l Gamma tack.r \[ gamma \] s gt.tri sans(L) \, sans(R) bracket.r ; alpha_(bracket.l sans(L) bracket.r + Sigma_i bracket.l A_i bracket.r)^(+) \) ; delta^(- 1) ; \[ pi_r \, S times \( bracket.l sans(L) bracket.r + Sigma_i bracket.l A_i bracket.r \) ; sans(l s e m)_(Delta \, sans(L)) \( \( ell_i \( x_i \) : { t_i } \, \)_i \) \]\
    & = sans(l e t) \( bracket.l Gamma tack.r \[ gamma \] s gt.tri sans(L) \, sans(R) bracket.r ; alpha_(bracket.l sans(L) bracket.r + Sigma_i bracket.l A_i bracket.r)^(+) \) ; delta^(- 1) ; \[ pi_r \, sans(l s e m)_(Gamma \, sans(L)) \( \( ell_i \( x_i \) : { \[ gamma \] t_i } \, \)_i \) \]\
-   & = bracket.l Gamma tack.r \[ gamma \] s #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { \[ gamma \] t_i } \, \)_i gt.tri sans(L) bracket.r\
+   & = bracket.l Gamma tack.r \[ gamma \] s med kw("where") med \( ell_i \( x_i \) : { \[ gamma \] t_i } \, \)_i gt.tri sans(L) bracket.r\
    $ as desired.
 
 Composition of substitutions then follows by a trivial induction, as
@@ -824,7 +823,7 @@ assuming $Gamma tack.r r gt.tri sans(L)$, we proceed by induction on $r$
 as follows:
 
 - If $r = sans(b r) #h(0em) ell #h(0em) a$, then by
-  Lemma~#todo[Resolve source reference `lem:lsubst-inj` during integration.] we have that
+  @lem:lsubst-inj we have that
   $ bracket.l Gamma tack.r \[ sigma \] \( sans(b r) #h(0em) ell #h(0em) a \) gt.tri sans(K) bracket.r & = bracket.l Gamma tack.r \[ a \/ x \] \[ sigma \] \( sans(b r) #h(0em) ell #h(0em) x \) gt.tri sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_tack.t a : A bracket.r \) ; bracket.l Gamma \, x : A tack.r \[ sigma \] \( sans(b r) #h(0em) ell #h(0em) x \) gt.tri sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_tack.t a : A bracket.r \) ; bracket.l Gamma bracket.r times iota_(sans(L) \, ell) ; bracket.l Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K) bracket.r\
@@ -832,30 +831,30 @@ as follows:
    & = sans(l e t) \( bracket.l Gamma tack.r sans(b r) #h(0em) ell #h(0em) a gt.tri sans(L) bracket.r \) ; bracket.l Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K) bracket.r $
   as desired.
 
-- If $r = \( sans(l e t) #h(0em) x = a ; t \)$, then we have by
+- If $r = \( kw("let") med x = a ; t \)$, then we have by
   induction that
-  $  & bracket.l Gamma tack.r \[ sigma \] \( sans(l e t) #h(0em) x = a ; t \) gt.tri sans(K) bracket.r = bracket.l Gamma tack.r sans(l e t) #h(0em) x = a ; \[ sigma \] t gt.tri sans(K) bracket.r\
+  $  & bracket.l Gamma tack.r \[ sigma \] \( kw("let") med x = a ; t \) gt.tri sans(K) bracket.r = bracket.l Gamma tack.r kw("let") med x = a ; \[ sigma \] t gt.tri sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A bracket.r \) ; bracket.l Gamma \, x : A tack.r \[ sigma \] t gt.tri sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A bracket.r \) ; sans(l e t) \( bracket.l Gamma \, x : A tack.r t gt.tri sans(L) bracket.r \) ; bracket.l Gamma \, x : A tack.r sigma : sans(L) arrow.r.squiggly sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A bracket.r \) ; sans(l e t) \( bracket.l Gamma \, x : A tack.r t gt.tri sans(L) bracket.r \) ; pi_l times bracket.l sans(L) bracket.r ; bracket.l Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K) bracket.r\
    & = sans(l e t) \( sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A bracket.r \) ; bracket.l Gamma \, x : A tack.r t gt.tri sans(L) bracket.r \) ; bracket.l Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K) bracket.r\
-   & = sans(l e t) \( bracket.l Gamma tack.r sans(l e t) #h(0em) x = a ; t gt.tri sans(L) bracket.r \) ; bracket.l Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K) bracket.r\
+   & = sans(l e t) \( bracket.l Gamma tack.r kw("let") med x = a ; t gt.tri sans(L) bracket.r \) ; bracket.l Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K) bracket.r\
    $ as desired.
 
-- If $r = \( sans(l e t) #h(0em) \( x \, y \) = a ; t \)$, then we have
+- If $r = \( kw("let") med \( x \, y \) = a ; t \)$, then we have
   by induction that
-  $  & bracket.l Gamma tack.r \[ sigma \] \( sans(l e t) #h(0em) \( x \, y \) = a ; t \) gt.tri sans(K) bracket.r = bracket.l Gamma tack.r sans(l e t) #h(0em) \( x \, y \) = a ; \[ sigma \] t gt.tri sans(K) bracket.r\
+  $  & bracket.l Gamma tack.r \[ sigma \] \( kw("let") med \( x \, y \) = a ; t \) gt.tri sans(K) bracket.r = bracket.l Gamma tack.r kw("let") med \( x \, y \) = a ; \[ sigma \] t gt.tri sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A times B bracket.r \) ; alpha ; bracket.l Gamma \, x : A \, y : B tack.r \[ sigma \] t gt.tri sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A times B bracket.r \) ; alpha ; sans(l e t) \( bracket.l Gamma \, x : A \, y : B tack.r t gt.tri sans(L) bracket.r \) ; bracket.l Gamma \, x : A \, y : B tack.r sigma : sans(L) arrow.r.squiggly sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A times B bracket.r \) ; alpha ; sans(l e t) \( bracket.l Gamma \, x : A \, y : B tack.r t gt.tri sans(L) bracket.r \) ; \( pi_l ; pi_l \) times bracket.l sans(L) bracket.r ; bracket.l Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K) bracket.r\
    & = sans(l e t) \( sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A times B bracket.r \) ; alpha ; bracket.l Gamma \, x : A \, y : B tack.r t gt.tri sans(L) bracket.r \) ; bracket.l Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K) bracket.r\
-   & = sans(l e t) \( bracket.l Gamma tack.r sans(l e t) #h(0em) \( x \, y \) = a ; t gt.tri sans(L) bracket.r \) ; bracket.l Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K) bracket.r $
+   & = sans(l e t) \( bracket.l Gamma tack.r kw("let") med \( x \, y \) = a ; t gt.tri sans(L) bracket.r \) ; bracket.l Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K) bracket.r $
   as desired, since
 
 - If
-  $r = sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t }$,
+  $r = kw("case") med a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t }$,
   then we have by induction that
-  $  & bracket.l Gamma tack.r \[ sigma \] \( sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t } \) gt.tri sans(K) bracket.r = bracket.l Gamma tack.r sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : \[ sigma \] s \, iota_r #h(0em) y : \[ sigma \] t } gt.tri sans(K) bracket.r\
+  $  & bracket.l Gamma tack.r \[ sigma \] \( kw("case") med a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t } \) gt.tri sans(K) bracket.r = bracket.l Gamma tack.r kw("case") med a #h(0em) { iota_l #h(0em) x : \[ sigma \] s \, iota_r #h(0em) y : \[ sigma \] t } gt.tri sans(K) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A + B bracket.r \) ; delta^(- 1) ; \[ bracket.l Gamma \, x : A tack.r \[ sigma \] s gt.tri sans(K) bracket.r \, bracket.l Gamma \, y : B tack.r \[ sigma \] t gt.tri sans(K) bracket.r \]\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A + B bracket.r \) ; delta^(- 1) ; \[\
    & #h(2em) sans(l e t) \( bracket.l Gamma \, x : A tack.r s gt.tri sans(L) bracket.r \) ; bracket.l Gamma \, x : A tack.r sigma : sans(L) arrow.r.squiggly sans(K) bracket.r \,\
@@ -863,11 +862,11 @@ as follows:
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A + B bracket.r \) ; delta^(- 1) ;\
    & #h(2em) \[ sans(l e t) \( bracket.l Gamma \, x : A tack.r s gt.tri sans(L) bracket.r \) ; pi_l times bracket.l sans(L) bracket.r \, sans(l e t) \( bracket.l Gamma \, y : B tack.r t gt.tri sans(L) bracket.r \) ; pi_l times bracket.l sans(L) bracket.r \] ; bracket.l Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K) bracket.r\
    & = sans(l e t) \( sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A + B bracket.r \) ; delta^(- 1) ; \[ bracket.l Gamma \, x : A tack.r s gt.tri sans(L) bracket.r \, bracket.l Gamma \, y : B tack.r t gt.tri sans(L) bracket.r \] \) ; bracket.l Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K) bracket.r\
-   & = sans(l e t) \( bracket.l Gamma tack.r sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t } gt.tri sans(L) bracket.r \) ; bracket.l Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K) bracket.r $
+   & = sans(l e t) \( bracket.l Gamma tack.r kw("case") med a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t } gt.tri sans(L) bracket.r \) ; bracket.l Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K) bracket.r $
   as desired.
 
 - If
-  $r = s #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i$,
+  $r = s med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i$,
   then we have by induction, taking
   $sans(R) = \( ell_i \( A_i \) \, \)_i$,
   $  & sans(e s e m)_(Gamma \, sans(K)) \( \[ sigma^harpoon.tr \] s \) = bracket.l Gamma tack.r \[ sigma^harpoon.tr \] s gt.tri sans(K) \, sans(R) bracket.r ; alpha_(bracket.l sans(L) bracket.r + Sigma_i bracket.l A_i bracket.r)^(+)\
@@ -900,7 +899,7 @@ as follows:
   $ sans(r f i x) \( sans(l s e m)_(Gamma \, sans(K)) \( \( ell_i \( x_i \) : { \[ sigma^harpoon.tr \] t_i } \, \)_i \) \) & = \( sans(r c a s e) \( L \) ; Delta_(bracket.l Gamma bracket.r) times bracket.l sans(L) bracket.r ; alpha ; bracket.l Gamma bracket.r times S + bracket.l Gamma bracket.r times Sigma_i bracket.l A_i bracket.r \)^dagger ; pi_r\
    & = \( sans(r c a s e) \( L \) \)^dagger ; Delta_(bracket.l Gamma bracket.r) times bracket.l sans(L) bracket.r ; alpha ; bracket.l Gamma bracket.r times S ; pi_r\
    & = \( sans(r c a s e) \( L \) \)^dagger ; S $ Hence, we have that
-  $  & bracket.l Gamma tack.r \[ sigma \] \( s #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i \) gt.tri sans(K) bracket.r = bracket.l Gamma tack.r \[ sigma^harpoon.tr \] s #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { \[ sigma^harpoon.tr \] t_i } \, \)_i gt.tri sans(K) bracket.r\
+  $  & bracket.l Gamma tack.r \[ sigma \] \( s med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i \) gt.tri sans(K) bracket.r = bracket.l Gamma tack.r \[ sigma^harpoon.tr \] s med kw("where") med \( ell_i \( x_i \) : { \[ sigma^harpoon.tr \] t_i } \, \)_i gt.tri sans(K) bracket.r\
    & = sans(l e t) \( sans(e s e m)_(Gamma \, sans(K)) \( \[ sigma^harpoon.tr \] s \) \) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( sans(l s e m)_(Gamma \, sans(K)) \( \( ell_i \( x_i \) : { \[ sigma^harpoon.tr \] t_i } \, \)_i \) \) \]\
    & = sans(l e t) \( sans(l e t) \( sans(e s e m)_(Gamma \, sans(L)) \( s \) \) ; delta^(- 1) ; S + pi_r \) ; delta^(- 1) ; \[ pi_r \, \( sans(r c a s e) \( L \) \)^dagger ; S \]\
    & = sans(l e t) \( sans(l e t) \( sans(e s e m)_(Gamma \, sans(L)) \( s \) \) \) ; bracket.l Gamma bracket.r times \( delta^(- 1) ; S + pi_r \) ; delta^(- 1) ; \[ pi_r \, \( sans(r c a s e) \( L \) \)^dagger ; S \]\
@@ -915,7 +914,7 @@ as follows:
    & = sans(l e t) \( sans(e s e m)_(Gamma \, sans(L)) \( s \) \) ; Delta_(bracket.l Gamma bracket.r) times \( bracket.l sans(L) bracket.r + Sigma_i bracket.l A_i bracket.r \) ; alpha ; bracket.l Gamma bracket.r times \( delta^(- 1) ; \[ pi_r \, sans(r f i x) \( L \) \] \) ; S\
    & = sans(l e t) \( sans(l e t) \( sans(e s e m)_(Gamma \, sans(L)) \( s \) \) \) ; bracket.l Gamma bracket.r times \( delta^(- 1) ; \[ pi_r \, sans(r f i x) \( L \) \] \) ; S\
    & = sans(l e t) \( sans(l e t) \( sans(e s e m)_(Gamma \, sans(L)) \( s \) \) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( L \) \] \) ; S\
-   & = sans(l e t) \( bracket.l Gamma tack.r s #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L) bracket.r \) ; bracket.l Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K) bracket.r $
+   & = sans(l e t) \( bracket.l Gamma tack.r s med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L) bracket.r \) ; bracket.l Gamma tack.r sigma : sans(L) arrow.r.squiggly sans(K) bracket.r $
   as desired.
 
 Composition of label substitutions then follows by a trivial
@@ -939,40 +938,40 @@ theory for expressions, i.e. #todo[Resolve source reference `itm:eqn-sound-expr`
   Corollary~#todo[Resolve source reference `corr:single-subst` during integration.]
 
 - let$""_1$-$eta$: we have
-  $  & bracket.l Gamma tack.r_epsilon.alt sans(l e t) #h(0em) x = a ; #h(0em) x : A bracket.r\
+  $  & bracket.l Gamma tack.r_epsilon.alt kw("let") med x = a ; #h(0em) x : A bracket.r\
    & = Delta_(bracket.l Gamma bracket.r) ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt a : A bracket.r ; bracket.l Gamma \, x : A tack.r_epsilon.alt x : A bracket.r\
    & = Delta_(bracket.l Gamma bracket.r) ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt a : A bracket.r ; pi_r\
    & = bracket.l Gamma tack.r_epsilon.alt a : A bracket.r $
   as desired.
 
 - let$""_1$-op: we have
-  $  & bracket.l Gamma tack.r_epsilon.alt sans(l e t) #h(0em) x = a ; #h(0em) sans(l e t) #h(0em) y = f #h(0em) x ; #h(0em) c : C bracket.r\
+  $  & bracket.l Gamma tack.r_epsilon.alt kw("let") med x = a ; med kw(l e t) med y = f #h(0em) x ; #h(0em) c : C bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A bracket.r \) ; sans(l e t) \( bracket.l Gamma \, x : A tack.r_epsilon.alt f #h(0em) x : B bracket.r \) ; bracket.l Gamma \, x : A \, y : B tack.r_epsilon.alt c : C bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A bracket.r \) ; sans(l e t) \( pi_r ; bracket.l f bracket.r \) ; pi_l times bracket.l B bracket.r ; bracket.l Gamma \, y : B tack.r_epsilon.alt c : C bracket.r\
    & = sans(l e t) \( sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A bracket.r \) ; pi_r ; bracket.l f bracket.r \) ; bracket.l Gamma \, y : B tack.r_epsilon.alt c : C bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A bracket.r ; bracket.l f bracket.r \) ; bracket.l Gamma \, y : B tack.r_epsilon.alt c : C bracket.r\
-   & = bracket.l Gamma tack.r_epsilon.alt sans(l e t) #h(0em) y = f #h(0em) a ; #h(0em) c : C bracket.r $
+   & = bracket.l Gamma tack.r_epsilon.alt kw("let") med y = f #h(0em) a ; #h(0em) c : C bracket.r $
   as desired. The let$""_1$-abort case is analogous.
 
 - let$""_1$-let$""_1$: we have that
-  $  & bracket.l Gamma tack.r_epsilon.alt sans(l e t) #h(0em) y = \( sans(l e t) #h(0em) x = a ; #h(0em) b ; #h(0em) c \) : C bracket.r\
+  $  & bracket.l Gamma tack.r_epsilon.alt kw("let") med y = \( kw("let") med x = a ; #h(0em) b ; #h(0em) c \) : C bracket.r\
    & = sans(l e t) \( sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A bracket.r \) ; bracket.l Gamma \, x : A tack.r_epsilon.alt b : B bracket.r \) ; bracket.l Gamma \, y : B tack.r_epsilon.alt c : C bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A bracket.r \) ; sans(l e t) \( bracket.l Gamma \, x : A tack.r_epsilon.alt b : B bracket.r \) ; pi_l times bracket.l B bracket.r ; bracket.l Gamma \, y : B tack.r_epsilon.alt c : C bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt a : A bracket.r \) ; sans(l e t) \( bracket.l Gamma \, x : A tack.r_epsilon.alt b : B bracket.r \) ; bracket.l Gamma \, x : A \, y : B tack.r_epsilon.alt c : C bracket.r\
-   & = bracket.l Gamma tack.r_epsilon.alt sans(l e t) #h(0em) x = a ; #h(0em) sans(l e t) #h(0em) y = b ; #h(0em) c : C bracket.r $
+   & = bracket.l Gamma tack.r_epsilon.alt kw("let") med x = a ; med kw(l e t) med y = b ; #h(0em) c : C bracket.r $
   as desired.
 
 - let$""_1$-let$""_2$: we have that
-  $  & bracket.l Gamma tack.r_epsilon.alt sans(l e t) #h(0em) z = \( sans(l e t) #h(0em) \( x \, y \) = e ; #h(0em) c \) ; #h(0em) d : D bracket.r\
+  $  & bracket.l Gamma tack.r_epsilon.alt kw("let") med z = \( kw("let") med \( x \, y \) = e ; #h(0em) c \) ; #h(0em) d : D bracket.r\
    & = sans(l e t) \( sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt e : A times B bracket.r \) ; alpha ; bracket.l Gamma \, x : A \, y : B tack.r_epsilon.alt c : C bracket.r \) ; bracket.l Gamma \, z : C tack.r_epsilon.alt d : D bracket.r\
    & = sans(l e t) \( Gamma tack.r_epsilon.alt e : A times B \) ; alpha ; sans(l e t) \( bracket.l Gamma \, x : A \, y : B tack.r_epsilon.alt c : C bracket.r \) ; \( pi_l ; pi_l \) times bracket.l sans(C) bracket.r ; bracket.l Gamma \, z : C tack.r_epsilon.alt d : D bracket.r\
    & = sans(l e t) \( Gamma tack.r_epsilon.alt e : A times B \) ; alpha ; sans(l e t) \( bracket.l Gamma \, x : A \, y : B tack.r_epsilon.alt c : C bracket.r \) ; bracket.l Gamma \, x : A \, y : B \, z : C tack.r_epsilon.alt d : D bracket.r\
-   & = bracket.l Gamma tack.r_epsilon.alt sans(l e t) #h(0em) \( x \, y \) = e ; #h(0em) sans(l e t) #h(0em) z = c ; #h(0em) d : D bracket.r $
+   & = bracket.l Gamma tack.r_epsilon.alt kw("let") med \( x \, y \) = e ; med kw(l e t) med z = c ; #h(0em) d : D bracket.r $
   as desired.
 
 - let$""_1$-case: follows from the properties of the coproduct; in
   particular, we have that
-  $  & bracket.l Gamma tack.r_epsilon.alt sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : sans(l e t) #h(0em) z = a ; #h(0em) d \, iota_r #h(0em) y : sans(l e t) #h(0em) z = b ; #h(0em) d } : D bracket.r\
+  $  & bracket.l Gamma tack.r_epsilon.alt kw("case") med e #h(0em) { iota_l #h(0em) x : kw("let") med z = a ; #h(0em) d \, iota_r #h(0em) y : kw("let") med z = b ; #h(0em) d } : D bracket.r\
    & = Delta ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt e : A + B bracket.r ; delta^(- 1) ; \[\
    & #h(2em) Delta ; bracket.l Gamma \, x : A bracket.r times bracket.l Gamma \, x : A tack.r_epsilon.alt a : C bracket.r ; bracket.l Gamma \, x : A \, z : C tack.r_epsilon.alt d : D bracket.r \,\
    & #h(2em) Delta ; bracket.l Gamma \, y : B bracket.r times bracket.l Gamma \, y : B tack.r_epsilon.alt b : C bracket.r ; bracket.l Gamma \, y : B \, z : C tack.r_epsilon.alt d : D bracket.r \]\
@@ -988,34 +987,34 @@ theory for expressions, i.e. #todo[Resolve source reference `itm:eqn-sound-expr`
    & #h(2em) bracket.l Gamma \, z : C tack.r_epsilon.alt d : D bracket.r\
    & = Delta ; bracket.l Gamma bracket.r times \( Delta ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt e : A + B bracket.r ; delta^(- 1) ; \[ bracket.l Gamma \, x : A tack.r_epsilon.alt a : C bracket.r \, bracket.l Gamma \, y : B tack.r_epsilon.alt b : C bracket.r \] \) ;\
    & #h(2em) bracket.l Gamma \, z : C tack.r_epsilon.alt d : D bracket.r\
-   & = bracket.l Gamma tack.r_epsilon.alt sans(l e t) #h(0em) z = \( sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } \) ; #h(0em) d : D bracket.r $
+   & = bracket.l Gamma tack.r_epsilon.alt kw("let") med z = \( kw("case") med e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } \) ; #h(0em) d : D bracket.r $
 
 - let$""_2$-bind: we have
-  $  & bracket.l Gamma tack.r_epsilon.alt sans(l e t) #h(0em) z = e ; #h(0em) sans(l e t) #h(0em) \( x \, y \) = z ; #h(0em) c : C bracket.r\
+  $  & bracket.l Gamma tack.r_epsilon.alt kw("let") med z = e ; med kw(l e t) med \( x \, y \) = z ; #h(0em) c : C bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt e : A times B bracket.r \) ; sans(l e t) \( bracket.l Gamma \, z : A times B tack.r_epsilon.alt z : A times B bracket.r \) ; alpha ; bracket.l Gamma \, z : A times B \, x : A \, y : B tack.r_epsilon.alt c : C bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt e : A times B bracket.r \) ; sans(l e t) \( pi_r \) ; pi_l times \( bracket.l A bracket.r times bracket.l B bracket.r \) ; alpha ; bracket.l Gamma \, x : A \, y : B tack.r_epsilon.alt c : C bracket.r\
    & = sans(l e t) \( sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt e : A times B bracket.r \) ; pi_r \) ; alpha ; bracket.l Gamma \, x : A \, y : B tack.r_epsilon.alt c : C bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r_epsilon.alt e : A times B bracket.r \) ; alpha ; bracket.l Gamma \, x : A \, y : B tack.r_epsilon.alt c : C bracket.r\
-   & = bracket.l Gamma tack.r_epsilon.alt sans(l e t) #h(0em) \( x \, y \) = e ; #h(0em) c : C bracket.r $
+   & = bracket.l Gamma tack.r_epsilon.alt kw("let") med \( x \, y \) = e ; #h(0em) c : C bracket.r $
 
 - let$""_2$-$eta$: follows from the properties of the product; in
   particular, we have that
-  $  & bracket.l Gamma tack.r_epsilon.alt sans(l e t) #h(0em) \( x \, y \) = e ; #h(0em) \( x \, y \) : A times B bracket.r\
+  $  & bracket.l Gamma tack.r_epsilon.alt kw("let") med \( x \, y \) = e ; #h(0em) \( x \, y \) : A times B bracket.r\
    & = Delta ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt e : A times B bracket.r ; Delta ; bracket.l Gamma \, x : A \, y : B tack.r_tack.t x : A bracket.r times bracket.l Gamma \, x : A \, y : B tack.r_tack.t y : B bracket.r\
    & = Delta ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt e : A times B bracket.r ; Delta ; \( pi_l ; pi_r \) times pi_r = bracket.l Gamma tack.r_epsilon.alt e : A times B bracket.r $
 
 - case-inl: follows from the properties of the coproduct and inverse
   distributor; in particular, we have that
-  $  & bracket.l Gamma tack.r_epsilon.alt sans(c a s e) #h(0em) iota_l #h(0em) a #h(0em) { iota_l #h(0em) x : c \, iota_r #h(0em) y : d } : C bracket.r\
+  $  & bracket.l Gamma tack.r_epsilon.alt kw("case") med iota_l #h(0em) a #h(0em) { iota_l #h(0em) x : c \, iota_r #h(0em) y : d } : C bracket.r\
    & = Delta ; bracket.l Gamma bracket.r times \( bracket.l Gamma tack.r_epsilon.alt a : A bracket.r ; iota_l \) ; delta^(- 1) ; \[ bracket.l Gamma \, x : A tack.r_epsilon.alt c : C bracket.r \, bracket.l Gamma \, y : B tack.r_epsilon.alt d : C bracket.r \]\
    & = Delta ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt a : A bracket.r ; iota_l ; \[ bracket.l Gamma \, x : A tack.r_epsilon.alt c : C bracket.r \, bracket.l Gamma \, y : B tack.r_epsilon.alt d : C bracket.r \]\
    & = Delta ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt a : A bracket.r ; iota_l ; bracket.l Gamma \, x : A tack.r_epsilon.alt c : C bracket.r\
-   & = bracket.l Gamma tack.r_epsilon.alt sans(l e t) #h(0em) x = a ; #h(0em) c : C bracket.r $
+   & = bracket.l Gamma tack.r_epsilon.alt kw("let") med x = a ; #h(0em) c : C bracket.r $
   We can validate case-inr analogously
 
 - case-$eta$: follows from the properties of the coproduct and
   distributor; in particular, we have
-  $  & bracket.l Gamma tack.r_epsilon.alt sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : iota_l #h(0em) x \, iota_r #h(0em) y : iota_r #h(0em) y } : A + B bracket.r\
+  $  & bracket.l Gamma tack.r_epsilon.alt kw("case") med e #h(0em) { iota_l #h(0em) x : iota_l #h(0em) x \, iota_r #h(0em) y : iota_r #h(0em) y } : A + B bracket.r\
    & = Delta ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt e : A + B bracket.r ; delta^(- 1) ; \[ bracket.l Gamma \, x : A tack.r_epsilon.alt x : A bracket.r ; iota_l \, bracket.l Gamma \, y : B tack.r_epsilon.alt y : B ; iota_r bracket.r \]\
    & = Delta ; bracket.l Gamma bracket.r times bracket.l Gamma tack.r_epsilon.alt e : A + B bracket.r ; delta^(- 1) ; \( pi_r + pi_r \) = bracket.l Gamma tack.r_epsilon.alt e : A + B bracket.r $
 
@@ -1026,7 +1025,7 @@ same manner. In particular, we proceed by rule induction as follows:
   $P = bracket.l Gamma tack.r_tack.t a : A_k bracket.r$,
   $L = sans(l s e m)_(Gamma \, sans(L)) \( \( ell_i \( x_i \) : { t_i } \, \)_i \)$
   and $sans(R) = \( ell_i \( A_i \) \, \)_i$. We have that
-  $  & bracket.l Gamma tack.r sans(b r) #h(0em) ell_k #h(0em) a #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L) bracket.r\
+  $  & bracket.l Gamma tack.r sans(b r) #h(0em) ell_k #h(0em) a med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L) bracket.r\
    & = sans(l e t) \( P ; iota_(\( sans(L) \, sans(R) \) \, ell_k) ; alpha_(bracket.l sans(L) bracket.r + Sigma_i bracket.l A_i bracket.r)^(+) \) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( L \) \]\
    & = sans(l e t) \( P ; iota_k \) ; bracket.l Gamma bracket.r times iota_r ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( L \) \]\
    & = sans(l e t) \( P ; iota_k \) ; sans(r f i x) \( L \)\
@@ -1035,15 +1034,15 @@ same manner. In particular, we proceed by rule induction as follows:
    & = sans(l e t) \( P \) ; sans(r c a s e) \( bracket.l Gamma \, x_k : A_k tack.r t_k gt.tri sans(L) \, sans(R) bracket.r ; alpha_(bracket.l L bracket.r + Sigma_i bracket.l A_i bracket.r)^(+) \) ; \[ pi_r \, sans(r f i x) \( L \) \]\
    & = sans(l e t) \( P \) ; sans(r l e t) \( bracket.l Gamma \, x_k : A_k tack.r t_k gt.tri sans(L) \, sans(R) bracket.r ; alpha_(bracket.l L bracket.r + Sigma_i bracket.l A_i bracket.r)^(+) \) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( L \) \]\
    & = sans(l e t) \( sans(l e t) \( P \) ; bracket.l Gamma \, x_k : A_k tack.r t_k gt.tri sans(L) \, sans(R) bracket.r ; alpha_(bracket.l L bracket.r + Sigma_i bracket.l A_i bracket.r)^(+) \) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( L \) \]\
-   & = sans(l e t) \( bracket.l Gamma tack.r sans(l e t) #h(0em) x_k = a ; t_k gt.tri sans(L) \, sans(R) bracket.r ; alpha_(bracket.l L bracket.r + Sigma_i bracket.l A_i bracket.r)^(+) \) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( L \) \]\
-   & = bracket.l Gamma tack.r sans(l e t) #h(0em) x_k = a ; t_k #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { A_i } \, \)_i gt.tri sans(L) bracket.r $
+   & = sans(l e t) \( bracket.l Gamma tack.r kw("let") med x_k = a ; t_k gt.tri sans(L) \, sans(R) bracket.r ; alpha_(bracket.l L bracket.r + Sigma_i bracket.l A_i bracket.r)^(+) \) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( L \) \]\
+   & = bracket.l Gamma tack.r kw("let") med x_k = a ; t_k med kw("where") med \( ell_i \( x_i \) : { A_i } \, \)_i gt.tri sans(L) bracket.r $
   as desired.
 
 - cfg-$beta_2$: Define
   $P = bracket.l Gamma tack.r_tack.t b : B bracket.r$,
   $L = sans(l s e m)_(Gamma \, sans(L)) \( \( ell_i \( x_i \) : { t_i } \, \)_i \)$
   and $sans(R) = \( ell_i \( A_i \) \, \)_i$. We have that
-  $  & bracket.l Gamma tack.r sans(b r) #h(0em) kappa #h(0em) b #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L) bracket.r\
+  $  & bracket.l Gamma tack.r sans(b r) #h(0em) kappa #h(0em) b med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L) bracket.r\
    & = sans(l e t) \( P ; iota_(\( sans(L) \, sans(R) \) \, kappa) ; alpha_(bracket.l sans(L) bracket.r + Sigma_i bracket.l A_i bracket.r)^(+) \) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( L \) \]\
    & = sans(l e t) \( P ; iota_(sans(L) \, kappa) \) ; bracket.l Gamma bracket.r times iota_l ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( L \) \]\
    & = sans(l e t) \( P ; iota_(sans(L) \, kappa) \) ; pi_r = P ; iota_(sans(L) \, kappa) = bracket.l Gamma tack.r sans(b r) #h(0em) kappa #h(0em) b gt.tri sans(L) bracket.r $
@@ -1059,8 +1058,8 @@ same manner. In particular, we proceed by rule induction as follows:
    & #h(2em) bracket.l Gamma tack.r sans(c f g s) #h(0em) { \( ell_i \( x_i \) : { t_i } \, \)_i } : sans(L) arrow.r.squiggly sans(L) bracket.r \,\
    & #h(2em) bracket.l Gamma tack.r sans(c f g s) #h(0em) { \( ell_i \( x_i \) : { t_i } \, \)_i } : sans(R) arrow.r.squiggly sans(L) bracket.r \]\
    & = bracket.l Gamma bracket.r times alpha_(Sigma_i bracket.l B_i bracket.r + Sigma_i bracket.l A_i bracket.r) ; delta^(- 1) ; \[\
-   & #h(2em) delta_Sigma^(- 1) ; \[ bracket.l Gamma \, y_j : B_j tack.r sans(b r) #h(0em) kappa_j #h(0em) y_j #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L) bracket.r \, \]_j \,\
-   & #h(2em) delta_Sigma^(- 1) ; \[ bracket.l Gamma \, x_j : A_j tack.r sans(b r) #h(0em) ell_j #h(0em) x_j #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L) bracket.r \, \]_j \]\
+   & #h(2em) delta_Sigma^(- 1) ; \[ bracket.l Gamma \, y_j : B_j tack.r sans(b r) #h(0em) kappa_j #h(0em) y_j med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L) bracket.r \, \]_j \,\
+   & #h(2em) delta_Sigma^(- 1) ; \[ bracket.l Gamma \, x_j : A_j tack.r sans(b r) #h(0em) ell_j #h(0em) x_j med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L) bracket.r \, \]_j \]\
    & = bracket.l Gamma bracket.r times alpha_(Sigma_i bracket.l B_i bracket.r + Sigma_i bracket.l A_i bracket.r) ; delta^(- 1) ; \[\
    & #h(2em) delta_Sigma^(- 1) ; \[ bracket.l Gamma \, y_j : B_j tack.r_tack.t y_j : B_j bracket.r ; iota_(sans(L) \, kappa_j) \, \]_j \,\
    & #h(2em) delta_Sigma^(- 1) ; \[ sans(l e t) \( bracket.l Gamma \, x_j : A_j tack.r_tack.t x_j : A_j bracket.r ; iota_j \) ; sans(r f i x) \( pi_l times Sigma_k bracket.l A_k bracket.r ; L \) \]_j \]\
@@ -1073,7 +1072,7 @@ same manner. In particular, we proceed by rule induction as follows:
    & = sans(l e t) \( bracket.l Gamma tack.r r gt.tri sans(L) \, sans(R) bracket.r \) ; bracket.l Gamma tack.r sans(c f g s) #h(0em) { \( ell_i \( x_i \) : { t_i } \, \)_i } : sans(L) \, sans(R) arrow.r.squiggly sans(L) bracket.r\
    & = sans(l e t) \( bracket.l Gamma tack.r r gt.tri sans(L) \, sans(R) bracket.r \) ; bracket.l Gamma bracket.r times alpha_(sans(L) + Sigma_i bracket.l A_i bracket.r) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( L \) \]\
    & = sans(e s e m)_(Gamma \, sans(L)) \( r \) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( L \) \]\
-   & bracket.l Gamma tack.r r #h(0em) sans(w h e r e) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L) bracket.r $
+   & bracket.l Gamma tack.r r med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L) bracket.r $
   as desired.
 
 - codiag: Define
@@ -1081,15 +1080,15 @@ same manner. In particular, we proceed by rule induction as follows:
   and
   $S = bracket.l Gamma \, y : A tack.r s gt.tri sans(L) \, ell \( A \) \, kappa \( A \) bracket.r$
   We have that
-  $  & bracket.l Gamma tack.r r #h(0em) sans(w h e r e) #h(0em) ell \( x \) : { sans(b r) #h(0em) kappa #h(0em) x #h(0em) sans(w h e r e) #h(0em) kappa \( y \) : { s } } gt.tri sans(L) bracket.r\
-   & = sans(l e t) \( R \) ; delta^(- 1) ; \[ sans(i d) \, sans(r f i x) \( bracket.l Gamma \, x : A tack.r sans(b r) #h(0em) kappa #h(0em) x #h(0em) sans(w h e r e) #h(0em) kappa \( y \) : { s } gt.tri sans(L) \, ell \( A \) bracket.r \) \]\
+  $  & bracket.l Gamma tack.r r med kw("where") med ell \( x \) : { sans(b r) #h(0em) kappa #h(0em) x med kw("where") med kappa \( y \) : { s } } gt.tri sans(L) bracket.r\
+   & = sans(l e t) \( R \) ; delta^(- 1) ; \[ sans(i d) \, sans(r f i x) \( bracket.l Gamma \, x : A tack.r sans(b r) #h(0em) kappa #h(0em) x med kw("where") med kappa \( y \) : { s } gt.tri sans(L) \, ell \( A \) bracket.r \) \]\
    & = sans(l e t) \( R \) ; delta^(- 1) ; \[ sans(i d) \, sans(r f i x) \( sans(l e t) \( pi_r ; iota_r \) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( bracket.l Gamma \, x : A \, y : A tack.r s gt.tri sans(L) \, ell \( A \) \, kappa \( A \) bracket.r \) \] \) \]\
    & = sans(l e t) \( R \) ; delta^(- 1) ; \[ sans(i d) \, sans(r f i x) \( sans(l e t) \( pi_r ; iota_r \) ; delta^(- 1) ; \[ pi_l times A ; pi_r \, sans(r f i x) \( pi_l times bracket.l A bracket.r ; S \) \] \) \]\
    & = sans(l e t) \( R \) ; delta^(- 1) ; \[ sans(i d) \, sans(r f i x) \( sans(l e t) \( pi_r ; iota_r \) ; pi_l times bracket.l A bracket.r ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( S \) \] \) \]\
    & = sans(l e t) \( R \) ; delta^(- 1) ; \[ sans(i d) \, sans(r f i x) \( iota_r^(bracket.l Gamma bracket.r) gt.double_() \[ pi_r \, sans(r f i x) \( S \) \]_(bracket.l Gamma bracket.r) \) \]\
    & = sans(l e t) \( R \) ; delta^(- 1) ; \[ sans(i d) \, sans(r f i x) \( sans(r f i x) \( S \) \) \] = sans(l e t) \( R \) ; delta^(- 1) ; \[ sans(i d) \, sans(r f i x) \( S gt.double_() \[ pi_r \, iota_r^(bracket.l Gamma bracket.r) \]_(bracket.l Gamma bracket.r) \) \]\
    & = sans(l e t) \( R \) ; delta^(- 1) ; \[ sans(i d) \, sans(r f i x) \( sans(l e t) \( S \) ; delta^(- 1) ; \[ pi_r \, pi_r ; iota_r \] \) \] = sans(l e t) \( R \) ; delta^(- 1) ; \[ sans(i d) \, sans(r f i x) \( S ; \[ sans(i d) \, iota_r \] \) \]\
-   & = sans(l e t) \( R \) ; delta^(- 1) ; \[ sans(i d) \, sans(r f i x) \( bracket.l Gamma \, y : A tack.r \[ ell \/ kappa \] s gt.tri sans(L) \, ell \( A \) bracket.r \) \] = bracket.l Gamma tack.r r #h(0em) sans(w h e r e) #h(0em) ell \( y \) : { \[ ell \/ kappa \] s } gt.tri sans(L) bracket.r $
+   & = sans(l e t) \( R \) ; delta^(- 1) ; \[ sans(i d) \, sans(r f i x) \( bracket.l Gamma \, y : A tack.r \[ ell \/ kappa \] s gt.tri sans(L) \, ell \( A \) bracket.r \) \] = bracket.l Gamma tack.r r med kw("where") med ell \( y \) : { \[ ell \/ kappa \] s } gt.tri sans(L) bracket.r $
   as desired.
 
 - uni: Define
@@ -1099,15 +1098,15 @@ same manner. In particular, we proceed by rule induction as follows:
   and
   $T = bracket.l Gamma \, x : A tack.r s gt.tri sans(L) \, ell \( A \) bracket.r$.
   We have by induction that
-  $ bracket.l Gamma \, x : A tack.r sans(l e t) #h(0em) y = e ; s gt.tri sans(L) \, kappa \( B \) bracket.r & = sans(r l e t) \( E \) ; S =\
-  bracket.l Gamma \, x : A tack.r t #h(0em) sans(w h e r e) #h(0em) ell \( x \) : { sans(b r) #h(0em) kappa #h(0em) e } gt.tri sans(L) \, kappa \( B \) bracket.r & = sans(r c a s e) \( T \) ; bracket.l sans(L) bracket.r + E $
+  $ bracket.l Gamma \, x : A tack.r kw("let") med y = e ; s gt.tri sans(L) \, kappa \( B \) bracket.r & = sans(r l e t) \( E \) ; S =\
+  bracket.l Gamma \, x : A tack.r t med kw("where") med ell \( x \) : { sans(b r) #h(0em) kappa #h(0em) e } gt.tri sans(L) \, kappa \( B \) bracket.r & = sans(r c a s e) \( T \) ; bracket.l sans(L) bracket.r + E $
   It follows in particular that
   $ sans(r l e t) \( E \) ; sans(r f i x) \( S \) = sans(r f i x) \( T \) $
   and hence that
-  $  & bracket.l Gamma tack.r \( r #h(0em) sans(w h e r e) #h(0em) ell \( x \) : { sans(b r) #h(0em) kappa #h(0em) e } \) #h(0em) sans(w h e r e) #h(0em) kappa \( y \) : { s } gt.tri sans(L) bracket.r\
+  $  & bracket.l Gamma tack.r \( r med kw("where") med ell \( x \) : { sans(b r) #h(0em) kappa #h(0em) e } \) med kw("where") med kappa \( y \) : { s } gt.tri sans(L) bracket.r\
    & = sans(l e t) \( sans(l e t) \( R \) ; delta^(- 1) ; pi_r + E \) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( S \) \]\
    & = sans(l e t) \( R \) ; delta^(- 1) ; \( bracket.l Gamma bracket.r times bracket.l sans(L) bracket.r \) + sans(r l e t) \( E \) ; \[ pi_r \, sans(r f i x) \( S \) \] = sans(l e t) \( R \) ; delta^(- 1) ; \[ pi_r \, sans(r l e t) \( E \) ; sans(r f i x) \( S \) \]\
-   & = sans(l e t) \( R \) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( T \) \] = bracket.l Gamma tack.r r #h(0em) sans(w h e r e) #h(0em) ell \( x \) : { t } gt.tri sans(L) bracket.r\
+   & = sans(l e t) \( R \) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( T \) \] = bracket.l Gamma tack.r r med kw("where") med ell \( x \) : { t } gt.tri sans(L) bracket.r\
    $ as desired.
 
 - dinat: We define $sans(R) = \( ell_i \( A_i \) \, \)_i$,
@@ -1150,14 +1149,14 @@ same manner. In particular, we proceed by rule induction as follows:
    & = sans(r l e t) \( S' \) ; delta_Sigma^(- 1) ; \[ bracket.l Gamma \, x_i : A_i tack.r t_i gt.tri sans(R)' sans(L) \, sans(R) bracket.r \, \]_i ; alpha_(bracket.l sans(L) bracket.r + Sigma_i bracket.l A_i bracket.r)^(+)\
    & = sans(r l e t) \( S' \) ; L\
    $ We therefore have
-  $  & bracket.l Gamma tack.r \[ sigma^harpoon.tl \] r #h(0em) sans(w h e r e) #h(0em) \( kappa_i \( x_i \) : { \[ sigma^harpoon.tl \] t_i } \, \)_i gt.tri sans(L) bracket.r\
+  $  & bracket.l Gamma tack.r \[ sigma^harpoon.tl \] r med kw("where") med \( kappa_i \( x_i \) : { \[ sigma^harpoon.tl \] t_i } \, \)_i gt.tri sans(L) bracket.r\
    & = sans(l e t) \( sans(e s e m)_(Gamma \, sans(L)) \( \[ sigma^harpoon.tl \] r \) \) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( sans(l s e m)_(Gamma \, sans(L)) \( \( kappa_i \( x_i \) : { \[ sigma^harpoon.tl \] t_i } \, \)_i \) \) \]\
    & = sans(l e t) \( sans(l e t) \( sans(e s e m)_(Gamma \, sans(L)) \( r \) \) ; delta^(- 1) ; pi_r + S' \) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( sans(r c a s e) \( L \) ; pi_r + S' \) \]\
    & = sans(l e t) \( sans(e s e m)_(Gamma \, sans(L)) \( r \) \) ; delta^(- 1) ; bracket.l Gamma bracket.r times bracket.l sans(L) bracket.r + sans(r l e t) \( S \) ; \[ pi_r \, sans(r f i x) \( sans(r c a s e) \( L \) ; pi_r + S' \) \]\
    & = sans(l e t) \( sans(e s e m)_(Gamma \, sans(L)) \( r \) \) ; delta^(- 1) ; \[ pi_r \, sans(r l e t) \( S' \) ; sans(r f i x) \( sans(r c a s e) \( L \) ; pi_r + S' \) \]\
    & = sans(l e t) \( sans(e s e m)_(Gamma \, sans(L)) \( r \) \) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( sans(r l e t) \( S' \) ; L \) \]\
    & = sans(l e t) \( sans(e s e m)_(Gamma \, sans(L)) \( r \) \) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( sans(l s e m)_(Gamma \, sans(L)) \( \( ell_i \( x_i \) : { \[ \( kappa_j \( x_j \) mapsto t_j \, \)^harpoon.tl \] \( sigma #h(0em) ell_i #h(0em) x_i \) } \, \)_i \) \) \]\
-   & = bracket.l Gamma tack.r r #h(0em) sans(w h e r e) #h(0em) \[ \( kappa_j \( x_j \) mapsto t_j \, \)^harpoon.tl \] \( sigma #h(0em) ell_i #h(0em) x_i \) \, \)_i gt.tri sans(L) bracket.r $
+   & = bracket.l Gamma tack.r r med kw("where") med \[ \( kappa_j \( x_j \) mapsto t_j \, \)^harpoon.tl \] \( sigma #h(0em) ell_i #h(0em) x_i \) \, \)_i gt.tri sans(L) bracket.r $
   as desired.
 
 All other cases are analogous to those for expressions, and so
@@ -1167,17 +1166,21 @@ omitted.~◻
 #block[
 The rewrite rules cfg-fuse$""_1$ (Eqn.~#todo[Resolve source reference `eqn:where-fusion-1` during integration.]) and
 cfg-fuse$""_2$ are sound, where we define
-#align(center, prooftree(rule(
+#align(center, fit-to-width(prooftree(rule(
   label: msc("cfg-fuse2"),
-  $Gamma tack.r r gt.tri sans("L"), (ell_i(A_i),)_i, kappa(B)$,
-  $forall i in I. Gamma, x_i : A_i tack.r t_i gt.tri sans("L"), (ell_j(A_j),)_(j in I), kappa(B)$,
-  $Gamma, y : B tack.r s gt.tri sans("L"), (ell_j(A_j),)_(j in I), kappa(B), (ell_(j')'(A_(j')'),)_(j' in I')$,
-  $forall i' in I'. Gamma, x_(i')' : A_(i')' tack.r t_(i')' gt.tri sans("L"), (ell_j(A_j),)_(j in I), kappa(B), (ell_(j')'(A_(j')'),)_(j' in I')$,
-  $Gamma tack.r r sans("where") (ell_i(x_i) : {t_i},)_(i in I),
-      kappa(y) : {s sans("where") (ell_(i')'(x_(i')') : {t_(i')'},)_(i' in I')}
-    approx r sans("where") (ell_i(x_i) : {t_i},)_(i in I),
-      kappa(y) : {s}, (ell_(i')'(x_(i')') : {t_(i')'},)_(i' in I') gt.tri sans("L")$,
-))) <eqn:where-fusion-2>
+  stack(dir: ttb, spacing: 0.25em,
+    $Gamma tack.r r gt.tri sans("L"), (ell_i(A_i),)_i, kappa(B)$,
+    $forall i in I. Gamma, x_i : A_i tack.r t_i gt.tri sans("L"), (ell_j(A_j),)_(j in I), kappa(B)$,
+  ),
+  stack(dir: ttb, spacing: 0.25em,
+    $Gamma, y : B tack.r s gt.tri sans("L"), (ell_j(A_j),)_(j in I), kappa(B), (ell_(j')'(A_(j')'),)_(j' in I')$,
+    $forall i' in I'. Gamma, x_(i')' : A_(i')' tack.r t_(i')' gt.tri sans("L"), (ell_j(A_j),)_(j in I), kappa(B), (ell_(j')'(A_(j')'),)_(j' in I')$,
+  ),
+  stack(dir: ttb, spacing: 0.25em,
+    $Gamma tack.r r sans("where") (ell_i(x_i) : {t_i},)_(i in I), kappa(y) : {s sans("where") (ell_(i')'(x_(i')') : {t_(i')'},)_(i' in I')}$,
+    $approx r sans("where") (ell_i(x_i) : {t_i},)_(i in I), kappa(y) : {s}, (ell_(i')'(x_(i')') : {t_(i')'},)_(i' in I') gt.tri sans("L")$,
+  ),
+)))) <eqn:where-fusion-2>
  <lem:where-fusion>
 
 ]
@@ -1190,7 +1193,7 @@ $T = \( ell_i \( x_i \) : { t_i } \, \)_j$, and
 $D_S = sans(l s e m)_(Gamma \, sans(L) \, sans(R)) \( S \)$,
 $D_T = sans(l s e m)_(Gamma \, sans(L)) \( T \)$,
 $D_G = sans(l s e m)_(Gamma \, sans(L)) \( S \, T \)$ We have that
-$  & bracket.l Gamma tack.r \( r #h(0em) sans(w h e r e) #h(0em) S \) #h(0em) sans(w h e r e) #h(0em) T gt.tri sans(L) bracket.r\
+$  & bracket.l Gamma tack.r \( r med kw("where") med S \) med kw("where") med T gt.tri sans(L) bracket.r\
  & = sans(l e t) \( sans(l e t) \( sans(e s e m)_(Gamma \, \( sans(L) \, sans(R) \)) \( r \) \) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( D_S \) \] ; alpha_(bracket.l sans(L) bracket.r + Sigma_j bracket.l A_j bracket.r)^(+) \) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( D_T \) \]\
  & = sans(l e t) \( sans(e s e m)_(Gamma \, \( sans(L) \, sans(R) \)) \( r \) \) ; sans(r l e t) \( delta^(- 1) ; \[ pi_r \, sans(r f i x) \( D_S \) \] ; alpha_(bracket.l sans(L) bracket.r + Sigma_j bracket.l A_j bracket.r)^(+) \) ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( D_T \) \]\
  & = sans(l e t) \( sans(e s e m)_(Gamma \, \( sans(L) \, sans(R) \)) \( r \) \) ; delta^(- 1) ; \[ sans(r l e t) \( pi_r ; alpha_(bracket.l sans(L) bracket.r + Sigma_j bracket.l A_j bracket.r)^(+) \) \, sans(r l e t) \( sans(r f i x) \( D_S \) ; alpha_(bracket.l sans(L) bracket.r + Sigma_j bracket.l A_j bracket.r)^(+) \) \] ; delta^(- 1) ; \[ pi_r \, sans(r f i x) \( D_T \) \]\
@@ -1206,7 +1209,7 @@ $  & bracket.l Gamma tack.r \( r #h(0em) sans(w h e r e) #h(0em) S \) #h(0em) sa
  & #h(2em) \[ pi_r \, \[ sans(r f i x) \( D_T \) \, sans(r f i x) \( D_S \) ; alpha_(bracket.l sans(L) bracket.r + Sigma_j bracket.l A_j bracket.r)^(+) gt.double_() \[ pi_r \, sans(r f i x) \( D_T \) \]_(bracket.l Gamma bracket.r) \]_(bracket.l Gamma bracket.r) \]\
  & = sans(l e t) \( sans(e s e m)_(Gamma \, sans(L)) \( r \) \) ; delta^(- 1) ; \[ pi_r \, \[ sans(r f i x) \( D_T \) \, sans(r f i x) \( D_S \) ; alpha_(bracket.l sans(L) bracket.r + Sigma_j bracket.l A_j bracket.r)^(+) gt.double_() \[ pi_r \, sans(r f i x) \( D_T \) \]_(bracket.l Gamma bracket.r) \]_(bracket.l Gamma bracket.r) \]\
  $ For this to be equal to
-$bracket.l Gamma tack.r r #h(0em) sans(w h e r e) #h(0em) S \, T gt.tri sans(L) bracket.r$,
+$bracket.l Gamma tack.r r med kw("where") med S \, T gt.tri sans(L) bracket.r$,
 it therefore suffices to show that
 $ sans(r f i x) \( D_G \) & = \[ sans(r f i x) \( D_T \) \, sans(r f i x) \( D_S \) ; alpha_(bracket.l sans(L) bracket.r + Sigma_j bracket.l A_j bracket.r)^(+) gt.double_() \[ pi_r \, sans(r f i x) \( D_T \) \]_(bracket.l Gamma bracket.r) \]_(bracket.l Gamma bracket.r) $<eqn:dgdt>
 We note that, by re-association and weakening, we have that
@@ -1219,9 +1222,9 @@ $C_(k + 1 . . n) = B_(1 . . n - k)$. We note in particular that
 $bracket.l sans(R) lt.eq sans(R \, K) bracket.r$ is up to
 isomorphism the left injection
 $iota_l : Sigma_i bracket.l A_i bracket.r arrow.r Sigma_i bracket.l A_i bracket.r + Sigma_i bracket.l B_i bracket.r$.
-We can now derive Equation~#todo[Resolve source reference `eqn:dgdt` during integration.], and hence the soundness of
+We can now derive @eqn:dgdt, and hence the soundness of
 cfg-fuse$""_1$, via the string-diagrams in
-Figure~#todo[Resolve source reference `fig:string-diagram-fusion` during integration.], which are drawn in the co-Kleisli
+@fig:string-diagram-fusion, which are drawn in the co-Kleisli
 category inducted by $bracket.l Gamma bracket.r$.
 cfg-fuse$""_2$ then follows by repeated application of cfg-fuse$""_1$,
 as desired.~◻
@@ -1230,14 +1233,14 @@ as desired.~◻
 #figure([#figure([],
     caption: [
       $sans(r f i x) \( D_G \)$, with $D_G$ drawn as per the right of
-      Eqn.~#todo[Resolve source reference `eqn:dg-rhs` during integration.]
+      Eqn.~@eqn:dg-rhs
     ]
   )
   <fig:rfix-dg>
 
   #figure([],
     caption: [
-      Equivalent to #todo[Resolve source reference `fig:rfix-dg` during integration.] by isotopy and associativity of the
+      Equivalent to @fig:rfix-dg by isotopy and associativity of the
       codiagonal. We highlight $sans(r f i x) \( D_T \)$, which is used
       in the next step.
     ]
@@ -1249,7 +1252,7 @@ as desired.~◻
 
       $\[ sans(r f i x) \( D_T \) \, sans(r f i x) \( D_S \) ; alpha_(bracket.l sans(L) bracket.r + Sigma_j bracket.l A_j bracket.r)^(+) gt.double_() \[ pi_r \, sans(r f i x) \( D_T \) \]_(bracket.l Gamma bracket.r) \]_(bracket.l Gamma bracket.r)$.
       \
-      Equivalent to #todo[Resolve source reference `fig:rfix-isotopy` during integration.] by duplication of
+      Equivalent to @fig:rfix-isotopy by duplication of
       $sans(r f i x) \( D_T \)$.
     ]
   )

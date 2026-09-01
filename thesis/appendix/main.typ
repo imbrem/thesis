@@ -1,6 +1,4 @@
 #import "/lib/prelude.typ": *
-#show: chapter.with(title: "Sample Appendix")
-
-SAMPLE TEXT
+#show: appendix
 
 #include "paper-imports/main.typ"
