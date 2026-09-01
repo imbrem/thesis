@@ -17,7 +17,7 @@ $lambda_(sans(S S A))$. Recall that the primitive syntactic element of
 an $lambda_(sans(S S A))$ program is a #emph[region] $r$, which can be
 viewed as a program fragment with a single entry point and multiple exit
 points. Consequently, our primitive typing judgement will be of the form
-$Gamma^(upright(bold(q))) tack.r_epsilon.alt r gt.tri sans(L)^(upright(bold(Q)))$,
+$Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) r gt.tri sans(L)^(upright(bold(Q)))$,
 which we will read as stating that “#emph[if] the variables in $Gamma$
 are live on entry, with quantity $upright(bold(q))$, #emph[then]
 executing the region $r$ jumps to one of the labels in $sans(L)$, with
@@ -60,7 +60,7 @@ in Figure~@refall:fig:ssa-typing.
   rule for expressions modulo lifting, except for the fact that the
   discriminator $o$ is required to be pure.
 
-- $sans(w h e r e)$-blocks are typed using where$""_(sans(n o n r e c))$
+- $kw("where")$-blocks are typed using where$""_(sans(n o n r e c))$
   and where$""_(sans(r e c))$, which we distinguish since the effect of
   a $sans(w h e r e_(r e c))$ subtree must be iterative. In particular,
   a $sans(w h e r e_(r e c))$ subtree is composed of an entry subtree
@@ -76,24 +76,10 @@ in Figure~@refall:fig:ssa-typing.
   requiring the $t_i$ to only jump to exit labels in
   $sans(L)^(upright(bold(Q)))$.
 
-#figure([#figure([#block[
-    \<$sans(L)$\> ::= $dot.op$ | $sans(L) \, ell \( A \)$
-
-    ]],
-    caption: [
-    ]
-  )
-
-  #figure([#block[
-    \<$upright(bold(Q))$\> ::= $dot.op$ |
-    $upright(bold(Q)) ; upright(bold(q))$
-
-    ]],
-    caption: [
-    ]
-  )
-
-  ],
+#figure([#grammar(
+    production($sans(L)$, $dot.op$, $sans(L), ell(A)$),
+    production($upright(bold(Q))$, $dot.op$, $upright(bold(Q)); upright(bold(q))$),
+  )],
   caption: [
     Grammar for label contexts
   ]
@@ -117,11 +103,11 @@ in Figure~@refall:fig:ssa-typing.
 #figure([#block[
 #rule-set(
   prooftree(rule(label: msc("br"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r tack.t o : A$, $Gamma tack.r ell \( A \)^(upright(bold(q))_l) arrow.r.squiggly sans(L)^(upright(bold(Q)))$, $Gamma^(upright(bold(q))) tack.r epsilon.alt sans(b r) #h(0em) ell #h(0em) o gt.tri sans(L)^(upright(bold(Q)))$)),
-  prooftree(rule(label: msc("let1"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt o : A$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt t gt.tri sans(L)^(upright(bold(Q))^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt sans(l e t) #h(0em) x = o ; t gt.tri sans(L)^(upright(bold(Q)))$)),
-  prooftree(rule(label: msc("let2"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt o : A ⊗ B$, $Gamma^(upright(bold(q))_l) \, x : A \, y : B tack.r epsilon.alt t gt.tri sans(L)^(\( upright(bold(Q))^arrow.t \)^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt sans(l e t) #h(0em) \( x \, y \) = o ; t gt.tri sans(L)^(upright(bold(Q)))$)),
-  prooftree(rule(label: msc("case"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r tack.t o : A + B$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt tau_l gt.tri sans(L)^(upright(bold(Q))^arrow.t)$, $Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt tau_r gt.tri sans(L)^(upright(bold(Q))^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt sans(c a s e) #h(0em) o #h(0em) { iota_l #h(0em) x : tau_l \, iota_r #h(0em) y : tau_r } gt.tri sans(L)^(upright(bold(Q)))$)),
-  prooftree(rule(label: msc("wheremathsfnonrec"), $Gamma^(upright(bold(q))) tack.r epsilon.alt kappa gt.tri sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))')$, $forall ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))') . Gamma^(upright(bold(q))_i) \, x_i : A_i tack.r epsilon.alt t_i gt.tri sans(L)^(upright(bold(Q))^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt kappa #h(0em) sans(w h e r e)_sans(n o n r e c) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q)))$)),
-  prooftree(rule(label: msc("wheremathsfrec"), $Gamma^(upright(bold(q))) tack.r epsilon.alt kappa gt.tri sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))')$, $epsilon.alt in cal(E)^oo$, $forall ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))') . Gamma^(upright(bold(q))_i) \, x_i : A_i tack.r epsilon.alt t_i gt.tri sans(L)^(upright(bold(Q))^arrow.t) \, sans(R)^(upright(bold(Q))'^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt kappa #h(0em) sans(w h e r e)_sans(r e c) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q)))$)),
+  prooftree(rule(label: msc("let1"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt o : A$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt t gt.tri sans(L)^(upright(bold(Q))^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt kw("let") med x = o ; t gt.tri sans(L)^(upright(bold(Q)))$)),
+  prooftree(rule(label: msc("let2"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt o : A ⊗ B$, $Gamma^(upright(bold(q))_l) \, x : A \, y : B tack.r epsilon.alt t gt.tri sans(L)^(\( upright(bold(Q))^arrow.t \)^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt kw("let") med \( x \, y \) = o ; t gt.tri sans(L)^(upright(bold(Q)))$)),
+  prooftree(rule(label: msc("case"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r tack.t o : A + B$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt tau_l gt.tri sans(L)^(upright(bold(Q))^arrow.t)$, $Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt tau_r gt.tri sans(L)^(upright(bold(Q))^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt kw("case") med o #h(0em) { iota_l #h(0em) x : tau_l \, iota_r #h(0em) y : tau_r } gt.tri sans(L)^(upright(bold(Q)))$)),
+  prooftree(rule(label: msc("wheremathsfnonrec"), $Gamma^(upright(bold(q))) tack.r epsilon.alt kappa gt.tri sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))')$, $forall ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))') . Gamma^(upright(bold(q))_i) \, x_i : A_i tack.r epsilon.alt t_i gt.tri sans(L)^(upright(bold(Q))^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt kappa #h(0em) kw("where")_sans(n o n r e c) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q)))$)),
+  prooftree(rule(label: msc("wheremathsfrec"), $Gamma^(upright(bold(q))) tack.r epsilon.alt kappa gt.tri sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))')$, $epsilon.alt in cal(E)^oo$, $forall ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))') . Gamma^(upright(bold(q))_i) \, x_i : A_i tack.r epsilon.alt t_i gt.tri sans(L)^(upright(bold(Q))^arrow.t) \, sans(R)^(upright(bold(Q))'^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt kappa #h(0em) kw("where")_sans(r e c) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q)))$)),
 )
 
   ]],
@@ -135,7 +121,7 @@ in Figure~@refall:fig:ssa-typing.
 <refall:denotational-semantics>
 We give a denotational semantics for $lambda_(sans(S S A))$, targeting
 an arbitrary $lambda_(sans(i t e r))$ model. We interpret a derivation
-$Gamma^(upright(bold(q))) tack.r_epsilon.alt r gt.tri sans(L)^(upright(bold(Q)))$
+$Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) r gt.tri sans(L)^(upright(bold(Q)))$
 as a morphism from the input state, the set of live variables
 $⟦ Gamma^(upright(bold(q))) ⟧$, to the
 output state, which consists of a label $ell_i$ in $sans(L)$, its
@@ -166,14 +152,14 @@ The semantics for regions is in Figure~@refall:fig:ssa-densem:
   $⟦ sans(L)^(Q^arrow.t) ⟧ \( Gamma \, - \)$
   to $⟦ sans(L)^(upright(bold(Q))) ⟧$.
 
-- Non-recursive $sans(w h e r e)$-subtrees are interpreted by the
+- Non-recursive $kw("where")$-subtrees are interpreted by the
   denotation of their entry subtree, reassociated to the sum of the exit
   labels $sans(L)^(upright(bold(Q)))$ and sublabels
   $sans(R)^(upright(bold(Q))')$. The exit labels are passed through
   as-is, and the sublabels $ell_i$ are piped to the appropriate
   subregion $t_i$.
 
-- Recursive $sans(w h e r e)$-subtree is as above, except that we take
+- Recursive $kw("where")$-subtree is as above, except that we take
   the #emph[fixpoint] of the sum of the denotations of the subregions
   viewed as morphisms from
   $⟦ sans(R)^(upright(bold(Q))) ⟧ \( Gamma \)$
@@ -181,34 +167,32 @@ The semantics for regions is in Figure~@refall:fig:ssa-densem:
   $⟦ sans(L)^(upright(bold(Q))) ⟧ \( Gamma \) + ⟦ sans(R)^(upright(bold(Q))) ⟧ \( Gamma \)$,
   feeding recursive calls back into the where-block's body.
 
-#figure([#block[
-  minipage=1.1,scale=0.9
+#figure([#fit-to-width([#block[
   $ #box(stroke: black, inset: 3pt, [$ ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(K)^(upright(bold(Q))') ⟧ : cal(C)_tack.t \( ⟦ \[ Gamma mapsto sans(L)^(upright(bold(Q))) \] ⟧ \, ⟦ \[ Gamma mapsto sans(K)^(upright(bold(Q))') \] ⟧ \) $])\
   ⟦ Gamma tack.r dot.op arrow.r.squiggly dot.op ⟧ = sans(i d)_(upright(bold(0))) #h(2em) ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) \, ell \( A \)^(upright(bold(q))) arrow.r.squiggly sans(K)^(upright(bold(Q))') \, ell \( A \)^(upright(bold(q))') ⟧ = ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(K)^(upright(bold(Q))') ⟧ + ⟦ Gamma^(upright(bold(q))) mapsto Gamma^(upright(bold(q))') ⟧ ⊗ ⟦ A ⟧\
   ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(K)^(upright(bold(Q))') \, ell \( A \)^(upright(bold(q))) ⟧ = ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(K)^(upright(bold(Q))') ⟧ ; iota_l $
 
-  ]],
+  ]])],
   caption: [
     Denotational semantics for label contexts and label weakenings
   ]
 )
 <refall:fig:lwk-densem>
 
-#figure([#block[
-  minipage=1.1,scale=0.9
-  $ #box(stroke: black, inset: 3pt, [$ ⟦ Gamma tack.r_epsilon.alt t gt.tri sans(L)^(upright(bold(Q))) ⟧ : cal(C)_epsilon.alt \( ⟦ Gamma^(upright(bold(q))) ⟧ \, \[ Gamma mapsto ⟦ sans(L)^(upright(bold(Q))) ⟧ \] \) $])\
-  ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt sans(b r) #h(0em) ell #h(0em) a gt.tri sans(L)^(upright(bold(Q))) ⟧ = ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; - ⊗ ⟦ Gamma^(upright(bold(q))_r) tack.r_tack.t a : A ⟧ ; iota_r ; ⟦ Gamma tack.r ell \( A \)^(upright(bold(q))_l) arrow.r.squiggly sans(L)^(upright(bold(Q))) ⟧\
-  ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt sans(l e t) #h(0em) x = o ; t gt.tri sans(L)^(upright(bold(Q))) ⟧ = ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; - ⊗ ⟦ Gamma^(upright(bold(q))_r) tack.r_epsilon.alt o : A ⟧ ; ⟦ Gamma^(upright(bold(q))_l) \, x : A tack.r_epsilon.alt t : sans(L)^(upright(bold(Q))^arrow.t) ⟧ ; alpha^arrow.b\
-  ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt sans(l e t) #h(0em) \( x \, y \) = o ; t gt.tri sans(L)^(upright(bold(Q))) ⟧ = ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; - ⊗ ⟦ Gamma^(upright(bold(q))_r) tack.r_epsilon.alt o : A ⊗ B ⟧ ; alpha\
-  #h(2em) ; ⟦ Gamma^(upright(bold(q))_l) \, x : A \, y : B tack.r_epsilon.alt t : sans(L)^(\( upright(bold(Q))^arrow.t \)^arrow.t) ⟧ ; alpha^arrow.b ; alpha^arrow.b\
-  ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt sans(c a s e) #h(0em) o #h(0em) { iota_l #h(0em) x : tau_l \, iota_r #h(0em) y : tau_r } gt.tri sans(L)^(upright(bold(Q))) ⟧ = ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; - ⊗ ⟦ Gamma^(upright(bold(q))_r) tack.r_tack.t o : A + B ⟧ ; delta^(- 1)\
-  #h(2em) ; \[ ⟦ Gamma^(upright(bold(q))_l) \, x : A tack.r_epsilon.alt tau_l : sans(L)^(upright(bold(Q))^arrow.t) ⟧ ; alpha^arrow.b \, ⟦ Gamma^(upright(bold(q))_l) \, y : B tack.r_epsilon.alt tau_r : sans(L)^(upright(bold(Q))^arrow.t) ⟧ ; alpha^arrow.b \]\
-  ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt kappa #h(0em) sans(w h e r e)_(sans(n o n r e c)) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q))) ⟧ = ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt kappa gt.tri sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))') ⟧ ; alpha^(+)\
-  #h(2em) ; \[ sans(i d)_(⟦ \[ Gamma mapsto sans(L)^(upright(bold(Q))) \] ⟧) \, \[ ⟦ Gamma^(upright(bold(q))_i) \, x_i : A_i tack.r_epsilon.alt t_i : sans(L)^(upright(bold(Q))^arrow.t) ⟧ ; alpha^arrow.b \, \]_(ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))')) \]\
-  ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt kappa #h(0em) sans(w h e r e)_(sans(r e c)) #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q))) ⟧ = ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt kappa gt.tri sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))') ⟧ ; alpha^(+)\
-  #h(2em) ; \[ sans(i d)_(⟦ \[ Gamma mapsto sans(L)^(upright(bold(Q))) \] ⟧) \, \[ ⟦ Gamma^(upright(bold(q))_i) \, x_i : A_i tack.r_epsilon.alt t_i : sans(L)^(upright(bold(Q))^arrow.t) \, sans(R)^(upright(bold(Q))'^arrow.t) ⟧ ; alpha^arrow.b ; alpha^(+) \, \]_(ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))'))^dagger \] $
+#figure([#fit-to-width([#block[
+  $ #box(stroke: black, inset: 3pt, [$ ⟦ Gamma #refinement-eff-turnstile($epsilon.alt$) t gt.tri sans(L)^(upright(bold(Q))) ⟧ : cal(C)_epsilon.alt \( ⟦ Gamma^(upright(bold(q))) ⟧ \, \[ Gamma mapsto ⟦ sans(L)^(upright(bold(Q))) ⟧ \] \) $])\
+  ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) sans(b r) #h(0em) ell #h(0em) a gt.tri sans(L)^(upright(bold(Q))) ⟧ = ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; - ⊗ ⟦ Gamma^(upright(bold(q))_r) tack.r_tack.t a : A ⟧ ; iota_r ; ⟦ Gamma tack.r ell \( A \)^(upright(bold(q))_l) arrow.r.squiggly sans(L)^(upright(bold(Q))) ⟧\
+  ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kw("let") med x = o ; t gt.tri sans(L)^(upright(bold(Q))) ⟧ = ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; - ⊗ ⟦ Gamma^(upright(bold(q))_r) #refinement-eff-turnstile($epsilon.alt$) o : A ⟧ ; ⟦ Gamma^(upright(bold(q))_l) \, x : A #refinement-eff-turnstile($epsilon.alt$) t : sans(L)^(upright(bold(Q))^arrow.t) ⟧ ; alpha^arrow.b\
+  ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kw("let") med \( x \, y \) = o ; t gt.tri sans(L)^(upright(bold(Q))) ⟧ = ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; - ⊗ ⟦ Gamma^(upright(bold(q))_r) #refinement-eff-turnstile($epsilon.alt$) o : A ⊗ B ⟧ ; alpha\
+  #h(2em) ; ⟦ Gamma^(upright(bold(q))_l) \, x : A \, y : B #refinement-eff-turnstile($epsilon.alt$) t : sans(L)^(\( upright(bold(Q))^arrow.t \)^arrow.t) ⟧ ; alpha^arrow.b ; alpha^arrow.b\
+  ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kw("case") med o #h(0em) { iota_l #h(0em) x : tau_l \, iota_r #h(0em) y : tau_r } gt.tri sans(L)^(upright(bold(Q))) ⟧ = ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; - ⊗ ⟦ Gamma^(upright(bold(q))_r) tack.r_tack.t o : A + B ⟧ ; delta^(- 1)\
+  #h(2em) ; \[ ⟦ Gamma^(upright(bold(q))_l) \, x : A #refinement-eff-turnstile($epsilon.alt$) tau_l : sans(L)^(upright(bold(Q))^arrow.t) ⟧ ; alpha^arrow.b \, ⟦ Gamma^(upright(bold(q))_l) \, y : B #refinement-eff-turnstile($epsilon.alt$) tau_r : sans(L)^(upright(bold(Q))^arrow.t) ⟧ ; alpha^arrow.b \]\
+  ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa #h(0em) kw("where")_(sans(n o n r e c)) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q))) ⟧ = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa gt.tri sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))') ⟧ ; alpha^(+)\
+  #h(2em) ; \[ sans(i d)_(⟦ \[ Gamma mapsto sans(L)^(upright(bold(Q))) \] ⟧) \, \[ ⟦ Gamma^(upright(bold(q))_i) \, x_i : A_i #refinement-eff-turnstile($epsilon.alt$) t_i : sans(L)^(upright(bold(Q))^arrow.t) ⟧ ; alpha^arrow.b \, \]_(ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))')) \]\
+  ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa #h(0em) kw("where")_(sans(r e c)) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q))) ⟧ = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa gt.tri sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))') ⟧ ; alpha^(+)\
+  #h(2em) ; \[ sans(i d)_(⟦ \[ Gamma mapsto sans(L)^(upright(bold(Q))) \] ⟧) \, \[ ⟦ Gamma^(upright(bold(q))_i) \, x_i : A_i #refinement-eff-turnstile($epsilon.alt$) t_i : sans(L)^(upright(bold(Q))^arrow.t) \, sans(R)^(upright(bold(Q))'^arrow.t) ⟧ ; alpha^arrow.b ; alpha^(+) \, \]_(ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))'))^dagger \] $
 
-  ]],
+  ]])],
   caption: [
     Denotational semantics for $lambda_(sans(S S A))$
   ]
@@ -221,15 +205,15 @@ When we say that $lambda_(sans(S S A))$ and $lambda_(sans(i t e r))$ are
 #emph[equivalent], what we mean is that there are
 #emph[semantics-preserving] functions $sans(S S A)$, $sans(E x p r)$ on
 derivations satisfying
-$ ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt sans(S S A)_(e l l) \( Gamma^(upright(bold(q))) tack.r_epsilon.alt a : A \) gt.tri ell \( A \)^0 ⟧_(cal(M)) & = ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt a : A ⟧_(cal(M)) ; alpha ; iota_r\
-⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt sans(E x p r) \( Gamma^(upright(bold(q))) tack.r_epsilon.alt r gt.tri sans(L)^(upright(bold(Q))) \) : \[ Gamma mapsto sans(L)^(upright(bold(Q))) \] ⟧_(cal(M)) & = ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt r gt.tri sans(L)^(upright(bold(Q))) ⟧_(cal(M)) $
+$ ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) sans(S S A)_(e l l) \( Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) a : A \) gt.tri ell \( A \)^0 ⟧_(cal(M)) & = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) a : A ⟧_(cal(M)) ; alpha ; iota_r\
+⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) sans(E x p r) \( Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) r gt.tri sans(L)^(upright(bold(Q))) \) : \[ Gamma mapsto sans(L)^(upright(bold(Q))) \] ⟧_(cal(M)) & = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) r gt.tri sans(L)^(upright(bold(Q))) ⟧_(cal(M)) $
 for arbitrary models $cal(M)$. It is easy enough to construct
 $sans(E x p r)$: for each derivation, we simply pick a representative
-$\( x \, a \) in ⟦ Gamma^(upright(bold(q))) tack.r_epsilon.alt r gt.tri sans(L)^(upright(bold(Q))) ⟧_(sans(T h \( dot.op \)))$.
+$\( x \, a \) in ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) r gt.tri sans(L)^(upright(bold(Q))) ⟧_(sans(T h \( dot.op \)))$.
 Since
 $⟦ Gamma^(upright(bold(q))) ⟧_(sans(T h) \( dot.op \)) = \[ Gamma^(upright(bold(q))) \]$,
 we may simply define
-$sans(E x p r) \( Gamma^(upright(bold(q))) tack.r_epsilon.alt r gt.tri sans(L)^(upright(bold(Q))) \) := sans(l e t) #h(0em) Gamma = x ; #h(0em) a$
+$sans(E x p r) \( Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) r gt.tri sans(L)^(upright(bold(Q))) \) := kw("let") med Gamma = x ; #h(0em) a$
 where the unpacking of a value $c : \[ Gamma^(upright(bold(q))) \]$ is
 defined in the obvious recursive manner (see Appendix~#todo[Cross-reference: `refall:apx:packing`] for
 details). On the other hand, the function $sans(S S A)$ is just standard

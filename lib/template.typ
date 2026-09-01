@@ -22,6 +22,14 @@
   bibliography("/thesis/refs.bib")
 }
 
+/// Resolve citations in raw leaf files when CI compiles them directly, while
+/// emitting nothing when the same file is included by a chapter or thesis.
+#let standalone-bibliography() = context {
+  if _nesting-depth.get() == 0 {
+    _standalone-bibliography()
+  }
+}
+
 /// Standalone wrapper for a part (e.g. type-theoretic-ssa/main.typ).
 /// When standalone, shows an article-style title and sets document metadata.
 /// When nested, the title becomes a top-level heading and all body headings
