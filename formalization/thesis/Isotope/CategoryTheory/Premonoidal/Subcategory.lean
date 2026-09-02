@@ -110,6 +110,21 @@ export IsPremonoidalSubcategory (whiskerLeft_mem whiskerRight_mem associator_hom
 
 export IsSymmetricSubcategory (braiding_hom_mem)
 
+/-- Every morphism is `⊤`-effectful: the whole category is a wide subcategory of itself. -/
+instance topIsPremonoidalSubcategory : IsPremonoidalSubcategory (⊤ : MorphismProperty C) where
+  whiskerLeft_mem := by intros; trivial
+  whiskerRight_mem := by intros; trivial
+  associator_hom_mem _ _ _ := trivial
+  associator_inv_mem _ _ _ := trivial
+  leftUnitor_hom_mem _ := trivial
+  leftUnitor_inv_mem _ := trivial
+  rightUnitor_hom_mem _ := trivial
+  rightUnitor_inv_mem _ := trivial
+
+instance topIsSymmetricSubcategory [SymmetricPremonoidalCategory C] :
+    IsSymmetricSubcategory (⊤ : MorphismProperty C) where
+  braiding_hom_mem _ _ := trivial
+
 /-! ### The induced monoidal structure -/
 
 section Struct

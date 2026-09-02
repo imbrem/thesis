@@ -419,6 +419,38 @@ instance imageIsCartesianSubcategory : IsCartesianSubcategory (J.imageProperty) 
 
 end Faithful
 
+/-! #### The comparison functor into the image -/
+
+/-- The comparison functor from the value category of a Freyd category to the wide subcategory
+of pure morphisms of `C`.  It is bijective on objects and full, and it is faithful — hence an
+isomorphism onto `C_⊥` — exactly when `J` is. -/
+def toImage : Functor V (WideSubcategory (J.imageProperty)) where
+  obj X := ⟨J.obj X⟩
+  map f := ⟨J.map f, J.imageProperty_map f⟩
+  map_id _ := Subtype.ext (by simp)
+  map_comp _ _ := Subtype.ext (by simp)
+
+@[simp] theorem toImage_obj (X : V) : (toImage J).obj X = ⟨J.obj X⟩ := rfl
+
+@[simp] theorem toImage_map {X Y : V} (f : X ⟶ Y) : ((toImage J).map f).1 = J.map f := rfl
+
+/-- The comparison functor recovers `J` after forgetting purity. -/
+theorem toImage_comp_pureInclusion :
+    toImage J ⋙ wideSubcategoryInclusion (J.imageProperty) = J := rfl
+
+theorem toImage_obj_bijective : Function.Bijective (toImage J).obj :=
+  ⟨fun _ _ h => obj_injective J (congrArg WideSubcategory.obj h),
+    fun X => ⟨(obj_surjective J X.obj).choose,
+      WideSubcategory.ext (obj_surjective J X.obj).choose_spec⟩⟩
+
+instance toImage_full : (toImage J).Full where
+  map_surjective f := by
+    obtain ⟨g, hg⟩ := J.imageProperty_of_injective (obj_injective J) f.2
+    exact ⟨g, Subtype.ext hg.symm⟩
+
+instance toImage_faithful [J.Faithful] : (toImage J).Faithful where
+  map_injective h := J.map_injective (congrArg Subtype.val h)
+
 end FreydCategory
 
 
