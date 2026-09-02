@@ -263,4 +263,100 @@ theorem toIter_hasType {Γ : LambdaSSA.VCtx τ} {r : LambdaSSA.Region Φ}
   | let₁ ha hr sa ar ih => exact ⟨.let₁ (termOfScoped_hasType ha sa).some ih.some⟩
   | let₂ ha hr sa ar ih => exact ⟨.let₂ (termOfScoped_hasType ha sa).some ih.some⟩
 
+/-- Fully compilable typed regions, including mutually recursive CFGs. -/
+inductive Compiled : {Γ : LambdaSSA.VCtx τ} → {r : LambdaSSA.Region Φ} →
+    {L : LambdaSSA.LCtx τ} → LambdaSSA.Region.HasType Γ r L → Type (max u v) where
+  | br (h : LambdaSSA.At L i A) (ha : LambdaSSA.Tm.HasType Γ a A)
+      (sa : LambdaSSA.Translation.Expression.Scoped Γ.length a) : Compiled (.br h ha)
+  | case (he : LambdaSSA.Tm.HasType Γ e (LambdaIter.coprod A B))
+      (hl : LambdaSSA.Region.HasType (A :: Γ) l L)
+      (hr : LambdaSSA.Region.HasType (B :: Γ) r L)
+      (se : LambdaSSA.Translation.Expression.Scoped Γ.length e) :
+      Compiled hl → Compiled hr → Compiled (.case he hl hr)
+  | let₁ (ha : LambdaSSA.Tm.HasType Γ a A)
+      (hr : LambdaSSA.Region.HasType (A :: Γ) r L)
+      (sa : LambdaSSA.Translation.Expression.Scoped Γ.length a) :
+      Compiled hr → Compiled (.let₁ ha hr)
+  | let₂ (ha : LambdaSSA.Tm.HasType Γ a (LambdaIter.tensor A B))
+      (hr : LambdaSSA.Region.HasType (B :: A :: Γ) r L)
+      (sa : LambdaSSA.Translation.Expression.Scoped Γ.length a) :
+      Compiled hr → Compiled (.let₂ ha hr)
+  | cfg {entry : LambdaSSA.Region Φ} {n : Nat}
+      {blocks : Fin n → LambdaSSA.Region Φ} (context : LambdaSSA.VCtx τ)
+      (externals : LambdaSSA.LCtx τ) (R : Fin n → τ)
+      (he : LambdaSSA.Region.HasType context entry (List.ofFn R ++ externals))
+      (hb : ∀ i, LambdaSSA.Region.HasType (R i :: context) (blocks i)
+        (List.ofFn R ++ externals)) :
+      Compiled he → (∀ i, Compiled (hb i)) → Compiled (.cfg R he hb)
+
+private def lift_hasType {β : BCtx τ n} {A B : τ} {t : ITm Φ n}
+    (h : LambdaIter.LocallyNameless.HasType Φ
+      (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ) β t A) :
+    LambdaIter.LocallyNameless.HasType Φ (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ)
+      (.snoc β B) t.lift A :=
+  h.rename Fin.succ (fun _ => rfl)
+
+/-- Full reverse compiler.  A CFG becomes one iteration over the distinguished
+start state plus the coproduct of its local block labels. -/
+def compile : {Γ : LambdaSSA.VCtx τ} → {r : LambdaSSA.Region Φ} →
+    {L : LambdaSSA.LCtx τ} → {h : LambdaSSA.Region.HasType Γ r L} →
+    Compiled h → ITm Φ Γ.length
+  | _, _, _, _, .br h _ sa => .let₁ (termOfScoped sa) (injectLabel h (.bv 0))
+  | _, _, _, _, .case _ _ _ se cl cr =>
+      .case (termOfScoped se) (compile cl) (compile cr)
+  | _, _, _, _, .let₁ _ _ sa cr => .let₁ (termOfScoped sa) (compile cr)
+  | _, _, _, _, .let₂ _ _ sa cr => .let₂ (termOfScoped sa) (compile cr)
+  | Γ, _, L, _, .cfg (n := n) _ _ R he hb ce cb =>
+      let locals := List.ofFn R
+      let state := cfgStateType locals
+      let entry := promoteFeedback (routeAppend locals L (compile ce).lift.lift)
+      let blocks : Fin locals.length → ITm Φ (List.length Γ + 1) := fun i =>
+        let j : Fin n := ⟨i.val, by simpa [locals] using i.isLt⟩
+        promoteFeedback (routeAppend locals L (compile (cb j)))
+      .iter cfgStart (.case (.bv 0) entry
+        (dispatchLabels locals [state] blocks))
+
+/-- Exact typing preservation for the full reverse CFG compiler. -/
+theorem compile_hasType {Γ : LambdaSSA.VCtx τ} {r : LambdaSSA.Region Φ}
+    {L : LambdaSSA.LCtx τ} {h : LambdaSSA.Region.HasType Γ r L}
+    (c : Compiled h) :
+    Nonempty (LambdaIter.LocallyNameless.HasType Φ
+      (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ)
+      (boundContext Γ) (compile c) (labelType L)) := by
+  induction c with
+  | br h ha sa =>
+      simpa only [compile] using
+        (show Nonempty _ from ⟨.let₁ (termOfScoped_hasType ha sa).some
+          (injectLabel_hasType h (.bv (ι := 0)))⟩)
+  | case he hl hr se cl cr ihl ihr =>
+      simpa only [compile] using
+        (show Nonempty _ from ⟨.case (termOfScoped_hasType he se).some ihl.some ihr.some⟩)
+  | let₁ ha hr sa cr ih =>
+      simpa only [compile] using
+        (show Nonempty _ from ⟨.let₁ (termOfScoped_hasType ha sa).some ih.some⟩)
+  | let₂ ha hr sa cr ih =>
+      simpa only [compile] using
+        (show Nonempty _ from ⟨.let₂ (termOfScoped_hasType ha sa).some ih.some⟩)
+  | cfg Γ0 L0 R he hb ce cb ihe ihb =>
+      let locals := List.ofFn R
+      let state := cfgStateType locals
+      have hentry := promoteFeedback_hasType
+        (routeAppend_hasType locals _
+          (lift_hasType (B := LambdaIter.unit)
+            (lift_hasType (B := state) ihe.some)))
+      have hblocks (i : Fin locals.length) :
+          LambdaIter.LocallyNameless.HasType Φ
+            (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ)
+            (.snoc (boundContext Γ0) (locals.get i))
+            (promoteFeedback (routeAppend locals L0
+              (compile (cb (Fin.cast (by simp [locals]) i)))))
+            (LambdaIter.coprod (labelType L0) state) := by
+        simpa [boundContext, locals, state] using promoteFeedback_hasType
+          (routeAppend_hasType locals L0
+            (ihb (Fin.cast (by simp [locals]) i)).some)
+      have hdispatch := dispatchLabels_hasType locals [state]
+        (fun i => promoteFeedback (routeAppend locals L0
+          (compile (cb (Fin.cast (by simp [locals]) i))))) hblocks
+      exact ⟨.iter cfgStart_hasType (.case .bv hentry hdispatch)⟩
+
 end Isotope.LambdaSSA.Translation.FromSSA
