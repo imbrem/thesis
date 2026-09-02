@@ -127,6 +127,41 @@ theorem assignments_convert_missing [Monad m] [LawfulMonad m]
             rw [ih ⟨y, hy, hnone⟩]
             exact Isotope.TAC.Densem.Phi.Monadic.LawfulFailure.fail_bind _
 
+private theorem incoming_eq_none_of_not_mem [DecidableEq ν] [DecidableEq κ]
+    (source : Isotope.TAC.Classical.CFG ν φ κ)
+    (bid pred : BlockId κ) (x : ν)
+    (hnot : pred ∉ predecessors source bid) :
+    Isotope.TAC.Densem.Phi.incoming pred
+      (incoming source bid x) = none := by
+  unfold incoming Isotope.TAC.Densem.Phi.incoming
+  generalize predecessors source bid = ps at hnot ⊢
+  induction ps with
+  | nil => rfl
+  | cons q qs ih =>
+      simp only [List.mem_cons, not_or] at hnot
+      simp only [List.filterMap_cons]
+      cases hq : blockAt source q with
+      | none => simpa [hq] using ih hnot.2
+      | some b =>
+          simp only [hq, Option.map_some, List.find?_cons]
+          have hne : q ≠ pred := fun h => hnot.1 h.symm
+          simp only [hne, decide_false, if_false]
+          exact ih hnot.2
+
+/-- With a nonempty canonical phi interface, an invalid predecessor makes
+phi assignment fail before the block body runs. -/
+theorem assignments_convert_badPred [Monad m]
+    [DecidableEq ν] [DecidableEq κ]
+    (source : Isotope.TAC.Classical.CFG ν φ κ)
+    (x : ν) (xs : List ν) (label : κ) (pred : BlockId κ)
+    (target : MEnv M (Version ν κ))
+    (hnot : pred ∉ predecessors source (.named label)) :
+    Isotope.TAC.Densem.Phi.Monadic.assignments M target pred
+      (phis source (x :: xs) label) = M.fail := by
+  simp only [phis, List.map_cons,
+    Isotope.TAC.Densem.Phi.Monadic.assignments]
+  rw [incoming_eq_none_of_not_mem source (.named label) pred x hnot]
+
 /-- Source loop state retaining predecessor control solely so that the
 globally guarded body can reject exactly the malformed boundaries rejected by
 converted phi installation. -/
