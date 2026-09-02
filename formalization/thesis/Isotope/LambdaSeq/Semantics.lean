@@ -58,6 +58,15 @@ theorem denote_embedCase [LawfulMonad m]
       funext a
       rw [ihb (ρ, a)]
 
+/-- Direct exact semantics agrees with lambda-iter semantics after inclusion. -/
+theorem denote_embedIter [LawfulMonad m] [Isotope.Elgot.Iterate m]
+    {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n} {t : Tm ν Φ n} {A : τ}
+    (h : HasType Φ Γ β t A) (γ : CtxDen Γ) (ρ : BoundDen β) :
+    LambdaIter.Semantics.denote (ε := ε) (m := m) h.embedIter γ ρ =
+      denote (ε := ε) (m := m) h γ ρ := by
+  rw [LambdaCase.Semantics.denote_embed h.embedCase γ ρ]
+  exact denote_embedCase h γ ρ
+
 end Isotope.LambdaSeq.Semantics
 
 namespace Isotope.LambdaSeq.Subtyping.Semantics
@@ -95,5 +104,15 @@ theorem denote_embedCase
     (γ : CtxDen Γ) (ρ : BoundDen β) :
     LambdaCase.Subtyping.Semantics.denote (ε := ε) (m := m) h.embedCase γ ρ =
       denote (ε := ε) (m := m) h γ ρ := rfl
+
+/-- Coercive lambda-seq semantics agrees with lambda-iter after inclusion. -/
+theorem denote_embedIter [LawfulMonad m] [Isotope.Elgot.Iterate m]
+    {Γ : Ctx ν τ} {n : Nat} {β : LambdaSeq.LocallyNameless.BoundCtx τ n}
+    {t : LambdaSeq.LocallyNameless.Tm ν Φ n} {A : τ} (h : HasType Φ Γ β t A)
+    (γ : CtxDen Γ) (ρ : BoundDen β) :
+    LambdaIter.Subtyping.Semantics.denote (ε := ε) (m := m) h.embedIter γ ρ =
+      denote (ε := ε) (m := m) h γ ρ := by
+  rw [LambdaCase.Subtyping.Semantics.denote_embed h.embedCase γ ρ]
+  rfl
 
 end Isotope.LambdaSeq.Subtyping.Semantics

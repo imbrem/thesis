@@ -61,4 +61,41 @@ def denoteClosed {t : Tm Empty Φ 0} {A : τ}
     (h : HasType Φ (.nil : Ctx Empty τ) .nil t A) : m (TyDen A) :=
   denote (ε := ε) h PUnit.unit PUnit.unit
 
+/-- Adding an arbitrary iteration operator does not change the denotation of
+an embedded exact lambda-case derivation. -/
+theorem denote_embed [LawfulMonad m] [Isotope.Elgot.Iterate m]
+    {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n} {t : Tm ν Φ n} {A : τ}
+    (h : HasType Φ Γ β t A) (γ : CtxDen Γ) (ρ : BoundDen β) :
+    LambdaIter.Semantics.denote (ε := ε) (m := m) h.embed γ ρ =
+      denote (ε := ε) (m := m) h γ ρ := by
+  induction h with
+  | fv | bv | unit => rfl
+  | op ha ih =>
+      unfold LocallyNameless.HasType.embed LambdaIter.Semantics.denote denote
+      simp only [ih ρ]
+  | let₁ ha hb iha ihb =>
+      unfold LocallyNameless.HasType.embed LambdaIter.Semantics.denote denote
+      rw [iha ρ]
+      congr 1
+      funext a
+      rw [ihb (ρ, a)]
+  | pair ha hb iha ihb =>
+      unfold LocallyNameless.HasType.embed LambdaIter.Semantics.denote denote
+      rw [iha ρ, ihb ρ]
+  | let₂ ha hc iha ihc =>
+      unfold LocallyNameless.HasType.embed LambdaIter.Semantics.denote denote
+      congr 1
+      · exact iha ρ
+      funext ab
+      exact ihc _
+  | inl ha ih | inr ha ih | abort ha ih =>
+      unfold LocallyNameless.HasType.embed LambdaIter.Semantics.denote denote
+      first | rfl | congr 1; exact ih ρ
+  | case he hl hr ihe ihl ihr =>
+      unfold LocallyNameless.HasType.embed LambdaIter.Semantics.denote denote
+      congr 1
+      · exact ihe ρ
+      funext e
+      split <;> simp_all only
+
 end Isotope.LambdaCase.Semantics
