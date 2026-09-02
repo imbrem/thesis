@@ -474,4 +474,146 @@ theorem seam_absorb {Ra Rg : RuleSet} (hAb : Rule.Ab ∈ Ra) (hEx : Rule.Ex ∈ 
       hυn hdl k₁ k₂
   exact ⟨d, k₁, Step.chro hEx hex, Step.chro hAb hab⟩
 
+/-! ## The seam form: `Cn ↔ Di`
+
+The pair the paper singles out as its most complicated (journal Appendix F).
+Both rules pull the whole pre-trace along `ε`, so the two seams differ in their
+delimiting views as well as in their chronicles, and the right operand has to be
+decomposed with respect to *two* messages at once. -/
+
+theorem listO_map (f : Transition Loc Val → Transition Loc Val)
+    {l : List (Transition Loc Val)} (h : l ≠ []) :
+    ∃ T ∈ l, listO l = T.opening ∧ listO (l.map f) = (f T).opening := by
+  cases l with
+  | nil => exact absurd rfl h
+  | cons T l => exact ⟨T, by simp, rfl, rfl⟩
+
+theorem listO_map_pull (ε : Msg Loc Val) {l : List (Transition Loc Val)} (h : l ≠ []) :
+    listO (l.map (Transition.pull ε)) = Memory.pull ε (listO l) := by
+  obtain ⟨T, _, ho, hom⟩ := listO_map (Transition.pull ε) h
+  rw [hom, ho]; rfl
+
+theorem listC_map_pull (ε : Msg Loc Val) {l : List (Transition Loc Val)} (h : l ≠ []) :
+    listC (l.map (Transition.pull ε)) = Memory.pull ε (listC l) := by
+  obtain ⟨T, _, hc, hcm⟩ := listC_map (h := Transition.pull ε) l h
+  rw [hcm, hc]; rfl
+
+/-- The list-level form of `exists_closing_of_aShape`. -/
+theorem listC_aShape {f g : Transition Loc Val → Transition Loc Val}
+    (l m : List (Transition Loc Val)) (T S : Transition Loc Val) :
+    (m = [] ∧ listC (l ++ T :: m.map f) = T.closing ∧
+        listC (l ++ S :: m.map g) = S.closing) ∨
+      ∃ U ∈ m, listC (l ++ T :: m.map f) = (f U).closing ∧
+        listC (l ++ S :: m.map g) = (g U).closing := by
+  rcases List.eq_nil_or_concat' m with rfl | ⟨m', U, rfl⟩
+  · exact Or.inl ⟨rfl, by rw [listC_append]; rfl, by rw [listC_append]; rfl⟩
+  · exact Or.inr ⟨U, by simp, by rw [listC_append, listC_cons_map_concat],
+      by rw [listC_append, listC_cons_map_concat]⟩
+
+/-- **The decomposition `ξ = n ⊎ {ν, ε}`**, for two distinct messages of the
+opening memory. -/
+theorem map_insertMsg₂_deleteMsg₂ {c : Chro Loc Val}
+    (hmono : ∀ T ∈ c.toList, T.opening ⊆ T.closing) {ν ε : Msg Loc Val}
+    (hν : ν ∈ c.o) (hε : ε ∈ c.o) (hne : ν ≠ ε) :
+    ((c.toList.map (Transition.deleteMsg ν)).map (Transition.deleteMsg ε)).map
+        (fun T ↦ (T.insertMsg ε).insertMsg ν) = c.toList := by
+  rw [List.map_map, List.map_map]
+  refine (List.map_congr_left ?_).trans (List.map_id _)
+  intro T hT
+  have hνo : ν ∈ T.opening := listO_sub_of_mono c.toList c.chain_toList hmono T hT hν
+  have hεo : ε ∈ T.opening := listO_sub_of_mono c.toList c.chain_toList hmono T hT hε
+  have hνc : ν ∈ T.closing := hmono T hT hνo
+  have hεc : ε ∈ T.closing := hmono T hT hεo
+  cases T with
+  | mk o c =>
+      simp only [Function.comp_apply, id_eq, Transition.insertMsg, Transition.deleteMsg,
+        Transition.mk.injEq]
+      constructor
+      · rw [Set.insert_diff_self (show ε ∈ o \ {ν} from ⟨hεo, hne.symm⟩),
+          Set.insert_diff_self hνo]
+      · rw [Set.insert_diff_self (show ε ∈ c \ {ν} from ⟨hεc, hne.symm⟩),
+          Set.insert_diff_self hνc]
+
+/-- **`Cn ↔ Di` at the seam.**  The left operand of a seam is `Di`-rewritten,
+splitting `ν[↑ε]` into `ν` together with the local message `ε`; the right
+operand `υ` carries both `ν` and `ε` as environment messages.  Then `υ`
+`Cn`-rewrites *backwards*, condensing them back into `ν[↑ε]` and pulling, and a
+single `Di`-rewrite carries the seam of `c₁` with the condensed `υ` to the seam
+of `c₂` with `υ`.
+
+**Original work**; see the file header. -/
+theorem seam_dilute {Ra Rg : RuleSet} (hDi : Rule.Di ∈ Ra) (hCn : Rule.Cn ∈ Rg)
+    {α : View Loc} {c₁ c₂ : Chro Loc Val}
+    {l m : List (Transition Loc Val)} {μ ρ : Memory Loc Val} {ν ε : Msg Loc Val}
+    (hde : Msg.DovetailEq ν ε)
+    (hεμ : ε ∉ μ) (hερ : ε ∉ ρ) (hνρ : ν ∉ ρ)
+    (hfνm : listFree ν m) (hfεm : listFree ε m)
+    (h₁ : c₁.toList =
+      (l ++ ⟨μ, insert ν ρ⟩ :: m.map (Transition.insertMsg ν)).map (Transition.pull ε))
+    (h₂ : c₂.toList =
+      l ++ ⟨μ, insert ν (insert ε ρ)⟩ ::
+        m.map (fun T ↦ (T.insertMsg ε).insertMsg ν))
+    {υ : PreTrace Loc Val B}
+    (hmono : ∀ T ∈ υ.ch.toList, T.opening ⊆ T.closing)
+    (k₂ : c₂.c ⊆ υ.ch.o) :
+    ∃ (d : Chro Loc Val) (k₁ : c₁.c ⊆ d.o),
+      Step Rg υ ⟨View.pull ε υ.ivw, d, View.pull ε υ.fvw, υ.ret⟩ ∧
+      Step Ra
+        (⟨View.pull ε α, c₁.append d k₁, View.pull ε υ.fvw, υ.ret⟩ :
+          PreTrace Loc Val B)
+        ⟨α, c₂.append υ.ch k₂, υ.fvw, υ.ret⟩ := by
+  classical
+  have hne : ν ≠ ε := fun hc ↦ by
+    rw [hc] at hde; exact absurd hde.1.2.1 (ne_of_gt ε.i_lt_t)
+  obtain ⟨X, hX₁, hX₂, hXν, hXε⟩ :
+      ∃ X : Memory Loc Val,
+        listC (l ++ (⟨μ, insert ν ρ⟩ : Transition Loc Val) ::
+            m.map (Transition.insertMsg ν)) = insert ν X ∧
+          c₂.c = insert ν (insert ε X) ∧ ν ∉ X ∧ ε ∉ X := by
+    rcases listC_aShape (f := Transition.insertMsg ν)
+        (g := fun T ↦ (T.insertMsg ε).insertMsg ν) l m ⟨μ, insert ν ρ⟩
+        ⟨μ, insert ν (insert ε ρ)⟩ with ⟨-, e₁, e₂⟩ | ⟨U, hU, e₁, e₂⟩
+    · exact ⟨ρ, e₁, by rw [Chro.c, h₂]; exact e₂, hνρ, hερ⟩
+    · exact ⟨U.closing, e₁, by rw [Chro.c, h₂]; exact e₂, (hfνm U hU).2, (hfεm U hU).2⟩
+  have hνυ : ν ∈ υ.ch.o := k₂ (hX₂ ▸ Set.mem_insert _ _)
+  have hευ : ε ∈ υ.ch.o := k₂ (hX₂ ▸ Set.mem_insert_of_mem _ (Set.mem_insert _ _))
+  -- decompose `υ` as `n ⊎ {ν, ε}`
+  set n : List (Transition Loc Val) :=
+    (υ.ch.toList.map (Transition.deleteMsg ν)).map (Transition.deleteMsg ε) with hn
+  have hnne : n ≠ [] := by simp [hn, υ.ch.toList_ne_nil]
+  have hnchain : List.IsChain Adj n :=
+    isChain_map_deleteMsg (isChain_map_deleteMsg υ.ch.chain_toList)
+  have hυn : υ.ch.toList = n.map (fun T ↦ (T.insertMsg ε).insertMsg ν) :=
+    (map_insertMsg₂_deleteMsg₂ hmono hνυ hευ hne).symm
+  have hfεn : listFree ε n := listFree_map_deleteMsg ε _
+  have hfνn : listFree ν n :=
+    listFree_map_deleteMsg_of (listFree_map_deleteMsg ν υ.ch.toList)
+  set d : Chro Loc Val :=
+    Chro.ofList ((n.map (Transition.insertMsg ν)).map (Transition.pull ε))
+      (by simp [hnne])
+      (List.isChain_map_of_isChain _ (fun _ _ hab ↦ Transition.pull_adj hab)
+        (isChain_map_insertMsg hnchain)) with hd
+  have hdl : d.toList = (n.map (Transition.insertMsg ν)).map (Transition.pull ε) :=
+    Chro.ofList_toList _ _ _
+  have hdo : d.o = Memory.pull ε (insert ν (listO n)) := by
+    rw [Chro.o, hdl, listO_map_pull ε (by simp [hnne]), listO_map_insertMsg ν hnne]
+  have hoυ : υ.ch.o = insert ν (insert ε (listO n)) := by
+    conv_lhs => rw [Chro.o, hυn]
+    rw [listO_map_insertMsg₂ ν ε hnne]
+  have hsub : insert ν (insert ε X) ⊆ insert ν (insert ε (listO n)) := hX₂ ▸ hoυ ▸ k₂
+  have hXn : X ⊆ listO n := by
+    intro x hx
+    rcases hsub (Set.mem_insert_of_mem _ (Set.mem_insert_of_mem _ hx)) with rfl | hx'
+    · exact absurd hx hXν
+    · rcases hx' with rfl | hx''
+      · exact absurd hx hXε
+      · exact hx''
+  have k₁ : c₁.c ⊆ d.o := by
+    rw [hdo, Chro.c, h₁, listC_map_pull ε (by simp), hX₁]
+    exact Memory.pull_mono (Set.insert_subset_insert hXn)
+  obtain ⟨hcn, hdi⟩ :=
+    mirror_dilute (Ra := Ra) (Rg := Rg) hCn hDi hde hεμ hερ hνρ hfνm hfεm hfνn hfεn
+      (α := α) (α' := υ.ivw) (ω' := υ.fvw) (s := υ.ret) h₁ h₂ hυn hdl k₁ k₂
+  exact ⟨d, k₁, hcn, hdi⟩
+
 end Isotope.Elgot.RA
