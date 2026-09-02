@@ -1,4 +1,5 @@
 import Isotope.LambdaSSA.Structural
+import Isotope.LambdaSSA.Semantics.Collective
 
 /-! # Typed simultaneous reindexing of a lambda-SSA CFG binder -/
 
@@ -79,4 +80,37 @@ def identity {n : Nat} (R : Fin n → τ) (L : LCtx τ) : CfgReindexing R R L wh
 
 end CfgReindexing
 end Region
+
+namespace Semantics.Categorical
+
+open CategoryTheory CategoryTheory.Limits
+open LambdaIter.Subtyping.Semantics.Categorical
+
+variable {V : Type u} [Category V] [CartesianMonoidalCategory V]
+variable [LambdaIter.Subtyping τ]
+variable [HasFiniteCoproducts V] (M : TypeModel τ V)
+
+/-- Reindexing isomorphism for the finite coproduct of locally bound labels. -/
+noncomputable def finiteLabelPermIso {n : Nat} {R R' : Fin n → τ} {L : LCtx τ}
+    (p : Region.CfgReindexing R R' L) :
+    finiteLabelObj M R ≅ finiteLabelObj M R' := by
+  exact Limits.Sigma.whiskerEquiv p.permutation.symm
+    (fun j => eqToIso (congrArg M.obj (by
+      simpa [Function.comp_apply] using congrFun p.types (p.permutation.symm j))))
+
+/-- The finite-label permutation sends each old injection to the corresponding
+new injection. -/
+@[reassoc]
+theorem finiteLabelInject_perm {n : Nat} {R R' : Fin n → τ} {L : LCtx τ}
+    (p : Region.CfgReindexing R R' L) (i : Fin n) :
+    finiteLabelInject M R i ≫ (finiteLabelPermIso M p).hom =
+      eqToHom (congrArg M.obj (by
+        simpa [Function.comp_apply] using
+          (congrFun p.types (p.permutation.symm i)).symm)) ≫
+        finiteLabelInject M R' (p.permutation.symm i) := by
+  unfold finiteLabelInject finiteLabelPermIso
+  rw [Limits.Sigma.whiskerEquiv_hom]
+  apply Limits.Sigma.ι_comp_map'
+
+end Semantics.Categorical
 end Isotope.LambdaSSA
