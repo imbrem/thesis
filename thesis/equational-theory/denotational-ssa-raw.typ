@@ -22,7 +22,7 @@ The rules for this relation can be roughly split into #emph[rewriting
 rules], which denote when two particular expressions have equivalent
 semantics, and #emph[congruence rules], which govern how rewrites can
 be composed to enable equational reasoning. In particular, our
-congruence rules, given in Figure~@fig:ssa-expr-congr-rules, consist of:
+congruence rules, given in @fig:ssa-expr-congr-rules, consist of:
 
 - refl, symm, trans, which state that
   $Gamma tack.r_epsilon.alt dot.op approx dot.op : A$ is reflexive,
@@ -69,7 +69,7 @@ congruence relation:
 We may group the rest of our rules according to the relevant
 constructor, i.e. $sans(l e t)$ (unary and binary) and $sans(c a s e)$.
 In particular, for unary $sans(l e t)$, we have the following rules,
-summarized in Figure~@fig:ssa-unary-let-expr
+summarized in @fig:ssa-unary-let-expr
 
 - let$""_1$-$beta$, which allows us to substitute the bound variable in
   $x$ the let-statement $kw("let") med x = a ; #h(0em) b$ with its
@@ -193,7 +193,7 @@ operations as follows:
 $ f #h(0em) a approx \( kw("let") med y = f #h(0em) a ; #h(0em) y \) approx \( kw("let") med x = a ; #h(0em) kw("let") med y = f #h(0em) x ; #h(0em) y \) approx \( kw("let") med x = a ; #h(0em) f #h(0em) x \) $
 
 This completes the equational theory for #lssa terms;
-in Section #todo[Resolve source reference `ssec:completeness` during integration.], we will show that this is enough to state
+in Section #conditional-ref("ssec:completeness"), we will show that this is enough to state
 a completeness theorem.
 
 == Regions
@@ -203,7 +203,7 @@ that for terms, except that we also need to support control-flow graphs.
 As before, we will split our rules into a set of #emph[congruence rules]
 and, for each region constructor, #emph[rewriting rules] based on that
 constructor's semantics. Our congruence rules, given in
-Figure~@fig:ssa-reg-congr-rules, are quite standard; we have:
+@fig:ssa-reg-congr-rules, are quite standard; we have:
 
 - As for terms, refl, trans, and symm state that
   $Gamma tack.r dot.op approx dot.op gt.tri sans(L)$ is an equivalence
@@ -224,7 +224,7 @@ Figure~@fig:ssa-reg-congr-rules, are quite standard; we have:
   has not yet been defined.
 
 Our rewriting rules for unary $sans(l e t)$-statements, given in
-Figure~@fig:ssa-reg-unary-let, are analogous to those for unary
+@fig:ssa-reg-unary-let, are analogous to those for unary
 $sans(l e t)$-expressions:
 
 - let$""_1$-$beta$ allows us to perform $beta$-reduction of #emph[pure]
@@ -240,7 +240,7 @@ $sans(l e t)$-expressions:
 Similarly to expressions, binary $sans(l e t)$-statements and
 $sans(c a s e)$-statements need only the obvious $beta$ rule and binding
 rule, with all the interactions with other constructors derivable; these
-rules are given in Figure~@fig:ssa-reg-let2-case-expr Note in
+rules are given in @fig:ssa-reg-let2-case-expr Note in
 particular that $eta$-rules are not necessary, as these are derivable
 from binding and the $eta$-rules for expressions.
 
@@ -283,7 +283,7 @@ from binding and the $eta$-rules for expressions.
 
 Dealing with $sans(w h e r e)$-blocks, on the other hand, is a little
 bit more complicated, as shown by the number of rules in
-Figure~@fig:ssa-where-rules One difficulty is that, unlike the other
+@fig:ssa-where-rules One difficulty is that, unlike the other
 region constructors, we will need an $eta$-rule as well as #emph[two]
 $beta$-rules. The latter are simple enough to state:
 
@@ -302,7 +302,7 @@ machinery. Given a mapping from a set of labels $ell_i$ to associated
 regions $t_i$, we may define the #emph[control-flow graph substitution]
 $sans(c f g s) #h(0em) { \( ell_i \( x_i \) : { t_i } \, \)_i }$
 pointwise as follows:
-$ sans(c f g s) #h(0em) { \( ell_i \( x_i \) : { t_i } \, \)_i } #h(0em) kappa #h(0em) a := \( kw("br") med kappa #h(0em) a #h(0em) kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i \) $
+$ sans(c f g s) #h(0em) { \( ell_i \( x_i \) : { t_i } \, \)_i } #h(0em) kappa #h(0em) a := \( kw("br") med kappa #h(0em) a med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i \) $
 In general, we may derive, for any label-context $sans(L)$ (assuming
 $sans(c f g s) #h(0em) { dot.op }$ acts uniformly on the labels $kappa$
 in $sans(L)$ as described above), the following rule:
@@ -313,16 +313,16 @@ in $sans(L)$ as described above), the following rule:
 )))
 Our $eta$-rule, cfg-$eta$, says that any $sans(w h e r e)$-block of the
 form
-$r #h(0em) kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i$
+$r med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i$
 has the same semantics as the label-substitution
 $\[ sans(c f g s) #h(0em) { \( ell_i \( x_i \) : { t_i } \, \)_i } \] r$,
 which in effect propagates the where-block to the branches of $r$, if
 any. While we called this rule cfg-$eta$, it also functions similarly to
 a binding rule in that it allows us to derive many of the expected
 commutativity properties of $sans(w h e r e)$; for example, we have that
-$ kw("let") med y = a ; #h(0em) r #h(0em) kw("where") med \( ell_i \( x_i \) : { kw("br") med ell_j #h(0em) a_j } \, \)_i & approx \[ sans(c f g s) #h(0em) { \( ell_i \( x_i \) : { kw("br") med ell_j #h(0em) a_j } \, \)_i } \] \( kw("let") med y = a ; #h(0em) r \)\
+$ kw("let") med y = a ; #h(0em) r med kw("where") med \( ell_i \( x_i \) : { kw("br") med ell_j #h(0em) a_j } \, \)_i & approx \[ sans(c f g s) #h(0em) { \( ell_i \( x_i \) : { kw("br") med ell_j #h(0em) a_j } \, \)_i } \] \( kw("let") med y = a ; #h(0em) r \)\
  & approx kw("let") med y = a ; #h(0em) \[ sans(c f g s) #h(0em) { \( ell_i \( x_i \) : { kw("br") med ell_j #h(0em) a_j } \, \)_i } \] r\
- & approx kw("let") med y = a ; #h(0em) r #h(0em) kw("where") med \( ell_i \( x_i \) : { kw("br") med ell_j #h(0em) a_j } \, \)_i $
+ & approx kw("let") med y = a ; #h(0em) r med kw("where") med \( ell_i \( x_i \) : { kw("br") med ell_j #h(0em) a_j } \, \)_i $
 One particularly important application of the $eta$-rule for
 control-flow graphs is in validating the rewrite
 #align(center, prooftree(rule(
@@ -343,11 +343,11 @@ essence, this lets us commute pure expressions with loop bodies,
 enabling rewrites (in imperative style) like
 $ sans(l o o p) #h(0em) { x = x + 1 ; sans(i f) #h(0em) p #h(0em) 3 x #h(0em) { sans(r e t) #h(0em) 3 x } } #h(2em) approx #h(2em) y = 3 x ; sans(l o o p) #h(0em) { y = y + 3 ; sans(i f) #h(0em) p #h(0em) y #h(0em) { sans(r e t) #h(0em) y } } $<eqn:simple-loop-comm>
 Note that substitution alone would not allow us to derive
-Equation~@eqn:simple-loop-comm above, since $x$ and $y$ change each
+@eqn:simple-loop-comm above, since $x$ and $y$ change each
 iteration, and hence, in SSA, would need to become parameters as
 follows:
-$ kw("br") med ell #h(0em) x #h(0em) kw("where") med ell \( y \) : { kw("let") med x' = y + 1 ; sans(i f) #h(0em) p #h(0em) 3 x' #h(0em) { sans(r e t) #h(0em) 3 x' } #h(0em) sans(e l s e) #h(0em) { kw("br") med ell #h(0em) x' } }\
-approx kw("let") med y = 3 x ; kw("br") med kappa #h(0em) y #h(0em) kw("where") med kappa \( y \) : { kw("let") med y' = y + 3 ; sans(i f) #h(0em) p #h(0em) y' #h(0em) { sans(r e t) #h(0em) y' } #h(0em) sans(e l s e) #h(0em) { kw("br") med kappa #h(0em) y' } } $<eqn:loop-comm-ssa>
+$ kw("br") med ell #h(0em) x med kw("where") med ell \( y \) : { kw("let") med x' = y + 1 ; sans(i f) #h(0em) p #h(0em) 3 x' #h(0em) { sans(r e t) #h(0em) 3 x' } #h(0em) sans(e l s e) #h(0em) { kw("br") med ell #h(0em) x' } }\
+approx kw("let") med y = 3 x ; kw("br") med kappa #h(0em) y med kw("where") med kappa \( y \) : { kw("let") med y' = y + 3 ; sans(i f) #h(0em) p #h(0em) y' #h(0em) { sans(r e t) #h(0em) y' } #h(0em) sans(e l s e) #h(0em) { kw("br") med kappa #h(0em) y' } } $<eqn:loop-comm-ssa>
 The actual rule is quite complicated, so let's break it down point by
 point. Assume we are given:
 
@@ -365,7 +365,7 @@ point. Assume we are given:
   parameterised by a value $x$ of type $A$
 
 Suppose further that the following condition holds:
-$ Gamma \, x : A tack.r \[ e \/ y \] s approx t #h(0em) kw("where") med ell \( x \) : { kw("br") med kappa #h(0em) e } gt.tri sans(L) \, kappa \( B \) $
+$ Gamma \, x : A tack.r \[ e \/ y \] s approx t med kw("where") med ell \( x \) : { kw("br") med kappa #h(0em) e } gt.tri sans(L) \, kappa \( B \) $
 That is, the following two programs are equivalent:
 
 + Given input $x$, evaluate $e$ and, taking it's output to be input $y$,
@@ -379,7 +379,7 @@ That is, the following two programs are equivalent:
 #emph[Then], for any well-typed entry block
 $Gamma tack.r r gt.tri sans(L) \, ell \( A \)$ (which can produce an
 appropriate input $x : A$ at label $ell$), we have that
-$ Gamma tack.r \( r #h(0em) kw("where") med ell \( x \) : { kw("br") med kappa #h(0em) e } \) #h(0em) kw("where") med kappa \( y \) : { s } approx r #h(0em) kw("where") med t gt.tri sans(L) $
+$ Gamma tack.r \( r med kw("where") med ell \( x \) : { kw("br") med kappa #h(0em) e } \) med kw("where") med kappa \( y \) : { s } approx r med kw("where") med t gt.tri sans(L) $
 i.e., in imperative pseudocode,
 $ x = r ; y = e ; sans(l o o p) #h(0em) { y = s } & approx x = r ; sans(l o o p) #h(0em) { x = t } $
 since
@@ -401,10 +401,10 @@ rule
 ]
 <eqn:uni-variant>
 Going back to our concrete example from
-Equation~@eqn:loop-comm-ssa, if we first substitute the let-binding
+@eqn:loop-comm-ssa, if we first substitute the let-binding
 $y = 3 x$ on the RHS, we get
-$ kw("br") med ell #h(0em) x #h(0em) kw("where") med ell \( y \) : { kw("let") med x' = y + 1 ; sans(i f) #h(0em) p #h(0em) 3 x' #h(0em) { sans(r e t) #h(0em) 3 x' } #h(0em) sans(e l s e) #h(0em) { kw("br") med ell #h(0em) x' } }\
-approx kw("br") med kappa #h(0em) 3 x #h(0em) kw("where") med kappa \( y \) : { kw("let") med y' = y + 3 ; sans(i f) #h(0em) p #h(0em) y' #h(0em) { sans(r e t) #h(0em) y' } #h(0em) sans(e l s e) #h(0em) { kw("br") med kappa #h(0em) y' } } $<eqn:loop-comm-red>
+$ kw("br") med ell #h(0em) x med kw("where") med ell \( y \) : { kw("let") med x' = y + 1 ; sans(i f) #h(0em) p #h(0em) 3 x' #h(0em) { sans(r e t) #h(0em) 3 x' } #h(0em) sans(e l s e) #h(0em) { kw("br") med ell #h(0em) x' } }\
+approx kw("br") med kappa #h(0em) 3 x med kw("where") med kappa \( y \) : { kw("let") med y' = y + 3 ; sans(i f) #h(0em) p #h(0em) y' #h(0em) { sans(r e t) #h(0em) y' } #h(0em) sans(e l s e) #h(0em) { kw("br") med kappa #h(0em) y' } } $<eqn:loop-comm-red>
 Now, instantiate $sans("uni")'$ (Equation~#todo[Resolve source reference `eqn:uni-variant` during integration.]) by taking:
 
 - $s = kw("let") med y' = y + 3 ; #h(0em) sans(i f) #h(0em) p #h(0em) y' #h(0em) { sans(r e t) #h(0em) y' } #h(0em) sans(e l s e) #h(0em) { kw("br") med kappa #h(0em) y' }$
@@ -418,10 +418,10 @@ Now, instantiate $sans("uni")'$ (Equation~#todo[Resolve source reference `eqn:un
   to be the loop body on the LHS
 
 It's easy to see that
-$\( \( \[ ell \( x \) mapsto kw("br") med kappa #h(0em) e \] r \) #h(0em) kw("where") med kappa \( y \) : { s } \)$
-and $\( r #h(0em) kw("where") med t \)$ are syntactically equal
+$\( \( \[ ell \( x \) mapsto kw("br") med kappa #h(0em) e \] r \) med kw("where") med kappa \( y \) : { s } \)$
+and $\( r med kw("where") med t \)$ are syntactically equal
 to the #emph[RHS] and #emph[LHS] of our desired result
-(Equation~@eqn:loop-comm-red). So, it suffices to verify that
+(@eqn:loop-comm-red). So, it suffices to verify that
 $ Gamma \, x : A tack.r & \[ e \/ y \] s approx kw("let") med y' = 3 x + 3 ; #h(0em) sans(i f) #h(0em) p #h(0em) y' #h(0em) { sans(r e t) #h(0em) y' } #h(0em) sans(e l s e) #h(0em) { kw("br") med kappa #h(0em) y' }\
  & approx kw("let") med y' = 3 \( x + 1 \) ; #h(0em) sans(i f) #h(0em) p #h(0em) y' #h(0em) { sans(r e t) #h(0em) y' } #h(0em) sans(e l s e) #h(0em) { kw("br") med kappa #h(0em) y' }\
  & approx kw("let") med x' = x + 1 ; #h(0em) kw("let") med y' = 3 x' ; #h(0em) sans(i f) #h(0em) p #h(0em) y' #h(0em) { sans(r e t) #h(0em) y' } #h(0em) sans(e l s e) #h(0em) { kw("br") med kappa #h(0em) y' }\
@@ -450,8 +450,20 @@ executed.
     prooftree(rule(label: msc("codiag"), $Gamma tack.r r gt.tri sans("L"), ell(A)$, $Gamma, y : A tack.r s gt.tri sans("L"), ell(A), kappa(A)$, $Gamma tack.r r sans("where") ell(x) : {sans("br") kappa x sans("where") kappa(y) : {s}} approx r sans("where") ell(y) : {[ell/kappa]s} gt.tri sans("L")$)),
     prooftree(rule(label: msc("uni"), $Gamma tack.r r gt.tri sans("L"), ell(A)$, $Gamma, x : A tack.r sans("let") y = e; s approx t sans("where") ell(x) : {sans("br") kappa e} gt.tri sans("L"), kappa(B)$, $Gamma tack.r (r sans("where") ell(x) : {sans("br") kappa e}) sans("where") kappa(y) : {s} approx r sans("where") t gt.tri sans("L")$)),
     $upright("where") quad #eff-typing($Gamma, x : A$, $bot$, $e$, $B$), quad Gamma, y : B tack.r s gt.tri sans("L"), kappa(B), quad upright("and") quad Gamma, x : A tack.r t gt.tri sans("L"), ell(A)$,
-    text(size: 7.5pt)[#prooftree(rule(label: msc("dinat"), $Gamma tack.r r gt.tri sans("L"), (ell_i(A_i),)_(i in I)$, $Gamma tack.r sigma : (ell_i(A_i),)_(i in I) arrow.r.squiggly (kappa_j(B_j),)_(j in J)$, $forall j in J. Gamma, x_j : B_j tack.r t_j gt.tri sans("L"), (ell_i(A_i),)_(i in I)$, $Gamma tack.r ([sigma^harpoon.tl]r) sans("where") (kappa_j(x_j) : {[sigma^harpoon.tl]t_j},)_(j in J) approx r sans("where") (ell_i(x_i) : {[(kappa_j(x_j) mapsto t_j,)_(j in J)^harpoon.tl](sigma ell_i x_i)},)_(i in I)$))],
   )
+  #v(0.7em)
+  #fit-to-width(text(size: 7.5pt)[#prooftree(rule(
+    label: msc("dinat"),
+    stack(dir: ttb, spacing: 0.25em,
+      $Gamma tack.r r gt.tri sans("L"), (ell_i(A_i),)_(i in I)$,
+      $Gamma tack.r sigma : (ell_i(A_i),)_(i in I) arrow.r.squiggly (kappa_j(B_j),)_(j in J)$,
+    ),
+    $forall j in J. Gamma, x_j : B_j tack.r t_j gt.tri sans("L"), (ell_i(A_i),)_(i in I)$,
+    stack(dir: ttb, spacing: 0.25em,
+      $Gamma tack.r ([sigma^harpoon.tl]r) sans("where") (kappa_j(x_j) : {[sigma^harpoon.tl]t_j},)_(j in J)$,
+      $approx r sans("where") (ell_i(x_i) : {[(kappa_j(x_j) mapsto t_j,)_(j in J)^harpoon.tl](sigma ell_i x_i)},)_(i in I)$,
+    ),
+  ))])
 ], caption: [Rewriting rules for #lssa $sans("where")$-blocks])
 <fig:ssa-where-rules>
 
@@ -468,7 +480,7 @@ executed.
 
     ],
     caption: [
-      Program from Figure #todo[Resolve source reference `fig:dominance-to-lexical` during integration.] after substituting
+      Program from Figure #conditional-ref("fig:dominance-to-lexical") after substituting
       $sans(l e t)$s.
     ]
   )
@@ -528,9 +540,9 @@ executed.
 
 The derivable rule uni' (Equation~#todo[Resolve source reference `eqn:uni-variant` during integration.]) illuminates a very
 important potential use for uniformity; namely, formalizing rewrites
-like those in Figure~@fig:fact-dinat-rewrites In particular, consider a
+like those in @fig:fact-dinat-rewrites In particular, consider a
 program of the form
-$ Gamma tack.r \( \[ ell \( x \) mapsto kw("br") med kappa #h(0em) e \] r \) #h(0em) kw("where") med kappa \( y \) : { \[ ell \( x \) mapsto kw("br") med kappa #h(0em) e \] s } gt.tri sans(L) $
+$ Gamma tack.r \( \[ ell \( x \) mapsto kw("br") med kappa #h(0em) e \] r \) med kw("where") med kappa \( y \) : { \[ ell \( x \) mapsto kw("br") med kappa #h(0em) e \] s } gt.tri sans(L) $
 where
 
 - $Gamma tack.r r gt.tri sans(L) \, ell \( A \)$
@@ -544,11 +556,11 @@ $ \[ e \/ y \] \[ ell \( x \) mapsto kw("br") med kappa #h(0em) \( e \) \] s\
 approx \[ ell \( x \) mapsto kw("br") med kappa #h(0em) \[ e \/ y \] \( e \) \] \[ e \/ y \] s\
 approx \[ ell \( x \) mapsto kw("br") med kappa #h(0em) \( e \) \] \[ e \/ y \] s $
 and therefore that
-$ Gamma tack.r \( \[ ell \( x \) mapsto kw("br") med kappa #h(0em) e \] r \) #h(0em) kw("where") med kappa \( z \) : { \[ ell \( x \) mapsto kw("br") med kappa #h(0em) e \] s }\
-approx r #h(0em) kw("where") med ell \( x \) : { \[ e \/ y \] s }\
-approx r #h(0em) kw("where") med ell \( x \) : { kw("let") med y = e ; s } $
+$ Gamma tack.r \( \[ ell \( x \) mapsto kw("br") med kappa #h(0em) e \] r \) med kw("where") med kappa \( z \) : { \[ ell \( x \) mapsto kw("br") med kappa #h(0em) e \] s }\
+approx r med kw("where") med ell \( x \) : { \[ e \/ y \] s }\
+approx r med kw("where") med ell \( x \) : { kw("let") med y = e ; s } $
 In particular, for example, we can then easily derive the rewrite from
-Figure~@fig:fact-dinat to Figure~@fig:fact-zero by noting the
+@fig:fact-dinat to @fig:fact-zero by noting the
 #emph[equalities] (an equivalence would be enough, of course)
 $  & sans(i f) #h(0em) i_0 < n #h(0em) {\
  & quad kw("br") med sans(l o o p) \( kw("let") med \( x \, y \) = \( i_0 \, a_0 \) ; #h(0em) \( x + 1 \, y \* x + 1 \) \)\
@@ -563,7 +575,7 @@ $ kw("let") med n = 10 ; kw("br") med sans(l o o p) \( kw("let") med \( x \, y \
 Rewrites like this are an instance of the principle we call
 #emph[dinaturality], which, for structured control-flow, can be best
 expressed as an equivalence between the control-flow graphs in
-Figure~@fig:dinat-struct-cfg Unlike in the case of uniformity, however,
+@fig:dinat-struct-cfg Unlike in the case of uniformity, however,
 this is true even when the program fragment $P$ is #emph[impure],
 since, unlike in the case of general uniformity, we do not commute $P$
 over an infinite number of iterations. Our final rewriting rule, dinat,
@@ -583,7 +595,7 @@ relate unary and $n$-ary $sans(w h e r e)$-blocks and, in particular,
 use this relationship to interconvert between data-flow and
 control-flow. This means we now have enough equations to derive the
 flattening of nested $sans(w h e r e)$-blocks:
-#align(center, text(size: 7.5pt)[#prooftree(rule(
+#align(center, fit-to-width(text(size: 7.5pt)[#prooftree(rule(
   label: msc("cfg-fuse"),
   $Gamma tack.r r gt.tri sans("L"), (ell_i(A_i),)_(i in I), (kappa_j(B_j),)_(j in I)$,
   $forall i in I. Gamma, x_i : A_i tack.r t_i gt.tri sans("L"), (ell_j(A_j),)_(j in I)$,
@@ -592,10 +604,10 @@ flattening of nested $sans(w h e r e)$-blocks:
     sans("where") (ell_i(x_i) : {t_i}),)_(i in I)
     approx r sans("where") (kappa_k(y_k) : {s_k},)_(k in K),
       (ell_i(x_i) : {t_i}),)_(i in I) gt.tri sans("L")$,
-))]) <eqn:where-fusion-1> Rather than directly giving
+))])) <eqn:where-fusion-1> Rather than directly giving
 derivation trees for such auxilliary rules, it is more convenient to
 give a denotational proof. However, the completeness of our equational
-theory (proved in Section~#todo[Resolve source reference `ssec:completeness` during integration.]) means that the semantic
+theory (proved in Section~#conditional-ref("ssec:completeness")) means that the semantic
 equality implies the existence of the requisite derivation tree. A proof
 can be found in Lemma~#todo[Resolve source reference `lem:where-fusion` during integration.] in the appendix. This is one of
 the benefits of having a completeness result: it lets us switch freely
@@ -681,7 +693,7 @@ In particular, note that this lemma uses an equivalence relation on
 substitutions and label-substitutions: this is just the obvious
 pointwise extension of the equivalence relation on terms and regions
 respectively. We give the rules for this relation in
-Figure~@fig:ssa-subst-equiv in the interests of explicitness.
+@fig:ssa-subst-equiv in the interests of explicitness.
 
 #block[
 Given
@@ -706,7 +718,7 @@ we have that
 This means, in particular, that, substitution and label-substitution are
 well-defined operators on equivalence classes of terms, which will come
 in handy later as we set out to prove completeness in
-Section~#todo[Resolve source reference `ssec:completeness.` during integration.]
+Section~#conditional-ref("ssec:completeness").
 
 #figure([
   #rule-set(
@@ -776,7 +788,7 @@ Our first step is to extend the work of
 #todo[Restore prose citation `chakravarty-functional-ssa-2003` during integration.];, by providing
 an algorithm for converting between #lssa and ANF in an
 equivalence-preserving way. We define the ANF regions, whose grammar is
-given in Figure~@fig:anf-grammar, to be #lssa regions
+given in @fig:anf-grammar, to be #lssa regions
 with expressions restricted to operations $o$; equivalently, we can view
 ANF regions as lexical SSA regions with the syntactic category of
 regions $r$ and terminators $tau$ fused. We may now introduce the
@@ -801,10 +813,10 @@ $ sans(A N F) \( kw("br") med ell #h(0em) a \) & = sans(A N F)_(sans(l e t)) \( 
 sans(A N F) \( kw("let") med x = a ; #h(0em) r \) & = sans(A N F)_(sans(l e t)) \( x \, a \, sans(A N F) \( r \) \)\
 sans(A N F) \( kw("let") med \( x \, y \) = a ; #h(0em) r \) & = sans(A N F)_(sans(l e t)) \( z \, a \, kw("let") med \( x \, y \) = z ; sans(A N F) \( r \) \)\
 sans(A N F) \( kw("case") med a #h(0em) { iota_l #h(0em) x : r \, iota_r #h(0em) y : s } \) & = sans(A N F)_(sans(l e t)) \( z \, a \, kw("case") med z #h(0em) { iota_l #h(0em) x : sans(A N F) \( r \) \, iota_r #h(0em) y : sans(A N F) \( s \) } \)\
-sans(A N F) \( r #h(0em) kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i \) & = sans(A N F) \( r \) #h(0em) kw("where") med \( ell_i \( x_i \) : { sans(A N F) \( t_i \) } \, \)_i $
+sans(A N F) \( r med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i \) & = sans(A N F) \( r \) med kw("where") med \( ell_i \( x_i \) : { sans(A N F) \( t_i \) } \, \)_i $
 where we define $sans(A N F)_(sans(l e t)) \( x \, a \, r \)$ by
 induction on expressions $a$ as follows
-$ sans(A N F)_(sans(l e t)) \( x \, a \, r \) & = \( kw("let") med x = a ; r \) #h(8em) upright("if") #h(0em) sans(I s O p) \( a \)\
+$ sans(A N F)_(sans(l e t)) \( x \, a \, r \) & = \( kw("let") med x = a ; r \) #h(8em) upright("if") med sans(I s O p) \( a \)\
 sans(A N F)_(sans(l e t)) \( x \, f #h(0em) e \, r \) & = sans(A N F)_(sans(l e t)) \( y \, e \, kw("let") med x = f #h(0em) y ; r \)\
 sans(A N F)_(sans(l e t)) \( x \, \( kw("let") med y = e ; #h(0em) a \) \, r \) & = sans(A N F)_(sans(l e t)) \( y \, e \, sans(A N F)_(sans(l e t)) \( x \, a \, r \) \)\
 sans(A N F)_(sans(l e t)) \( x \, \( e_1 \, e_2 \) \, r \) & = sans(A N F)_(sans(l e t)) \( y_1 \, e_1 \, sans(A N F)_(sans(l e t)) \( y_2 \, e_2 \, sans(A N F)_(sans(l e t)) \( x \, \( y_1 \, y_2 \) \, r \) \) \)\
@@ -813,7 +825,7 @@ sans(A N F)_(sans(l e t)) \( x \, iota_l #h(0em) e \, r \) & = sans(A N F)_(sans
 sans(A N F)_(sans(l e t)) \( x \, iota_r #h(0em) e \, r \) & = sans(A N F)_(sans(l e t)) \( y \, e \, \( kw("let") med x = iota_r #h(0em) y ; r \) \)\
 sans(A N F)_(sans(l e t)) \( x \, kw("case") med e #h(0em) { iota_l #h(0em) y : a \, iota_r #h(0em) z : b } \, r \) & = sans(A N F)_(sans(l e t)) \( w \, e \, kw("case") med w\
  & #h(2em) #h(0em) { iota_l #h(0em) y : sans(A N F)_(sans(l e t)) \( x \, a \, kw("br") med ell #h(0em) x \) \, iota_r #h(0em) z : sans(A N F)_(sans(l e t)) \( x \, b \, kw("br") med ell #h(0em) x \) }\
- & #h(2em) #h(0em) kw("where") med ell \( x \) : { sans(A N F) \( r \) } \)\
+ & #h(2em) med kw("where") med ell \( x \) : { sans(A N F) \( r \) } \)\
 sans(A N F)_(sans(l e t)) \( x \, kw("abort") med e \, r \) & = sans(A N F)_(sans(l e t)) \( y \, e \, \( kw("let") med x = kw("abort") med y ; r \) \) $
 We note that, to get to ANF, we don't actually need the new label, and
 can instead replace each branch with
@@ -841,26 +853,19 @@ $r$ If we are also given an arbitrary expression $a$, then
 
 ]
 #block[
-#emph[Proof.] See Appendix~#todo[Resolve source reference `proof:anf-conversion` during integration.]~◻
+#emph[Proof.] See Appendix~#conditional-ref("proof:anf-conversion")~◻
 
 ]
-#figure([#block[
-  #old-syntax([#block[
-  \<$v$\> ::= $x$ | $\( v \, v' \)$ | $\( \)$
-
-  \<$o$\> ::= $v$ | $f #h(0em) v$ | $iota_l #h(0em) v$ |
-  $iota_r #h(0em) v$ | $kw("abort") med v$
-
-  \<$r \, s \, t$\> ::= $kw("let") med x = o ; t$ |
-  $kw("let") med \( x \, y \) = o ; t$ |
-  $t #h(0em) kw("where") med L$ |
-  $kw("br") med ell #h(0em) o$ |
-  $kw("case") med e #h(0em) { iota_l #h(0em) o : s \, iota_r #h(0em) y : t }$
-
-  \<$L$\> ::= $dot.op$ | $L \, ell \( x \) : { t }$
-
-  ]], family: "angle-grammar", note: [Migrate to the shared grammar figure API.])
-  ]],
+#figure([#grammar(
+  production($v$, $x$, $\(v, v'\)$, $\(\)$),
+  production($o$, $v$, $f #h(0em) v$, $iota_l #h(0em) v$,
+    $iota_r #h(0em) v$, $#kw("abort") med v$),
+  production($r, s, t$, $#kw("let") med x = o; t$,
+    $#kw("let") med \(x, y\) = o; t$, $t med #kw("where") med L$,
+    $#kw("br") med ell med o$,
+    $#kw("case") med e med {iota_l med o : s, iota_r med y : t}$),
+  production($L$, $dot.op$, $L, ell(x) : {t}$),
+)],
   caption: [
     Grammar for ANF regions
   ]
@@ -876,12 +881,12 @@ $sans(S S A) \( r \)$ converting a region to SSA, and
 $sans(S S A)_(sans(a)) \( r \, L \)$ from ANF regions $r$
 #emph[targeting] labels in $L$ to lexical SSA.
 $ sans(S S A) \( r \) & = sans(S S A)_(sans(a)) \( sans(A N F) \( r \) \, dot.op \)\
-sans(S S A)_(sans(a)) \( t \, \( ell_i \( x_i \) : { t_i } \, \)_i \) & = t #h(0em) kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i #h(2em) upright("where") #h(0em) t #h(0em) upright("is a terminator")\
+sans(S S A)_(sans(a)) \( t \, \( ell_i \( x_i \) : { t_i } \, \)_i \) & = t med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i #h(2em) upright("where") #h(0em) t #h(0em) upright("is a terminator")\
 sans(S S A)_(sans(a)) \( \( kw("let") med x = a ; r \) \, L \) & = \( kw("let") med x = a ; sans(S S A)_(sans(a)) \( r \, L \) \)\
 sans(S S A)_(sans(a)) \( \( kw("let") med \( x \, y \) = a ; r \) \, L \) & = \( kw("let") med \( x \, y \) = a ; sans(S S A)_(sans(a)) \( r \, L \) \)\
 sans(S S A)_(sans(a)) \( \( kw("case") med a #h(0em) { iota_l #h(0em) x : s \, iota_r #h(0em) y : t } \) \, L \) & = \( kw("case") med a #h(0em) { iota_l #h(0em) x : kw("br") med ell_l #h(0em) x \, iota_r #h(0em) y : kw("br") med ell_r #h(0em) y } \)\
- & #h(2em) #h(0em) kw("where") med L \, ell_l \( x \) : { sans(S S A) \( s \) } \, ell_r \( y \) : { sans(S S A) \( t \) }\
-sans(S S A)_(sans(a)) \( \( r #h(0em) kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i \) \, L \) & = sans(S S A)_(sans(a)) \( r \, \( L \, \( ell_i \( x_i \) : { sans(S S A) \( t_i \) } \, \)_i \) \) $
+ & #h(2em) med kw("where") med L \, ell_l \( x \) : { sans(S S A) \( s \) } \, ell_r \( y \) : { sans(S S A) \( t \) }\
+sans(S S A)_(sans(a)) \( \( r med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i \) \, L \) & = sans(S S A)_(sans(a)) \( r \, \( L \, \( ell_i \( x_i \) : { sans(S S A) \( t_i \) } \, \)_i \) \) $
 The specification of these functions is as follows:
 
 #block[
@@ -901,7 +906,7 @@ In particular,
 - If $Gamma tack.r r gt.tri sans(L) \, \( ell_i \( A_i \) \, \)_i$ and
   $forall i \, Gamma tack.r t_i gt.tri sans(L) \, \( ell_i \( A_i \) \, \)_i$,
   then
-  $Gamma tack.r \( r #h(0em) kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i \) approx sans(S S A)_(sans(a)) \( r \, \( ell_i \( x_i \) : { t_i } \, \)_i \) gt.tri sans(L)$
+  $Gamma tack.r \( r med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i \) approx sans(S S A)_(sans(a)) \( r \, \( ell_i \( x_i \) : { t_i } \, \)_i \) gt.tri sans(L)$
 
 ]
 #block[
@@ -912,8 +917,8 @@ In particular,
 <from-lexical-ssa-to-ssa>
 We now come to the final part of our argument: that lexical SSA is
 equivalent to standard SSA, where we take the
-basic-blocks-with-arguments dialect described in Figure~#todo[Resolve source reference `fig:bba-grammar` during integration.]
-as standard. We begin by recalling how, in Figure~#todo[Resolve source reference `fig:ssa-data` during integration.], we
+basic-blocks-with-arguments dialect described in Figure~#conditional-ref("fig:bba-grammar")
+as standard. We begin by recalling how, in Figure~#conditional-ref("fig:ssa-data"), we
 illustrated how a lexical SSA region can alternatively be interpreted as
 a tuple of:
 
@@ -930,10 +935,10 @@ More formally, given a lexical SSA region $r$, we can define the
 following functions to compute $r$'s entry block and children as follows
 $ sans(e n t r y) \( kw("let") med x = a ; r \) & = \( kw("let") med x = a ; sans(e n t r y) \( r \) \)\
 sans(e n t r y) \( kw("let") med \( x \, y \) = a ; r \) & = \( kw("let") med \( x \, y \) = a ; sans(e n t r y) \( r \) \)\
-sans(e n t r y) \( tau #h(0em) kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i \) & = tau $
+sans(e n t r y) \( tau med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i \) & = tau $
 $ sans(c h i l d r e n) \( kw("let") med x = a ; r \) & = sans(c h i l d r e n) \( r \)\
 sans(c h i l d r e n) \( kw("let") med \( x \, y \) = a ; r \) & = sans(c h i l d r e n) \( r \)\
-sans(c h i l d r e n) \( tau #h(0em) kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i \) & = \[ ell_i \( x_i \) : { t_i } \, \]_i $
+sans(c h i l d r e n) \( tau med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i \) & = \[ ell_i \( x_i \) : { t_i } \, \]_i $
 We can similarly define a function to construct a lexical SSA program
 from a basic block $beta$ and a set of children as follows:
 #align(center, $
@@ -959,7 +964,7 @@ include:
   - All branches to $ell_i$ come from $kappa$ or $ell_j$ (and not from
     either $r$ or $G$)
 
-  $ sans(b b) \( r \, \( G \, kappa \( y \) : { s } \, \( ell_i \( x_i \) : { t_i } \, \) \) \) approx sans(b b) \( r \, \( G \, kappa \( y \) : { s #h(0em) kw("where") med \( ell_i \( x_i \) : { t_i } \, \) } \) \) $
+  $ sans(b b) \( r \, \( G \, kappa \( y \) : { s } \, \( ell_i \( x_i \) : { t_i } \, \) \) \) approx sans(b b) \( r \, \( G \, kappa \( y \) : { s med kw("where") med \( ell_i \( x_i \) : { t_i } \, \) } \) \) $
   and hence
   $ sans(b b) \( r \, \( G \, kappa \( y \) : { s } \, \( ell_i \( x_i \) : { t_i } \, \) \) \) approx sans(b b) \( r \, \( G \, kappa \( y \) : { sans(b b) \( s \, \( ell_i \( x_i \) : { t_i } \, \) \) } \) \) $
   In particular, we may apply this rule twice to obtain

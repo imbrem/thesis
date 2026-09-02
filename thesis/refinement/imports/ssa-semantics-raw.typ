@@ -11,7 +11,7 @@
 <refall:ssa-typing-and-semantics>
 == Typing Rules
 <refall:typing-rules-1>
-We now turn back to the promises at the end of Section~#todo[Cross-reference: `refall:sec:ssa-intro`]
+We now turn back to the promises at the end of Section~#conditional-ref("refall:sec:ssa-intro")
 and attempt to give typing rules and denotational semantics for
 $lambda_(sans(S S A))$. Recall that the primitive syntactic element of
 an $lambda_(sans(S S A))$ program is a #emph[region] $r$, which can be
@@ -28,7 +28,7 @@ $upright(bold(Q))$ is a list of quantity vectors $upright(bold(q))_i$
 which we call the #emph[quantity matrix].
 
 We may define a weakening judgement on annotated label contexts using
-the rules in Figure~@refall:fig:label-wk; the judgement is with respect to a
+the rules in @refall:fig:label-wk; the judgement is with respect to a
 particular context $Gamma$ used to interpret the quantity vectors in
 $upright(bold(Q))$. In particular, weakening allows us to insert
 arbitrary labels using skip, as well as weaken the quantities associated
@@ -40,7 +40,7 @@ obtain its #emph[lifting] $upright(bold(Q))^arrow.t$. In particular, we
 define this inductively with $dot.op^arrow.t = dot.op$ and
 $\( upright(bold(Q)) ; upright(bold(q)) \)^arrow.t = upright(bold(Q))^arrow.t ; \( upright(bold(q)) \, 0 \)$.
 With this, we give typing rules for $lambda_(sans(S S A))$, which we do
-in Figure~@refall:fig:ssa-typing.
+in @refall:fig:ssa-typing.
 
 - We begin with the typing rule for branches, br. This states that, if
   $o$ is a pure expression of type $A$, and
@@ -106,8 +106,8 @@ in Figure~@refall:fig:ssa-typing.
   prooftree(rule(label: msc("let1"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt o : A$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt t gt.tri sans(L)^(upright(bold(Q))^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt kw("let") med x = o ; t gt.tri sans(L)^(upright(bold(Q)))$)),
   prooftree(rule(label: msc("let2"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt o : A ⊗ B$, $Gamma^(upright(bold(q))_l) \, x : A \, y : B tack.r epsilon.alt t gt.tri sans(L)^(\( upright(bold(Q))^arrow.t \)^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt kw("let") med \( x \, y \) = o ; t gt.tri sans(L)^(upright(bold(Q)))$)),
   prooftree(rule(label: msc("case"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r tack.t o : A + B$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt tau_l gt.tri sans(L)^(upright(bold(Q))^arrow.t)$, $Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt tau_r gt.tri sans(L)^(upright(bold(Q))^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt kw("case") med o #h(0em) { iota_l #h(0em) x : tau_l \, iota_r #h(0em) y : tau_r } gt.tri sans(L)^(upright(bold(Q)))$)),
-  prooftree(rule(label: msc("wheremathsfnonrec"), $Gamma^(upright(bold(q))) tack.r epsilon.alt kappa gt.tri sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))')$, $forall ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))') . Gamma^(upright(bold(q))_i) \, x_i : A_i tack.r epsilon.alt t_i gt.tri sans(L)^(upright(bold(Q))^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt kappa #h(0em) kw("where")_sans(n o n r e c) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q)))$)),
-  prooftree(rule(label: msc("wheremathsfrec"), $Gamma^(upright(bold(q))) tack.r epsilon.alt kappa gt.tri sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))')$, $epsilon.alt in cal(E)^oo$, $forall ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))') . Gamma^(upright(bold(q))_i) \, x_i : A_i tack.r epsilon.alt t_i gt.tri sans(L)^(upright(bold(Q))^arrow.t) \, sans(R)^(upright(bold(Q))'^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt kappa #h(0em) kw("where")_sans(r e c) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q)))$)),
+  prooftree(rule(label: msc("wheremathsfnonrec"), $Gamma^(upright(bold(q))) tack.r epsilon.alt kappa gt.tri sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))')$, $forall ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))') . Gamma^(upright(bold(q))_i) \, x_i : A_i tack.r epsilon.alt t_i gt.tri sans(L)^(upright(bold(Q))^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt kappa med kw("where")_sans(n o n r e c) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q)))$)),
+  prooftree(rule(label: msc("wheremathsfrec"), $Gamma^(upright(bold(q))) tack.r epsilon.alt kappa gt.tri sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))')$, $epsilon.alt in cal(E)^oo$, $forall ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))') . Gamma^(upright(bold(q))_i) \, x_i : A_i tack.r epsilon.alt t_i gt.tri sans(L)^(upright(bold(Q))^arrow.t) \, sans(R)^(upright(bold(Q))'^arrow.t)$, $Gamma^(upright(bold(q))) tack.r epsilon.alt kappa med kw("where")_sans(r e c) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q)))$)),
 )
 
   ]],
@@ -135,12 +135,12 @@ $\[ Gamma mapsto sans(L)^(upright(bold(Q))) \, ell \( A \)^(upright(bold(q))) \]
 Here, the label is encoded as the branch of the coproduct we end up in,
 with each branch carrying the argument and any leftover variables as
 data. We may now give a denotational semantics for label contexts and
-label weakenings in Figure~@refall:fig:lwk-densem. It is easy to verify that we
+label weakenings in @refall:fig:lwk-densem. It is easy to verify that we
 can reassociate
 $alpha^(+) : cal(C)_tack.t \( ⟦ sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))') ⟧ \( Gamma \) \, ⟦ sans(L)^(upright(bold(Q))) ⟧ \( Gamma \) + ⟦ sans(R)^(upright(bold(Q))') ⟧ \( Gamma \) \)$.
 We also note that we can apply the associator "pointwise" to reassociate
 $alpha^arrow.b : cal(C)_tack.t \( ⟦ \[ Gamma \, x : A mapsto sans(L)^(upright(bold(Q))^arrow.t) \] ⟧ \, ⟦ \[ Gamma mapsto sans(L)^(upright(bold(Q))) \] ⟧ \)$.
-The semantics for regions is in Figure~@refall:fig:ssa-densem:
+The semantics for regions is in @refall:fig:ssa-densem:
 
 - Branches are interpreted by splitting the context, evaluating the
   argument, and then passing the remainder of the context and the result
@@ -187,9 +187,9 @@ The semantics for regions is in Figure~@refall:fig:ssa-densem:
   #h(2em) ; ⟦ Gamma^(upright(bold(q))_l) \, x : A \, y : B #refinement-eff-turnstile($epsilon.alt$) t : sans(L)^(\( upright(bold(Q))^arrow.t \)^arrow.t) ⟧ ; alpha^arrow.b ; alpha^arrow.b\
   ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kw("case") med o #h(0em) { iota_l #h(0em) x : tau_l \, iota_r #h(0em) y : tau_r } gt.tri sans(L)^(upright(bold(Q))) ⟧ = ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ; - ⊗ ⟦ Gamma^(upright(bold(q))_r) tack.r_tack.t o : A + B ⟧ ; delta^(- 1)\
   #h(2em) ; \[ ⟦ Gamma^(upright(bold(q))_l) \, x : A #refinement-eff-turnstile($epsilon.alt$) tau_l : sans(L)^(upright(bold(Q))^arrow.t) ⟧ ; alpha^arrow.b \, ⟦ Gamma^(upright(bold(q))_l) \, y : B #refinement-eff-turnstile($epsilon.alt$) tau_r : sans(L)^(upright(bold(Q))^arrow.t) ⟧ ; alpha^arrow.b \]\
-  ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa #h(0em) kw("where")_(sans(n o n r e c)) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q))) ⟧ = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa gt.tri sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))') ⟧ ; alpha^(+)\
+  ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa med kw("where")_(sans(n o n r e c)) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q))) ⟧ = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa gt.tri sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))') ⟧ ; alpha^(+)\
   #h(2em) ; \[ sans(i d)_(⟦ \[ Gamma mapsto sans(L)^(upright(bold(Q))) \] ⟧) \, \[ ⟦ Gamma^(upright(bold(q))_i) \, x_i : A_i #refinement-eff-turnstile($epsilon.alt$) t_i : sans(L)^(upright(bold(Q))^arrow.t) ⟧ ; alpha^arrow.b \, \]_(ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))')) \]\
-  ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa #h(0em) kw("where")_(sans(r e c)) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q))) ⟧ = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa gt.tri sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))') ⟧ ; alpha^(+)\
+  ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa med kw("where")_(sans(r e c)) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q))) ⟧ = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa gt.tri sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))') ⟧ ; alpha^(+)\
   #h(2em) ; \[ sans(i d)_(⟦ \[ Gamma mapsto sans(L)^(upright(bold(Q))) \] ⟧) \, \[ ⟦ Gamma^(upright(bold(q))_i) \, x_i : A_i #refinement-eff-turnstile($epsilon.alt$) t_i : sans(L)^(upright(bold(Q))^arrow.t) \, sans(R)^(upright(bold(Q))'^arrow.t) ⟧ ; alpha^arrow.b ; alpha^(+) \, \]_(ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))'))^dagger \] $
 
   ]])],
@@ -215,7 +215,7 @@ $⟦ Gamma^(upright(bold(q))) ⟧_(sans(T h) \( dot.op \)) = \[ Gamma^(upright(b
 we may simply define
 $sans(E x p r) \( Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) r gt.tri sans(L)^(upright(bold(Q))) \) := kw("let") med Gamma = x ; #h(0em) a$
 where the unpacking of a value $c : \[ Gamma^(upright(bold(q))) \]$ is
-defined in the obvious recursive manner (see Appendix~#todo[Cross-reference: `refall:apx:packing`] for
+defined in the obvious recursive manner (see Appendix~#conditional-ref("refall:apx:packing") for
 details). On the other hand, the function $sans(S S A)$ is just standard
 expression compilation presented inductively (the details are in
-Appendix~#todo[Cross-reference: `refall:apx:ssa-roundtrip`]).
+Appendix~#conditional-ref("refall:apx:ssa-roundtrip")).

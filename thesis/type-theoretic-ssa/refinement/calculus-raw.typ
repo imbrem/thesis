@@ -197,7 +197,7 @@ scoping #emph[with respect to the dominator tree].
 
 This idea underlies the design of $lambda_(sans(S S A))$, what we call
 #emph[type-theoretic SSA], which has the grammar given in
-Figure~@refall:fig:ssa-syntax. Rather than give a grammar for basic-blocks and
+@refall:fig:ssa-syntax. Rather than give a grammar for basic-blocks and
 control-flow graphs, we instead give a grammar for #emph[regions]
 $r \, s \, t$, which are composed of a series of $kw("let")$-bindings
 (each corresponding to an instruction $o$), followed by a subtree
@@ -216,7 +216,7 @@ program by simply adding in $kw("where")$-blocks corresponding to
 the dominator tree; similarly, simply erasing the
 $kw("where")$-blocks from an $lambda_(sans(S S A))$ program yields a
 program in standard basic-blocks with arguments SSA; we see an example
-of this in Figure~@refall:fig:fact-lex. We can also show that any two programs
+of this in @refall:fig:fact-lex. We can also show that any two programs
 which are equivalent up to the placement of $kw("where")$-blocks
 have equivalent semantics, therefore justifying $lambda_(sans(S S A))$
 as being simply SSA with additional annotations.
@@ -281,7 +281,7 @@ expression-oriented variant of SSA. Essentially, it is a simple
 first-order expression language with support for binding/sequencing,
 branching, and loops. $lambda_(sans(i t e r))$ looks very different from
 traditional presentations of SSA, but we later prove in
-Subsection~#todo[Cross-reference: `refall:ssec:interconversion`] that the two syntaxes are completely
+Subsection~#conditional-ref("refall:ssec:interconversion") that the two syntaxes are completely
 equivalent to one another. The main novelty of $lambda_(sans(i t e r))$
 is in its type system and equational theory. It has a rich substructural
 type and effect system, which enables us to give a complete inequational
@@ -293,7 +293,7 @@ syntactic characterization of refinement for SSA programs.
 <refall:syntax-and-typing-rules>
 As mentioned before, $lambda_(sans(i t e r))$ is a standard first-order
 expression language with branching and iteration: a functional analogue
-of #smallcaps[While]. Its grammar is in Figure~@refall:fig:expr-syntax, and is
+of #smallcaps[While]. Its grammar is in @refall:fig:expr-syntax, and is
 parametrized by a set of #emph[base types] $X in cal(X)$ and a set of
 #emph[instructions] $f in cal(I)$. To model multiple arguments and
 control flow, our grammar of types $A \, B \, C$ includes all
@@ -551,7 +551,7 @@ associate:
 ]
 All the following definitions in this section will be with respect to an
 arbitrary $lambda_(sans(i t e r))$-signature $cal(S)$. We give the
-typing rules for $lambda_(sans(i t e r))$ in Figure~@refall:fig:expr-typing.
+typing rules for $lambda_(sans(i t e r))$ in @refall:fig:expr-typing.
 Our rules are syntax directed, with one rule for each production in our
 grammar. In particular,
 
@@ -631,7 +631,7 @@ $Gamma'^(upright(bold(q))') #refinement-eff-turnstile($epsilon.alt$) a : A$.
 We now define substitution for effectful terms. First, we define a
 judgement
 $Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) sigma gt.tri Delta^(upright(bold(q))')$
-for substitutions, with rules in Figure~@refall:fig:expr-subst. This may be
+for substitutions, with rules in @refall:fig:expr-subst. This may be
 read as "$sigma$ takes the context $Gamma^(upright(bold(q)))$ to the
 context $Delta^(upright(bold(q))')$ with effect $epsilon.alt$." Our
 rules may be interpreted as follows:
@@ -732,13 +732,13 @@ property~#link(<refall:item:includes-rewrites>)[1], by the following rules:
   prooftree(rule(label: msc("refl"), $Gamma^(upright(bold(q))) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))) tack.r cal(R) a arrow.r.twohead a : A$)),
   prooftree(rule(label: msc("trans"), $Gamma^(upright(bold(q))) tack.r cal(R) a arrow.r.twohead b : A$, $Gamma^(upright(bold(q))) tack.r cal(R) b arrow.r.twohead c : A$, $Gamma^(upright(bold(q))) tack.r cal(R) a arrow.r.twohead c : A$)),
 ) The other congruence rules (in the appendix in
-Figure~#todo[Cross-reference: `refall:fig:congruence-refinement`]) correspond one-to-one with our term
+Figure~#conditional-ref("refall:fig:congruence-refinement")) correspond one-to-one with our term
 formers to ensure property~#link(<refall:item:is-congruence>)[2].
 Property~#link(<refall:item:is-congruence>)[2] means that the induced equivalence $approx$
 is also a congruence.
 
 To satisfy property~#link(<refall:item:abstracts-syntax>)[3], we introduce the binding
-rules (Figure~@refall:fig:binding-rules), which are stated as equivalences.
+rules (@refall:fig:binding-rules), which are stated as equivalences.
 These rules express syntactic equivalences up to reassociation and
 let-floating. For instance, nested let-bindings are rearranged to a
 canonical form. We do not require binding rules for every
@@ -746,7 +746,7 @@ construct---rules for pairs and sums, for example, can be derived via
 $beta$-reduction.
 
 Property~#link(<refall:item:does-computation>)[4] is addressed via the reduction rules
-(Figure~@refall:fig:reduction-rules). Most of these are standard $beta$- and
+(@refall:fig:reduction-rules). Most of these are standard $beta$- and
 $eta$-equivalences. However, the rule let$""_1$-$beta^p$ is
 #emph[directional]: it expresses that
 $kw("let") med x = a ; #h(0em) b$ refines $\[ x \/ a \] b$ when
@@ -777,7 +777,7 @@ $Gamma^(upright(bold(q))_r)$), as we would normally expect in an
 effectful language.
 
 The last thing that remains is to treat iteration. Our rules for
-iteration, given in Figure~@refall:fig:iteration-rules, are based on the
+iteration, given in @refall:fig:iteration-rules, are based on the
 properties of a Conway iteration operator as given in
 #cite(<coinductive-resumption-levy-goncharov-19>, form: "prose"). In
 particular, we require our operator to satisfy the following properties:
@@ -816,7 +816,7 @@ via the rule unif$""^p$, allows us to effectively commute certain
 effectful operations with the infinite unrolling of a loop body. This is
 best explained in terms of control-flow graphs: the precondition of the
 rule is corresponds to the left-hand-side of the diagram in
-Figure~@refall:fig:unif-cfg, while the postcondition corresponds to the
+@refall:fig:unif-cfg, while the postcondition corresponds to the
 right-hand-side. If we unroll the loops on both sides "infinitely many
 times," to obtain an infinite tree, we see that unif$""^p$ just says
 that we can apply the rewrite on the left-hand-side "infinitely many
@@ -907,7 +907,7 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
 #figure([],
   caption: [
     Control-flow graphs for the uniformity rule in
-    Figure~@refall:fig:iteration-rules
+    @refall:fig:iteration-rules
   ]
 )
 <refall:fig:unif-cfg>

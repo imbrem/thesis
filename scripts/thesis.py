@@ -146,6 +146,8 @@ def cmd_status(args: argparse.Namespace) -> None:
     migrations = typst_query(args.entry, "<notation-migration>")
     by_kind = Counter(str(item["kind"]) for item in todos)
     by_owner = Counter(str(item["owner"]) for item in todos)
+    by_audience = Counter(str(item["audience"] or "unspecified") for item in todos)
+    by_source = Counter(str(item["source"] or "unspecified") for item in todos)
     by_status = Counter(str(item["status"]) for item in todos)
     by_priority = Counter(str(item["priority"]) for item in todos)
     by_family = Counter(
@@ -162,6 +164,8 @@ def cmd_status(args: argparse.Namespace) -> None:
         "todos": len(todos),
         "todos_by_kind": dict(sorted(by_kind.items())),
         "todos_by_owner": dict(sorted(by_owner.items())),
+        "todos_by_audience": dict(sorted(by_audience.items())),
+        "todos_by_source": dict(sorted(by_source.items())),
         "todos_by_status": dict(sorted(by_status.items())),
         "todos_by_priority": dict(sorted(by_priority.items())),
         "old_syntax": len(legacy),
@@ -178,6 +182,12 @@ def cmd_status(args: argparse.Namespace) -> None:
     print("Owners:")
     for owner, count in report["todos_by_owner"].items():
         print(f"  {owner}: {count}")
+    print("Audience:")
+    for audience, count in report["todos_by_audience"].items():
+        print(f"  {audience}: {count}")
+    print("Source:")
+    for source, count in report["todos_by_source"].items():
+        print(f"  {source}: {count}")
     print("Status:")
     for status, count in report["todos_by_status"].items():
         print(f"  {status}: {count}")
@@ -196,6 +206,7 @@ LINT_PATTERNS = {
     "latex-layout-residue": re.compile(r"(?:minipage\s*=|scale\s*=)"),
     "zero-width-keyword-spacing": re.compile(
         r'(?:sans\((?:"(?:case|let|where)"|[cwl] [aeh] [set] [er])\))\s*#h\(0em\)'
+        r'|#h\(0em\)\s*kw\("where"\)'
     ),
     "raw-angle-grammar": re.compile(r"\\?<[^>\n]+>\s*::="),
 }
@@ -236,11 +247,28 @@ def queue_items(args: argparse.Namespace) -> list[dict[str, object]]:
 
 
 def queue_evidence_errors(items: list[dict[str, object]]) -> list[str]:
-    """Check that cited files/declaration names still have source evidence."""
+    """Check queue schema and cited source evidence."""
     lean_sources = list((REPO_ROOT / "formalization/thesis").rglob("*.lean"))
     lean_text = "\n".join(path.read_text() for path in lean_sources)
     errors: list[str] = []
+    queue = load_queue()
+    allowed_statuses = set(queue.get("statuses", []))
+    allowed_priorities = set(queue.get("priorities", []))
+    ids = [item.get("id") for item in items]
+    for item_id, count in Counter(ids).items():
+        if not isinstance(item_id, str) or not item_id:
+            errors.append("queue item has no string id")
+        elif count > 1:
+            errors.append(f"duplicate queue id: {item_id}")
     for item in items:
+        item_id = item.get("id", "(unknown)")
+        for field in ("kind", "audience", "source", "target", "question"):
+            if not isinstance(item.get(field), str) or not item.get(field):
+                errors.append(f"{item_id}: missing string field {field}")
+        if item.get("status") not in allowed_statuses:
+            errors.append(f"{item_id}: unknown status {item.get('status')}")
+        if item.get("priority") not in allowed_priorities:
+            errors.append(f"{item_id}: unknown priority {item.get('priority')}")
         lean = item.get("lean")
         if not isinstance(lean, dict):
             continue
@@ -349,8 +377,7 @@ def cmd_review(args: argparse.Namespace) -> None:
     print("  1. Keep, delete, move, or fuse this block?")
     print("  2. What single job must it do in the chapter argument?")
     print("  3. Which notation/imported-paper assumptions must be migrated?")
-    print("  4. Does it make a mechanization claim? If yes, name exact Lean evidence or add an error TODO.")
-    print("  5. Record unresolved choices in notes/editorial-queue.json or a structured #todo.")
+    print("  4. Record unresolved choices in notes/editorial-queue.json or a structured #todo.")
     print(f"\nNext: python3 scripts/thesis.py review --file {rel} --after-line {end}")
 
 

@@ -9,7 +9,7 @@
 = Refinement Rules and Notation
 <refall:refinement-rules-and-notation>
 We begin by giving the congruence rules for $lambda_(sans(i t e r))$ in
-Figure~@refall:fig:congruence-refinement, which completes our presentation of
+@refall:fig:congruence-refinement, which completes our presentation of
 $lambda_(sans(i t e r))$'s type theory. We now wish to go over some
 basic derivable refinement rules, which we will make use of throughout
 the rest of the appendix. We begin with some useful lemmas and
@@ -33,10 +33,10 @@ properties of sequencing; for example, we have #rule-set(
   prooftree(rule(label: msc("rule"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_c$, $Gamma tack.r upright(bold(q))_c = upright(bold(q))_r + upright(bold(q))_m$, $Gamma^(upright(bold(q))_l) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_m) tack.r epsilon.alt b : B$, $0 lt.eq sans(q) \( A \) \, sans(q) \( B \)$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))) tack.r cal(R) \( a ; b \) ; c approx a ; \( b ; c \) : C$)),
 )
 
-As stated in Section~#todo[Cross-reference: `refall:ssec:refinement-theory`], binding rules for the rest
+As stated in Section~#conditional-ref("refall:ssec:refinement-theory"), binding rules for the rest
 of our calculus are derivable from the rest of
 $lambda_(sans(i t e r))$'s refinement rules. We give these explicitly in
-Figure~@refall:fig:derivable-binding, along with the $eta$-rule for unary
+@refall:fig:derivable-binding, along with the $eta$-rule for unary
 let-bindings, which is similarly derived from let$""_1$-$beta$. We note
 the commutativity requirement for pair-right-bind, since on the
 left-hand side $a$ executes before $b$, while on the right-hand side $b$
@@ -689,7 +689,7 @@ define $sans(S S A)_ell$ by induction over such expressions.
 == ANF Expressions
 <refall:anf-expressions>
 We begin by defining ANF expressions $P \, Q \, R$ using the grammar in
-Figure~@refall:fig:anf-syntax; these are treated as a subset of
+@refall:fig:anf-syntax; these are treated as a subset of
 $lambda_(sans(i t e r))$ expressions. In particular, an ANF program
 consists of a sequence of instructions of the form
 $kw("let") med x = I ; #h(0em) P$ (along with destructurings
@@ -800,9 +800,9 @@ $Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) s gt.tri sans
    & #h(2em) ⟦ Gamma^(upright(bold(q))_l) \, x : A #refinement-eff-turnstile($epsilon.alt$) tau_l : sans(L)^(upright(bold(Q))^arrow.t) ⟧ ; alpha^arrow.b ; ⟦ Gamma tack.r sans(L)^(upright(bold(Q))^arrow.t) arrow.r.squiggly sans(L)^(upright(bold(Q))'^arrow.t) ⟧ \, ⟦ Gamma^(upright(bold(q))_l) \, y : B #refinement-eff-turnstile($epsilon.alt$) tau_r : sans(L)^(upright(bold(Q))^arrow.t) ⟧ ; alpha^arrow.b ; ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(L)'^(upright(bold(Q))') ⟧ \]\
    & = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kw("case") med o #h(0em) { iota_l #h(0em) x : tau_l \, iota_r #h(0em) y : tau_r } gt.tri sans(L)^(upright(bold(Q))) ⟧ ; ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(L)'^(upright(bold(Q))') ⟧ $
 
-- ($Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa #h(0em) kw("where")_(sans(n o n r e c)) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q)))$):
+- ($Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa med kw("where")_(sans(n o n r e c)) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q)))$):
   we have
-  $  & ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa #h(0em) kw("where")_(sans(n o n r e c)) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)'^(upright(bold(Q))') ⟧\
+  $  & ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa med kw("where")_(sans(n o n r e c)) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)'^(upright(bold(Q))') ⟧\
    & = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa gt.tri sans(L)'^(upright(bold(Q))') \, sans(R)^(upright(bold(Q))'') ⟧ ; alpha^(+) ; \[ sans(i d)_(⟦ \[ Gamma mapsto sans(L)'^(upright(bold(Q))') \] ⟧) \, \[ ⟦ Gamma^(upright(bold(q))_i) \, x_i : A_i #refinement-eff-turnstile($epsilon.alt$) t_i : sans(L)'^(upright(bold(Q))'^arrow.t) ⟧ ; alpha^arrow.b \, \]_(ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))'')) \]\
    & = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa gt.tri sans(L)'^(upright(bold(Q))') \, sans(R)^(upright(bold(Q))'') ⟧ ; ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))'') arrow.r.squiggly sans(L)'^(upright(bold(Q))') \, sans(R)^(upright(bold(Q))'') ⟧ ; alpha^(+) ;\
    & #h(2em) \[ sans(i d)_(⟦ \[ Gamma mapsto sans(L)'^(upright(bold(Q))') \] ⟧) \, \[ ⟦ Gamma^(upright(bold(q))_i) \, x_i : A_i #refinement-eff-turnstile($epsilon.alt$) t_i : sans(L)^(upright(bold(Q))^arrow.t) ⟧ ; ⟦ Gamma \, x_i : A_i tack.r sans(L)^(upright(bold(Q))^arrow.t) arrow.r.squiggly sans(L)'^(upright(bold(Q))'^arrow.t) ⟧ ; alpha^arrow.b \, \]_(ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))'')) \]\
@@ -811,12 +811,12 @@ $Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) s gt.tri sans
    & = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa gt.tri sans(L)'^(upright(bold(Q))') \, sans(R)^(upright(bold(Q))'') ⟧ ; alpha^(+) ;\
    & #h(2em) \[ ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(L)'^(upright(bold(Q))') ⟧ \, \[ ⟦ Gamma^(upright(bold(q))_i) \, x_i : A_i #refinement-eff-turnstile($epsilon.alt$) t_i : sans(L)^(upright(bold(Q))^arrow.t) ⟧ ; alpha^arrow.b \, \]_(ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))'')) ; ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(L)'^(upright(bold(Q))') ⟧ \]\
    & = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa gt.tri sans(L)'^(upright(bold(Q))') \, sans(R)^(upright(bold(Q))'') ⟧ ; alpha^(+) ; \[ ⟦ sans(i d) \, \[ ⟦ Gamma^(upright(bold(q))_i) \, x_i : A_i #refinement-eff-turnstile($epsilon.alt$) t_i : sans(L)^(upright(bold(Q))^arrow.t) ⟧ ; alpha^arrow.b \, \]_(ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))'')) \] ; Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(L)'^(upright(bold(Q))') ⟧\
-   & = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa #h(0em) kw("where")_(sans(n o n r e c)) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q))) ⟧ ; ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(L)'^(upright(bold(Q))') ⟧ $
+   & = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa med kw("where")_(sans(n o n r e c)) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q))) ⟧ ; ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(L)'^(upright(bold(Q))') ⟧ $
   as desired.
 
-- ($Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa #h(0em) kw("where")_(sans(r e c)) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q)))$):
+- ($Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa med kw("where")_(sans(r e c)) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q)))$):
   we have
-  $  & ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa #h(0em) kw("where")_(sans(r e c)) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)'^(upright(bold(Q))') ⟧\
+  $  & ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa med kw("where")_(sans(r e c)) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)'^(upright(bold(Q))') ⟧\
    & = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa gt.tri sans(L)'^(upright(bold(Q))') \, sans(R)^(upright(bold(Q))'') ⟧ ; alpha^(+) ; \[ sans(i d)_(⟦ \[ Gamma mapsto sans(L)'^(upright(bold(Q))') \] ⟧) \, \[ ⟦ Gamma^(upright(bold(q))_i) \, x_i : A_i #refinement-eff-turnstile($epsilon.alt$) t_i : sans(L)'^(upright(bold(Q))'^arrow.t) \, sans(R)^(upright(bold(Q))''^arrow.t) ⟧ ; alpha^arrow.b ; alpha^(+) \, \]_(ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))'))^dagger \]\
    & = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa gt.tri sans(L)'^(upright(bold(Q))') \, sans(R)^(upright(bold(Q))'') ⟧ ; ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))'') arrow.r.squiggly sans(L)'^(upright(bold(Q))') \, sans(R)^(upright(bold(Q))'') ⟧ ; alpha^(+) ;\
    & #h(2em) \[ sans(i d)_(⟦ \[ Gamma mapsto sans(L)'^(upright(bold(Q))') \] ⟧) \, \[ ⟦ Gamma^(upright(bold(q))_i) \, x_i : A_i #refinement-eff-turnstile($epsilon.alt$) t_i : sans(L)^(upright(bold(Q))^arrow.t) \, sans(R)^(upright(bold(Q))''^arrow.t) ⟧ ; ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) \, sans(R)^(upright(bold(Q))'') arrow.r.squiggly sans(L)'^(upright(bold(Q))') \, sans(R)^(upright(bold(Q))'') ⟧ ; alpha^arrow.b ; alpha^(+) \, \]_(ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))'))^dagger \]\
@@ -830,7 +830,7 @@ $Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) s gt.tri sans
    & #h(2em) \[ ⟦ Gamma^(upright(bold(q))_i) \, x_i : A_i #refinement-eff-turnstile($epsilon.alt$) t_i : sans(L)^(upright(bold(Q))^arrow.t) \, sans(R)^(upright(bold(Q))''^arrow.t) ⟧ ; alpha^arrow.b ; alpha^(+) \, \]_(ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))'))^dagger ; ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(L)'^(upright(bold(Q))') ⟧ \]\
    & = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa gt.tri sans(L)'^(upright(bold(Q))') \, sans(R)^(upright(bold(Q))'') ⟧ ; alpha^(+) ; \[ sans(i d) \, \[ ⟦ Gamma^(upright(bold(q))_i) \, x_i : A_i #refinement-eff-turnstile($epsilon.alt$) t_i : sans(L)^(upright(bold(Q))^arrow.t) \, sans(R)^(upright(bold(Q))''^arrow.t) ⟧ ; alpha^arrow.b ; alpha^(+) \, \]_(ell_i \( A_i \)^(upright(bold(q))_i) in sans(R)^(upright(bold(Q))'))^dagger \] ;\
    & #h(2em) ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(L)'^(upright(bold(Q))') ⟧\
-   & = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa #h(0em) kw("where")_(sans(r e c)) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q))) ⟧ ; ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(L)'^(upright(bold(Q))') ⟧ $
+   & = ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kappa med kw("where")_(sans(r e c)) med \( ell_i \( x_i \) : { t_i } \, \)_i gt.tri sans(L)^(upright(bold(Q))) ⟧ ; ⟦ Gamma tack.r sans(L)^(upright(bold(Q))) arrow.r.squiggly sans(L)'^(upright(bold(Q))') ⟧ $
   as desired.
 
 ~◻
@@ -871,10 +871,10 @@ $P$ as follows:
 - ($Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) kw("let") med x = kw("case") med o #h(0em) { iota_l #h(0em) y : P \, iota_r #h(0em) z : Q } ; #h(0em) R : D$):
   we define
   $ \( sans(S S A)_ell \( kw("let") med x = kw("case") med o #h(0em) { iota_l #h(0em) y : P \, iota_r #h(0em) z : Q } ; #h(0em) R \) \) & := \( kw("case") med o #h(0em) { iota_l #h(0em) y : sans(b r) #h(0em) ell_l #h(0em) y \, iota_r #h(0em) z : sans(b r) #h(0em) ell_r #h(0em) z }\
-   & #h(2em) #h(0em) kw("where")_(sans(n o n r e c)) med\
+   & #h(2em) med kw("where")_(sans(n o n r e c)) med\
    & quad #h(2em) ell_l \( y \) : { sans(S S A)_(ell_o) \( P \) } \,\
    & quad #h(2em) ell_r \( z \) : { sans(S S A)_(ell_o) \( Q \) } \)\
-   & quad #h(0em) kw("where")_(sans(n o n r e c)) med\
+   & quad med kw("where")_(sans(n o n r e c)) med\
    & #h(2em) ell_o \( x \) : { sans(S S A)_ell \( R \) } $ We verify the
   semantics by induction as follows:
   $  & ⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) sans(S S A)_ell \( kw("let") med x = kw("case") med o #h(0em) { iota_l #h(0em) y : P \, iota_r #h(0em) z : Q } ; #h(0em) R \) gt.tri ell \( D \)^(upright(bold(q))_1) ⟧\
@@ -908,7 +908,7 @@ $P$ as follows:
   as desired.
 
 - ($kw("let") med x = sans(i t e r) #h(0em) o #h(0em) { iota_r #h(0em) x : P } ; #h(0em) Q$):
-  $ \( sans(S S A)_ell \( kw("let") med x = sans(i t e r) #h(0em) o #h(0em) { iota_r #h(0em) y : P } ; #h(0em) Q \) \) & := sans(b r) #h(0em) ell_b #h(0em) o #h(0em) kw("where")_(sans(r e c)) med\
+  $ \( sans(S S A)_ell \( kw("let") med x = sans(i t e r) #h(0em) o #h(0em) { iota_r #h(0em) y : P } ; #h(0em) Q \) \) & := sans(b r) #h(0em) ell_b #h(0em) o med kw("where")_(sans(r e c)) med\
    & #h(2em) ell_b \( y \) : { sans(S S A)_(ell_h) \( P \) } \,\
    & #h(2em) ell_h \( w \) : { kw("case") med w #h(0em) { iota_l #h(0em) x : sans(b r) #h(0em) ell_o #h(0em) x \, iota_r #h(0em) y : sans(b r) #h(0em) ell_b #h(0em) y } } \,\
    & #h(2em) ell_o \( x \) : { sans(S S A)_ell \( Q \) } $ We verify the
@@ -1084,7 +1084,7 @@ supports
   program which always terminates, never terminates, and is
   nondeterministically nonterminating)
 
-As described in Section~#todo[Cross-reference: `refall:ssec:ub`], we define
+As described in Section~#conditional-ref("refall:ssec:ub"), we define
 $sans(U B) \( A \) := cal(P)^(+) \( A union { oo } \) union { arrow.zigzag }$,
 with
 $ arrow.zigzag upright(">>=")_(sans("UB")) f &= arrow.zigzag #h(2em)
@@ -1145,8 +1145,8 @@ examples below:
   $ f^(dagger_(sans(S t)_S #h(0em) T)) := lambda a \, s . \( \( lambda \( s \, a \) . f #h(0em) a #h(0em) s \) ; delta^(- 1) \)^dagger \( s \, a \) $
 
 As a concrete example, we can build the heap monad from
-Section~#todo[Cross-reference: `refall:ssec:heaps`] by simply applying the state transformer to the UB
-monad from Appendix~#todo[Cross-reference: `refall:apx:ub`], with state
+Section~#conditional-ref("refall:ssec:heaps") by simply applying the state transformer to the UB
+monad from Appendix~#conditional-ref("refall:apx:ub"), with state
 $S := bb(N) harpoon.rt_(sans(f i n)) bb(N)$.
 
 == Brookes-Style Concurrency
