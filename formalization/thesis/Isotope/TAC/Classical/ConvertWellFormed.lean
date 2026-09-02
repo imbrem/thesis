@@ -94,6 +94,35 @@ private theorem body_prefixScoped [DecidableEq Var]
               (dy :: dz :: prior) htail
               (updatePair_restricted_invariant vars ρ base prior y z dy dz hρ)
 
+private theorem PrefixScoped.use_at
+    {base prior : List (Version Var Label)}
+    {ys : List (Instr (Version Var Label) Op)}
+    (h : PrefixScoped base prior ys) (i : Nat) (hi : i < ys.length)
+    (v : Version Var Label) (hv : v ∈ ys[i].uses) :
+    v ∈ base ∨ v ∈ prior ∨
+      ∃ j, ∃ hj : j < i, v ∈ ys[j].defs := by
+  induction ys generalizing prior i with
+  | nil => simp at hi
+  | cons hd tl ih =>
+      simp only [PrefixScoped] at h
+      rcases h with ⟨hhd, htl⟩
+      cases i with
+      | zero =>
+          have hv' : v ∈ hd.uses := by simpa using hv
+          rcases hhd v hv' with hb | hp
+          · exact .inl hb
+          · exact .inr (.inl hp)
+      | succ i =>
+          have hi' : i < tl.length := by simpa using hi
+          have hv' : v ∈ tl[i].uses := by simpa using hv
+          rcases ih htl i hi' hv' with hb | hp | ⟨j, hj, hvj⟩
+          · exact .inl hb
+          · rw [List.mem_append] at hp
+            rcases hp with hp | hp
+            · exact .inr (.inr ⟨0, by omega, by simpa using hp⟩)
+            · exact .inr (.inl hp)
+          · exact .inr (.inr ⟨j + 1, by omega, by simpa using hvj⟩)
+
 private theorem renameValue_uses_eq (ρ : Env Var Label) (v : Value Var) :
     (renameValue ρ v).uses = v.uses.map ρ := by
   induction v with
