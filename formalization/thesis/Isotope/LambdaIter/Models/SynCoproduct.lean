@@ -33,11 +33,14 @@ further axiom.
   what a distributive Freyd category asks of its computation category.
   Nothing is claimed about a value/pure subcategory: `Pure` is nowhere proved
   stable under `Eqv`, so the pure classes have no definition here.
-* The **empty type is not shown to be initial**, and it does not appear
-  derivable from the axioms as stated: `StructuralAxiom.emptyInitial` fires
-  only on a scrutinee of the literal form `.abort a`, so it gives no route to
-  `bv 0 ≈ abort (bv 0)` at type `empty`.  Recording this as a gap in the
-  presentation seems more useful than working around it.
+* The **empty type is not shown to be initial**.  Uniqueness of a morphism
+  `empty ⟶ C` would need `bv 0 ≈ abort (bv 0)` at type `empty`, and
+  `StructuralAxiom.emptyInitial` fires only on a scrutinee of the literal form
+  `.abort a`, so it does not supply that.  This is a reported gap in the
+  presentation, **not** a proof of non-derivability — no separating model is
+  constructed here.  Its consequence is that `HasFiniteCoproducts` is
+  unavailable, which is what blocks registering an `ElgotCategory` instance in
+  `Models/SynIteration.lean`.
 * `SynCat.iterate` is only *defined* here, together with well-definedness.
   **No Elgot law is proved for it.**  Every such law (fixpoint, naturality,
   codiagonal, uniformity) is phrased with copairing on one side and with
