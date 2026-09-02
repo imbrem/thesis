@@ -3,6 +3,7 @@ import Isotope.Elgot.Brookes.Closure
 import Isotope.Elgot.Brookes.Monad
 import Isotope.Elgot.Brookes.Iteration
 import Isotope.Elgot.Brookes.SeqCst
+import Isotope.Elgot.Brookes.TSO
 import Isotope.Elgot.Brookes.Compare
 import Isotope.Elgot.Brookes.Examples
 
@@ -93,4 +94,8 @@ be reproved:
 
 Only `Brookes/SeqCst.lean` is specific to stuttering and mumbling; a new model
 should mirror that file and nothing else.
+
+`Brookes/TSO.lean` is the worked instance: a store-buffer model of TSO weak
+memory obtained by keeping the stuttering and mumbling rules and enriching the
+state with one write buffer per thread.  It reproves nothing from this file.
 -/
