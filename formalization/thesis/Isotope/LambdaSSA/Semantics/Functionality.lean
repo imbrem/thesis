@@ -21,6 +21,44 @@ variable {V : Type u₁} {C : Type u₂}
   (M : TypeModel τ V)
   {Φ : Type u₄} [LambdaIter.HasTy Φ τ] [InstructionModel J M Φ]
 
+/-- Heterogeneous agreement allows a term to receive different result types.
+This can only be observed through a common empty-producing prefix; otherwise
+the result types and arrows coincide. -/
+inductive HeterogeneousAgreement {Γ : VCtx τ} {t : Tm Φ} :
+    {A : τ} → Tm.HasType Γ t A →
+    {B : τ} → Tm.HasType Γ t B →
+    (f : J.obj (ctxObj M Γ) ⟶ J.obj (M.obj A)) →
+    (g : J.obj (ctxObj M Γ) ⟶ J.obj (M.obj B)) → Prop where
+  | equal {A : τ} {hA hB : Tm.HasType Γ t A}
+      {f g : J.obj (ctxObj M Γ) ⟶ J.obj (M.obj A)}
+      (hfg : f = g) : HeterogeneousAgreement hA hB f g
+  | bottom {A B : τ} {hA : Tm.HasType Γ t A} {hB : Tm.HasType Γ t B}
+      {f : J.obj (ctxObj M Γ) ⟶ J.obj (M.obj A)}
+      {g : J.obj (ctxObj M Γ) ⟶ J.obj (M.obj B)}
+      (hf : FactorsThroughEmpty J M f)
+      (hg : FactorsThroughEmpty J M g)
+      (hp : hf.prefix = hg.prefix) : HeterogeneousAgreement hA hB f g
+
+theorem HeterogeneousAgreement.eq_of_same_type
+    {Γ : VCtx τ} {t : Tm Φ} {A : τ}
+    {hA hB : Tm.HasType Γ t A}
+    {f g : J.obj (ctxObj M Γ) ⟶ J.obj (M.obj A)}
+    (a : HeterogeneousAgreement J M hA hB f g) : f = g := by
+  cases a with
+  | equal hfg => exact hfg
+  | bottom hf hg hp => exact hf.eq_of_prefix hg hp
+
+theorem HeterogeneousAgreement.abort
+    {Γ : VCtx τ} {a : Tm Φ} {A B : τ}
+    {ha : Tm.HasType Γ a LambdaIter.empty}
+    {hA : Tm.HasType Γ (.abort a) A} {hB : Tm.HasType Γ (.abort a) B}
+    {z z' : J.obj (ctxObj M Γ) ⟶ J.obj (M.obj (LambdaIter.empty : τ))}
+    (hz : z = z') :
+    HeterogeneousAgreement J M hA hB (abort J M (A := A) z)
+      (abort J M (A := B) z') := by
+  subst z'
+  exact .bottom (abort_factors J M z) (abort_factors J M z) rfl
+
 /-- Two denotations agree either directly or because they have the same
 empty-producing prefix.  Keeping the prefix is essential: maps into an
 initial object need not themselves be unique. -/
