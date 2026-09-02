@@ -7,6 +7,7 @@ import Isotope.Elgot.ITree.Bisim
 import Isotope.Elgot.ITree.Finality
 import Isotope.Elgot.ITree.Examples
 import Isotope.Elgot.ITree.Structural
+import Isotope.Elgot.ITree.Raw
 import Isotope.Elgot.ITree.Handlers
 import Isotope.Elgot.ITree.Events
 import Isotope.Elgot.ITree.Refinement
@@ -108,12 +109,17 @@ since they decide `Part.Dom`.
 ## Honest boundary
 
 * The relation identified by equality of `Tree`s is *weak* bisimulation.
-  Strong (tau-counting) bisimilarity is not expressible: there is no `Tau`
-  constructor, so this module is the `eutt`-quotient of a Xia-style interaction
-  tree library, not such a library itself.  That statement is a design fact
-  argued in the docstrings, **not** an internal theorem: no tau-sensitive type
-  of raw interaction trees is constructed here, so no quotient map from one is
-  proved.  This is the only remaining gap of that kind in the module.
+  Strong (tau-counting) bisimilarity is not expressible on `Tree`: there is no
+  `Tau` constructor, so this module is the `eutt`-quotient of a Xia-style
+  interaction tree library.  That is now a **theorem**, not a docstring claim:
+  `ITree/Raw.lean` builds the tau-sensitive carrier `Raw E A` over the extended
+  signature `Sum1 E TauEv`, in which silent steps are observable
+  (`silent_ret_ne`, `spin_ne_diverge'`), and
+  `rawQuotientEquiv : Quotient (weakSetoid E A) ≃ Tree E A` exhibits `Tree` as
+  its weak-bisimulation quotient, with `weak_iff_bisim` identifying the two
+  relations.  `Raw` is a witness carrier for that statement, not a full
+  tau-sensitive library: `eq_itree`, `euttge`, the `eqit` hierarchy, `burn`,
+  and up-to-tau/paco infrastructure are deliberately absent.
 * `corec_unique` on its own does **not** give finality.  `corec_hyp_iff` shows
   its hypothesis is exactly the `construct`-fixpoint equation, i.e. that
   `(Tree E A, construct)` is a *corecursive algebra*; and
