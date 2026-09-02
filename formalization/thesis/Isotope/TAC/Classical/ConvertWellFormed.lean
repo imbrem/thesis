@@ -155,6 +155,34 @@ theorem convert_entryPhis [DecidableEq Var] [DecidableEq Label]
   intro phi hphi
   simp [convert, cfg, convertBlock] at hphi
 
+theorem convert_entryBody [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) :
+    (convert source).BodyUsesWellScoped ((sourceVars source).map Version.external)
+      .entry (convert source).entry := by
+  let base := (sourceVars source).map (Version.external : Var → Version Var Label)
+  have hprefix : PrefixScoped base []
+      (body (.entry : BlockId Label) 0 (startEnv .entry) source.entry.body).1 := by
+    apply body_prefixScoped (sourceVars source) (.entry : BlockId Label) 0
+      (startEnv .entry) base [] source.entry.body
+    · intro ins hins x hx
+      exact entry_use_mem_sourceVars source hins hx
+    · intro x hx
+      exact .inl (List.mem_map.mpr ⟨x, hx, rfl⟩)
+  intro i hi v hv
+  change v ∈ (body (.entry : BlockId Label) 0 (startEnv .entry)
+    source.entry.body).1[i].uses at hv
+  have hi' : i < (body (.entry : BlockId Label) 0 (startEnv .entry)
+      source.entry.body).1.length := by
+    simpa [convert, cfg, convertBlock] using hi
+  rcases hprefix.use_at i hi' v hv with hb | hp | ⟨j, hj, hvj⟩
+  · left
+    left
+    exact hb
+  · simp at hp
+  · right
+    right
+    exact ⟨j, hj, hvj⟩
+
 theorem convert_entryTerminator [DecidableEq Var] [DecidableEq Label]
     (source : CFG Var Op Label) :
     (convert source).TerminatorUsesWellScoped
@@ -180,6 +208,36 @@ theorem blockTerminator_use_mem_sourceVars [DecidableEq Var]
     x ∈ sourceVars source :=
   (mem_sourceVars source x).2
     (.inr ⟨(label, b), hb, terminator_use_mem_blockSourceVars b hx⟩)
+
+theorem convert_namedBody [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) (label : Label) (b : Block Var Op Label)
+    (hb : (label, b) ∈ source.blocks) :
+    (convert source).BodyUsesWellScoped
+      ((sourceVars source).map Version.external) (.named label)
+      (convertBlock source (sourceVars source) (.named label) b) := by
+  let base := (phis source (sourceVars source) label).map Phi.dst
+  have hprefix : PrefixScoped base []
+      (body (.named label) 0 (startEnv (.named label)) b.body).1 := by
+    apply body_prefixScoped (sourceVars source) (.named label) 0
+      (startEnv (.named label)) base [] b.body
+    · intro ins hins x hx
+      exact block_use_mem_sourceVars source hb hins hx
+    · intro x hx
+      left
+      change Version.phi label x ∈ (phis source (sourceVars source) label).map Phi.dst
+      simp [phis, hx]
+  intro i hi v hv
+  change v ∈ (body (.named label) 0 (startEnv (.named label)) b.body).1[i].uses at hv
+  have hi' : i < (body (.named label) 0 (startEnv (.named label)) b.body).1.length := by
+    simpa [convertBlock] using hi
+  rcases hprefix.use_at i hi' v hv with hbase | hp | ⟨j, hj, hvj⟩
+  · right
+    left
+    exact hbase
+  · simp at hp
+  · right
+    right
+    exact ⟨j, hj, hvj⟩
 
 theorem convert_namedTerminator [DecidableEq Var] [DecidableEq Label]
     (source : CFG Var Op Label) (label : Label) (b : Block Var Op Label)
