@@ -18,6 +18,7 @@ import Isotope.Elgot.RA.Generating
 import Isotope.Elgot.RA.Assoc
 import Isotope.Elgot.RA.Examples
 import Isotope.Elgot.RA.ParExamples
+import Isotope.Elgot.RA.Abstract
 
 /-!
 # A release/acquire trace monad
@@ -54,15 +55,19 @@ numbering in parentheses where it differs.
   `α ξ ω ◁ r` with non-empty chronicle, and the three trace conditions.  §7.2
   (§6.1).
 * `Isotope/Elgot/RA/Rewrite.lean`: the rule sets `𝔠 = {St, Mu, Fw, Rw}`,
-  `𝔤 = {Ls, Ex, Cn}` and `𝔤𝔠 = 𝔤 ∪ 𝔠`, and the seven rules themselves,
-  Table 2 (Table 1), with the one-step relation `Step R` indexed by an
-  arbitrary rule set, as in the paper's `─★→`.
+  `𝔤 = {Ls, Ex, Cn}`, `𝔞 = {Ti, Ab, Di}`, `𝔤𝔠` and `𝔤𝔠𝔞`, and all nine
+  rules themselves, Table 2 (Table 1), with the one-step relation `Step R`
+  indexed by an arbitrary rule set, as in the paper's `─★→`.  The three `𝔞`
+  rows were read off the typeset table and off the displays `(Tighten)`,
+  `(Absorb)` (p.36) and `(Dilute)` (p.37) by rendering those pages.
 * `Isotope/Elgot/RA/Closure.lean`: `★`-closedness with the paper's guard
   "`π` is again a trace", and `U★` as the least closed superset.  §7.2 (§6.3).
 * `Isotope/Elgot/RA/Monad.lean`: `T X := P★(Trace X)`, `return`, `>>=`.  §7.2
   (§6.3).
 * `Isotope/Elgot/RA/Concrete.lean`: the model tower `N`, `G`, `C` of Table 1,
   p.29 (§7.2–§7.4).
+* `Isotope/Elgot/RA/Abstract.lean`: the Abstract model `A = Comp gcaRules`
+  (§7.5, p.35), and the comparison between the models.
 * `Isotope/Elgot/RA/Memory.lean`: `⟦store ℓ,v⟧` and `⟦rmw ℓ,Φ⟧` (read-only and
   read-modify-write).  §7.2 (§6.3).
 * `Isotope/Elgot/RA/Castling.lean`: **Lemma 8.3, Rewrite Castling** (§8.1,
@@ -126,11 +131,19 @@ numbering in parentheses where it differs.
 
 Read this before citing anything here as "the paper's".
 
-1. **The rule group `𝔞 = {Ti, Ab, Di}` is not formalized**, so the paper's
-   Abstract model `A` (`𝔤𝔠𝔞`) does not exist here.  What does exist is the
-   whole tower below it: the Null model (`R = ∅`), the Generating model
-   (`R = 𝔤`), the Concrete model `C` (`R = 𝔤𝔠`, the ESOP version's `M`), and
-   the intermediate `𝔠`-model, all as instances of one `Comp R Loc Val`.
+1. **`A` exists, but Proposition 7.8 is not proved.**  All nine rules and the
+   whole tower are formalized as instances of one `Comp R Loc Val`: the Null
+   model (`R = ∅`), the Generating model (`R = 𝔤`), the Concrete model `C`
+   (`R = 𝔤𝔠`, the ESOP version's `M`), the Abstract model `A` (`R = 𝔤𝔠𝔞`),
+   and the intermediate `𝔠`-model.  What is *not* proved is that `A` is a monad.
+   Both unit laws hold for every `𝔠 ⊆ R ⊆ 𝔤𝔠 ∪ {Ti, Ab}`, and **not** for
+   `R = 𝔤𝔠𝔞`: `Dilute` creates a local message where there was none, so the
+   invariant the unit-law proof runs on fails.  This is not an artefact of the
+   transcription — `dilute_return` of `Isotope/Elgot/RA/Abstract.lean` exhibits
+   a `Di`-rewrite of a `return`-trace built on the paper's own initial memory.
+   The paper's own route to Proposition 7.8 must therefore be Deferral of
+   Closure (Lemma 8.5, p.41), which is not formalized.  Associativity is open
+   for `A` as it is for `C`.
 2. **The paper proves no monad laws.**  Propositions 7.7/7.8 (6.6/6.7) are
    stated without proof in both versions we consulted; the appendices treat
    Rewrite Castling, Deferral of Closure and adequacy instead.  Its one piece
@@ -154,10 +167,28 @@ Read this before citing anything here as "the paper's".
    carrier, `⊥`, arbitrary unions, `bind_mono`, the iteration operator and the
    memory-access constants.
 4. **`ξ.own` is a rewriting invariant only at `𝔠`.**  `Refines.own_eq` now
+   of supporting argument, Example 8.6 (p.41), covers associativity alone.
+   Every proof in `Monad.lean` and `Concrete.lean` is therefore original.
+3. **Associativity for the Concrete model `C` is open.**  It is proved here
+   only for `R ⊆ 𝔠`.  The proof method — deferring a rewrite of one operand
+   past the bind seam — is *provably unavailable* for `𝔤`: `Loosen`, `Expel`
+   and `Condense` replace messages in the closing memory of the left operand,
+   so neither `ChroStep.c_sub` nor `ChroStep.o_sub` holds and the seam
+   condition `τ.ch.c ⊆ υ.ch.o` is not transported backwards along a rewrite.
+   The paper's own route runs through Proposition 7.5 (the `N`-operations are
+   `𝔤`-closed) and Lemma 8.3 (Rewrite Castling, 66 diagrams in Appendix F);
+   neither is formalized.  Consequently there is **no** `LawfulMonad`,
+   `LawfulElgotMonad`, or Kleisli Elgot/Freyd instance for `C`; those exist
+   only at `R = 𝔠`.  What `C` does have: both unit laws, the carrier, `⊥`,
+   arbitrary unions, `bind_mono`, the iteration *operator* and its `fixpoint`,
+   and the memory-access constants.
+4. **`ξ.own` is a rewriting invariant only at `𝔠`.**  `Refines.own_eq`
    carries the hypothesis `R ⊆ 𝔠`; the `𝔤` rules change which environment
    messages occur, and `Condense` maps every message through the pull.  What
-   survives at `𝔤𝔠` is `Refines.own_empty`: *having no* local messages is
-   preserved.  That weaker invariant is what both unit laws run on.
+   survives at `𝔤𝔠 ∪ {Ti, Ab}` is `Refines.own_empty`: *having no* local
+   messages is preserved — vacuously for `Ti` and `Ab`, whose sources have a
+   local message by construction.  That weaker invariant is what both unit laws
+   run on, and `Di` breaks it (item 1).
 5. **Countability is dropped.**  The journal version restricts `T X` to
    *countable* `★`-closed sets; the ESOP full version's own display does not.
    We take all `★`-closed sets.  Nothing in this development needs the
@@ -264,8 +295,33 @@ Read this before citing anything here as "the paper's".
 * `not_bind_pure` — the Null and Generating models are **not** monads, right
   neutrality failing because no `𝔤` rule changes the number of transitions
   (`Refines.length_eq`).  The paper asserts this in one sentence (p.30).
-* `closure_mono_rules` — the paper's `G X ⊇ C X ⊇ A X` (§8.2, p.41), asserted
-  there without argument.
+* `closure_mono_rules` — the paper's `G X ⊆ C X ⊆ A X` (§8.2, p.41), asserted
+  there without argument.  As printed the sentence is loose: these are sets of
+  `★`-closed sets, and a `𝔤`-closed set need not be `𝔤𝔠`-closed.  What holds is
+  that the *closure operators* are ordered (`closure_le_closure`, hence
+  pointwise `⟦M⟧_G ⊆ ⟦M⟧_C ⊆ ⟦M⟧_A`) while the *carriers* are ordered the other
+  way (`Closed.mono_rules`); `Comp.extend_le_iff` makes the pair an adjunction.
+* `pure_bind_gcTiAb`, `bind_pure_gcTiAb` — both unit laws for `𝔤𝔠 ∪ {Ti, Ab}`,
+  the largest fragment of the Abstract model's rule set for which we can prove
+  them.  **Original work.**
+* `dilute_return`, `not_refines_dilute_return`,
+  `pure_concrete_ssubset_pure_abstract` — a concrete `Dilute` rewrite of a
+  `return`-trace, the fact that no `𝔤𝔠 ∪ {Ti, Ab}`-rewriting realises it, and
+  hence `return_C r ⊊ return_A r`.  The paper asserts that the Concrete model is
+  "insufficiently abstract" (p.26) but exhibits no separating trace anywhere;
+  this is **original work**.
+* `absorb_two_writes` — a concrete `Absorb` rewrite merging the two dovetailing
+  local writes of the paper's `ℓ ≔ w ; ℓ ≔ v ↠ ℓ ≔ v` example (p.37) into one —
+  and `tighten_write`, a concrete `Tighten` rewrite advancing the view of a
+  local write to point at a later message at a second location, the shape of
+  the paper's write–read reordering step (§E.5, p.59); each with its
+  `not_refines_cRules_…` companion.  Together with `dilute_return` these keep
+  all three `𝔞` constructors honest: their side conditions are jointly
+  satisfiable on genuine traces, which the vacuous `own_empty` cases for `Ti`
+  and `Ab` do not show.  **Original work**: the paper constructs no trace.
+* `union_initialMem_wellFormed` — the initial memory extended by extra writes is
+  well formed under five explicit conditions, the last two of which are what
+  keeps the paper's *cycle* condition true.  Generalizes `storedMem_wellFormed`.
 * `View.pull_le_pull` — the paper's Lemma 7.6 (p.33).
 * `LawfulElgotMonad (Comp cRules Loc Val)` — fixpoint, naturality, codiagonal
   and pure uniformity for the union-of-unrollings iteration operator.  The

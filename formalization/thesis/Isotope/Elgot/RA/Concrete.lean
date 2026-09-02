@@ -51,12 +51,12 @@ Proposition 7.7 (ESOP Proposition 6.6), which is stated without proof.
 **Original work.** -/
 theorem pure_bind (r : A) (f : A → Comp gcRules Loc Val B) :
     (Pure.pure r : Comp gcRules Loc Val A) >>= f = f r :=
-  Comp.left_neutrality cRules_subset_gcRules (subset_refl _) r f
+  Comp.left_neutrality cRules_subset_gcRules gcRules_subset_gcTiAbRules r f
 
 /-- **Right Neutrality for the Concrete model `C`** — the other half of the
 paper's Proposition 7.7 (ESOP Proposition 6.6).  **Original work.** -/
 theorem bind_pure (P : Comp gcRules Loc Val A) : P >>= Pure.pure = P :=
-  Comp.right_neutrality cRules_subset_gcRules (subset_refl _) P
+  Comp.right_neutrality cRules_subset_gcRules gcRules_subset_gcTiAbRules P
 
 end Concrete
 

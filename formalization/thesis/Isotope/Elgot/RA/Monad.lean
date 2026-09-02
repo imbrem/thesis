@@ -148,6 +148,7 @@ theorem seam_left_step (hR : R ⊆ cRules) {τ₀ τ : PreTrace Loc Val A}
   | rewind hx hα =>
       exact ⟨h, hs, Refines.single ⟨Step.rewind hx hα, hτ.append hυ hs h⟩⟩
   | condense hx => exact absurd (hR hx) (by simp)
+  | dilute hx => exact absurd (hR hx) (by simp)
 
 theorem seam_left_refines (hR : R ⊆ cRules) {τ₀ τ : PreTrace Loc Val A}
     {υ : PreTrace Loc Val B} (hr : Refines R τ₀ τ) (_hτ : IsTrace τ) (hυ : IsTrace υ)
@@ -176,6 +177,7 @@ theorem seam_right_step (hR : R ⊆ cRules) {τ : PreTrace Loc Val A}
       exact ⟨h, hs, Refines.single ⟨Step.forward hx hκ, hτ.append hυ hs h⟩⟩
   | rewind hx hα => exact ⟨h, le_trans hs hα, Refines.refl _⟩
   | condense hx => exact absurd (hR hx) (by simp)
+  | dilute hx => exact absurd (hR hx) (by simp)
 
 theorem seam_right_refines (hR : R ⊆ cRules) {τ : PreTrace Loc Val A}
     {υ₀ υ : PreTrace Loc Val B} (hr : Refines R υ₀ υ) (hτ : IsTrace τ) (_hυ : IsTrace υ)
@@ -427,7 +429,7 @@ theorem stutter_suffix (hSt : Rule.St ∈ R) {τ : PreTrace Loc Val A} (hτ : Is
 (Propositions 7.7/7.8, ESOP 6.6/6.7) with no proof, and argues neither unit law
 for any of its models.  Both hold for every rule set between `𝔠` and `𝔤𝔠`. -/
 
-theorem closure_pureGen_own (hRg : R ⊆ gcRules) (r : A) {τ : PreTrace Loc Val A}
+theorem closure_pureGen_own (hRg : R ⊆ gcTiAbRules) (r : A) {τ : PreTrace Loc Val A}
     (h : τ ∈ closure R (pureGen r)) : τ.ch.own = ∅ := by
   obtain ⟨τ₀, hτ₀, hr⟩ := h
   exact hr.own_empty hRg (pureGen_own r hτ₀)
@@ -438,7 +440,7 @@ theorem closure_pureGen_ret (r : A) {τ : PreTrace Loc Val A}
   rw [← hr.ret_eq]; exact pureGen_ret r hτ₀
 
 /-- Left neutrality, for every `𝔠 ⊆ R ⊆ 𝔤𝔠`. -/
-theorem closure_bindGen_pureGen_left (hcR : cRules ⊆ R) (hRg : R ⊆ gcRules) (r : A)
+theorem closure_bindGen_pureGen_left (hcR : cRules ⊆ R) (hRg : R ⊆ gcTiAbRules) (r : A)
     (F : A → Set (PreTrace Loc Val B)) (hF : ∀ a, IsTraceSet (F a))
     (hFc : ∀ a, Closed R (F a)) :
     closure R (bindGen (closure R (pureGen r)) F) = F r := by
@@ -476,7 +478,7 @@ theorem closure_bindGen_pureGen_left (hcR : cRules ⊆ R) (hRg : R ⊆ gcRules) 
       rfl
 
 /-- Right neutrality, for every `𝔠 ⊆ R ⊆ 𝔤𝔠`. -/
-theorem closure_bindGen_pureGen_right (hcR : cRules ⊆ R) (hRg : R ⊆ gcRules)
+theorem closure_bindGen_pureGen_right (hcR : cRules ⊆ R) (hRg : R ⊆ gcTiAbRules)
     (P : Set (PreTrace Loc Val A)) (hP : IsTraceSet P) (hPc : Closed R P) :
     closure R (bindGen P (fun a ↦ closure R (pureGen a))) = P := by
   apply Set.Subset.antisymm
@@ -573,7 +575,7 @@ instance : _root_.Monad (Comp R Loc Val) where
 /-- **Left Neutrality** (journal §7.1, p.27).  **Original work**: the paper states that the Concrete
 model is a monad (Proposition 7.7; ESOP Proposition 6.6) without proof, and
 argues no unit law anywhere. -/
-theorem left_neutrality (hcR : cRules ⊆ R) (hRg : R ⊆ gcRules) (r : A)
+theorem left_neutrality (hcR : cRules ⊆ R) (hRg : R ⊆ gcTiAbRules) (r : A)
     (f : A → Comp R Loc Val B) : (Pure.pure r : Comp R Loc Val A) >>= f = f r := by
   apply ext
   rw [traces_bind, traces_pure]
@@ -582,7 +584,7 @@ theorem left_neutrality (hcR : cRules ⊆ R) (hRg : R ⊆ gcRules) (r : A)
 
 /-- **Right Neutrality** (journal §7.1, p.27).  **Original work**, as for
 `left_neutrality`. -/
-theorem right_neutrality (hcR : cRules ⊆ R) (hRg : R ⊆ gcRules) (P : Comp R Loc Val A) :
+theorem right_neutrality (hcR : cRules ⊆ R) (hRg : R ⊆ gcTiAbRules) (P : Comp R Loc Val A) :
     P >>= Pure.pure = P := by
   apply ext
   rw [traces_bind]
@@ -605,8 +607,8 @@ theorem associativity (hR : R ⊆ cRules) (P : Comp R Loc Val A) (f : A → Comp
     bindGen_assoc]
 
 instance : LawfulMonad (Comp cRules Loc Val) := LawfulMonad.mk'
-  (id_map := fun x ↦ right_neutrality (subset_refl _) cRules_subset_gcRules x)
-  (pure_bind := fun a f ↦ left_neutrality (subset_refl _) cRules_subset_gcRules a f)
+  (id_map := fun x ↦ right_neutrality (subset_refl _) cRules_subset_gcTiAbRules x)
+  (pure_bind := fun a f ↦ left_neutrality (subset_refl _) cRules_subset_gcTiAbRules a f)
   (bind_assoc := fun x f g ↦ associativity (subset_refl _) x f g)
 
 /-! ## Order, bottom, and unions

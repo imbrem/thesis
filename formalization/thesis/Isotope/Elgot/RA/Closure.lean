@@ -155,6 +155,8 @@ theorem ChroStep.own_eq {x : Rule} {c₁ c₂ : Chro Loc Val} (hx : x ∈ cRules
         · exact Or.inr ⟨hν, hr⟩
   | loosen => simp at hx
   | expel => simp at hx
+  | tighten => simp at hx
+  | absorb => simp at hx
 
 theorem Step.own_eq (hR : R ⊆ cRules) {τ π : PreTrace Loc Val A} (h : Step R τ π)
     (hτ : IsTrace τ) : τ.ch.own = π.ch.own := by
@@ -163,6 +165,7 @@ theorem Step.own_eq (hR : R ⊆ cRules) {τ π : PreTrace Loc Val A} (h : Step R
   | forward _ _ => rfl
   | rewind _ _ => rfl
   | condense hx => exact absurd (hR hx) (by simp)
+  | dilute hx => exact absurd (hR hx) (by simp)
 
 theorem Refines.own_eq (hR : R ⊆ cRules) {τ π : PreTrace Loc Val A} (h : Refines R τ π)
     (hτ : IsTrace τ) : τ.ch.own = π.ch.own := by
@@ -190,7 +193,7 @@ theorem sub_of_insert_sub {ε : Msg Loc Val} {ρ μ : Memory Loc Val}
   · exact absurd hx hε
   · exact hx'
 
-theorem ChroStep.own_empty {x : Rule} {c₁ c₂ : Chro Loc Val} (hx : x ∈ gcRules)
+theorem ChroStep.own_empty {x : Rule} {c₁ c₂ : Chro Loc Val} (hx : x ∈ gcTiAbRules)
     (h : ChroStep x c₁ c₂) (hown : c₁.own = ∅) : c₂.own = ∅ := by
   rw [Chro.own_eq_listOwn, listOwn_eq_empty_iff] at hown ⊢
   cases h with
@@ -236,14 +239,20 @@ theorem ChroStep.own_empty {x : Rule} {c₁ c₂ : Chro Loc Val} (hx : x ∈ gcR
           (List.mem_append.mpr (Or.inr (List.mem_map_of_mem hS)))
         exact Set.insert_subset_insert
           (Set.insert_subset_insert (sub_of_insert_sub hsrc (hfs S hS).2))
+  | tighten _ _ l m μ ρ ν ε _ hνμ _ _ _ _ _ h₁ h₂ =>
+      rw [h₁] at hown
+      exact absurd (hown ⟨μ, insert ν ρ⟩ (by simp) (Set.mem_insert _ _)) hνμ
+  | absorb _ _ l m μ ρ ν ε _ hνμ _ _ _ _ _ _ _ _ h₁ h₂ =>
+      rw [h₁] at hown
+      exact absurd (hown ⟨μ, insert ν (insert ε ρ)⟩ (by simp) (Set.mem_insert _ _)) hνμ
 
 /-- `Condense` merges a dovetailing pair, so its two messages are distinct. -/
 theorem Msg.DovetailEq.ne {ν ε : Msg Loc Val} (h : Msg.DovetailEq ν ε) : ν ≠ ε := by
   rintro rfl
   exact absurd h.1.2.1 (ne_of_gt ν.i_lt_t)
 
-theorem Step.own_empty (hR : R ⊆ gcRules) {τ π : PreTrace Loc Val A} (h : Step R τ π)
-    (hown : τ.ch.own = ∅) : π.ch.own = ∅ := by
+theorem Step.own_empty (hR : R ⊆ gcTiAbRules) {τ π : PreTrace Loc Val A}
+    (h : Step R τ π) (hown : τ.ch.own = ∅) : π.ch.own = ∅ := by
   cases h with
   | chro hx hc => exact hc.own_empty (hR hx) hown
   | forward _ _ => exact hown
@@ -267,8 +276,9 @@ theorem Step.own_empty (hR : R ⊆ gcRules) {τ π : PreTrace Loc Val A} (h : St
       intro T hT
       obtain ⟨S, hS, rfl⟩ := List.mem_map.mp hT
       exact Memory.pull_mono (key S hS)
+  | dilute hx => exact absurd (hR hx) (by simp)
 
-theorem Refines.own_empty (hR : R ⊆ gcRules) {τ π : PreTrace Loc Val A}
+theorem Refines.own_empty (hR : R ⊆ gcTiAbRules) {τ π : PreTrace Loc Val A}
     (h : Refines R τ π) (hown : τ.ch.own = ∅) : π.ch.own = ∅ := by
   induction h with
   | refl => exact hown
@@ -289,6 +299,7 @@ theorem Step.length_eq (hR : R ⊆ gRules) {τ π : PreTrace Loc Val A} (h : Ste
   | forward hx _ => exact absurd (hR hx) (by simp)
   | rewind hx _ => exact absurd (hR hx) (by simp)
   | condense hx l m ν ε hde hfν hfε h₁ h₂ => rw [h₁, h₂]; simp
+  | dilute hx => exact absurd (hR hx) (by simp)
 
 theorem Refines.length_eq (hR : R ⊆ gRules) {τ π : PreTrace Loc Val A}
     (h : Refines R τ π) : τ.ch.toList.length = π.ch.toList.length := by

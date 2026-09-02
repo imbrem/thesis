@@ -15,13 +15,12 @@ p.29):
 | Concrete `C` (ESOP's `M`) | `𝔤𝔠 = 𝔤 ∪ 𝔠` | Prop. 7.7 |
 | Abstract `A` | `𝔤𝔠𝔞` | Prop. 7.8 |
 
-This file transcribes the *generating* group `𝔤` and the *concrete* group
-`𝔠 = {St, Mu, Fw, Rw}`, and indexes the one-step rewrite relation by an
-arbitrary `RuleSet`, so that everything downstream is proved once for all
-models.  The *abstract* group `𝔞 = {Ti, Ab, Di}` is **not** formalized here; see
-the honest boundary in `Isotope/Elgot/RA.lean`.
+This file transcribes all nine rules of Table 2: the *generating* group `𝔤`,
+the *concrete* group `𝔠 = {St, Mu, Fw, Rw}` and the *abstract* group
+`𝔞 = {Ti, Ab, Di}`, and indexes the one-step rewrite relation by an arbitrary
+`RuleSet`, so that everything downstream is proved once for all models.
 
-## The rules, verbatim (journal Table 2, p.30)
+## The rules, verbatim (journal Table 2, p.30, read from the typeset table)
 
 ```
 Stutter  (St)   α ξη ω               →  α ξ ⟨μ,μ⟩ η ω
@@ -31,7 +30,35 @@ Rewind   (Rw)   κ ξ ω ◁ r            →  α ξ ω ◁ r                if 
 Loosen   (Ls)   α ξ (η ⊎ {ε}) ω      →  α ξ (η ⊎ {ν}) ω          if ν ≤vw ε
 Expel    (Ex)   α ξ (η ⊎ {ε[i↦ν.i]}) ω → α ξ (η ⊎ {ν, ε}) ω      if ν ⤙ ε
 Condense (Cn)   α ξ (η ⊎ {ν, ε}) ω   →  (α ξ (η ⊎ {ν}) ω)[↑ε]    if ν ⤙= ε
+Tighten  (Ti)   α ξ⟨μ, ρ⊎{ν}⟩ η⊎{ν} ω         →  α ξ⟨μ, ρ⊎{ε}⟩ η⊎{ε} ω              if ν ≤vw ε
+Absorb   (Ab)   α ξ⟨μ, ρ⊎{ν,ε}⟩ η⊎{ν,ε} ω     →  α ξ⟨μ, ρ⊎{ε[i↦ν.i]}⟩ η⊎{ε[i↦ν.i]} ω  if ν ⤙ ε
+Dilute   (Di)  (α ξ⟨μ, ρ⊎{ν}⟩ η⊎{ν} ω)[↑ε]   →  α ξ⟨μ, ρ⊎{ν,ε}⟩ η⊎{ν,ε} ω          if ν ⤙= ε
 ```
+
+The three `𝔞` rows were read off the typeset Table 2 (journal p.30) and the
+displays `(Tighten)`, `(Absorb)` (journal p.36) and `(Dilute)` (journal p.37)
+directly, by rendering those pages; the `pdftotext` extractions garble them.
+Note that the paper distinguishes the memory-level `⊎` from a *barred* `⊎` at
+the chronicle level, which is the `η ⊎ {ν}` of the table above.
+
+## The `𝔞`-shape: `ν` is a *local* message
+
+Where the `𝔤` rules act on a chronicle suffix `η ⊎ {ε}`, the `𝔞` rules act on
+a suffix *preceded by an explicit transition* `⟨μ, ρ ⊎ {ν}⟩`.  Since memories
+only grow along a chronicle, this pins down where `ν` enters: on the `ρ` side,
+i.e. `ν` is a **local** message (`ν ∈ ξ.own`).  The paper's prose says exactly
+this for `Ti` ("considering a *local* message `ν`", p.36) and for `Ab` ("removes
+a *local* message `ν` and decreases the initial timestamp of a *local* message
+`ε`", p.36).  We therefore make `ν ∉ μ` (and, for the message that replaces it,
+`ε ∉ μ`) explicit hypotheses of `ChroStep.tighten` and `ChroStep.absorb`.
+
+⚠ For `Di` the paper says the *opposite* about `ν`: only `ε` must be local, and
+"`ν` and `ν′` can appear anywhere in the trace's sequence, as long as they
+appear in the same places" (ESOP conference version, Fig. 7 caption; journal
+Fig. 14's caption makes the same concession for `Cn`).  `Step.dilute` accordingly
+constrains only `ε`.  This asymmetry is not cosmetic: it is why `Di` can create a
+local message out of nothing and so breaks the invariant `ξ.own = ∅` on which the
+unit laws run; see `Isotope/Elgot/RA/Abstract.lean`.
 
 Following the paper, the side conditions that make the *target* a trace are not
 part of the rules: closure of a set `U` under a rule set only ever requires
@@ -72,8 +99,7 @@ namespace Isotope.Elgot.RA
 
 variable {Loc Val : Type}
 
-/-- The paper's closure rules (journal Table 2, p.30), less the abstract group
-`𝔞 = {Ti, Ab, Di}`, which is not formalized. -/
+/-- The paper's nine closure rules (journal Table 2, p.30). -/
 inductive Rule : Type
   /-- `St`, *stutter*. -/
   | St
@@ -89,6 +115,12 @@ inductive Rule : Type
   | Ex
   /-- `Cn`, *condense*. -/
   | Cn
+  /-- `Ti`, *tighten*. -/
+  | Ti
+  /-- `Ab`, *absorb*. -/
+  | Ab
+  /-- `Di`, *dilute*. -/
+  | Di
   deriving DecidableEq, Repr
 
 /-- The paper's `★`: a set of closure rules (journal §7.2, p.28). -/
@@ -112,13 +144,58 @@ def gcRules : RuleSet := gRules ∪ cRules
     x ∈ gRules ↔ x = Rule.Ls ∨ x = Rule.Ex ∨ x = Rule.Cn := by
   simp [gRules]
 
-@[simp] theorem mem_gcRules {x : Rule} : x ∈ gcRules ↔ True := by
-  simp only [gcRules, Set.mem_union, mem_gRules, mem_cRules, iff_true]
+/-- The abstract group `𝔞 = {Ti, Ab, Di}` (journal §7.5, p.35). -/
+def aRules : RuleSet := {Rule.Ti, Rule.Ab, Rule.Di}
+
+/-- The Abstract model's rule set `𝔤𝔠𝔞 = 𝔤𝔠 ∪ 𝔞` (journal §7.5, p.35). -/
+def gcaRules : RuleSet := gcRules ∪ aRules
+
+/-- `𝔤𝔠 ∪ {Ti, Ab}`: the abstract group **less dilute**.  This rule set is
+*ours*, not the paper's; it is the largest set below `𝔤𝔠𝔞` for which having no
+local messages is still a rewriting invariant, hence the largest one for which
+the unit laws of `Isotope/Elgot/RA/Monad.lean` are proved.  See
+`Isotope/Elgot/RA/Abstract.lean`. -/
+def gcTiAbRules : RuleSet := gcRules ∪ {Rule.Ti, Rule.Ab}
+
+@[simp] theorem mem_gcRules {x : Rule} :
+    x ∈ gcRules ↔ x = Rule.St ∨ x = Rule.Mu ∨ x = Rule.Fw ∨ x = Rule.Rw ∨
+      x = Rule.Ls ∨ x = Rule.Ex ∨ x = Rule.Cn := by
+  simp only [gcRules, Set.mem_union, mem_gRules, mem_cRules]; tauto
+
+@[simp] theorem mem_aRules {x : Rule} :
+    x ∈ aRules ↔ x = Rule.Ti ∨ x = Rule.Ab ∨ x = Rule.Di := by
+  simp [aRules]
+
+@[simp] theorem mem_gcTiAbRules {x : Rule} : x ∈ gcTiAbRules ↔ x ≠ Rule.Di := by
+  simp only [gcTiAbRules, Set.mem_union, mem_gcRules, Set.mem_insert_iff,
+    Set.mem_singleton_iff]
   cases x <;> simp
 
-theorem cRules_subset_gcRules : cRules ⊆ gcRules := fun _ _ ↦ by simp
+@[simp] theorem mem_gcaRules {x : Rule} : x ∈ gcaRules ↔ True := by
+  simp only [gcaRules, Set.mem_union, mem_gcRules, mem_aRules, iff_true]
+  cases x <;> simp
 
-theorem gRules_subset_gcRules : gRules ⊆ gcRules := fun _ _ ↦ by simp
+theorem cRules_subset_gcRules : cRules ⊆ gcRules := fun _ h ↦ Or.inr h
+
+theorem gRules_subset_gcRules : gRules ⊆ gcRules := fun _ h ↦ Or.inl h
+
+theorem gcRules_subset_gcTiAbRules : gcRules ⊆ gcTiAbRules := fun _ h ↦ Or.inl h
+
+theorem cRules_subset_gcTiAbRules : cRules ⊆ gcTiAbRules :=
+  cRules_subset_gcRules.trans gcRules_subset_gcTiAbRules
+
+theorem gRules_subset_gcTiAbRules : gRules ⊆ gcTiAbRules :=
+  gRules_subset_gcRules.trans gcRules_subset_gcTiAbRules
+
+theorem gcTiAbRules_subset_gcaRules : gcTiAbRules ⊆ gcaRules := fun _ _ ↦ by simp
+
+theorem gcRules_subset_gcaRules : gcRules ⊆ gcaRules := fun _ _ ↦ by simp
+
+theorem aRules_subset_gcaRules : aRules ⊆ gcaRules := fun _ _ ↦ by simp
+
+theorem cRules_subset_gcaRules : cRules ⊆ gcaRules := fun _ _ ↦ by simp
+
+theorem gRules_subset_gcaRules : gRules ⊆ gcaRules := fun _ _ ↦ by simp
 
 /-- `ν` occurs in no memory of `l`: the disjointness carried by the paper's
 `⊎` in `η ⊎ {ν}`. -/
@@ -158,6 +235,33 @@ inductive ChroStep : Rule → Chro Loc Val → Chro Loc Val → Prop
       (h₁ : c₁.toList = l ++ m.map (Transition.insertMsg (ε.setI ν.i hdt.i_lt_t)))
       (h₂ : c₂.toList = l ++ m.map (fun T ↦ (T.insertMsg ε).insertMsg ν)) :
       ChroStep Rule.Ex c₁ c₂
+  /-- `Tighten` (journal §7.5, p.36): replace the *local* message `ν` by a
+  stronger `ν ≤vw ε` in the transition that introduces it and in every later
+  memory.  The hypotheses `hνμ`, `hεμ` are our reading of the paper's
+  `⟨μ, ρ ⊎ {ν}⟩`: the message enters on the closing side, i.e. it is local. -/
+  | tighten (c₁ c₂ : Chro Loc Val) (l m : List (Transition Loc Val))
+      (μ ρ : Memory Loc Val) (ν ε : Msg Loc Val)
+      (hle : Msg.LeVw ν ε)
+      (hνμ : ν ∉ μ) (hνρ : ν ∉ ρ) (hεμ : ε ∉ μ) (hερ : ε ∉ ρ)
+      (hfν : listFree ν m) (hfε : listFree ε m)
+      (h₁ : c₁.toList = l ++ ⟨μ, insert ν ρ⟩ :: m.map (Transition.insertMsg ν))
+      (h₂ : c₂.toList = l ++ ⟨μ, insert ε ρ⟩ :: m.map (Transition.insertMsg ε)) :
+      ChroStep Rule.Ti c₁ c₂
+  /-- `Absorb` (journal §7.5, pp.36–37): merge the dovetailing *local* pair
+  `ν ⤙ ε` into the single message `ε[i↦ν.i]`, which covers both segments. -/
+  | absorb (c₁ c₂ : Chro Loc Val) (l m : List (Transition Loc Val))
+      (μ ρ : Memory Loc Val) (ν ε : Msg Loc Val)
+      (hdt : Msg.Dovetail ν ε)
+      (hνμ : ν ∉ μ) (hνρ : ν ∉ ρ) (hεμ : ε ∉ μ) (hερ : ε ∉ ρ)
+      (hsμ : ε.setI ν.i hdt.i_lt_t ∉ μ) (hsρ : ε.setI ν.i hdt.i_lt_t ∉ ρ)
+      (hfν : listFree ν m) (hfε : listFree ε m)
+      (hfs : listFree (ε.setI ν.i hdt.i_lt_t) m)
+      (h₁ : c₁.toList =
+        l ++ ⟨μ, insert ν (insert ε ρ)⟩ :: m.map (fun T ↦ (T.insertMsg ε).insertMsg ν))
+      (h₂ : c₂.toList =
+        l ++ ⟨μ, insert (ε.setI ν.i hdt.i_lt_t) ρ⟩ ::
+          m.map (Transition.insertMsg (ε.setI ν.i hdt.i_lt_t))) :
+      ChroStep Rule.Ab c₁ c₂
 
 namespace ChroStep
 
@@ -187,6 +291,8 @@ theorem c_sub {x : Rule} {c₁ c₂ : Chro Loc Val} (hx : x ∈ cRules) (h : Chr
           simp only [Chro.c, h₁, h₂, listC_append, listC_cons_cons, subset_refl]
   | loosen => simp at hx
   | expel => simp at hx
+  | tighten => simp at hx
+  | absorb => simp at hx
 
 /-- Stutter and mumble can only shrink the opening memory.  This fails for the
 `𝔤` rules. -/
@@ -212,6 +318,8 @@ theorem o_sub {x : Rule} {c₁ c₂ : Chro Loc Val} (hx : x ∈ cRules) (h : Chr
       | cons T l => simp only [Chro.o, h₁, h₂, List.cons_append, listO_cons, subset_refl]
   | loosen => simp at hx
   | expel => simp at hx
+  | tighten => simp at hx
+  | absorb => simp at hx
 
 /-- Rewriting the left operand of a concatenation, for the `𝔠` rules. -/
 theorem appendLeft {x : Rule} {c₁ c₂ d : Chro Loc Val} (hx : x ∈ cRules)
@@ -228,6 +336,8 @@ theorem appendLeft {x : Rule} {c₁ c₂ d : Chro Loc Val} (hx : x ∈ cRules)
       · rw [Chro.append_toList, e₂, List.append_assoc, List.cons_append]
   | loosen => simp at hx
   | expel => simp at hx
+  | tighten => simp at hx
+  | absorb => simp at hx
 
 /-- Rewriting the right operand of a concatenation, for the `𝔠` rules. -/
 theorem appendRight {x : Rule} {c₁ c₂ d : Chro Loc Val} (hx : x ∈ cRules)
@@ -244,6 +354,8 @@ theorem appendRight {x : Rule} {c₁ c₂ d : Chro Loc Val} (hx : x ∈ cRules)
       · rw [Chro.append_toList, e₂, List.append_assoc]
   | loosen => simp at hx
   | expel => simp at hx
+  | tighten => simp at hx
+  | absorb => simp at hx
 
 /-- The chronicle rewrites preserve the number of transitions, except for
 `Mumble`, which shortens it by one.  In particular the three `𝔤` rules preserve
@@ -255,6 +367,8 @@ theorem length_eq {x : Rule} {c₁ c₂ : Chro Loc Val} (hx : x ∈ gRules)
   | mumble => simp at hx
   | loosen _ _ l m ν ε _ _ _ h₁ h₂ => rw [h₁, h₂]; simp
   | expel _ _ l m ν ε _ _ _ _ h₁ h₂ => rw [h₁, h₂]; simp
+  | tighten => simp at hx
+  | absorb => simp at hx
 
 end ChroStep
 
@@ -281,6 +395,20 @@ inductive Step (R : RuleSet) {A : Type u} : PreTrace Loc Val A → PreTrace Loc 
       (h₁ : c₁.toList = l ++ m.map (fun T ↦ (T.insertMsg ε).insertMsg ν))
       (h₂ : c₂.toList = (l ++ m.map (Transition.insertMsg ν)).map (Transition.pull ε)) :
       Step R ⟨α, c₁, ω, r⟩ ⟨View.pull ε α, c₂, View.pull ε ω, r⟩
+  /-- `Dilute` (journal §7.5, p.37): the mirror image of `Condense`.  A message
+  `ν[↑ε]` splits into `ν` together with a *local* message `ν ⤙= ε` filling out
+  the rest of its segment; the source, not the target, is the pulled pre-trace.
+  Only `ε` is required to be local (journal Fig. 14, ESOP conference Fig. 7). -/
+  | dilute (hx : Rule.Di ∈ R) {α ω : View Loc} {r : A} {c₁ c₂ : Chro Loc Val}
+      (l m : List (Transition Loc Val)) (μ ρ : Memory Loc Val) (ν ε : Msg Loc Val)
+      (hde : Msg.DovetailEq ν ε)
+      (hεμ : ε ∉ μ) (hερ : ε ∉ ρ) (hνρ : ν ∉ ρ)
+      (hfν : listFree ν m) (hfε : listFree ε m)
+      (h₁ : c₁.toList =
+        (l ++ ⟨μ, insert ν ρ⟩ :: m.map (Transition.insertMsg ν)).map (Transition.pull ε))
+      (h₂ : c₂.toList =
+        l ++ ⟨μ, insert ν (insert ε ρ)⟩ :: m.map (fun T ↦ (T.insertMsg ε).insertMsg ν)) :
+      Step R ⟨View.pull ε α, c₁, View.pull ε ω, r⟩ ⟨α, c₂, ω, r⟩
 
 /-- Enlarging the rule set only adds rewrites: the paper's `G X ⊇ C X ⊇ A X`
 (journal §8.2, p.41) rests on nothing more than this. -/
@@ -292,6 +420,8 @@ theorem Step.mono {R R' : RuleSet} (hR : R ⊆ R') {A : Type u}
   | rewind hx h => exact Step.rewind (hR hx) h
   | condense hx l m ν ε hde hfν hfε h₁ h₂ =>
       exact Step.condense (hR hx) l m ν ε hde hfν hfε h₁ h₂
+  | dilute hx l m μ ρ ν ε hde hεμ hερ hνρ hfν hfε h₁ h₂ =>
+      exact Step.dilute (hR hx) l m μ ρ ν ε hde hεμ hερ hνρ hfν hfε h₁ h₂
 
 /-- A rewrite step whose target is again a trace: the only steps that a
 `★`-closed set of traces is required to follow (journal §7.2, p.28). -/
