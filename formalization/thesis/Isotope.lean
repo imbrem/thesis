@@ -4,6 +4,7 @@ import Isotope.CategoryTheory.Monad
 import Isotope.CategoryTheory.Premonoidal
 import Isotope.Elgot.Basic
 import Isotope.Elgot.Nondet
+import Isotope.Elgot.Transformer
 import Isotope.LambdaIter
 import Isotope.LambdaSSA
 import Isotope.LambdaCase
