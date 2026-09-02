@@ -163,6 +163,54 @@ pointing downwards into the pulled memories (`PointsDownInto.pull`,
 condition on local messages (`Scattered.segFree_of_pull`,
 `Scattered.notMem_of_pull`). -/
 
+/-- The closing memory of the target of a `Condense` receives the pull of the
+source's closing memory, minus the condensed message.  This is the hypothesis
+Lemma 7.6 needs at every use. -/
+theorem condense_key {c₁ c₂ : Chro Loc Val} {l m : List (Transition Loc Val)}
+    {ν ε : Msg Loc Val} (hde : Msg.DovetailEq ν ε) (hfε : listFree ε m)
+    (h₁ : c₁.toList = l ++ m.map (fun T ↦ (T.insertMsg ε).insertMsg ν))
+    (h₂ : c₂.toList = (l ++ m.map (Transition.insertMsg ν)).map (Transition.pull ε)) :
+    Memory.pull ε (c₁.c \ {ε}) ⊆ c₂.c := by
+  have hνne : ν ≠ ε := fun hc ↦ by
+    rw [hc] at hde; exact absurd hde.1.2.1 (ne_of_gt ε.i_lt_t)
+  have h₂' : c₂.toList = l.map (Transition.pull ε)
+      ++ m.map (fun T ↦ (T.insertMsg ν).pull ε) := by
+    rw [h₂, List.map_append, List.map_map]; rfl
+  rcases List.eq_nil_or_concat' m with rfl | ⟨m', S, rfl⟩
+  · have hl : l ≠ [] := by
+      intro hc; exact c₁.toList_ne_nil (by rw [h₁, hc]; rfl)
+    obtain ⟨T, hT, hc1, hc2⟩ := listC_map (h := Transition.pull ε) l hl
+    have e1 : c₁.c = T.closing := by change listC c₁.toList = _; rw [h₁]; simpa using hc1
+    have e2 : c₂.c = Memory.pull ε T.closing := by
+      change listC c₂.toList = _; rw [h₂']; simpa using hc2
+    rw [e1, e2]; exact Memory.pull_mono (fun _ hx ↦ hx.1)
+  · have e1 : c₁.c = insert ν (insert ε S.closing) := by
+      change listC c₁.toList = _
+      rw [h₁]
+      simp only [List.map_append, List.map_cons, List.map_nil, ← List.append_assoc,
+        listC_append, listC_singleton]
+      rfl
+    have e2 : c₂.c = Memory.pull ε (insert ν S.closing) := by
+      change listC c₂.toList = _
+      rw [h₂']
+      simp only [List.map_append, List.map_cons, List.map_nil, ← List.append_assoc,
+        listC_append, listC_singleton]
+      rfl
+    rw [e1, e2, Set.insert_insert_diff hνne (hfε S (by simp)).2]
+
+/-- **Lemma 7.6 for a `Condense` rewrite**: pulling is monotone on views that
+point into the source's closing memory.  This is what keeps the bind seam
+condition `κ ⊑ σ` and the delimiting-view condition `α ⊑ ω` alive across a
+`Condense` (journal p.34). -/
+theorem condense_mono {c₁ c₂ : Chro Loc Val} {l m : List (Transition Loc Val)}
+    {ν ε : Msg Loc Val} (hde : Msg.DovetailEq ν ε) (hfε : listFree ε m)
+    (h₁ : c₁.toList = l ++ m.map (fun T ↦ (T.insertMsg ε).insertMsg ν))
+    (h₂ : c₂.toList = (l ++ m.map (Transition.insertMsg ν)).map (Transition.pull ε))
+    (hwf : ∀ T ∈ c₂.toList, T.WF) {κ σ : View Loc}
+    (hκ : PointsInto κ c₁.c) (hσ : PointsInto σ c₁.c) (h : κ ≤ σ) :
+    View.pull ε κ ≤ View.pull ε σ :=
+  View.pull_le_pull_of_scattered (scattered_c_of_wf hwf) (condense_key hde hfε h₁ h₂) hκ hσ h
+
 /-- **Condense** takes traces to traces, given that the target's memories are
 well-formed. -/
 theorem isTrace_condense {A : Type u} {α ω : View Loc} {r : A} {c₁ c₂ : Chro Loc Val}
@@ -184,7 +232,10 @@ theorem isTrace_condense {A : Type u} {α ω : View Loc} {r : A} {c₁ c₂ : Ch
   have hwf₁ : WellFormed c₁.c := by
     obtain ⟨T, hT, hc⟩ := listC_mem c₁.toList c₁.toList_ne_nil
     change WellFormed (listC c₁.toList); rw [hc]; exact (hτ.wf T hT).closing
-  -- the closing memories, split on whether the rewritten suffix is empty
+  have hkey : Memory.pull ε (c₁.c \ {ε}) ⊆ c₂.c := condense_key hde hfε h₁ h₂
+  have hmono : ∀ κ σ : View Loc, PointsInto κ c₁.c → PointsInto σ c₁.c → κ ≤ σ →
+      View.pull ε κ ≤ View.pull ε σ := fun _ _ hκ hσ hle ↦
+    View.pull_le_pull_of_scattered hsc₂ hkey hκ hσ hle
   have hlast : (∃ T ∈ l, c₁.c = T.closing ∧ c₂.c = Memory.pull ε T.closing) ∨
       (∃ S ∈ m, c₁.c = insert ν (insert ε S.closing) ∧
         c₂.c = Memory.pull ε (insert ν S.closing)) := by
@@ -206,13 +257,6 @@ theorem isTrace_condense {A : Type u} {α ω : View Loc} {r : A} {c₁ c₂ : Ch
         simp only [List.map_append, List.map_cons, List.map_nil, ← List.append_assoc,
           listC_append, listC_singleton]
         rfl
-  have hkey : Memory.pull ε (c₁.c \ {ε}) ⊆ c₂.c := by
-    rcases hlast with ⟨T, hT, hc1, hc2⟩ | ⟨S, hS, hc1, hc2⟩
-    · rw [hc1, hc2]; exact Memory.pull_mono (fun _ hx ↦ hx.1)
-    · rw [hc1, hc2, Set.insert_insert_diff hνne (hfε S hS).2]
-  have hmono : ∀ κ σ : View Loc, PointsInto κ c₁.c → PointsInto σ c₁.c → κ ≤ σ →
-      View.pull ε κ ≤ View.pull ε σ := fun _ _ hκ hσ hle ↦
-    View.pull_le_pull_of_scattered hsc₂ hkey hκ hσ hle
   refine ⟨hwf, ?_, hmono α ω hα hω hτ.mono, ?_, ?_⟩
   · -- the opening memory
     have hop := hτ.openPts
@@ -305,5 +349,19 @@ theorem isTrace_condense {A : Type u} {α ω : View Loc} {r : A} {c₁ c₂ : Ch
         exact lt_of_lt_of_le h3 (Msg.le_pull_t ε ϑ)
     · rw [View.pull_of_ne hlc]
       exact lt_of_lt_of_le h3 (Msg.le_pull_t ε ϑ)
+
+/-- The two `𝔤` rules that act on the chronicle alone take traces to traces,
+given that the target's memories are well-formed. -/
+theorem isTrace_chroStep {A : Type u} {x : Rule} (hx : x ∈ gRules)
+    {c₁ c₂ : Chro Loc Val} (h : ChroStep x c₁ c₂) {α ω : View Loc} {r : A}
+    (hτ : IsTrace (⟨α, c₁, ω, r⟩ : PreTrace Loc Val A))
+    (hwf : ∀ T ∈ c₂.toList, T.WF) :
+    IsTrace (⟨α, c₂, ω, r⟩ : PreTrace Loc Val A) := by
+  cases h with
+  | stutter => exact absurd hx (by simp)
+  | mumble => exact absurd hx (by simp)
+  | loosen _ _ l m ν ε hle hfε hfν e₁ e₂ => exact isTrace_loosen hle hfε hfν e₁ e₂ hτ hwf
+  | expel _ _ l m ν ε hdt hfs hfν hfε e₁ e₂ =>
+      exact isTrace_expel hdt hfs hfν hfε e₁ e₂ hτ hwf
 
 end Isotope.Elgot.RA
