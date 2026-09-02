@@ -60,4 +60,15 @@ noncomputable def labelConsIso (A : τ) (L : LCtx τ) :
       intro i
       simp only [Category.assoc, labelConsFrom_tail_assoc, labelConsTo_tail, comp_id]
 
+/-- The label object of a singleton context is its unique summand. -/
+noncomputable def labelSingletonIso (A : τ) : labelObj M [A] ≅ M.obj A where
+  hom := Limits.Sigma.desc fun _ => 𝟙 _
+  inv := Limits.Sigma.ι (fun _ : Fin 1 => M.obj A) 0
+  hom_inv_id := by
+    apply Limits.Sigma.hom_ext
+    intro i
+    fin_cases i
+    simp
+  inv_hom_id := by simp
+
 end Isotope.LambdaSSA.Semantics.Categorical
