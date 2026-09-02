@@ -10,14 +10,26 @@ abbrev Scope := LambdaIter.Named.ToLocallyNameless.Scope
 
 namespace Scope
 
+def cast (h : n = m) (ρ : Scope ν n) : Scope ν m := h ▸ ρ
+
+theorem resolve_cast [DecidableEq ν] (h : n = m) (ρ : Scope ν n) (x : ν) :
+    (cast h ρ).resolve x = (ρ.resolve x).map (Fin.cast h) id := by
+  cases h
+  simp [cast]
+
 /-- Push simultaneous binders in increasing index order, so binder `i`
 resolves to de Bruijn index `i`. -/
 def pushAll : {n : Nat} → (Fin n → Named.Binder ν) → Scope ν k → Scope ν (n + k)
-  | 0, _, ρ => by simpa using ρ
+  | 0, _, ρ => cast (Nat.zero_add k).symm ρ
   | n + 1, xs, ρ =>
-      by simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using
-        LambdaIter.Named.ToLocallyNameless.Scope.push
-          (xs 0) (pushAll (fun i => xs i.succ) ρ)
+      cast (by omega) (LambdaIter.Named.ToLocallyNameless.Scope.push
+        (xs 0) (pushAll (fun i => xs i.succ) ρ))
+
+theorem resolve_pushAll_zero [DecidableEq ν]
+    (labels : Fin 0 → Named.Binder ν) (ρ : Scope ν k) (x : ν) :
+    (pushAll labels ρ).resolve x =
+      (ρ.resolve x).map (Fin.cast (Nat.zero_add k).symm) id := by
+  simp [pushAll, resolve_cast]
 
 end Scope
 

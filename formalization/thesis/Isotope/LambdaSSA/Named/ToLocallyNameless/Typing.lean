@@ -83,6 +83,50 @@ theorem lookup_free [DecidableEq ν] (h : Aligned (ν := ν) Γ ρ β Δ)
 
 end Aligned
 
+/-- Lookup-level alignment is convenient for simultaneous label binders: it
+avoids exposing the associativity casts used by `Scope.pushAll`. -/
+def LookupAligned [DecidableEq ν] (Γ : LambdaIter.Ctx ν τ)
+    (ρ : Scope ν n) (β : LocallyNameless.BoundCtx τ n)
+    (Δ : LambdaIter.Ctx ν τ) : Prop :=
+  ∀ {x A}, LambdaIter.Ctx.lookup Δ x = some A →
+    match ρ.resolve x with
+    | .inl i => β.get i = A
+    | .inr y => LambdaIter.Ctx.lookup Γ y = some A
+
+namespace LookupAligned
+
+theorem of_aligned [DecidableEq ν] (h : Aligned (ν := ν) Γ ρ β Δ) :
+    LookupAligned Γ ρ β Δ := by
+  intro x A hx
+  split <;> rename_i e
+  · exact h.lookup_bound hx e
+  · exact h.lookup_free hx e
+
+theorem push [DecidableEq ν] (h : LookupAligned Γ ρ β Δ)
+    (q : Named.Binder ν) (A : τ) :
+    LookupAligned Γ (.push q ρ) (.snoc β A) (.snoc Δ q A) := by
+  intro x B hx
+  cases q with
+  | none =>
+      simp only [LambdaIter.Ctx.lookup] at hx
+      rw [LambdaIter.Named.ToLocallyNameless.Scope.resolve_push_none]
+      cases e : ρ.resolve x with
+      | inl i => simpa [e] using h hx
+      | inr y => simpa [e] using h hx
+  | some y =>
+      by_cases e : x = y
+      · subst x
+        have hAB : A = B := by simpa [LambdaIter.Ctx.lookup] using hx
+        simpa [LambdaIter.LocallyNameless.BoundCtx.get, hAB]
+      · have hx' : LambdaIter.Ctx.lookup Δ x = some B := by
+          simpa [LambdaIter.Ctx.lookup, e] using hx
+        rw [LambdaIter.Named.ToLocallyNameless.Scope.resolve_push_ne _ e]
+        cases er : ρ.resolve x with
+        | inl i => simpa [er] using h hx'
+        | inr z => simpa [er] using h hx'
+
+end LookupAligned
+
 noncomputable def translateTm_hasType [DecidableEq ν] [LambdaIter.TypeFormers τ]
     [LambdaIter.HasTy Φ τ] {n : Nat} {ρ : Scope ν n}
     {β : LocallyNameless.BoundCtx τ n} {Γ Δ : LambdaIter.Ctx ν τ}
