@@ -44,6 +44,46 @@ theorem EnvRel.on
   intro x _
   exact h x
 
+private theorem select_filterMap [DecidableEq κ]
+    (ps : List (BlockId κ)) (pred : BlockId κ)
+    (f : BlockId κ → Option α)
+    (g : BlockId κ → α → Isotope.TAC.Classical.Value β)
+    (hmem : pred ∈ ps) (hf : f pred = some a) :
+    Isotope.TAC.Densem.Phi.incoming pred
+      (ps.filterMap fun q => (f q).map fun v =>
+        ({ predecessor := q, value := g q v } :
+          Isotope.TAC.Classical.Incoming β κ)) = some (g pred a) := by
+  induction ps with
+  | nil => simp at hmem
+  | cons q qs ih =>
+    rw [List.filterMap_cons]
+    by_cases e : pred = q
+    · subst q
+      rw [hf]
+      simp [Isotope.TAC.Densem.Phi.incoming]
+    · have hm : pred ∈ qs := (List.mem_cons.mp hmem).resolve_left e
+      cases hq : f q with
+      | none =>
+        simp only [hq, Option.map_none]
+        exact ih hm
+      | some v =>
+        simp only [hq, Option.map_some]
+        unfold Isotope.TAC.Densem.Phi.incoming
+        rw [List.find?_cons]
+        have ene : q ≠ pred := fun h => e h.symm
+        simp only [ene, decide_false, if_false, Option.map_eq_map]
+        exact ih hm
+
+theorem incoming_select [DecidableEq ν] [DecidableEq κ]
+    (source : Isotope.TAC.Classical.CFG ν φ κ) (bid pred : BlockId κ)
+    (x : ν) (b : Isotope.TAC.Classical.Block ν φ κ)
+    (hpred : pred ∈ predecessors source bid) (hb : source.lookup pred = some b) :
+    Isotope.TAC.Densem.Phi.incoming pred (incoming source bid x) =
+      some (.var (endEnv pred b x)) := by
+  unfold incoming blockAt
+  exact select_filterMap (predecessors source bid) pred (source.lookup ·)
+    (fun q block => Isotope.TAC.Classical.Value.var (endEnv q block x)) hpred hb
+
 theorem value_sim (M : Densem.Model φ) (current : Isotope.TAC.Classical.Convert.Env ν κ)
     (source : Densem.Env M ν) (target : Densem.Env M (Version ν κ))
     (h : EnvRel current source target) (a : Isotope.TAC.Classical.Value ν) :
