@@ -121,4 +121,59 @@ theorem runFuel_convert_eq [DecidableEq ν] [DecidableEq κ]
           rw [hs] at this
           contradiction
 
+theorem sourceContinue_eq_classical [DecidableEq ν] [DecidableEq κ]
+    (M : Densem.Model φ) (g : Isotope.TAC.Classical.CFG ν φ κ)
+    (fuel : Nat) (source : Densem.Env M ν) (exit : Densem.Exit κ M.Val) :
+    sourceContinue M g fuel source exit = continueFuel M g fuel source exit := by
+  induction fuel generalizing source exit with
+  | zero => cases exit <;> rfl
+  | succ fuel ih =>
+      cases exit with
+      | «return» => rfl
+      | branch label =>
+          simp only [sourceContinue, continueFuel]
+          change (do
+            let b ← Isotope.TAC.Densem.Phi.lookup g label
+            let (source', nextExit) ← blockDenote M source b
+            sourceContinue M g fuel source' nextExit) = _
+          change _ = (do
+            let b ← lookup g label
+            let (source', nextExit) ← blockDenote M source b
+            continueFuel M g fuel source' nextExit)
+          have hl : Isotope.TAC.Densem.Phi.lookup g label = lookup g label := rfl
+          rw [hl]
+          cases hb : lookup g label with
+          | none => simp [hb]
+          | some b =>
+              cases hd : blockDenote M source b with
+              | none => simp [hb, hd]
+              | some p =>
+                  rcases p with ⟨source', nextExit⟩
+                  simpa [hb, hd] using ih source' nextExit
+
+theorem sourceRunFuel_eq_classical [DecidableEq ν] [DecidableEq κ]
+    (M : Densem.Model φ) (g : Isotope.TAC.Classical.CFG ν φ κ)
+    (fuel : Nat) (source : Densem.Env M ν) :
+    sourceRunFuel M g fuel source = cfgRunFuel M g fuel source := by
+  cases fuel with
+  | zero => rfl
+  | succ fuel =>
+      simp only [sourceRunFuel, cfgRunFuel]
+      cases hd : blockDenote M source g.entry with
+      | none => rfl
+      | some p =>
+          rcases p with ⟨source', exit⟩
+          exact sourceContinue_eq_classical M g fuel source' exit
+
+/-- Main executable correctness statement against the pre-existing classical
+TAC densem: conversion to SSA preserves the complete bounded observation,
+including failure or fuel exhaustion. -/
+theorem runFuel_convert_eq_classical [DecidableEq ν] [DecidableEq κ]
+    (M : Densem.Model φ) (g : Isotope.TAC.Classical.CFG ν φ κ)
+    (fuel : Nat) (source : Densem.Env M ν) (htotal : Total source) :
+    Isotope.TAC.Densem.Phi.runFuel M (convert g) fuel
+        (externalEnv (M := M) (κ := κ) source) = cfgRunFuel M g fuel source :=
+  (runFuel_convert_eq M g fuel source htotal).trans
+    (sourceRunFuel_eq_classical M g fuel source)
+
 end Isotope.TAC.Densem.Convert
