@@ -148,6 +148,34 @@ private theorem incoming_eq_none_of_not_mem [DecidableEq ν] [DecidableEq κ]
           simp only [hne, decide_false, if_false]
           exact ih hnot.2
 
+private theorem lookup_of_mem_predecessors [DecidableEq κ]
+    (source : Isotope.TAC.Classical.CFG ν φ κ)
+    (pred bid : BlockId κ) (hpred : pred ∈ predecessors source bid) :
+    ∃ block, source.lookup pred = some block := by
+  have horigin := (mem_predecessors source pred bid).1 hpred |>.2
+  rcases horigin with rfl | ⟨label, hlabel, rfl⟩
+  · exact ⟨source.entry, rfl⟩
+  · unfold Isotope.TAC.Classical.CFG.labels at hlabel
+    change ∃ block, source.blocks.lookup label = some block
+    have go : ∀ xs : List (κ × Isotope.TAC.Classical.Block ν φ κ),
+        label ∈ xs.map Prod.fst → ∃ block, xs.lookup label = some block := by
+      intro xs hx
+      induction xs with
+      | nil => simp at hx
+      | cons p ps ih =>
+          simp only [List.map_cons, List.mem_cons] at hx
+          rcases hx with heq | hx
+          · subst label
+            exact ⟨p.2, by simp only [List.lookup, beq_self_eq_true]⟩
+          · by_cases heq : label = p.1
+            · subst label
+              exact ⟨p.2, by simp only [List.lookup, beq_self_eq_true]⟩
+            · rcases ih hx with ⟨block, hb⟩
+              have hbq : (label == p.1) = false := by
+                simp [heq]
+              exact ⟨block, by rw [List.lookup, hbq]; exact hb⟩
+    exact go source.blocks hlabel
+
 /-- With a nonempty canonical phi interface, an invalid predecessor makes
 phi assignment fail before the block body runs. -/
 theorem assignments_convert_badPred [Monad m]
@@ -233,10 +261,8 @@ def guardedSourceStep [Monad m] [DecidableEq ν] [DecidableEq κ]
                   (restrict M (sourceVars source) ρ', .named label, next))
             match sourceVars source with
             | [] => run
-            | _ :: _ => match source.lookup pred with
-                | none => M.fail
-                | some _ => if pred ∈ predecessors source (.named label) then run
-                  else M.fail
+            | _ :: _ => if pred ∈ predecessors source (.named label) then run
+                else M.fail
           else M.fail
 
 /-- Observe the recursive predecessor as well as the finite source store. -/
@@ -358,8 +384,7 @@ theorem step_denote_guarded_valid [Monad m] [LawfulMonad m]
           pure (addPred result) := congrArg (fun z => z >>= fun result =>
             pure (addPred result)) hs
     _ = _ := by
-      simp only [sourceStepOn, hlookup, guardedSourceStep, hpresent,
-        hpredBlock]
+      simp only [sourceStepOn, hlookup, guardedSourceStep, hpresent]
       cases hv : sourceVars sourceCfg <;> simp only [hv, hpred, if_pos]
       all_goals
         rw [dif_pos (by trivial)]
