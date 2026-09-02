@@ -54,6 +54,36 @@ def routeAppend (locals externals : LambdaSSA.LCtx τ) :
       (.case (routeAppend rest externals (.bv 0))
         (.inl (.bv 0)) (.inr (.inr (.bv 0))))
 
+def cfgStart_hasType {locals : LambdaSSA.LCtx τ} {β : BCtx τ n} :
+    LambdaIter.LocallyNameless.HasType Φ (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ)
+      β (cfgStart (Φ := Φ)) (cfgStateType locals) :=
+  .inl .unit
+
+def cfgLocal_hasType {locals : LambdaSSA.LCtx τ} {β : BCtx τ n} {target : ITm Φ n}
+    (h : LambdaIter.LocallyNameless.HasType Φ
+      (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ) β target (labelType locals)) :
+    LambdaIter.LocallyNameless.HasType Φ (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ)
+      β (cfgLocal target) (cfgStateType locals) :=
+  .inr h
+
+/-- Typing of the appended-label routing term. -/
+def routeAppend_hasType (locals externals : LambdaSSA.LCtx τ)
+    {β : BCtx τ n} {target : ITm Φ n}
+    (h : LambdaIter.LocallyNameless.HasType Φ
+      (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ) β target
+        (labelType (locals ++ externals))) :
+    LambdaIter.LocallyNameless.HasType Φ (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ)
+      β (routeAppend locals externals target)
+        (LambdaIter.coprod (labelType externals) (labelType locals)) := by
+  induction locals generalizing n β target with
+  | nil => exact .inl h
+  | cons A rest ih =>
+      exact .case h
+        (.inr (.inl (.bv (ι := 0))))
+        (.case (ih (.bv (ι := 0)))
+          (.inl (.bv (ι := 0)))
+          (.inr (.inr (.bv (ι := 0)))))
+
 /-- Inject the value of a selected label into the region result coproduct. -/
 def injectLabel {L : LambdaSSA.LCtx τ} {A : τ} (h : LambdaSSA.At L i A)
     (a : ITm Φ n) : ITm Φ n :=
