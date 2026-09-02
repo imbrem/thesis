@@ -1,4 +1,5 @@
 import Isotope.LambdaSSA.Semantics.Finite
+import Isotope.LambdaSSA.Semantics.Collective
 import Isotope.LambdaSSA.Semantics.Inversion
 
 /-! # Relational categorical semantics of lambda-SSA regions
@@ -54,23 +55,18 @@ local-label summand, with the read-only SSA context carried on the left. -/
 structure CollectiveDenotes (Γ : VCtx τ) {n : Nat} (R : Fin n → τ) (L : LCtx τ)
     (block : ∀ i, J.obj (ctxObj M (R i :: Γ)) ⟶
       J.obj (labelObj M (List.ofFn R ++ L)))
-    (f : J.obj (ctxObj M Γ ⊗ labelObj M (List.ofFn R)) ⟶
+    (f : J.obj (ctxObj M Γ ⊗ finiteLabelObj M R) ⟶
       J.obj (labelObj M (List.ofFn R ++ L))) : Prop where
   restrict (i : Fin n) :
-    J.map ((𝟙 (ctxObj M Γ)) ⊗ₘ labelInject M i.val (by
-      simp [At, i.isLt])) ≫ f = block i
+    J.map ((𝟙 (ctxObj M Γ)) ⊗ₘ finiteLabelInject M R i) ≫ f = block i
 
 /-- A one-block collective needs no nullary tensor-distributivity law. -/
 theorem collectiveDenotes_one (Γ : VCtx τ) (R : Fin 1 → τ) (L : LCtx τ)
     (block : ∀ i, J.obj (ctxObj M (R i :: Γ)) ⟶
       J.obj (labelObj M (List.ofFn R ++ L))) :
-    CollectiveDenotes J M Γ R L block
-      (J.map ((𝟙 (ctxObj M Γ)) ⊗ₘ labelSingletonTo M (R 0)) ≫ block 0) := by
-  constructor
-  intro i
-  fin_cases i
-  simp only [List.ofFn, List.get_cons_zero, labelInject]
-  simp
+    ∃ f, CollectiveDenotes J M Γ R L block f := by
+  rcases finiteCollective_exists_succ J M 0 Γ R _ block with ⟨f, df⟩
+  exact ⟨f, ⟨df.restrict⟩⟩
 
 /-- Every nonempty finite family of blocks has a collective arrow. -/
 theorem collectiveDenotes_exists_succ (n : Nat) (Γ : VCtx τ)
@@ -78,26 +74,8 @@ theorem collectiveDenotes_exists_succ (n : Nat) (Γ : VCtx τ)
     (block : ∀ i, J.obj (ctxObj M (R i :: Γ)) ⟶
       J.obj (labelObj M (List.ofFn R ++ L))) :
     ∃ f, CollectiveDenotes J M Γ R L block f := by
-  induction n generalizing R with
-  | zero => exact ⟨_, collectiveDenotes_one J M Γ R L block⟩
-  | succ n ih =>
-      let Rt : Fin (n + 1) → τ := fun i => R i.succ
-      let blockt : ∀ i, J.obj (ctxObj M (Rt i :: Γ)) ⟶
-          J.obj (labelObj M (List.ofFn Rt ++ L)) := fun i => by
-        simpa [Rt, List.ofFn] using block i.succ
-      rcases ih Rt blockt with ⟨ft, dft⟩
-      let f := J.map ((𝟙 (ctxObj M Γ)) ⊗ₘ
-          labelConsTo M (R 0) (List.ofFn Rt)) ≫
-        J.map (DistributiveTensor.leftIso (ctxObj M Γ)
-          (M.obj (R 0)) (labelObj M (List.ofFn Rt))).inv ≫
-        splitMapCoprod J _ _ ≫ coprod.desc (block 0) (by
-          simpa [Rt, List.ofFn] using ft)
-      refine ⟨f, ?_⟩
-      constructor
-      intro i
-      refine Fin.cases ?_ (fun j => ?_) i
-      · simp [f, List.ofFn, labelInject, Rt]
-      · simpa [f, List.ofFn, labelInject, Rt] using dft.restrict j
+  rcases finiteCollective_exists_succ J M n Γ R _ block with ⟨f, df⟩
+  exact ⟨f, ⟨df.restrict⟩⟩
 
 /-- Structural denotation graph for the non-recursive region constructors.
 The absence of a `cfg` constructor is intentional: recursive CFG wiring is a
@@ -131,7 +109,7 @@ inductive RegionDenotes : {Γ : VCtx τ} → {r : Region Φ} → {L : LCtx τ} �
       {fe : J.obj (ctxObj M Γ) ⟶ J.obj (labelObj M (List.ofFn R ++ L))}
       {fb : ∀ i, J.obj (ctxObj M (R i :: Γ)) ⟶
         J.obj (labelObj M (List.ofFn R ++ L))}
-      {collective : J.obj (ctxObj M Γ ⊗ labelObj M (List.ofFn R)) ⟶
+      {collective : J.obj (ctxObj M Γ ⊗ finiteLabelObj M R) ⟶
         J.obj (labelObj M (List.ofFn R ++ L))}
       (de : RegionDenotes he fe)
       (db : ∀ i, RegionDenotes (hb i) (fb i))
@@ -143,7 +121,8 @@ inductive RegionDenotes : {Γ : VCtx τ} → {r : Region Φ} → {L : LCtx τ} �
           splitMapCoprod J _ _ ≫ coprod.desc
             (J.map (CartesianMonoidalCategory.snd _ _))
             (contextualLoop J
-              (collective ≫ J.map (labelAppendSplit M (List.ofFn R) L)))))
+              (J.map ((𝟙 (ctxObj M Γ)) ⊗ₘ labelObjToFinite M R) ≫
+                collective ≫ J.map (labelAppendSplit M (List.ofFn R) L)))))
 
 /-- Transport the graph across proof-irrelevant region typing evidence. -/
 theorem RegionDenotes.proof_irrel
@@ -175,23 +154,21 @@ theorem regionDenotes_exists_nonrecursive
       ∃ f, RegionDenotes J M (.cfg R he hb) f) :
     ∃ f, RegionDenotes J M h f := by
   induction h with
-  | br h ha => exact ⟨_, .br (denote_spec J M ha)⟩
-  | case he hl hr ihe ihl ihr =>
-      rcases ihe with ⟨fe, de⟩
+  | br h ha => exact ⟨_, .br (h := h) (denote_spec J M ha)⟩
+  | case he hl hr ihl ihr =>
       rcases ihl with ⟨fl, dl⟩
       rcases ihr with ⟨fr, dr⟩
       exact ⟨_, .case (denote_spec J M he) dl dr⟩
-  | let₁ ha hb iha ihb =>
-      rcases ihb with ⟨fb, db⟩
+  | let₁ ha hb ih =>
+      rcases ih with ⟨fb, db⟩
       exact ⟨_, .let₁ (denote_spec J M ha) db⟩
-  | let₂ ha hb iha ihb =>
-      rcases ihb with ⟨fb, db⟩
+  | let₂ ha hb ih =>
+      rcases ih with ⟨fb, db⟩
       exact ⟨_, .let₂ (denote_spec J M ha) db⟩
-  | cfg R he hb ihe ihb =>
+  | @cfg _ _ _ n _ R he hb ihe ihb =>
       cases n with
       | zero =>
-          have de := ihe cfgWitness
-          rcases de with ⟨fe, de⟩
+          rcases ihe with ⟨fe, de⟩
           exact ⟨fe, .cfgZero he hb de⟩
       | succ n => exact cfgWitness he hb
 
@@ -199,18 +176,18 @@ private theorem regionDenotes_exists
     {Γ : VCtx τ} {r : Region Φ} {L : LCtx τ}
     (h : Region.HasType Γ r L) : ∃ f, RegionDenotes J M h f := by
   induction h with
-  | br h ha => exact ⟨_, .br (denote_spec J M ha)⟩
-  | case he hl hr ihe ihl ihr =>
+  | br h ha => exact ⟨_, .br (h := h) (denote_spec J M ha)⟩
+  | case he hl hr ihl ihr =>
       rcases ihl with ⟨fl, dl⟩
       rcases ihr with ⟨fr, dr⟩
       exact ⟨_, .case (denote_spec J M he) dl dr⟩
-  | let₁ ha hb iha ihb =>
-      rcases ihb with ⟨fb, db⟩
+  | let₁ ha hb ih =>
+      rcases ih with ⟨fb, db⟩
       exact ⟨_, .let₁ (denote_spec J M ha) db⟩
-  | let₂ ha hb iha ihb =>
-      rcases ihb with ⟨fb, db⟩
+  | let₂ ha hb ih =>
+      rcases ih with ⟨fb, db⟩
       exact ⟨_, .let₂ (denote_spec J M ha) db⟩
-  | cfg R he hb ihe ihb =>
+  | @cfg _ _ _ n _ R he hb ihe ihb =>
       cases n with
       | zero =>
           rcases ihe with ⟨fe, de⟩
@@ -218,7 +195,7 @@ private theorem regionDenotes_exists
       | succ n =>
           rcases ihe with ⟨fe, de⟩
           choose fb db using ihb
-          rcases collectiveDenotes_exists_succ J M n Γ R L fb with ⟨fc, dc⟩
+          rcases collectiveDenotes_exists_succ J M n _ R _ fb with ⟨fc, dc⟩
           exact ⟨_, .cfg he hb de db dc⟩
 
 /-- Chosen denotation of an exactly typed SSA region. -/

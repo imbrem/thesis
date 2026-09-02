@@ -63,6 +63,63 @@ noncomputable def labelOneTo (R : Fin 1 → τ) :
       Limits.Sigma.ι_desc _ _
     _ = 𝟙 _ := by simp
 
+noncomputable def finiteConsTo (R : Fin (n + 1) → τ) :
+    finiteLabelObj M R ⟶ M.obj (R 0) ⨿ finiteLabelObj M (fun i => R i.succ) :=
+  Limits.Sigma.desc fun i => Fin.cases coprod.inl
+    (fun j => finiteLabelInject M (fun i => R i.succ) j ≫ coprod.inr) i
+
+@[reassoc (attr := simp)] theorem finiteConsTo_head (R : Fin (n + 1) → τ) :
+    finiteLabelInject M R 0 ≫ finiteConsTo M R = coprod.inl := by
+  exact Limits.Sigma.ι_desc _ _
+
+@[reassoc (attr := simp)] theorem finiteConsTo_tail (R : Fin (n + 1) → τ)
+    (i : Fin n) : finiteLabelInject M R i.succ ≫ finiteConsTo M R =
+      finiteLabelInject M (fun j => R j.succ) i ≫ coprod.inr := by
+  exact Limits.Sigma.ι_desc _ _
+
+theorem finiteHead_distribute (R : Fin (n + 1) → τ) (Γ : VCtx τ) :
+    ((𝟙 (ctxObj M Γ)) ⊗ₘ finiteLabelInject M R 0) ≫
+        ((𝟙 (ctxObj M Γ)) ⊗ₘ finiteConsTo M R) ≫
+        (DistributiveTensor.leftIso (ctxObj M Γ) (M.obj (R 0))
+          (finiteLabelObj M (fun i => R i.succ))).inv = coprod.inl := by
+  rw [← Category.assoc, MonoidalCategory.tensorHom_comp_tensorHom,
+    Category.comp_id, finiteConsTo_head]
+  apply (cancel_mono (DistributiveTensor.leftIso (ctxObj M Γ) (M.obj (R 0))
+    (finiteLabelObj M (fun i => R i.succ))).hom).1
+  simp [DistributiveTensor.leftIso]
+
+theorem finiteTail_distribute (R : Fin (n + 1) → τ) (Γ : VCtx τ) (i : Fin n) :
+    ((𝟙 (ctxObj M Γ)) ⊗ₘ finiteLabelInject M R i.succ) ≫
+        ((𝟙 (ctxObj M Γ)) ⊗ₘ finiteConsTo M R) ≫
+        (DistributiveTensor.leftIso (ctxObj M Γ) (M.obj (R 0))
+          (finiteLabelObj M (fun i => R i.succ))).inv =
+      ((𝟙 (ctxObj M Γ)) ⊗ₘ finiteLabelInject M (fun j => R j.succ) i) ≫
+        coprod.inr := by
+  rw [← Category.assoc, MonoidalCategory.tensorHom_comp_tensorHom,
+    Category.comp_id, finiteConsTo_tail]
+  apply (cancel_mono (DistributiveTensor.leftIso (ctxObj M Γ) (M.obj (R 0))
+    (finiteLabelObj M (fun i => R i.succ))).hom).1
+  simp [DistributiveTensor.leftIso]
+
+@[reassoc] theorem map_finiteHead_distribute (R : Fin (n + 1) → τ) (Γ : VCtx τ) :
+    J.map ((𝟙 (ctxObj M Γ)) ⊗ₘ finiteLabelInject M R 0) ≫
+        J.map ((𝟙 (ctxObj M Γ)) ⊗ₘ finiteConsTo M R) ≫
+        J.map (DistributiveTensor.leftIso (ctxObj M Γ) (M.obj (R 0))
+          (finiteLabelObj M (fun i => R i.succ))).inv = J.map coprod.inl := by
+  simpa only [Functor.map_comp] using
+    congrArg J.map (finiteHead_distribute M R Γ)
+
+@[reassoc] theorem map_finiteTail_distribute (R : Fin (n + 1) → τ) (Γ : VCtx τ)
+    (i : Fin n) :
+    J.map ((𝟙 (ctxObj M Γ)) ⊗ₘ finiteLabelInject M R i.succ) ≫
+        J.map ((𝟙 (ctxObj M Γ)) ⊗ₘ finiteConsTo M R) ≫
+        J.map (DistributiveTensor.leftIso (ctxObj M Γ) (M.obj (R 0))
+          (finiteLabelObj M (fun i => R i.succ))).inv =
+      J.map (((𝟙 (ctxObj M Γ)) ⊗ₘ
+        finiteLabelInject M (fun j => R j.succ) i) ≫ coprod.inr) := by
+  simpa only [Functor.map_comp] using
+    congrArg J.map (finiteTail_distribute M R Γ i)
+
 theorem finiteCollective_one (Γ : VCtx τ) (R : Fin 1 → τ) (X : V)
     (block : ∀ i, J.obj (ctxObj M (R i :: Γ)) ⟶ J.obj X) :
     FiniteCollective J M Γ R X block
@@ -73,5 +130,34 @@ theorem finiteCollective_one (Γ : VCtx τ) (R : Fin 1 → τ) (X : V)
   rw [← Category.assoc, ← J.map_comp,
     MonoidalCategory.tensorHom_comp_tensorHom]
   simp
+
+theorem finiteCollective_exists_succ (n : Nat) (Γ : VCtx τ)
+    (R : Fin (n + 1) → τ) (X : V)
+    (block : ∀ i, J.obj (ctxObj M (R i :: Γ)) ⟶ J.obj X) :
+    ∃ f, FiniteCollective J M Γ R X block f := by
+  induction n with
+  | zero => exact ⟨_, finiteCollective_one J M Γ R X block⟩
+  | succ n ih =>
+      let Rt : Fin (n + 1) → τ := fun i => R i.succ
+      rcases ih Rt (fun i => block i.succ) with ⟨ft, dft⟩
+      let f := J.map ((𝟙 (ctxObj M Γ)) ⊗ₘ finiteConsTo M R) ≫
+        J.map (DistributiveTensor.leftIso (ctxObj M Γ)
+          (M.obj (R 0)) (finiteLabelObj M Rt)).inv ≫
+        splitMapCoprod J _ _ ≫ coprod.desc (block 0) ft
+      refine ⟨f, ?_⟩
+      constructor
+      intro i
+      refine Fin.cases ?_ (fun j => ?_) i
+      · simp only [f, Rt]
+        rw [map_finiteHead_distribute_assoc]
+        simp only [splitMapCoprod]
+        rw [map_inl_inv_coprodComparison_assoc]
+        rw [coprod.inl_desc]
+      · simp only [f, Rt]
+        rw [map_finiteTail_distribute_assoc]
+        simp only [splitMapCoprod]
+        rw [Functor.map_comp, Category.assoc,
+          map_inr_inv_coprodComparison_assoc, coprod.inr_desc]
+        simpa [Rt] using dft.restrict j
 
 end Isotope.LambdaSSA.Semantics.Categorical
