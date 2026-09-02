@@ -209,6 +209,77 @@ theorem PointsDownInto.pull {ε : Msg Loc Val} {μ ρ : Memory Loc Val}
   · exact ⟨Msg.pull ε ϑ, ⟨ϑ, ⟨hϑ, he⟩, rfl⟩, by rw [Msg.pull_lc, hϑl],
       hpt ϑ hϑp, key ϑ hϑ hϑv⟩
 
+/-- Pulling a memory wholesale, with `ε` retained.  Simpler than
+`PointsDownInto.pull` because `ε` is its own pull, so a view pointing at `ε`
+still has something to point at. -/
+theorem PointsDownInto.pull_all {ε : Msg Loc Val} {μ : Memory Loc Val}
+    (hwf : WellFormed μ) (hsc : Scattered (Memory.pull ε μ)) {κ : View Loc}
+    (h : PointsDownInto κ μ) : PointsDownInto (View.pull ε κ) (Memory.pull ε μ) := by
+  have hsub : Memory.pull ε (μ \ {ε}) ⊆ Memory.pull ε μ :=
+    Memory.pull_mono (fun _ hx ↦ hx.1)
+  intro ℓ
+  obtain ⟨ϑ, hϑ, hϑl, hϑp, hϑv⟩ := h ℓ
+  refine ⟨Msg.pull ε ϑ, ⟨ϑ, hϑ, rfl⟩, by rw [Msg.pull_lc, hϑl], ?_, ?_⟩
+  · have hϑt : ϑ.t = κ ϑ.lc := hϑp.symm
+    change View.pull ε κ (Msg.pull ε ϑ).lc = (Msg.pull ε ϑ).t
+    rw [Msg.pull_lc]
+    by_cases hℓ : ϑ.lc = ε.lc
+    · rw [hℓ]
+      by_cases hk : κ ε.lc = ε.i
+      · rw [View.pull_lc_of_eq hk, Msg.pull_t_of_eq_i hℓ (by rw [hϑt, hℓ]; exact hk)]
+      · rw [View.pull_lc_of_ne hk,
+          Msg.pull_t_of_ne_i hℓ (by rw [hϑt, hℓ]; exact hk), hϑt, hℓ]
+    · rw [View.pull_of_ne hℓ, Msg.pull_t_of_ne hℓ, hϑt]
+  · exact View.pull_le_pull_of_scattered hsc hsub (hwf.causal.1.2 ϑ hϑ) h.toPointsInto hϑv
+
+/-! ## Free segments
+
+When a `Condense` rewrite actually fires — that is, when some message of the
+memory ends exactly where `ε` begins — the segment of `ε` must be free of other
+messages' timestamps, on pain of the pulled memory not being scattered.  This
+is the invariant behind the paper's remark that "the segment is free" (journal
+Appendix F, p.63), and it is what carries the trace condition
+`α ν.lc < ν.t` on local messages through a `Condense`. -/
+
+/-- If a message of `μ` ends where `ε` begins, then no other message of `μ` has
+its timestamp in `ε.seg` — otherwise the pulled memory `ρ` is not scattered. -/
+theorem Scattered.segFree_of_pull {ε ϖ : Msg Loc Val} {μ ρ : Memory Loc Val}
+    (hscμ : Scattered μ) (hscρ : Scattered ρ) (hsub : Memory.pull ε (μ \ {ε}) ⊆ ρ)
+    (hϖ : ϖ ∈ μ) (hlcϖ : ϖ.lc = ε.lc) (htϖ : ϖ.t = ε.i)
+    {ϑ : Msg Loc Val} (hϑ : ϑ ∈ μ) (hlc : ϑ.lc = ε.lc) (hne : ϑ ≠ ε) : ϑ.t ∉ ε.seg := by
+  rintro ⟨hgt, hle⟩
+  have hneϖ : ϖ ≠ ε := fun hc ↦ by
+    rw [hc] at htϖ; exact absurd htϖ (ne_of_gt ε.i_lt_t)
+  have hpϖ : Msg.pull ε ϖ ∈ ρ := hsub ⟨ϖ, ⟨hϖ, hneϖ⟩, rfl⟩
+  have hp : Msg.pull ε ϑ ∈ ρ := hsub ⟨ϑ, ⟨hϑ, hne⟩, rfl⟩
+  have htpϖ : (Msg.pull ε ϖ).t = ε.t := Msg.pull_t_of_eq_i hlcϖ htϖ
+  have htp : (Msg.pull ε ϑ).t = ϑ.t := Msg.pull_t_of_ne_i hlc (ne_of_gt hgt)
+  have hiϖ : ϖ.i < ε.i := htϖ ▸ ϖ.i_lt_t
+  have heq : Msg.pull ε ϑ = Msg.pull ε ϖ := by
+    refine hscρ _ hp _ hpϖ (by simp [hlc, hlcϖ]) ⟨ϑ.t, ?_, ?_⟩
+    · rw [← htp]; exact (Msg.pull ε ϑ).t_mem_seg
+    · exact ⟨lt_trans hiϖ hgt, by rw [htpϖ]; exact hle⟩
+  have htϑ : ϑ.t = ε.t := by rw [← htp, heq, htpϖ]
+  have hiϑ : ϑ.i = ϖ.i := by
+    have h := congrArg Msg.i heq; simpa using h
+  have hnee : ϑ ≠ ϖ := fun hc ↦ by
+    rw [hc, htϖ] at htϑ; exact absurd htϑ (ne_of_lt ε.i_lt_t)
+  exact hnee (hscμ ϑ hϑ ϖ hϖ (by rw [hlc, hlcϖ])
+    ⟨ε.i, ⟨by rw [hiϑ]; exact hiϖ, by rw [htϑ]; exact le_of_lt ε.i_lt_t⟩,
+      ⟨ϖ.i_lt_t.trans_le (le_of_eq htϖ), le_of_eq htϖ.symm⟩⟩)
+
+/-- If a message of `μ` ends where `ε` begins, then `ε` itself cannot survive
+into the pulled memory: the pull of that message already occupies `ε.t`. -/
+theorem Scattered.notMem_of_pull {ε ϖ : Msg Loc Val} {ρ : Memory Loc Val}
+    (hscρ : Scattered ρ) (hpϖ : Msg.pull ε ϖ ∈ ρ) (hlcϖ : ϖ.lc = ε.lc) (htϖ : ϖ.t = ε.i) :
+    ε ∉ ρ := by
+  intro hε
+  have hiϖ : ϖ.i < ε.i := htϖ ▸ ϖ.i_lt_t
+  have heq : ε = Msg.pull ε ϖ :=
+    hscρ _ hε _ hpϖ (by simp [hlcϖ]) ⟨ε.t, ε.t_mem_seg,
+      ⟨lt_trans hiϖ ε.i_lt_t, le_of_eq (Msg.pull_t_of_eq_i hlcϖ htϖ).symm⟩⟩
+  exact absurd (congrArg Msg.i heq) (ne_of_lt hiϖ).symm
+
 /-! ## Well-formedness of an intermediate memory
 
 Castling constructs memories that are *sandwiched* between memories of the
@@ -269,5 +340,76 @@ theorem IsTrace.scattered_c {A : Type u} {τ : PreTrace Loc Val A} (hτ : IsTrac
   change Scattered (listC τ.ch.toList)
   rw [hc]
   exact (hτ.wf T hT).closing.scattered
+
+
+
+/-- Pulling never lowers a message's final timestamp. -/
+theorem Msg.le_pull_t (ε ϑ : Msg Loc Val) : ϑ.t ≤ (Msg.pull ε ϑ).t := by
+  by_cases hlc : ϑ.lc = ε.lc
+  · by_cases ht : ϑ.t = ε.i
+    · rw [Msg.pull_t_of_eq_i hlc ht, ht]; exact le_of_lt ε.i_lt_t
+    · rw [Msg.pull_t_of_ne_i hlc ht]
+  · rw [Msg.pull_t_of_ne hlc]
+
+/-- The closing memory of a chronicle all of whose transitions are well-formed
+is scattered. -/
+theorem scattered_c_of_wf {c : Chro Loc Val} (hwf : ∀ T ∈ c.toList, T.WF) :
+    Scattered c.c := by
+  obtain ⟨T, hT, hc⟩ := listC_mem c.toList c.toList_ne_nil
+  change Scattered (listC c.toList)
+  rw [hc]
+  exact (hwf T hT).closing.scattered
+
+/-- Adding a message absent from a transition's closing memory does not change
+its local messages. -/
+theorem Transition.insertMsg_own {ν : Msg Loc Val} {T : Transition Loc Val}
+    (h : ν ∉ T.closing) : (T.insertMsg ν).own = T.own := by
+  ext x
+  simp only [Transition.own, Transition.insertMsg_opening, Transition.insertMsg_closing,
+    Set.mem_diff, Set.mem_insert_iff, not_or]
+  constructor
+  · rintro ⟨hx | hx, hne, hno⟩
+    · exact absurd hx hne
+    · exact ⟨hx, hno⟩
+  · rintro ⟨hx, hno⟩
+    exact ⟨Or.inr hx, fun hc ↦ h (hc ▸ hx), hno⟩
+
+/-- Pulling a transition can only shrink its local messages, pointwise. -/
+theorem Transition.pull_own_sub (ε : Msg Loc Val) (T : Transition Loc Val) :
+    (T.pull ε).own ⊆ Memory.pull ε T.own := by
+  rintro x ⟨⟨ϑ, hϑ, rfl⟩, hno⟩
+  exact ⟨ϑ, ⟨hϑ, fun hc ↦ hno ⟨ϑ, hc, rfl⟩⟩, rfl⟩
+
+/-- The local messages of a trace lie in its closing memory. -/
+theorem IsTrace.own_sub_c {A : Type u} {τ : PreTrace Loc Val A} (hτ : IsTrace τ) :
+    τ.ch.own ⊆ τ.ch.c := by
+  rintro ν ⟨T, hT, hν⟩
+  exact hτ.closing_sub_c hT hν.1
+
+
+
+/-- The local messages of a chronicle whose transitions are well-formed lie in
+its closing memory. -/
+theorem own_sub_c_of_wf {c : Chro Loc Val} (hwf : ∀ T ∈ c.toList, T.WF) :
+    c.own ⊆ c.c := by
+  rintro ν ⟨T, hT, hν⟩
+  exact listC_sup c.toList c.chain_toList (fun S hS ↦ (hwf S hS).sub) T hT hν.1
+
+theorem IsTrace.o_sub_c {A : Type u} {τ : PreTrace Loc Val A} (hτ : IsTrace τ) :
+    τ.ch.o ⊆ τ.ch.c := hτ.opening_sub_c τ.ch.first_mem
+
+/-- Deleting a message from a two-message insertion. -/
+theorem Set.insert_insert_diff {ν ε : Msg Loc Val} {X : Memory Loc Val}
+    (hne : ν ≠ ε) (hX : ε ∉ X) : insert ν (insert ε X) \ {ε} = insert ν X := by
+  ext x
+  simp only [Set.mem_diff, Set.mem_insert_iff, Set.mem_singleton_iff]
+  constructor
+  · rintro ⟨rfl | rfl | hx, hne'⟩
+    · exact Or.inl rfl
+    · exact absurd rfl hne'
+    · exact Or.inr hx
+  · rintro (rfl | hx)
+    · exact ⟨Or.inl rfl, hne⟩
+    · exact ⟨Or.inr (Or.inr hx), fun hc ↦ hX (hc ▸ hx)⟩
 
 end Isotope.Elgot.RA
