@@ -110,4 +110,28 @@ inductive Pure [HasEff Φ ε] (pureEff : ε) : {n : Nat} → Tm ν Φ n → Prop
   still diverge, and hence is not necessarily in the pure subcategory of an
   abstract Elgot model. -/
 
+/-- Syntactic effect bound.  Every instruction occurring in `t` has effect below `e`, and `t`
+iterates only when `e` is one of the effects closed under iteration (the paper's `E^∞`).
+Taking `e = ⊥` and `iterative = fun _ => False` recovers `Pure`. -/
+inductive HasEffect [HasEff Φ ε] [LE ε] (iterative : ε → Prop) (e : ε) :
+    {n : Nat} → Tm ν Φ n → Prop where
+  | fv : HasEffect iterative e (.fv x)
+  | bv : HasEffect iterative e (.bv ι)
+  | op (hf : instrEff f ≤ e) (ha : HasEffect iterative e a) :
+      HasEffect iterative e (.op f a)
+  | let₁ : HasEffect iterative e a → HasEffect iterative e b →
+      HasEffect iterative e (.let₁ a b)
+  | unit : HasEffect iterative e .unit
+  | pair : HasEffect iterative e a → HasEffect iterative e b →
+      HasEffect iterative e (.pair a b)
+  | let₂ : HasEffect iterative e a → HasEffect iterative e b →
+      HasEffect iterative e (.let₂ a b)
+  | inl : HasEffect iterative e a → HasEffect iterative e (.inl a)
+  | inr : HasEffect iterative e a → HasEffect iterative e (.inr a)
+  | case : HasEffect iterative e c → HasEffect iterative e l → HasEffect iterative e r →
+      HasEffect iterative e (.case c l r)
+  | abort : HasEffect iterative e a → HasEffect iterative e (.abort a)
+  | iter (hi : iterative e) : HasEffect iterative e a → HasEffect iterative e b →
+      HasEffect iterative e (.iter a b)
+
 end Isotope.LambdaIter.Subtyping.LocallyNameless
