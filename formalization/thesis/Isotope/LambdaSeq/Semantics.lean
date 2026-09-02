@@ -64,8 +64,28 @@ theorem denote_embedIter [LawfulMonad m] [Isotope.Elgot.Iterate m]
     (h : HasType Φ Γ β t A) (γ : CtxDen Γ) (ρ : BoundDen β) :
     LambdaIter.Semantics.denote (ε := ε) (m := m) h.embedIter γ ρ =
       denote (ε := ε) (m := m) h γ ρ := by
-  rw [LambdaCase.Semantics.denote_embed h.embedCase γ ρ]
-  exact denote_embedCase h γ ρ
+  induction h with
+  | fv | bv =>
+      unfold LocallyNameless.HasType.embedIter LambdaIter.Semantics.denote
+      unfold LambdaIter.LocallyNameless.HasType.toGeneric
+      unfold LambdaIter.Subtyping.Semantics.denote denote
+      rfl
+  | op ha ih =>
+      unfold LambdaIter.Semantics.denote at ih ⊢
+      unfold LocallyNameless.HasType.embedIter
+      unfold LambdaIter.LocallyNameless.HasType.toGeneric
+      unfold LambdaIter.Subtyping.Semantics.denote denote
+      congr 1
+      exact ih ρ
+  | let₁ ha hb iha ihb =>
+      unfold LambdaIter.Semantics.denote at iha ihb ⊢
+      unfold LocallyNameless.HasType.embedIter
+      unfold LambdaIter.LocallyNameless.HasType.toGeneric
+      unfold LambdaIter.Subtyping.Semantics.denote denote
+      congr 1
+      · exact iha ρ
+      funext a
+      exact ihb (ρ, a)
 
 end Isotope.LambdaSeq.Semantics
 
@@ -112,6 +132,8 @@ theorem denote_embedIter [LawfulMonad m] [Isotope.Elgot.Iterate m]
     (γ : CtxDen Γ) (ρ : BoundDen β) :
     LambdaIter.Subtyping.Semantics.denote (ε := ε) (m := m) h.embedIter γ ρ =
       denote (ε := ε) (m := m) h γ ρ := by
+  change LambdaIter.Subtyping.Semantics.denote (ε := ε) (m := m)
+    h.embedCase.embed γ ρ = _
   rw [LambdaCase.Subtyping.Semantics.denote_embed h.embedCase γ ρ]
   rfl
 

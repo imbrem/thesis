@@ -1,4 +1,4 @@
-import Isotope.LambdaIter.Metatheory
+import Isotope.LambdaIter.Semantics.Denotation
 import Isotope.LambdaIter.Subtyping.Semantics.Categorical
 
 /-!
@@ -19,25 +19,6 @@ open CategoryTheory CategoryTheory.Limits
 variable {τ : Type u₃} [TypeFormers τ] [Subtyping τ]
 variable {ν : Type u₄} [DecidableEq ν]
 variable {Φ : Type u₅} [HasTy Φ τ]
-
-/-- Embed an exact typing derivation into the older generic judgment. Every
-constructor is preserved and, crucially, no `sub` node is inserted. -/
-@[simp] def HasType.toGeneric : {Γ : Ctx ν τ} → {n : Nat} →
-    {β : BoundCtx τ n} → {t : Tm ν Φ n} → {A : τ} →
-    HasType Φ Γ β t A →
-      Isotope.LambdaIter.Subtyping.LocallyNameless.HasType Φ Γ β t A
-  | _, _, _, _, _, .fv h => .fv h
-  | _, _, _, _, _, .bv => .bv
-  | _, _, _, _, _, .op h => .op h.toGeneric
-  | _, _, _, _, _, .let₁ ha hb => .let₁ ha.toGeneric hb.toGeneric
-  | _, _, _, _, _, .unit => .unit
-  | _, _, _, _, _, .pair ha hb => .pair ha.toGeneric hb.toGeneric
-  | _, _, _, _, _, .let₂ ha hc => .let₂ ha.toGeneric hc.toGeneric
-  | _, _, _, _, _, .inl h => .inl h.toGeneric
-  | _, _, _, _, _, .inr h => .inr h.toGeneric
-  | _, _, _, _, _, .case he hl hr => .case he.toGeneric hl.toGeneric hr.toGeneric
-  | _, _, _, _, _, .abort h => .abort h.toGeneric
-  | _, _, _, _, _, .iter ha hb => .iter ha.toGeneric hb.toGeneric
 
 namespace Categorical
 

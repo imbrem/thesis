@@ -1,4 +1,5 @@
 import Isotope.LambdaCase.Equiv
+import Isotope.LambdaIter.Semantics.Denotation
 import Isotope.LambdaIter.Subtyping.Semantics.Denotation
 
 /-! # Monadic denotational semantics of lambda-case -/
@@ -69,30 +70,47 @@ theorem denote_embed [LawfulMonad m] [Isotope.Elgot.Iterate m]
     LambdaIter.Semantics.denote (ε := ε) (m := m) h.embed γ ρ =
       denote (ε := ε) (m := m) h γ ρ := by
   induction h with
-  | fv | bv | unit => rfl
+  | fv | bv | unit =>
+      unfold LambdaIter.Semantics.denote LocallyNameless.HasType.embed
+      unfold LambdaIter.LocallyNameless.HasType.toGeneric
+      unfold LambdaIter.Subtyping.Semantics.denote denote
+      rfl
   | op ha ih =>
-      unfold LocallyNameless.HasType.embed LambdaIter.Semantics.denote denote
+      unfold LambdaIter.Semantics.denote at ih ⊢
+      unfold LocallyNameless.HasType.embed LambdaIter.LocallyNameless.HasType.toGeneric
+      unfold LambdaIter.Subtyping.Semantics.denote denote
       simp only [ih ρ]
   | let₁ ha hb iha ihb =>
-      unfold LocallyNameless.HasType.embed LambdaIter.Semantics.denote denote
+      unfold LambdaIter.Semantics.denote at iha ihb ⊢
+      unfold LocallyNameless.HasType.embed LambdaIter.LocallyNameless.HasType.toGeneric
+      unfold LambdaIter.Subtyping.Semantics.denote denote
       rw [iha ρ]
       congr 1
       funext a
       rw [ihb (ρ, a)]
   | pair ha hb iha ihb =>
-      unfold LocallyNameless.HasType.embed LambdaIter.Semantics.denote denote
+      unfold LambdaIter.Semantics.denote at iha ihb ⊢
+      unfold LocallyNameless.HasType.embed LambdaIter.LocallyNameless.HasType.toGeneric
+      unfold LambdaIter.Subtyping.Semantics.denote denote
       rw [iha ρ, ihb ρ]
+      rfl
   | let₂ ha hc iha ihc =>
-      unfold LocallyNameless.HasType.embed LambdaIter.Semantics.denote denote
+      unfold LambdaIter.Semantics.denote at iha ihc ⊢
+      unfold LocallyNameless.HasType.embed LambdaIter.LocallyNameless.HasType.toGeneric
+      unfold LambdaIter.Subtyping.Semantics.denote denote
       congr 1
       · exact iha ρ
       funext ab
       exact ihc _
   | inl ha ih | inr ha ih | abort ha ih =>
-      unfold LocallyNameless.HasType.embed LambdaIter.Semantics.denote denote
+      unfold LambdaIter.Semantics.denote at ih ⊢
+      unfold LocallyNameless.HasType.embed LambdaIter.LocallyNameless.HasType.toGeneric
+      unfold LambdaIter.Subtyping.Semantics.denote denote
       first | rfl | congr 1; exact ih ρ
   | case he hl hr ihe ihl ihr =>
-      unfold LocallyNameless.HasType.embed LambdaIter.Semantics.denote denote
+      unfold LambdaIter.Semantics.denote at ihe ihl ihr ⊢
+      unfold LocallyNameless.HasType.embed LambdaIter.LocallyNameless.HasType.toGeneric
+      unfold LambdaIter.Subtyping.Semantics.denote denote
       congr 1
       · exact ihe ρ
       funext e
