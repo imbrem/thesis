@@ -221,6 +221,122 @@ theorem bsubst_rename (σ : Fin m → Tm ν Φ k) (ρ : Fin n → Fin m)
       congr 1
       exact bsubst_congr (congrFun (upSub_comp_ren σ ρ)) _
 
+@[simp] theorem bsubst_lift (σ : Fin n → Tm ν Φ m) (t : Tm ν Φ n) :
+    bsubst (upSub σ) t.lift = (bsubst σ t).lift := by
+  rw [lift, bsubst_rename, lift, rename_bsubst]
+  apply bsubst_congr
+  intro i
+  rfl
+
+private theorem upSub_comp (σ : Fin n → Tm ν Φ m) (θ : Fin m → Tm ν Φ k) :
+    (fun i => bsubst (upSub θ) (upSub σ i)) =
+      upSub (fun i => bsubst θ (σ i)) := by
+  funext i
+  refine Fin.cases rfl (fun j => ?_) i
+  exact bsubst_lift θ (σ j)
+
+/-- Simultaneous substitutions compose pointwise. -/
+theorem bsubst_comp (θ : Fin m → Tm ν Φ k) (σ : Fin n → Tm ν Φ m)
+    (t : Tm ν Φ n) :
+    bsubst θ (bsubst σ t) = bsubst (fun i => bsubst θ (σ i)) t := by
+  induction t generalizing m k with
+  | fv | bv | unit => rfl
+  | op _ _ ih | inl _ ih | inr _ ih | abort _ ih => simp [ih]
+  | let₁ _ _ iha ihb =>
+      simp only [bsubst_let₁, iha]
+      rw [ihb]
+      congr 1
+      exact bsubst_congr (congrFun (upSub_comp σ θ)) _
+  | pair _ _ iha ihb => simp [iha, ihb]
+  | let₂ _ _ iha ihb =>
+      simp only [bsubst_let₂, iha]
+      rw [ihb]
+      congr 1
+      apply bsubst_congr
+      exact congrFun ((upSub_comp (upSub σ) (upSub θ)).trans
+        (congrArg upSub (upSub_comp σ θ)))
+  | case _ _ _ ihe ihl ihr =>
+      simp only [bsubst_case, ihe]
+      rw [ihl, ihr]
+      congr 1 <;> apply bsubst_congr <;> exact congrFun (upSub_comp σ θ)
+  | iter _ _ iha ihb =>
+      simp only [bsubst_iter, iha]
+      rw [ihb]
+      congr 1
+      exact bsubst_congr (congrFun (upSub_comp σ θ)) _
+
+private theorem upSub_bv (ρ : Fin n → Fin m) :
+    upSub (fun i => .bv (ρ i) : Fin n → Tm ν Φ m) =
+      fun i => .bv (upRen ρ i) := by
+  funext i
+  exact Fin.cases rfl (fun _ => rfl) i
+
+/-- A variable-only substitution is exactly a renaming. -/
+theorem bsubst_bv_eq_rename (ρ : Fin n → Fin m) (t : Tm ν Φ n) :
+    bsubst (fun i => .bv (ρ i)) t = rename ρ t := by
+  induction t generalizing m with
+  | fv | bv | unit => rfl
+  | op _ _ ih | inl _ ih | inr _ ih | abort _ ih => simp [ih]
+  | let₁ _ _ iha ihb => simp only [bsubst_let₁, rename_let₁, iha, upSub_bv, ihb]
+  | pair _ _ iha ihb => simp [iha, ihb]
+  | let₂ _ _ iha ihb =>
+      simp only [bsubst_let₂, rename_let₂, iha, upSub_bv, ihb]
+  | case _ _ _ ihe ihl ihr =>
+      simp only [bsubst_case, rename_case, ihe, upSub_bv, ihl, ihr]
+  | iter _ _ iha ihb => simp only [bsubst_iter, rename_iter, iha, upSub_bv, ihb]
+
+@[simp] theorem bsubst_underBinder (σ : Fin n → Tm ν Φ m)
+    (t : Tm ν Φ (n + 1)) :
+    bsubst (upSub (upSub σ)) t.underBinder =
+      (bsubst (upSub σ) t).underBinder := by
+  rw [underBinder, bsubst_rename, underBinder, rename_bsubst]
+  apply bsubst_congr
+  intro i
+  refine Fin.cases rfl (fun j => ?_) i
+  simp only [upSub_succ]
+  change (σ j).lift.lift = rename (upRen Fin.succ) (σ j).lift
+  exact (rename_lift Fin.succ (σ j)).symm
+
+@[simp] theorem bsubst_underTwoBinders (σ : Fin n → Tm ν Φ m)
+    (t : Tm ν Φ (n + 2)) :
+    bsubst (upSub (upSub (upSub σ))) t.underTwoBinders =
+      (bsubst (upSub (upSub σ)) t).underTwoBinders := by
+  rw [underTwoBinders, bsubst_rename, underTwoBinders, rename_bsubst]
+  apply bsubst_congr
+  intro i
+  refine Fin.cases rfl (Fin.cases rfl (fun j => ?_)) i
+  simp only [upSub_succ]
+  have h := ((rename_lift (upRen Fin.succ) (Tm.lift (σ j))).trans
+    (congrArg Tm.lift (rename_lift Fin.succ (σ j)))).symm
+  convert h using 1
+  apply rename_congr
+  intro x
+  exact Fin.cases rfl (Fin.cases rfl (fun _ => rfl)) x
+
+private theorem bsubst_drop_lift (a t : Tm ν Φ n) :
+    bsubst (Fin.cases a (fun i => .bv i)) t.lift = t := by
+  rw [lift, bsubst_rename]
+  calc
+    bsubst (fun i => Fin.cases a (fun i => .bv i) i.succ) t =
+        bsubst (fun i => .bv i) t := by
+          apply bsubst_congr
+          intro i
+          rfl
+    _ = rename (fun i => i) t := bsubst_bv_eq_rename _ _
+    _ = t := rename_id _
+
+@[simp] theorem bsubst_instantiate (σ : Fin n → Tm ν Φ m)
+    (b : Tm ν Φ (n + 1)) (a : Tm ν Φ n) :
+    bsubst σ (instantiate b a) =
+      instantiate (bsubst (upSub σ) b) (bsubst σ a) := by
+  rw [instantiate, bsubst_comp, instantiate, bsubst_comp]
+  apply bsubst_congr
+  intro i
+  refine Fin.cases rfl (fun j => ?_) i
+  simp only [upSub_succ]
+  change σ j = bsubst _ (σ j).lift
+  exact (bsubst_drop_lift _ _).symm
+
 @[simp] theorem rename_instantiate (ρ : Fin n → Fin m) (b : Tm ν Φ (n + 1))
     (a : Tm ν Φ n) :
     rename ρ (instantiate b a) = instantiate (rename (upRen ρ) b) (rename ρ a) := by
