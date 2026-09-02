@@ -47,29 +47,21 @@ noncomputable def finiteInject (R : Fin n → τ) (i : Fin n) :
 
 structure FiniteCollective (Γ : VCtx τ) {n : Nat} (R : Fin n → τ) (X : V)
     (block : ∀ i, J.obj (ctxObj M (R i :: Γ)) ⟶ J.obj X)
-    (f : J.obj (ctxObj M Γ ⊗ labelObj M (List.ofFn R)) ⟶ J.obj X) : Prop where
+    (f : J.obj (ctxObj M Γ ⊗ finiteLabelObj M R) ⟶ J.obj X) : Prop where
   restrict (i : Fin n) :
-    J.map ((𝟙 (ctxObj M Γ)) ⊗ₘ finiteInject M R i) ≫ f = block i
+    J.map ((𝟙 (ctxObj M Γ)) ⊗ₘ finiteLabelInject M R i) ≫ f = block i
 
 noncomputable def labelOneTo (R : Fin 1 → τ) :
-    labelObj M (List.ofFn R) ⟶ M.obj (R 0) :=
-  Limits.Sigma.desc fun i => eqToHom (by fin_cases i; rfl)
+    finiteLabelObj M R ⟶ M.obj (R 0) :=
+  Limits.Sigma.desc fun i => eqToHom (congrArg (fun j => M.obj (R j)) (Fin.eq_zero i))
 
 @[reassoc (attr := simp)] theorem labelOneTo_ι (R : Fin 1 → τ) :
-    finiteInject M R 0 ≫ labelOneTo M R = 𝟙 _ := by
-  let j : Fin (List.ofFn R).length := ⟨0, by simp⟩
-  let p := fun i : Fin (List.ofFn R).length =>
-    (eqToHom (by fin_cases i; rfl) : M.obj ((List.ofFn R).get i) ⟶ M.obj (R 0))
-  have hs : Limits.Sigma.ι
-      (fun k : Fin (List.ofFn R).length => M.obj ((List.ofFn R).get k)) j ≫
-      Limits.Sigma.desc p = p j := Limits.Sigma.ι_desc p j
-  unfold finiteInject labelOneTo
-  change (eqToHom _ ≫ Limits.Sigma.ι _ j) ≫ Limits.Sigma.desc p = 𝟙 _
+    finiteLabelInject M R 0 ≫ labelOneTo M R = 𝟙 _ := by
+  unfold finiteLabelInject labelOneTo
   calc
-    _ = eqToHom _ ≫ (Limits.Sigma.ι _ j ≫ Limits.Sigma.desc p) :=
-      Category.assoc _ _ _
-    _ = eqToHom _ ≫ p j := congrArg _ hs
-    _ = 𝟙 _ := by simp [p, j]
+    _ = eqToHom (congrArg (fun j => M.obj (R j)) (Fin.eq_zero (0 : Fin 1))) :=
+      Limits.Sigma.ι_desc _ _
+    _ = 𝟙 _ := by simp
 
 theorem finiteCollective_one (Γ : VCtx τ) (R : Fin 1 → τ) (X : V)
     (block : ∀ i, J.obj (ctxObj M (R i :: Γ)) ⟶ J.obj X) :
