@@ -58,6 +58,14 @@ theorem leftTensor_associator {X₁ X₂ X₃ Y₁ Y₂ Y₃ : C}
     associator_naturality_right, associator_naturality_middle_assoc,
     associator_naturality_left_assoc]
 
+/-- Whiskering an `eqToHom` on the left is again an `eqToHom`. -/
+@[simp] theorem whiskerLeft_eqToHom (Z : C) {X Y : C} (h : X = Y) :
+    Z ◁ eqToHom h = eqToHom (congrArg (Z ⊗ ·) h) := by cases h; simp
+
+/-- Whiskering an `eqToHom` on the right is again an `eqToHom`. -/
+@[simp] theorem whiskerRight_eqToHom {X Y : C} (h : X = Y) (Z : C) :
+    eqToHom h ▷ Z = eqToHom (congrArg (· ⊗ Z) h) := by cases h; simp
+
 /-- `eqToHom` is central: after substituting the equalities it is an identity. -/
 theorem isCentral_eqToHom {X Y : C} (h : X = Y) : IsCentral (eqToHom h) := by
   cases h; simpa using isCentral_id X
