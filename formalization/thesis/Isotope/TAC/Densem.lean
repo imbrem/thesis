@@ -9,6 +9,7 @@ import Isotope.TAC.Densem.MonadicConvertCFG
 import Isotope.TAC.Densem.MonadicConvertIter
 import Isotope.TAC.Densem.MonadicValid
 import Isotope.TAC.Densem.Bridge.PhiBBA
+import Isotope.TAC.Densem.BBAOrder
 import Isotope.TAC.Densem.Convert
 import Isotope.TAC.Densem.Fresh
 import Isotope.TAC.Densem.ConvertCFG
