@@ -54,11 +54,21 @@ def lseq (L : LPoset A ι) (M : LPoset A κ) : LPoset A (ι ⊕ κ) where
   le := Sum.Lex L.le M.le
   le_refl := by rintro (i | j); exacts [.inl (L.le_refl i), .inr (M.le_refl j)]
   le_trans := by
-    rintro (i | i) (j | j) (k | k) h h' <;> simp_all <;>
-      first | exact L.le_trans h h' | exact M.le_trans h h'
+    rintro (i | i) (j | j) (k | k) h h'
+    · exact .inl (L.le_trans (Sum.lex_inl_inl.mp h) (Sum.lex_inl_inl.mp h'))
+    · exact Sum.Lex.sep _ _
+    · cases h'
+    · exact Sum.Lex.sep _ _
+    · cases h
+    · cases h
+    · cases h'
+    · exact .inr (M.le_trans (Sum.lex_inr_inr.mp h) (Sum.lex_inr_inr.mp h'))
   le_antisymm := by
-    rintro (i | i) (j | j) h h' <;> simp_all <;>
-      first | exact L.le_antisymm h h' | exact M.le_antisymm h h'
+    rintro (i | i) (j | j) h h'
+    · exact congrArg Sum.inl (L.le_antisymm (Sum.lex_inl_inl.mp h) (Sum.lex_inl_inl.mp h'))
+    · cases h'
+    · cases h
+    · exact congrArg Sum.inr (M.le_antisymm (Sum.lex_inr_inr.mp h) (Sum.lex_inr_inr.mp h'))
 
 /-- Disjoint (parallel) sum: elements of `L` and `M` are incomparable.
 This is the paper's `α ∥ β` before the carrier is reindexed. -/
@@ -67,11 +77,23 @@ def lpar (L : LPoset A ι) (M : LPoset A κ) : LPoset A (ι ⊕ κ) where
   le := Sum.LiftRel L.le M.le
   le_refl := by rintro (i | j); exacts [.inl (L.le_refl i), .inr (M.le_refl j)]
   le_trans := by
-    rintro (i | i) (j | j) (k | k) h h' <;> simp_all <;>
-      first | exact L.le_trans h h' | exact M.le_trans h h'
+    rintro (i | i) (j | j) (k | k) h h'
+    · exact .inl (L.le_trans (Sum.liftRel_inl_inl.mp h) (Sum.liftRel_inl_inl.mp h'))
+    · cases h'
+    · cases h
+    · cases h
+    · cases h
+    · cases h
+    · cases h'
+    · exact .inr (M.le_trans (Sum.liftRel_inr_inr.mp h) (Sum.liftRel_inr_inr.mp h'))
   le_antisymm := by
-    rintro (i | i) (j | j) h h' <;> simp_all <;>
-      first | exact L.le_antisymm h h' | exact M.le_antisymm h h'
+    rintro (i | i) (j | j) h h'
+    · exact congrArg Sum.inl
+        (L.le_antisymm (Sum.liftRel_inl_inl.mp h) (Sum.liftRel_inl_inl.mp h'))
+    · cases h
+    · cases h
+    · exact congrArg Sum.inr
+        (M.le_antisymm (Sum.liftRel_inr_inr.mp h) (Sum.liftRel_inr_inr.mp h'))
 
 end LPoset
 

@@ -1,7 +1,12 @@
 import Isotope.Basic
 import Isotope.CategoryTheory.Freyd
+import Isotope.CategoryTheory.Ide
 import Isotope.CategoryTheory.Monad
 import Isotope.CategoryTheory.Premonoidal
 import Isotope.Elgot.Basic
+import Isotope.Elgot.Kleisli
+import Isotope.Elgot.TSO
+import Isotope.Elgot.WS
 import Isotope.LambdaIter
 import Isotope.LambdaSSA
+import Isotope.Pomset
