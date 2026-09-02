@@ -369,7 +369,7 @@ We may then state the _substitution lemma_ as follows
   #align(center, prooftree(adm-subst))
 ]
 
-There still remain two important gaps in our syntactic metatheory.
+There still remain two gaps in our syntactic metatheory.
 For one, it is easy to see that the typing rules in @fig-expr-typing
 don't depend on the _ordering_ of variables in a context $Γ$.
 In the same spirit, the rules also don't depend on variables having any
