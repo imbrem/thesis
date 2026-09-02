@@ -64,7 +64,7 @@ def Block.Denotes [Monad m] [DecidableEq ν] (M : Model φ m) (ρ : Env M ν)
     (b : Block φ ν κ) (f : m (Env M ν × Exit κ M.Val)) : Prop :=
   Block.denote M ρ b = f
 
-private def lookup [DecidableEq κ] (g : CFG φ ν κ) (ℓ : κ) :
+def lookup [DecidableEq κ] (g : CFG φ ν κ) (ℓ : κ) :
     Option (Block φ ν κ) := (g.blocks.find? fun p => p.1 = ℓ).map Prod.snd
 
 /-- One loop iteration: returns a value, or the environment and next label. -/

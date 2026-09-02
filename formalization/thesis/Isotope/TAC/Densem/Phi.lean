@@ -64,7 +64,7 @@ def runFuel [DecidableEq ν] [DecidableEq κ] (M : Model φ) (g : C.CFG ν φ κ
       let (ρ', e) ← enter M ρ .entry g.entry
       continueFuel M g fuel ρ' .entry e
 
-private theorem lookup_phiFree [DecidableEq κ] (g : C.CFG ν φ κ)
+theorem lookup_phiFree [DecidableEq κ] (g : C.CFG ν φ κ)
     (h : Isotope.TAC.Densem.Classical.PhiFree g) (ℓ : κ) (b : C.Block ν φ κ)
     (hb : lookup g ℓ = some b) : b.phis = [] := by
   unfold lookup at hb
@@ -72,7 +72,7 @@ private theorem lookup_phiFree [DecidableEq κ] (g : C.CFG ν φ κ)
   rcases hb with ⟨p, hp, rfl⟩
   exact h.blocks p (List.mem_of_find?_eq_some hp)
 
-private theorem lookup_translate [DecidableEq κ] (g : C.CFG ν φ κ)
+theorem lookup_translate [DecidableEq κ] (g : C.CFG ν φ κ)
     (h : Isotope.TAC.Densem.Classical.PhiFree g) (ℓ : κ) :
     CFG.lookup (Isotope.TAC.Densem.Classical.cfg g h) ℓ =
       (lookup g ℓ).map Isotope.TAC.Densem.Classical.block := by
@@ -150,7 +150,7 @@ def enter [Monad m] [DecidableEq ν] [DecidableEq κ]
   Isotope.TAC.Densem.Monadic.Block.denote M (install ρ xs)
     (Isotope.TAC.Densem.Classical.block b)
 
-private def step [Monad m] [DecidableEq ν] [DecidableEq κ]
+def step [Monad m] [DecidableEq ν] [DecidableEq κ]
     (M : Isotope.TAC.Densem.Monadic.Model φ m) (g : C.CFG ν φ κ) :
     Isotope.TAC.Densem.Monadic.Env M ν × C.BlockId κ × κ →
       m (M.Val ⊕ (Isotope.TAC.Densem.Monadic.Env M ν × C.BlockId κ × κ))
