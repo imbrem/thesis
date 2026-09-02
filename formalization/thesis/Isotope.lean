@@ -17,6 +17,8 @@ import Isotope.Elgot.Trace
 import Isotope.Elgot.TraceSet
 import Isotope.Elgot.Transformer
 import Isotope.Elgot.WS
+import Isotope.Elgot.Effectful
+import Isotope.Elgot.StateT
 import Isotope.LambdaCase
 import Isotope.LambdaIter
 import Isotope.LambdaSSA
