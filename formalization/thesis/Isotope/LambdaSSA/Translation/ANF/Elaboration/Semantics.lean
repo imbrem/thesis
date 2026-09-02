@@ -134,6 +134,27 @@ theorem atomRename_exact_op {Γ : Ctx ν τ} {β : BoundCtx τ n}
       transportHasType_op ea _
     _ = _ := congrArg Isotope.LambdaIter.LocallyNameless.HasType.op ih
 
+theorem atomRename_exact_heq_fv {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {β' : BoundCtx τ k} {x : ν} {A : τ} (h : Γ.lookup x = some A)
+    (r : TypedRenaming β β') :
+    let ha : Atom.HasType (Φ := Φ) Γ β (.fv x) A := .fv h
+    let hl : HasType Φ Γ β (.fv x) A := ha.toLambdaIter
+    HEq (atomRename_hasType r ha).toLambdaIter
+      (Isotope.LambdaIter.LocallyNameless.HasType.rename r hl) := by
+  dsimp
+  apply heq_of_transportHasType_eq (atomRename_toTm r.toFun (.fv x))
+  exact transportHasType_proof_irrel _ rfl _
+
+theorem atomRename_exact_heq_unit {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {β' : BoundCtx τ k} (r : TypedRenaming β β') :
+    let ha : Atom.HasType (Φ := Φ) Γ β .unit LambdaIter.unit := .unit
+    let hl : HasType Φ Γ β .unit LambdaIter.unit := ha.toLambdaIter
+    HEq (atomRename_hasType r ha).toLambdaIter
+      (Isotope.LambdaIter.LocallyNameless.HasType.rename r hl) := by
+  dsimp
+  apply heq_of_transportHasType_eq (atomRename_toTm r.toFun .unit)
+  exact transportHasType_proof_irrel _ rfl _
+
 @[simp] theorem denote_elaborate_fv {Γ : Ctx ν τ} {β : BoundCtx τ n}
     {x : ν} {A : τ} (hx : Γ.lookup x = some A)
     (γ : CtxDen Γ) (ρ : BoundDen β) :
