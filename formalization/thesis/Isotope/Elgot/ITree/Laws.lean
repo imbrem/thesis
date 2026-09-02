@@ -1,5 +1,17 @@
 import Isotope.Elgot.ITree.Iteration
 
+/-!
+# The complete Elgot equations for weak interaction trees
+
+Each law is proved first at a fixed observation depth (`Approx.iter_fixpoint`,
+`Approx.iter_naturality`, `Approx.iter_codiagonal`, `Approx.iter_uniformity`)
+and then transported to trees observation-wise (`iterate_fixpoint`,
+`iterate_naturality`, `iterate_codiagonal`, `iterate_uniformity`), which
+installs `LawfulElgotMonad (Tree E)`.  The depth-indexed proofs are all
+instances of the same pattern: rewrite by the corresponding `Part` law and
+close the resulting square with `LawfulElgotMonad.uniformity` for `Part`.
+-/
+
 namespace Isotope.Elgot.ITree
 
 open Isotope.Elgot
@@ -8,6 +20,7 @@ universe u
 
 namespace Approx
 
+/-- The fixpoint law at a fixed observation depth. -/
 theorem iter_fixpoint {E : Type u → Type u} {A B : Type (u + 1)}
     (n : Nat) (x : Approx E (B ⊕ A) n) (f : A → Approx E (B ⊕ A) n) :
     iter n x f = bind n x (Sum.elim
@@ -62,10 +75,12 @@ theorem truncate_mapReturn {E : Type u → Type u} {A B C : Type (u + 1)}
       simp only [Sum.elim_inr]
       exact (ret (E := E) (Sum.inr a)).coherent n
 
+/-- Tag every returned value of a finite observation with `Sum.inl`. -/
 def mapInl {E : Type u → Type u} {A B : Type (u + 1)} (n : Nat)
     (x : Approx E B n) : Approx E (B ⊕ A) n :=
   bind n x (fun b => (ret (E := E) (Sum.inl b)).observe n)
 
+/-- Truncation commutes with `mapInl`. -/
 theorem truncate_mapInl {E : Type u → Type u} {A B : Type (u + 1)}
     (n : Nat) (x : Approx E B (n + 1)) :
     truncate n (mapInl (A := A) (n + 1) x) = mapInl n (truncate n x) := by
@@ -75,6 +90,7 @@ theorem truncate_mapInl {E : Type u → Type u} {A B : Type (u + 1)}
   funext b
   exact (ret (E := E) (Sum.inl b)).coherent n
 
+/-- Iterating a body that never recurses returns immediately. -/
 theorem iter_mapInl {E : Type u → Type u} {A B : Type (u + 1)}
     (n : Nat) (x : Approx E B n) (f : A → Approx E (B ⊕ A) n) :
     iter n (mapInl n x) f = x := by
@@ -103,6 +119,7 @@ theorem iter_mapInl {E : Type u → Type u} {A B : Type (u + 1)}
           rw [Part.bind_some_eq_map]
           exact Part.map_id' (fun _ => rfl) x
 
+/-- Postcompose a continuation onto one visible layer of an observation. -/
 def post {E : Type u → Type u} {B C : Type (u + 1)} (n : Nat)
     (g : B → Approx E C (n + 1)) :
     Visible E B (Approx E B n) → Part (Visible E C (Approx E C n))
@@ -110,6 +127,7 @@ def post {E : Type u → Type u} {B C : Type (u + 1)} (n : Nat)
   | .vis e next => Part.some (.vis e (fun r => bind n (next r)
       (fun b => truncate n (g b))))
 
+/-- The commuting square feeding the uniformity step of `iter_naturality`. -/
 private theorem naturality_square {E : Type u → Type u} {A B C : Type (u + 1)}
     (n : Nat) (f : A → Approx E (B ⊕ A) (n + 1))
     (g : B → Approx E C (n + 1))
@@ -175,6 +193,7 @@ private theorem naturality_square {E : Type u → Type u} {A B C : Type (u + 1)}
           · funext a
             exact (truncate_mapReturn (A := A) n (f a) g).symm
 
+/-- The naturality law at a fixed observation depth. -/
 theorem iter_naturality {E : Type u → Type u} {A B C : Type (u + 1)}
     (n : Nat) (x : Approx E (B ⊕ A) n) (f : A → Approx E (B ⊕ A) n)
     (g : B → Approx E C n) :
@@ -198,6 +217,7 @@ def mapState {E : Type u → Type u} {A B C : Type (u + 1)} (n : Nat)
     (x : Approx E (B ⊕ A) n) (h : A → C) : Approx E (B ⊕ C) n :=
   bind n x (fun s => (ret (E := E) (Sum.map id h s)).observe n)
 
+/-- Truncation commutes with `mapState`. -/
 theorem truncate_mapState {E : Type u → Type u} {A B C : Type (u + 1)}
     (n : Nat) (x : Approx E (B ⊕ A) (n + 1)) (h : A → C) :
     truncate n (mapState (n + 1) x h) = mapState n (truncate n x) h := by
@@ -207,6 +227,7 @@ theorem truncate_mapState {E : Type u → Type u} {A B C : Type (u + 1)}
   funext s
   exact (ret (E := E) (Sum.map id h s)).coherent n
 
+/-- The commuting square feeding the induction step of `iter_uniformity`. -/
 private theorem uniformity_square {E : Type u → Type u} {A B C : Type (u + 1)}
     (n : Nat) (f : A → Approx E (B ⊕ A) (n + 1))
     (g : C → Approx E (B ⊕ C) (n + 1)) (h : A → C)
@@ -244,6 +265,7 @@ private theorem uniformity_square {E : Type u → Type u} {A B C : Type (u + 1)}
           funext s
           exact ((ret (E := E) (Sum.map id h s)).coherent n).symm
 
+/-- The pure uniformity law at a fixed observation depth. -/
 theorem iter_uniformity {E : Type u → Type u} {A B C : Type (u + 1)}
     (n : Nat) (x : Approx E (B ⊕ A) n)
     (f : A → Approx E (B ⊕ A) n) (g : C → Approx E (B ⊕ C) n)
@@ -268,6 +290,7 @@ def flattenApprox {E : Type u → Type u} {A B : Type (u + 1)} (n : Nat)
     (x : Approx E ((B ⊕ A) ⊕ A) n) : Approx E (B ⊕ A) n :=
   bind n x (fun s => (ret (E := E) (Isotope.Elgot.flatten s)).observe n)
 
+/-- Truncation commutes with `flattenApprox`. -/
 theorem truncate_flattenApprox {E : Type u → Type u} {A B : Type (u + 1)}
     (n : Nat) (x : Approx E ((B ⊕ A) ⊕ A) (n + 1)) :
     truncate n (flattenApprox (n + 1) x) = flattenApprox n (truncate n x) := by
@@ -452,6 +475,8 @@ theorem iterate_fixpoint {E : Type u → Type u} {A B : Type (u + 1)}
   | inl b => rfl
   | inr a => exact observe_iter f a n
 
+/-- The naturality law: postcomposing an iteration with `g` is iterating the body
+whose returns have been postcomposed with `g`. -/
 theorem iterate_naturality {E : Type u → Type u} {A B C : Type (u + 1)}
     (f : A → Tree E (B ⊕ A)) (g : B → Tree E C) :
     kcomp (Isotope.Elgot.iter f) g =
@@ -490,6 +515,8 @@ theorem iterate_codiagonal {E : Type u → Type u} {A B : Type (u + 1)}
   simp only [observe_iter, hb]
   exact Approx.iter_codiagonal n ((f a).observe n) (fun a => (f a).observe n)
 
+/-- The pure uniformity law: if `h` maps the loop state of `f` onto that of `g`
+compatibly, then iterating `f` is iterating `g` after `h`. -/
 theorem iterate_uniformity {E : Type u → Type u} {A B C : Type (u + 1)}
     (f : A → Tree E (B ⊕ A)) (g : C → Tree E (B ⊕ C)) (h : A → C)
     (comm : kcomp f (liftPure (Sum.map id h)) = kcomp (liftPure h) g) :

@@ -1,5 +1,15 @@
 import Isotope.Elgot.ITree.Monad
 
+/-!
+# Iteration on weak interaction trees
+
+Iteration is again defined depth by depth.  At a fixed depth the loop is a
+`Part`-iteration: `Approx.iterStep` either commits to a visible layer or feeds a
+new state back, so productivity is inherited from the complete Elgot structure
+of `Part`.  The coherence square `Approx.truncate_iter` is the substantial
+lemma; it is proved from naturality and uniformity for `Part`.
+-/
+
 namespace Isotope.Elgot.ITree
 
 open Isotope.Elgot
@@ -30,10 +40,12 @@ noncomputable def iterStep {E : Type u → Type u} {A B : Type (u + 1)} (n : Nat
     | .vis e next => Part.some (.inl (.vis e (fun r =>
         iter n (next r) (fun a => truncate n (f a)))))
 
+/-- Unfold one visible layer of `Approx.iter`. -/
 @[simp] theorem iter_succ {E : Type u → Type u} {A B : Type (u + 1)}
     (n : Nat) (x : Approx E (B ⊕ A) (n + 1)) (f : A → Approx E (B ⊕ A) (n + 1)) :
     iter (n + 1) x f = Isotope.Elgot.iter (iterStep n f) x := rfl
 
+/-- The commuting square feeding the uniformity step of `truncate_iter`. -/
 private theorem truncate_iterStep_square {E : Type u → Type u} {A B : Type (u + 1)}
     (n : Nat) (f : A → Approx E (B ⊕ A) (n + 2))
     (ih : ∀ (x : Approx E (B ⊕ A) (n + 1)),
@@ -58,6 +70,7 @@ private theorem truncate_iterStep_square {E : Type u → Type u} {A B : Type (u 
       funext r
       exact ih (next r)
 
+/-- Truncation commutes with iteration of finite observations. -/
 theorem truncate_iter {E : Type u → Type u} {A B : Type (u + 1)}
     (n : Nat) (x : Approx E (B ⊕ A) (n + 1))
     (f : A → Approx E (B ⊕ A) (n + 1)) :
@@ -102,9 +115,11 @@ noncomputable def iterate {E : Type u → Type u} {A B : Type (u + 1)}
     · funext a
       exact (f a).coherent n
 
+/-- Weak interaction trees carry an iteration operator. -/
 noncomputable instance instIterate (E : Type u → Type u) : Iterate (Tree E) where
   iter := iterate
 
+/-- The observations of an iteration. -/
 @[simp] theorem observe_iter {E : Type u → Type u} {A B : Type (u + 1)}
     (f : A → Tree E (B ⊕ A)) (a : A) (n : Nat) :
     (Isotope.Elgot.iter f a).observe n =

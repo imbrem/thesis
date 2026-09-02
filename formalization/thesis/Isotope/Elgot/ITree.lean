@@ -9,6 +9,7 @@ import Isotope.Elgot.ITree.Examples
 import Isotope.Elgot.ITree.Structural
 import Isotope.Elgot.ITree.Handlers
 import Isotope.Elgot.ITree.Freyd
+import Isotope.Elgot.ITree.Events
 
 /-!
 # Weak interaction trees as a complete Elgot monad

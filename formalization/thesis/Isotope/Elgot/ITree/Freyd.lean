@@ -15,11 +15,19 @@ rather than merely available in principle.
 This is the *categorical* half of the connection only.  A concrete lambda-iter
 denotation additionally needs `Semantics.TypeModel` and
 `Semantics.InstructionModel` instances at a concrete type/instruction universe,
-which no model in this repository currently supplies for any monad.  The one
-model-specific obstruction to writing one is recorded in `interpObstruction`
-below: an event signature `E : Type u → Type u` has responses in `Type u`, while
-`TypeModel.interp` for `Tree E` must land in `Type (u+1)`, so every instruction
-denotation built from `vis` pays a `ULift`.
+which no model in this repository currently supplies for any monad.
+
+There is a model-specific obstruction to writing one, but it is **documented,
+not proved**, and it is not provable here: an event signature
+`E : Type u → Type u` has responses in `Type u`, whereas `Tree E` only accepts
+value types in `Type (u+1)`, so `Tree E R` is not even a well-formed expression
+for `R : Type u` and every `vis`-built instruction denotation must return a
+`ULift`ed response.  That is a statement about which Lean expressions typecheck,
+not a proposition about terms, so no theorem in this file asserts it; the
+evidence is the elaborated type of `trigger`, namely
+`trigger : E R → Tree E (ULift.{u+1} R)`.  `iterate_vis_exit` and
+`iterate_trigger` below are ordinary computation lemmas about iteration; they
+exhibit the `ULift` in a concrete denotation but claim no impossibility.
 -/
 
 namespace Isotope.Elgot.ITree
@@ -58,19 +66,29 @@ theorem contextualLoop_of {R A B : Type (u + 1)}
           (pure ((Types.binaryCoproductIso B A).hom s) : Tree E (B ⊕ A))) (r, a)) a :=
   Isotope.LambdaIter.Subtyping.Semantics.Categorical.contextualLoop_of (m := Tree E) body r a
 
-/-- The universe obstruction to a set-valued lambda-iter model over `Tree E`:
-event responses live in `Type u`, tree values in `Type (u+1)`, so a `vis`-built
-instruction denotation returns a `ULift`ed response. -/
-theorem interpObstruction {R : Type u} (e : E R) :
+/-- Iterating a body that performs one visible event and then exits performs
+the event exactly once. -/
+theorem iterate_vis_exit {A : Type (u + 1)} {R : Type u} (e : E R) (k : R → A) :
+    (Isotope.Elgot.iter (m := Tree E)
+        (fun _ : PUnit.{u + 2} =>
+          (vis e (fun r => ret (Sum.inl (k r))) : Tree E (A ⊕ PUnit.{u + 2})))
+      PUnit.unit) = vis e (fun r => ret (k r)) := by
+  rw [Isotope.Elgot.ITree.iterate_apply, vis_bind]
+  refine congrArg (vis e) (funext fun r => ?_)
+  change (pure (Sum.inl (k r)) : Tree E (A ⊕ PUnit.{u + 2})) >>= _ = _
+  rw [pure_bind]
+  rfl
+
+/-- The same computation for `trigger`, the canonical one-event denotation.
+Its value type is `ULift.{u+1} R`: this *displays* the universe tax paid by any
+`vis`-built instruction denotation, and does not prove that the tax is
+unavoidable — see the honest boundary above. -/
+theorem iterate_trigger {R : Type u} (e : E R) :
     (Isotope.Elgot.iter (m := Tree E)
         (fun _ : PUnit.{u + 2} =>
           (vis e (fun r => ret (Sum.inl (ULift.up r))) :
             Tree E (ULift.{u + 1} R ⊕ PUnit.{u + 2}))) PUnit.unit) =
-      vis e (fun r => ret (ULift.up r)) := by
-  rw [Isotope.Elgot.ITree.iterate_apply, vis_bind]
-  refine congrArg (vis e) (funext fun r => ?_)
-  change (pure (Sum.inl (ULift.up r)) : Tree E (ULift.{u + 1} R ⊕ PUnit.{u + 2})) >>= _ = _
-  rw [pure_bind]
-  rfl
+      trigger e :=
+  iterate_vis_exit E e ULift.up
 
 end Isotope.Elgot.ITree

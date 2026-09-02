@@ -42,12 +42,15 @@ def Bisim {E : Type u → Type u} {A : Type (u + 1)} (x y : Tree E A) : Prop :=
 
 namespace Bisim
 
+/-- Weak bisimulation is reflexive. -/
 theorem refl {E : Type u → Type u} {A : Type (u + 1)} (x : Tree E A) : Bisim x x :=
   fun _ => rfl
 
+/-- Weak bisimulation is symmetric. -/
 theorem symm {E : Type u → Type u} {A : Type (u + 1)} {x y : Tree E A}
     (h : Bisim x y) : Bisim y x := fun n => (h n).symm
 
+/-- Weak bisimulation is transitive. -/
 theorem trans {E : Type u → Type u} {A : Type (u + 1)} {x y z : Tree E A}
     (h₁ : Bisim x y) (h₂ : Bisim y z) : Bisim x z := fun n => (h₁ n).trans (h₂ n)
 

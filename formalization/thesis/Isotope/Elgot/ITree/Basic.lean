@@ -25,22 +25,27 @@ inductive Visible (E : Type u → Type u) (A X : Type (u + 1)) : Type (u + 1)
 
 namespace Visible
 
+/-- Relabel the children of one visible observation. -/
 def map {E : Type u → Type u} {A X Y : Type (u + 1)} (f : X → Y) :
     Visible E A X → Visible E A Y
   | .ret a => .ret a
   | .vis e k => .vis e (f ∘ k)
 
+/-- `Visible.map` on a return. -/
 @[simp] theorem map_ret {E : Type u → Type u} {A X Y : Type (u + 1)} (f : X → Y) (a : A) :
     map f (.ret a : Visible E A X) = .ret a := rfl
 
+/-- `Visible.map` on a visible event. -/
 @[simp] theorem map_vis {E : Type u → Type u} {A X Y : Type (u + 1)} {R : Type u}
     (f : X → Y) (e : E R) (k : R → X) :
     map f (.vis e k : Visible E A X) = .vis e (f ∘ k) := rfl
 
+/-- `Visible.map` preserves identities. -/
 theorem map_id {E : Type u → Type u} {A X : Type (u + 1)} (x : Visible E A X) :
     map id x = x := by
   cases x <;> simp [map, Function.comp_def]
 
+/-- `Visible.map` preserves composition. -/
 theorem map_comp {E : Type u → Type u} {A X Y Z : Type (u + 1)}
     (f : X → Y) (g : Y → Z) (x : Visible E A X) :
     map g (map f x) = map (g ∘ f) x := by
@@ -66,6 +71,7 @@ structure Tree (E : Type u → Type u) (A : Type (u + 1)) : Type (u + 1) where
   observe : (n : Nat) → Approx E A n
   coherent : ∀ n, Approx.truncate n (observe (n + 1)) = observe n
 
+/-- Trees agreeing at every observation depth are equal. -/
 @[ext]
 theorem Tree.ext {E : Type u → Type u} {A : Type (u + 1)} {x y : Tree E A}
     (h : ∀ n, x.observe n = y.observe n) : x = y := by
@@ -218,6 +224,7 @@ theorem corec_unique {E : Type u → Type u} {A X : Type (u + 1)}
 /-- A finite silent step is observationally irrelevant in the weak model. -/
 def tau {E : Type u → Type u} {A : Type (u + 1)} (t : Tree E A) : Tree E A := t
 
+/-- `tau` is definitionally the identity: finite silent delays are unobservable. -/
 @[simp] theorem tau_eq {E : Type u → Type u} {A : Type (u + 1)} (t : Tree E A) : tau t = t := rfl
 
 end Isotope.Elgot.ITree
