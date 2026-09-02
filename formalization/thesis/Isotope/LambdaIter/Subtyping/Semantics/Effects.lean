@@ -11,8 +11,12 @@ lands in.
 
 The main theorem, `denote_mem_eff`, says that a term whose instructions all have effect below
 `ε`, and which iterates only when `ε` is closed under iteration, denotes a morphism of `C_ε`.
-Specialised to `ε = ⊥` this says pure terms denote pure morphisms; the `case` and `let`/`pair`
-fragments (λ-case and λ-seq) are the sub-derivations of the same induction.
+Specialised to `ε = ⊥` this says pure terms denote pure morphisms.
+
+The effect model is layered to match the fragments: `EffectModel` needs only a Freyd category
+and suffices for λ-seq; `DistributiveEffectModel` adds branching and suffices for λ-case;
+`CategoryTheory.IterativeEffects` adds iteration for λ-iter.  The corresponding soundness
+theorems live in `Isotope.LambdaSeq.Effects` and `Isotope.LambdaCase.Semantics.Effects`.
 -/
 
 universe v₁ v₂ u₁ u₂ u₃ u₄ u₅
@@ -30,9 +34,6 @@ variable {V : Type u₁} {C : Type u₂}
   [Category.{v₁} V] [Category.{v₂} C]
   [CartesianMonoidalCategory V] [SymmetricCategory V]
   [PremonoidalCategory C] [SymmetricPremonoidalCategory C]
-  [HasFiniteCoproducts V] [HasFiniteCoproducts C]
-  [DistributiveTensor V] [DistributivePremonoidalCategory C]
-  [Iteration C] [ElgotCategory C]
 
 /-- An effect structure on the computation category of a categorical λ-iter model: a monotone
 family of wide symmetric premonoidal subcategories `C_ε`, whose bottom member contains the image
@@ -42,7 +43,7 @@ and each of which is closed under case analysis and — when `ε` is iterative �
 Together with `CategoryTheory.EffectfulFreydCategory` this is the "third semantics": the value
 category is not a separate category but the subcategory `C_⊥`. -/
 class EffectModel (E : Type u₅) [Preorder E] [OrderBot E]
-    (J : Functor V C) [StrongElgotFreydCategory J]
+    (J : Functor V C) [FreydCategory J]
     (eff : E → MorphismProperty C) [EffectLattice E eff] : Prop where
   /-- Value morphisms are pure. -/
   map_mem {X Y : V} (f : X ⟶ Y) : eff ⊥ (J.map f)
@@ -51,17 +52,24 @@ class EffectModel (E : Type u₅) [Preorder E] [OrderBot E]
     eff ⊥ (Functor.StrongPremonoidal.tensorIso (J := J) X Y).hom
   tensorIso_inv_mem (X Y : V) :
     eff ⊥ (Functor.StrongPremonoidal.tensorIso (J := J) X Y).inv
+
+/-- The extra structure needed to interpret branching: splitting a mapped coproduct is pure,
+and case analysis stays inside an effect. -/
+class DistributiveEffectModel (E : Type u₅) [Preorder E] [OrderBot E]
+    [HasFiniteCoproducts V] [HasFiniteCoproducts C]
+    [DistributiveTensor V] [DistributivePremonoidalCategory C]
+    (J : Functor V C) [DistributiveFreydCategory J]
+    (eff : E → MorphismProperty C) [EffectLattice E eff] [EffectModel E J eff] : Prop where
   /-- Splitting a mapped coproduct is pure. -/
   splitMapCoprod_mem (A B : V) : eff ⊥ (splitMapCoprod J A B)
   /-- Case analysis stays inside an effect. -/
   desc_mem {e : E} {A B D : C} {f : A ⟶ D} {g : B ⟶ D} :
     eff e f → eff e g → eff e (coprod.desc f g)
 
-
 namespace EffectModel
 
 variable {E : Type u₅} [Preorder E] [OrderBot E]
-  {J : Functor V C} [StrongElgotFreydCategory J]
+  {J : Functor V C} [FreydCategory J]
   {eff : E → MorphismProperty C} [EffectLattice E eff] [EffectModel E J eff]
 
 theorem pure_mem {X Y : C} {f : X ⟶ Y} (hf : eff ⊥ f) (e : E) : eff e f :=
@@ -107,8 +115,21 @@ theorem pair_mem {e : E} {R A B : V} {f : J.obj R ⟶ J.obj A} {g : J.obj R ⟶ 
     (hf : eff e f) (hg : eff e g) : eff e (pair J f g) :=
   bind_mem hf (bind_mem (comp_mem (retainedContext_mem e) hg) (map_mem_eff e _))
 
+end EffectModel
+
+namespace EffectModel
+
+section Distributive
+
+variable [HasFiniteCoproducts V] [HasFiniteCoproducts C]
+  [DistributiveTensor V] [DistributivePremonoidalCategory C]
+  {E : Type u₅} [Preorder E] [OrderBot E]
+  {J : Functor V C} [DistributiveFreydCategory J]
+  {eff : E → MorphismProperty C} [EffectLattice E eff] [EffectModel E J eff]
+  [DistributiveEffectModel E J eff]
+
 theorem splitMapCoprod_mem_eff (e : E) (A B : V) : eff e (splitMapCoprod J A B) :=
-  pure_mem (EffectModel.splitMapCoprod_mem (J := J) (eff := eff) A B) e
+  pure_mem (DistributiveEffectModel.splitMapCoprod_mem (J := J) (eff := eff) A B) e
 
 theorem caseWithContext_mem {e : E} {R A B D : V}
     {scrutinee : J.obj R ⟶ J.obj (A ⨿ B)}
@@ -117,11 +138,22 @@ theorem caseWithContext_mem {e : E} {R A B D : V}
     eff e (caseWithContext J scrutinee left right) :=
   bind_mem hs
     (comp_mem (map_mem_eff e _)
-      (comp_mem (splitMapCoprod_mem_eff e _ _) (EffectModel.desc_mem (J := J) (eff := eff) hl hr)))
+      (comp_mem (splitMapCoprod_mem_eff e _ _) (DistributiveEffectModel.desc_mem (J := J) (eff := eff) hl hr)))
 
 theorem abort_mem {τ : Type u₃} [TypeFormers τ] [Subtyping τ] (M : TypeModel τ V)
     {e : E} {R : V} {A : τ} {c : J.obj R ⟶ J.obj (M.obj (TypeFormers.empty : τ))} (hc : eff e c) :
     eff e (abort J M (A := A) c) := comp_mem hc (map_mem_eff e _)
+
+end Distributive
+
+section Elgot
+
+variable [HasFiniteCoproducts V] [HasFiniteCoproducts C]
+  [DistributiveTensor V] [DistributivePremonoidalCategory C] [Iteration C] [ElgotCategory C]
+  {E : Type u₅} [Preorder E] [OrderBot E]
+  {J : Functor V C} [StrongElgotFreydCategory J]
+  {eff : E → MorphismProperty C} [EffectLattice E eff] [EffectModel E J eff]
+  [DistributiveEffectModel E J eff]
 
 theorem retainLeft_mem {e : E} {R X Y : V} {f : J.obj X ⟶ J.obj Y} (hf : eff e f) :
     eff e (retainLeft J (R := R) f) :=
@@ -140,6 +172,8 @@ theorem contextualLoop_mem {iterative : E → Prop} [IterativeEffects E eff iter
           (comp_mem (map_mem_eff e _) (splitMapCoprod_mem_eff e _ _)))))
     (map_mem_eff e _)
 
+end Elgot
+
 end EffectModel
 
 /-! ### Consistency
@@ -149,7 +183,9 @@ above; the soundness theorem below is therefore not vacuous. -/
 
 section Consistency
 
-variable (J : Functor V C) [StrongElgotFreydCategory J]
+variable [HasFiniteCoproducts V] [HasFiniteCoproducts C]
+  [DistributiveTensor V] [DistributivePremonoidalCategory C] [Iteration C] [ElgotCategory C]
+  (J : Functor V C) [StrongElgotFreydCategory J]
 
 instance topEffectLattice :
     EffectLattice PUnit (fun _ : PUnit => (⊤ : MorphismProperty C)) where
@@ -161,6 +197,9 @@ instance topEffectModel :
   map_mem _ := trivial
   tensorIso_hom_mem _ _ := trivial
   tensorIso_inv_mem _ _ := trivial
+
+instance topDistributiveEffectModel :
+    DistributiveEffectModel PUnit J (fun _ : PUnit => (⊤ : MorphismProperty C)) where
   splitMapCoprod_mem _ _ := trivial
   desc_mem _ _ := trivial
 
@@ -174,14 +213,19 @@ end Consistency
 /-! ### Effect soundness -/
 
 open LocallyNameless in
-/-- Primitive instructions denote morphisms of the effect they declare. -/
+/-- Primitive instructions denote morphisms of the effect they declare.  This needs no more
+than a Freyd category: it is shared by λ-seq, λ-case and λ-iter. -/
 class EffectfulInstructionModel (E : Type u₅) [Preorder E] [OrderBot E]
-    (J : Functor V C) [StrongElgotFreydCategory J]
+    [HasFiniteCoproducts V]
+    (J : Functor V C) [FreydCategory J]
     (eff : E → MorphismProperty C) [EffectLattice E eff] [EffectModel E J eff]
     {τ : Type u₃} [TypeFormers τ] [Subtyping τ] (M : TypeModel τ V)
     (Φ : Type u₄) [HasTy Φ τ] [HasEff Φ E] [InstructionModel J M Φ] : Prop where
   denote_mem (f : Φ) :
     eff (instrEff f) (InstructionModel.denote (J := J) (M := M) f)
+
+variable [HasFiniteCoproducts V] [HasFiniteCoproducts C]
+  [DistributiveTensor V] [DistributivePremonoidalCategory C] [Iteration C] [ElgotCategory C]
 
 section Soundness
 
@@ -190,6 +234,7 @@ open EffectModel LocallyNameless
 variable {E : Type u₅} [Preorder E] [OrderBot E]
   (J : Functor V C) [StrongElgotFreydCategory J]
   {eff : E → MorphismProperty C} [EffectLattice E eff] [EffectModel E J eff]
+  [DistributiveEffectModel E J eff]
   {τ : Type u₃} [TypeFormers τ] [Subtyping τ] (M : TypeModel τ V)
   {ν : Type u₄} [DecidableEq ν]
   {Φ : Type u₄} [HasTy Φ τ] [HasEff Φ E] [InstructionModel J M Φ]
@@ -201,10 +246,9 @@ variable {E : Type u₅} [Preorder E] [OrderBot E]
 If every instruction of `t` has effect below `ε`, and `t` iterates only when `ε` is closed under
 iteration, then the denotation of any typing derivation of `t` is a morphism of `C_ε`.
 
-Specialising `ε` to `⊥` says that the pure fragment denotes pure morphisms; restricting the
-syntax to the `let`/`pair` formers (λ-seq) or additionally the `case` formers (λ-case) gives the
-corresponding statements for those sublanguages, since their derivations are sub-derivations of
-this induction. -/
+Specialising `ε` to `⊥` says that the pure fragment denotes pure morphisms.  The λ-seq and
+λ-case fragments get their own statements, under correspondingly weaker hypotheses, in
+`Isotope.LambdaSeq.Effects` and `Isotope.LambdaCase.Semantics.Effects`. -/
 theorem denote_mem_eff {Γ : Ctx ν τ} {n : Nat} {β : LocallyNameless.BoundCtx τ n}
     {t : LocallyNameless.Tm ν Φ n} {A : τ} {e : E}
     (h : HasType Φ Γ β t A) (he : HasEffect iterative e t) :
@@ -297,6 +341,9 @@ instance inclusionEffectModel : EffectModel E (EffectfulFreydCategory.inclusion 
   map_mem f := f.2
   tensorIso_hom_mem _ _ := MorphismProperty.id_mem _ _
   tensorIso_inv_mem _ _ := MorphismProperty.id_mem _ _
+
+instance inclusionDistributiveEffectModel :
+    DistributiveEffectModel E (EffectfulFreydCategory.inclusion eff) eff where
   splitMapCoprod_mem A B := by
     rw [splitMapCoprod_inclusion_eq]; exact wideCoprodIso_inv_mem (eff ⊥) A B
   desc_mem hf hg := IsCocartesianSubcategory.desc_mem hf hg
