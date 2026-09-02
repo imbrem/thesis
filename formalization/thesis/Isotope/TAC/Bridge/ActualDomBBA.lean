@@ -59,6 +59,82 @@ def lowerBlock (named : Bool) (address : Address) (scope : List Address)
   body := lowerBodyAt address (if named then 1 else 0) block.body
   terminator := lowerTerminator scope block.terminator
 
+/-! ## Executable inverse on independently supplied actual blocks -/
+
+def decodeBodyAt (address : Address) : Nat →
+    List (Classical.Instr (Var Phi) (Op Phi)) → Option (Body Phi)
+  | _, [] => some .nil
+  | next, .assign (.inl (address', destination)) (.app term .unit) :: rest =>
+      if address' = address ∧ destination = next then
+        return .let₁ term (← decodeBodyAt address (next + 1) rest)
+      else none
+  | next, .assignPair (.inl (address₁, destination₁)) (.inl (address₂, destination₂))
+      (.app term .unit) :: rest =>
+      if address₁ = address ∧ destination₁ = next ∧
+          address₂ = address ∧ destination₂ = next + 1 then
+        return .let₂ term (← decodeBodyAt address (next + 2) rest)
+      else none
+  | _, _ => none
+
+def decodeTerminator (scope : List Address) :
+    PhiBBA.Terminator (Var Phi) (Op Phi) Address → Option (LambdaSSA.Terminator Phi)
+  | .br target [.var (.inr argument)] => some (.br (scope.idxOf target) argument)
+  | .cond (.app discr .unit) left right =>
+      return .case discr (← decodeTerminator scope left) (← decodeTerminator scope right)
+  | _ => none
+
+def decodeBlock (named : Bool) (address : Address) (scope : List Address)
+    (block : PhiBBA.Block (Var Phi) (Op Phi) Address) : Option (LambdaSSA.Block Phi) := do
+  let startOption : Option Nat := if named then
+      match block.parameters with
+      | [.inl (address', 0)] => if address' = address then some 1 else none
+      | _ => none
+    else if block.parameters.isEmpty then some 0 else none
+  startOption.bind fun (start : Nat) => do
+    return {
+      body := ← decodeBodyAt address start block.body
+      terminator := ← decodeTerminator scope block.terminator
+    }
+
+@[simp] theorem decodeBodyAt_lowerBodyAt (address : Address) (next : Nat) (body : Body Phi) :
+    decodeBodyAt address next (lowerBodyAt address next body) = some body := by
+  induction body generalizing next with
+  | nil => rfl
+  | let₁ term rest ih => simp [lowerBodyAt, decodeBodyAt, operand, ih]
+  | let₂ term rest ih => simp [lowerBodyAt, decodeBodyAt, operand, ih]
+
+namespace Decoding
+
+def LabelsBounded (scope : List Address) : LambdaSSA.Terminator Phi → Prop
+  | .br label _ => label < scope.length
+  | .case _ left right => LabelsBounded scope left ∧ LabelsBounded scope right
+
+theorem decodeTerminator_lowerTerminator (scope : List Address) (hscope : scope.Nodup)
+    (term : LambdaSSA.Terminator Phi) (hterm : LabelsBounded scope term) :
+    decodeTerminator scope (lowerTerminator scope term) = some term := by
+  induction term with
+  | br label argument =>
+      simp only [LabelsBounded] at hterm
+      rw [lowerTerminator, target, List.getD_eq_getElem scope [] hterm]
+      simp [decodeTerminator, value, hscope.idxOf_getElem label hterm]
+  | case discr left right ihl ihr =>
+      simp only [LabelsBounded] at hterm
+      simp only [lowerTerminator, operand, decodeTerminator]
+      rw [ihl hterm.1, ihr hterm.2]
+      rfl
+
+end Decoding
+
+theorem decodeBlock_lowerBlock (named : Bool) (address : Address) (scope : List Address)
+    (hscope : scope.Nodup) (block : LambdaSSA.Block Phi)
+    (hterm : Decoding.LabelsBounded scope block.terminator) :
+    decodeBlock named address scope (lowerBlock named address scope block) = some block := by
+  cases block with
+  | mk body terminator =>
+    cases named <;>
+      simp [decodeBlock, lowerBlock, decodeBodyAt_lowerBodyAt,
+        Decoding.decodeTerminator_lowerTerminator scope hscope terminator hterm]
+
 /-- An actual BBA CFG equipped with an explicit immediate-dominator tree. -/
 inductive Tree (V : Type u) (O : Type v) (L : Type w) where
   | node (block : PhiBBA.Block V O L) (arity : Nat)
@@ -203,6 +279,142 @@ theorem toActualCFG_toReg_labelEquivalent (tree : Bridge.LambdaSSA.DomTree Phi) 
       (toActualTree_presents tree)
     LabelRenaming.LabelEquivalent recovered.toCFG (toActualCFG tree) := by
   exact LabelRenaming.LabelEquivalent.refl _
+
+/-! ## Independent dominance-well-formed CFGs -/
+
+/-- Local, recursively checkable evidence that an independently supplied
+actual BBA dominator tree decodes as a lexical lambda-SSA tree.  The clauses
+expose block grammar and canonical structural child labels node-by-node; this
+is not merely equality of the final CFG with the image of `toActualCFG`. -/
+inductive DecodesAt : (named : Bool) → (here : Address) → (outer : List Address) →
+    Tree (Var Phi) (Op Phi) Address → Bridge.LambdaSSA.DomTree Phi → Prop where
+  | node (named here outer) (block : LambdaSSA.Block Phi) (arity : Nat)
+      (actualChildren : Fin arity → Address × Tree (Var Phi) (Op Phi) Address)
+      (lexicalChildren : Fin arity → Bridge.LambdaSSA.DomTree Phi)
+      (block_eq :
+        decodeBlock named here ((List.ofFn fun i : Fin arity => childAddress here i) ++ outer)
+          (lowerBlock named here ((List.ofFn fun i : Fin arity => childAddress here i) ++ outer)
+            block) = some block)
+      (labels : ∀ i, (actualChildren i).1 = childAddress here i)
+      (blocks : ∀ i : Fin arity,
+        DecodesAt true (childAddress here i)
+          ((List.ofFn fun j : Fin arity => childAddress here j) ++ outer)
+          (actualChildren i).2 (lexicalChildren i)) :
+      DecodesAt named here outer
+        (.node (lowerBlock named here
+          ((List.ofFn fun i : Fin arity => childAddress here i) ++ outer) block)
+          arity actualChildren)
+        (.node block arity lexicalChildren)
+
+namespace DecodesAt
+
+/-- Local decoding evidence reconstructs the complete actual tree exactly. -/
+theorem encode_eq {named : Bool} {here : Address} {outer : List Address}
+    {actual : Tree (Var Phi) (Op Phi) Address}
+    {lexical : Bridge.LambdaSSA.DomTree Phi}
+    (h : DecodesAt named here outer actual lexical) :
+    toActualTreeAt named here outer lexical = actual := by
+  induction h with
+  | node named here outer block arity actualChildren lexicalChildren
+      block_eq labels blocks ih =>
+      simp only [toActualTreeAt]
+      congr
+      funext i
+      apply Prod.ext
+      · exact (labels i).symm
+      · exact ih i
+
+end DecodesAt
+
+/-- Label well-scoping needed for the executable `idxOf` inverse.  It states
+locally that structural addresses are distinct and every de Bruijn target is
+within the labels visible at that node. -/
+inductive WellScopedAt : (here : Address) → (outer : List Address) →
+    Bridge.LambdaSSA.DomTree Phi → Prop where
+  | node (here outer) (block : LambdaSSA.Block Phi) (arity : Nat)
+      (children : Fin arity → Bridge.LambdaSSA.DomTree Phi)
+      (scope_nodup :
+        ((List.ofFn fun i : Fin arity => childAddress here i) ++ outer).Nodup)
+      (terminator : Decoding.LabelsBounded
+        ((List.ofFn fun i : Fin arity => childAddress here i) ++ outer) block.terminator)
+      (child : ∀ i : Fin arity,
+        WellScopedAt (childAddress here i)
+          ((List.ofFn fun j : Fin arity => childAddress here j) ++ outer) (children i)) :
+      WellScopedAt here outer (.node block arity children)
+
+namespace WellScopedAt
+
+theorem decodes_toActual {here : Address} {outer : List Address}
+    {tree : Bridge.LambdaSSA.DomTree Phi} (h : WellScopedAt here outer tree)
+    (named : Bool) :
+    DecodesAt named here outer (toActualTreeAt named here outer tree) tree := by
+  induction h generalizing named with
+  | node here outer block arity children scope_nodup terminator child ih =>
+      apply DecodesAt.node
+      · exact decodeBlock_lowerBlock named here
+          ((List.ofFn fun i : Fin arity => childAddress here i) ++ outer)
+          scope_nodup block terminator
+      · intro i
+        rfl
+      · intro i
+        exact ih i true
+
+end WellScopedAt
+
+/-- A flat CFG plus an independently supplied dominator hierarchy whose
+blocks pass the local lambda-SSA decoder. -/
+structure DominanceWellFormed (cfg : PhiBBA.CFG (Var Phi) (Op Phi) Address) where
+  tree : Tree (Var Phi) (Op Phi) Address
+  presents : tree.Presents cfg
+  region : Bridge.LambdaSSA.DomTree Phi
+  decodes : DecodesAt false [] [] tree region
+
+namespace DominanceWellFormed
+
+/-- Paper `toReg`: organize the independently supplied classical CFG using
+its valid dominator tree and decode its locally checked blocks. -/
+def toReg {cfg : PhiBBA.CFG (Var Phi) (Op Phi) Address}
+    (wellFormed : DominanceWellFormed cfg) : Bridge.LambdaSSA.DomTree Phi :=
+  wellFormed.region
+
+/-- Flattening the decoded lexical region reconstructs the original actual
+CFG modulo only textual block order.  Structural labels and every branch
+target agree exactly through `DecodesAt.encode_eq`. -/
+theorem toCFG_toReg {cfg : PhiBBA.CFG (Var Phi) (Op Phi) Address}
+    (wellFormed : DominanceWellFormed cfg) :
+    (toActualCFG wellFormed.toReg).entry = cfg.entry ∧
+      (toActualCFG wellFormed.toReg).blocks.Perm cfg.blocks := by
+  have htree := wellFormed.decodes.encode_eq
+  change (toActualTree wellFormed.region).toCFG.entry = cfg.entry ∧
+    (toActualTree wellFormed.region).toCFG.blocks.Perm cfg.blocks
+  change (toActualTreeAt false [] [] wellFormed.region).toCFG.entry = cfg.entry ∧
+    (toActualTreeAt false [] [] wellFormed.region).toCFG.blocks.Perm cfg.blocks
+  rw [htree]
+  exact Tree.toCFG_toReg cfg wellFormed.tree wellFormed.presents
+
+theorem toCFG_toReg_labelEquivalent
+    {cfg : PhiBBA.CFG (Var Phi) (Op Phi) Address}
+    (wellFormed : DominanceWellFormed cfg) :
+    LabelRenaming.LabelEquivalent (toActualCFG wellFormed.toReg) cfg := by
+  refine ⟨Equiv.refl Address, ?_, ?_⟩
+  · simpa using (toCFG_toReg wellFormed).1
+  · simpa using (toCFG_toReg wellFormed).2
+
+/-- Every well-scoped lexical tree produces an independently checkable
+dominance-well-formed actual CFG. -/
+noncomputable def ofDomTree (tree : Bridge.LambdaSSA.DomTree Phi)
+    (hscoped : WellScopedAt [] [] tree) : DominanceWellFormed (toActualCFG tree) where
+  tree := toActualTree tree
+  presents := toActualTree_presents tree
+  region := tree
+  decodes := hscoped.decodes_toActual false
+
+/-- Generated lexical-to-classical-to-lexical round trip. -/
+@[simp] theorem toReg_ofDomTree (tree : Bridge.LambdaSSA.DomTree Phi)
+    (hscoped : WellScopedAt [] [] tree) :
+    (ofDomTree tree hscoped).toReg = tree := rfl
+
+end DominanceWellFormed
 
 end LexicalDomTree
 
