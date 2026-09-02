@@ -144,9 +144,9 @@ private def lookup [DecidableEq κ] (g : C.CFG ν φ κ) (ℓ : κ) :
 
 private theorem lookup_map [DecidableEq κ] (g : C.CFG ν φ κ) (h : PhiFree g)
     (ℓ : κ) :
-    ((cfg g h).blocks.find? fun p => p.1 = ℓ).map Prod.snd =
+    Densem.CFG.lookup (cfg g h) ℓ =
       (lookup g ℓ).map block := by
-  unfold cfg lookup
+  unfold Densem.CFG.lookup cfg lookup
   induction g.blocks with
   | nil => rfl
   | cons p ps ih =>
@@ -169,6 +169,53 @@ def cfgRunFuel [DecidableEq ν] [DecidableEq κ] (M : Densem.Model φ)
   | fuel + 1, ρ => do
       let (ρ', exit) ← blockDenote M ρ g.entry
       continueFuel M g fuel ρ' exit
+
+theorem continueFuel_commute [DecidableEq ν] [DecidableEq κ]
+    (M : Densem.Model φ) (g : C.CFG ν φ κ) (h : PhiFree g)
+    (fuel : Nat) (ρ : Env M ν) (e : Densem.Exit κ M.Val) :
+    Densem.CFG.continueFuel M (cfg g h) fuel ρ e =
+      continueFuel M g fuel ρ e := by
+  induction fuel generalizing ρ e with
+  | zero => cases e <;> rfl
+  | succ fuel ih =>
+      cases e with
+      | «return» a => rfl
+      | branch ℓ =>
+        simp only [Densem.CFG.continueFuel, continueFuel]
+        rw [lookup_map]
+        cases hb : lookup g ℓ with
+        | none => rfl
+        | some b =>
+          dsimp
+          rw [block_commute]
+          cases hd : blockDenote M ρ b with
+          | none => rfl
+          | some p =>
+            cases p with
+            | mk ρ' e => simpa only [Option.bind_some] using ih ρ' e
+
+theorem cfg_runFuel_commute [DecidableEq ν] [DecidableEq κ]
+    (M : Densem.Model φ) (g : C.CFG ν φ κ) (h : PhiFree g)
+    (fuel : Nat) (ρ : Env M ν) :
+    Densem.CFG.runFuel M (cfg g h) fuel ρ = cfgRunFuel M g fuel ρ := by
+  cases fuel with
+  | zero => rfl
+  | succ fuel =>
+      simp only [Densem.CFG.runFuel, cfgRunFuel, cfg]
+      rw [block_commute]
+      cases he : blockDenote M ρ g.entry with
+      | none => rfl
+      | some p =>
+        cases p with
+        | mk ρ' e => simpa only [Option.bind_some] using
+            continueFuel_commute M g h fuel ρ' e
+
+theorem cfg_denotes_iff [DecidableEq ν] [DecidableEq κ]
+    (M : Densem.Model φ) (g : C.CFG ν φ κ) (h : PhiFree g)
+    (fuel : Nat) (ρ : Env M ν) (a : M.Val) :
+    Densem.CFG.Denotes M (cfg g h) fuel ρ a ↔ cfgRunFuel M g fuel ρ = some a := by
+  unfold Densem.CFG.Denotes
+  rw [cfg_runFuel_commute]
 
 end Executable
 

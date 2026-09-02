@@ -64,10 +64,13 @@ def Block.Denotes [DecidableEq ν] (M : Model φ) (ρ : Env M ν)
     (b : Block φ ν κ) (ρ' : Env M ν) (e : Exit κ M.Val) : Prop :=
   b.denote M ρ = some (ρ', e)
 
-private def CFG.lookup [DecidableEq κ] (g : CFG φ ν κ) (ℓ : κ) :
+/-- Look up a labelled block. Public for syntax-translation simulation lemmas. -/
+def CFG.lookup [DecidableEq κ] (g : CFG φ ν κ) (ℓ : κ) :
     Option (Block φ ν κ) := (g.blocks.find? fun p => p.1 = ℓ).map Prod.snd
 
-private def CFG.continueFuel [DecidableEq ν] [DecidableEq κ]
+/-- Continue fuelled execution after a completed block. Public so translations
+can state and prove simulation lemmas one transition at a time. -/
+def CFG.continueFuel [DecidableEq ν] [DecidableEq κ]
     (M : Model φ) (g : CFG φ ν κ) :
     Nat → Env M ν → Exit κ M.Val → Option M.Val
   | _, _, .return a => some a
