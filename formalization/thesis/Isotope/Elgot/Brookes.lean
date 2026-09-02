@@ -10,6 +10,7 @@ import Isotope.Elgot.Brookes.SeqCst.Syntax
 import Isotope.Elgot.Brookes.SeqCst.Context
 import Isotope.Elgot.Brookes.SeqCst.Definability
 import Isotope.Elgot.Brookes.SeqCst.FullAbstraction
+import Isotope.Elgot.Brookes.SeqCst.Examples
 import Isotope.Elgot.Brookes.TSO
 import Isotope.Elgot.Brookes.Compare
 import Isotope.Elgot.Brookes.Examples
