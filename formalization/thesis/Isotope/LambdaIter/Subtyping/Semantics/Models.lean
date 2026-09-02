@@ -1,4 +1,7 @@
 import Isotope.LambdaIter.Subtyping.Semantics.Models.Free
+import Isotope.LambdaIter.Subtyping.Semantics.Models.CategoricalFree
+import Isotope.LambdaIter.Subtyping.Semantics.Models.Empty
+import Isotope.LambdaIter.Subtyping.Semantics.Models.EmptyExamples
 import Isotope.LambdaIter.Subtyping.Semantics.Models.Null
 import Isotope.LambdaIter.Subtyping.Semantics.Models.BitVec
 import Isotope.LambdaIter.Subtyping.Semantics.Models.Nat
@@ -12,14 +15,24 @@ about them was conditional on hypotheses nothing satisfied.  Several honest
 boundaries across the development record exactly that gap.  These are the first
 instances that close it.
 
-All three are instances of one construction, `Models/Free.lean`: an
+The **empty signature** (`Models/Empty.lean`, over
+`Isotope/LambdaIter/Signature/Empty.lean`) is the first-class version of the
+former ad-hoc `Null` model: no base types, no instructions, one effect.  It
+carries the two theorems that make it usable everywhere — a model in every
+monad and a model in every Freyd category — and `Null` is now a named example
+of it at a two-element effect set.  `Models/CategoricalFree.lean` is the
+categorical counterpart of `Models/Free.lean`, giving a type model in an
+arbitrary cartesian value category with finite coproducts.
+
+All four set-valued models are instances of one construction, `Models/Free.lean`: an
 interpretation `β : α → Type v` of the base types of `Ty α` extends uniquely to
 an interpretation of every type, and of every proof-relevant subtyping
 derivation, and the result satisfies `LawfulTypeModel`.
 
 | model | base types `α` | base interpretation | instructions |
 |---|---|---|---|
-| `Null` | `Empty` | none | none |
+| `Empty` | `PEmpty` | none | none |
+| `Null` | `PEmpty` | none | none |
 | `BitVecModel` | `Nat` (widths) | `BitVec n` | `const`, `add`, `and`, `not`, `eqz` |
 | `NatModel` | `Unit` | `Nat` | `zero`, `succ`, `add`, `case` |
 
