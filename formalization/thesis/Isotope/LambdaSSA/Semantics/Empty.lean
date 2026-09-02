@@ -34,4 +34,34 @@ theorem empty_continuation_unique {R X : V}
   congr 1
   exact (computationEmptyIsInitial J M).hom_ext f g
 
+/-- A computation factors through the interpreted empty type.  The prefix is
+kept as data: arrows *into* an initial object need not be unique. -/
+structure FactorsThroughEmpty {R X : V} (f : J.obj R ⟶ J.obj X) : Prop where
+  prefix : J.obj R ⟶ J.obj (M.obj (LambdaIter.empty : τ))
+  continuation : J.obj (M.obj (LambdaIter.empty : τ)) ⟶ J.obj X
+  factor : prefix ≫ continuation = f
+
+/-- Postcomposition preserves empty factorization and its empty-producing
+prefix. -/
+theorem FactorsThroughEmpty.comp {R X Y : V} {f : J.obj R ⟶ J.obj X}
+    (hf : FactorsThroughEmpty J M f) (k : J.obj X ⟶ J.obj Y) :
+    FactorsThroughEmpty J M (f ≫ k) := by
+  refine ⟨hf.prefix, hf.continuation ≫ k, ?_⟩
+  rw [← Category.assoc, hf.factor]
+
+/-- Two empty factorizations with the same prefix denote the same
+computation, independently of their continuations. -/
+theorem FactorsThroughEmpty.eq_of_prefix {R X : V} {f g : J.obj R ⟶ J.obj X}
+    (hf : FactorsThroughEmpty J M f) (hg : FactorsThroughEmpty J M g)
+    (hp : hf.prefix = hg.prefix) : f = g := by
+  rw [← hf.factor, ← hg.factor, hp]
+  apply empty_continuation_unique J M
+
+/-- Empty elimination is the canonical empty factorization. -/
+theorem abort_factors {R : V} {A : τ}
+    (z : J.obj R ⟶ J.obj (M.obj (LambdaIter.empty : τ))) :
+    FactorsThroughEmpty J M
+      (LambdaIter.Subtyping.Semantics.Categorical.abort J M (A := A) z) := by
+  exact ⟨z, J.map (M.emptyIsInitial.to (M.obj A)), rfl⟩
+
 end Isotope.LambdaSSA.Semantics.Categorical
