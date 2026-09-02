@@ -1,26 +1,27 @@
-import Isotope.Elgot.RA.State
-import Isotope.Elgot.RA.Trace
-import Isotope.Elgot.RA.Pull
-import Isotope.Elgot.RA.GTrace
-import Isotope.Elgot.RA.GData
-import Isotope.Elgot.RA.Castling
-import Isotope.Elgot.RA.Rewrite
-import Isotope.Elgot.RA.Closure
-import Isotope.Elgot.RA.Monad
+import Isotope.Elgot.RA.ACastling
+import Isotope.Elgot.RA.Abstract
+import Isotope.Elgot.RA.Assoc
 import Isotope.Elgot.RA.Bounds
-import Isotope.Elgot.RA.Parallel
-import Isotope.Elgot.RA.Exchange
+import Isotope.Elgot.RA.Castling
+import Isotope.Elgot.RA.Categorical
+import Isotope.Elgot.RA.Closure
 import Isotope.Elgot.RA.Concrete
+import Isotope.Elgot.RA.Examples
+import Isotope.Elgot.RA.Exchange
+import Isotope.Elgot.RA.GData
+import Isotope.Elgot.RA.GTrace
+import Isotope.Elgot.RA.Generating
 import Isotope.Elgot.RA.Iteration
 import Isotope.Elgot.RA.Memory
-import Isotope.Elgot.RA.Categorical
-import Isotope.Elgot.RA.Generating
-import Isotope.Elgot.RA.Assoc
-import Isotope.Elgot.RA.Examples
-import Isotope.Elgot.RA.ParExamples
-import Isotope.Elgot.RA.Abstract
 import Isotope.Elgot.RA.Mirror
-import Isotope.Elgot.RA.ACastling
+import Isotope.Elgot.RA.Monad
+import Isotope.Elgot.RA.Opt
+import Isotope.Elgot.RA.ParExamples
+import Isotope.Elgot.RA.Parallel
+import Isotope.Elgot.RA.Pull
+import Isotope.Elgot.RA.Rewrite
+import Isotope.Elgot.RA.State
+import Isotope.Elgot.RA.Trace
 
 /-!
 # A release/acquire trace monad
@@ -168,22 +169,6 @@ Read this before citing anything here as "the paper's".
    `LawfulElgotMonad` and the Kleisli Elgot/Freyd structure, as well as the
    carrier, `⊥`, arbitrary unions, `bind_mono`, the iteration operator and the
    memory-access constants.
-4. **`ξ.own` is a rewriting invariant only at `𝔠`.**  `Refines.own_eq` now
-   of supporting argument, Example 8.6 (p.41), covers associativity alone.
-   Every proof in `Monad.lean` and `Concrete.lean` is therefore original.
-3. **Associativity for the Concrete model `C` is open.**  It is proved here
-   only for `R ⊆ 𝔠`.  The proof method — deferring a rewrite of one operand
-   past the bind seam — is *provably unavailable* for `𝔤`: `Loosen`, `Expel`
-   and `Condense` replace messages in the closing memory of the left operand,
-   so neither `ChroStep.c_sub` nor `ChroStep.o_sub` holds and the seam
-   condition `τ.ch.c ⊆ υ.ch.o` is not transported backwards along a rewrite.
-   The paper's own route runs through Proposition 7.5 (the `N`-operations are
-   `𝔤`-closed) and Lemma 8.3 (Rewrite Castling, 66 diagrams in Appendix F);
-   neither is formalized.  Consequently there is **no** `LawfulMonad`,
-   `LawfulElgotMonad`, or Kleisli Elgot/Freyd instance for `C`; those exist
-   only at `R = 𝔠`.  What `C` does have: both unit laws, the carrier, `⊥`,
-   arbitrary unions, `bind_mono`, the iteration *operator* and its `fixpoint`,
-   and the memory-access constants.
 4. **`ξ.own` is a rewriting invariant only at `𝔠`.**  `Refines.own_eq`
    carries the hypothesis `R ⊆ 𝔠`; the `𝔤` rules change which environment
    messages occur, and `Condense` maps every message through the pull.  What
@@ -384,6 +369,13 @@ Read this before citing anything here as "the paper's".
   (a load returning a value that a strictly later write at the same location
   has already superseded), and the loop examples `iter_diverge`, `iter_exit`,
   `iter_store_diverge`.
+* Program-transformation soundness in `Isotope/Elgot/RA/Opt/`, with its own
+  honest boundary in `Isotope/Elgot/RA/Opt.lean`: the irrelevant-read
+  propositions E.2/E.3 and the *equality* they package into, Write-Read
+  Elimination (the `𝔞`-free row of E.9), Atomic Store (E.4), the
+  precongruence bundle `Comp.iterate_mono`, and an explicit store-buffering
+  witness `ra_admits_store_buffering`.  Cross-model comparisons with the
+  Brookes model of sequential consistency live in `Isotope/Elgot/Opt/`.
 
 ## The `𝔞` rules at the bind seam, and Rewrite Castling for `𝔞`
 

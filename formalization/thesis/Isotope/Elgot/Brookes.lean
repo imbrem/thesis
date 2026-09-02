@@ -1,20 +1,21 @@
 import Isotope.Elgot.Brookes.Basic
 import Isotope.Elgot.Brookes.Closure
-import Isotope.Elgot.Brookes.Monad
-import Isotope.Elgot.Brookes.Iteration
-import Isotope.Elgot.Brookes.Parallel
-import Isotope.Elgot.Brookes.SeqCst
-import Isotope.Elgot.Brookes.SeqCst.Parallel
-import Isotope.Elgot.Brookes.SeqCst.Chunk
-import Isotope.Elgot.Brookes.SeqCst.Syntax
-import Isotope.Elgot.Brookes.SeqCst.Context
-import Isotope.Elgot.Brookes.SeqCst.Definability
-import Isotope.Elgot.Brookes.SeqCst.FullAbstraction
-import Isotope.Elgot.Brookes.SeqCst.Laws
-import Isotope.Elgot.Brookes.SeqCst.Examples
-import Isotope.Elgot.Brookes.TSO
 import Isotope.Elgot.Brookes.Compare
 import Isotope.Elgot.Brookes.Examples
+import Isotope.Elgot.Brookes.Iteration
+import Isotope.Elgot.Brookes.Monad
+import Isotope.Elgot.Brookes.Parallel
+import Isotope.Elgot.Brookes.SeqCst
+import Isotope.Elgot.Brookes.SeqCst.Chunk
+import Isotope.Elgot.Brookes.SeqCst.Context
+import Isotope.Elgot.Brookes.SeqCst.Definability
+import Isotope.Elgot.Brookes.SeqCst.Examples
+import Isotope.Elgot.Brookes.SeqCst.FullAbstraction
+import Isotope.Elgot.Brookes.SeqCst.Laws
+import Isotope.Elgot.Brookes.SeqCst.Litmus
+import Isotope.Elgot.Brookes.SeqCst.Parallel
+import Isotope.Elgot.Brookes.SeqCst.Syntax
+import Isotope.Elgot.Brookes.TSO
 
 /-!
 # Brookes-style trace monads, and sequential consistency
@@ -37,6 +38,8 @@ consistency is that model with `S := Loc → Val`.
   Iteration is computable; no choice principle is used.
 * `SeqCst.rewriting` — the stuttering/mumbling closure — with `SeqCst.write`
   (the paper's definition) and `SeqCst.read`.
+* `SeqCst.sc_forbids_store_buffering` — the store-buffering litmus test over the
+  plain state `Store Loc Val`, for interference-free executions.
 * `Brookes.par`, parallel composition by trace shuffling, with monotonicity,
   strictness, continuity for arbitrary unions, commutativity, associativity
   (subject to `DefersPar`, discharged for sequential consistency by
