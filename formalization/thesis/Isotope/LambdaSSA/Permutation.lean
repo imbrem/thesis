@@ -90,6 +90,18 @@ variable {V : Type u} [Category V] [CartesianMonoidalCategory V]
 variable [LambdaIter.Subtyping τ]
 variable [HasFiniteCoproducts V] (M : TypeModel τ V)
 
+/-- Categorical action of a typed de Bruijn label renaming. -/
+noncomputable def labelRen {L K : LCtx τ} {ρ : Nat → Nat}
+    (hρ : Ren L K ρ) : labelObj M L ⟶ labelObj M K :=
+  Limits.Sigma.desc fun i => labelInject M (ρ i) (hρ (by simp [At]))
+
+@[reassoc (attr := simp)]
+theorem labelInject_labelRen {L K : LCtx τ} {ρ : Nat → Nat}
+    (hρ : Ren L K ρ) (i : Fin L.length) :
+    Limits.Sigma.ι (fun j : Fin L.length => M.obj (L.get j)) i ≫ labelRen M hρ =
+      labelInject M (ρ i) (hρ (by simp [At])) := by
+  exact Limits.Sigma.ι_desc _ _
+
 /-- Reindexing isomorphism for the finite coproduct of locally bound labels. -/
 noncomputable def finiteLabelPermIso {n : Nat} {R R' : Fin n → τ} {L : LCtx τ}
     (p : Region.CfgReindexing R R' L) :
