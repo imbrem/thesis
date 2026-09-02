@@ -400,6 +400,30 @@ theorem toCFG_toReg_labelEquivalent
   · simpa using (toCFG_toReg wellFormed).1
   · simpa using (toCFG_toReg wellFormed).2
 
+/-- Two independently checked dominator-tree presentations of the same flat
+CFG reconstruct actual BBAs with identical structural labels and branch
+targets; only the textual order of named blocks can differ.  This is the
+concrete choice-independence statement before quotienting block order. -/
+theorem choices_reconstruct_equivalent
+    {cfg : PhiBBA.CFG (Var Phi) (Op Phi) Address}
+    (left right : DominanceWellFormed cfg) :
+    (toActualCFG left.toReg).entry = (toActualCFG right.toReg).entry ∧
+      (toActualCFG left.toReg).blocks.Perm (toActualCFG right.toReg).blocks := by
+  exact ⟨(toCFG_toReg left).1.trans (toCFG_toReg right).1.symm,
+    (toCFG_toReg left).2.trans (toCFG_toReg right).2.symm⟩
+
+/-- In particular, two choices for one actual CFG are related by the paper's
+coherent label equivalence, witnessed here by the identity equivalence: all
+target reindexing has already happened during address-based decoding. -/
+theorem choices_labelEquivalent
+    {cfg : PhiBBA.CFG (Var Phi) (Op Phi) Address}
+    (left right : DominanceWellFormed cfg) :
+    LabelRenaming.LabelEquivalent (toActualCFG left.toReg)
+      (toActualCFG right.toReg) := by
+  refine ⟨Equiv.refl Address, ?_, ?_⟩
+  · simpa using (choices_reconstruct_equivalent left right).1
+  · simpa using (choices_reconstruct_equivalent left right).2
+
 /-- Every well-scoped lexical tree produces an independently checkable
 dominance-well-formed actual CFG. -/
 noncomputable def ofDomTree (tree : Bridge.LambdaSSA.DomTree Phi)
