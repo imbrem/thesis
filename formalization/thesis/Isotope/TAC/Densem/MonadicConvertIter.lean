@@ -571,6 +571,37 @@ theorem step_guarded_global [Monad m] [LawfulMonad m]
                   (MEnv M (Version ν κ) × BlockId κ × κ) =>
                     pure (Sum.map id (observeState M sourceCfg) result)))
 
+/-- Whole-loop conversion correctness into the globally guarded source
+semantics, obtained directly from complete-Elgot pure uniformity. -/
+theorem iter_guarded_global [Monad m] [LawfulMonad m]
+    [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    [Isotope.TAC.Densem.Phi.Monadic.LawfulFailure M]
+    (sourceCfg : Isotope.TAC.Classical.CFG ν φ κ)
+    (state : MEnv M (Version ν κ) × BlockId κ × κ) :
+    Isotope.Elgot.iter
+        (Isotope.TAC.Densem.Phi.Monadic.step M
+          (Isotope.TAC.Classical.Convert.convert sourceCfg)) state =
+      Isotope.Elgot.iter (guardedSourceStep M sourceCfg)
+        (observeState M sourceCfg state) := by
+  let targetStep := Isotope.TAC.Densem.Phi.Monadic.step M
+    (Isotope.TAC.Classical.Convert.convert sourceCfg)
+  let sourceStep := guardedSourceStep M sourceCfg
+  have comm : Isotope.Elgot.kcomp targetStep
+      (Isotope.Elgot.liftPure (Sum.map id (observeState M sourceCfg))) =
+      Isotope.Elgot.kcomp (Isotope.Elgot.liftPure (observeState M sourceCfg))
+        sourceStep := by
+    funext s
+    simp only [Isotope.Elgot.kcomp, Isotope.Elgot.liftPure,
+      Function.comp_apply, pure_bind]
+    exact step_guarded_global M sourceCfg s
+  have hu := Isotope.Elgot.LawfulElgotMonad.uniformity targetStep sourceStep
+    (observeState M sourceCfg) comm
+  change Isotope.Elgot.iter targetStep state =
+    Isotope.Elgot.iter sourceStep (observeState M sourceCfg state)
+  rw [hu]
+  simp [Isotope.Elgot.kcomp, Isotope.Elgot.liftPure]
+
 /-- Exact effectful commuting square for one reachable loop boundary.
 
 The hypotheses are precisely the boundary invariant established by entry
