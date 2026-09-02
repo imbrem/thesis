@@ -43,6 +43,20 @@ def cfgStart {n : Nat} : ITm Φ n := .inl .unit
 /-- Embed a local-label destination into the simultaneous iteration state. -/
 def cfgLocal {n : Nat} (target : ITm Φ n) : ITm Φ n := .inr target
 
+/-- Promote local feedback into the CFG state while preserving external exits. -/
+def promoteFeedback (target : ITm Φ n) : ITm Φ n :=
+  .case target (.inl (.bv 0)) (.inr (cfgLocal (.bv 0)))
+
+def promoteFeedback_hasType {externals locals : LambdaSSA.LCtx τ}
+    {β : BCtx τ n} {target : ITm Φ n}
+    (h : LambdaIter.LocallyNameless.HasType Φ
+      (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ) β target
+        (LambdaIter.coprod (labelType externals) (labelType locals))) :
+    LambdaIter.LocallyNameless.HasType Φ (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ)
+      β (promoteFeedback target)
+        (LambdaIter.coprod (labelType externals) (cfgStateType locals)) :=
+  .case h (.inl .bv) (.inr (.inr .bv))
+
 /-- Insert `k` retained dispatcher values below a block's newest parameter. -/
 def insertUnderTop (k : Nat) (t : ITm Φ (n + 1)) : ITm Φ (n + k + 1) :=
   t.rename (Fin.cases 0 (fun i =>
