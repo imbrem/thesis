@@ -86,6 +86,24 @@ def dispatchLabels : (locals retained : List τ) →
         (dispatchLabels rest (labelType (head :: rest) :: retained)
           (fun i => blocks i.succ))
 
+/-- Exact typing of finite local-label dispatch. -/
+def dispatchLabels_hasType (locals retained : List τ) {β : BCtx τ n} {C : τ}
+    (blocks : Fin locals.length → ITm Φ (n + 1))
+    (hb : ∀ i, LambdaIter.LocallyNameless.HasType Φ
+      (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ)
+      (.snoc β (locals.get i)) (blocks i) C) :
+    LambdaIter.LocallyNameless.HasType Φ (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ)
+      (.snoc (retainContext β retained) (labelType locals))
+      (dispatchLabels locals retained blocks) C := by
+  induction locals generalizing retained with
+  | nil => exact .abort .bv
+  | cons head rest ih =>
+      apply LambdaIter.LocallyNameless.HasType.case .bv
+      · exact insertUnderTop_hasType (labelType (head :: rest) :: retained) (hb 0)
+      · apply ih (retained := labelType (head :: rest) :: retained)
+        intro i
+        exact hb i.succ
+
 /-- Reassociate an appended label coproduct into either an external result or
 local feedback.  This is the syntactic counterpart of `labelAppendSplit` in
 the categorical region semantics. -/
