@@ -5,6 +5,7 @@ import Isotope.LambdaSeq.Models.Setoid
 import Isotope.LambdaSeq.Models.Syntax
 import Isotope.LambdaSeq.Models.Initial
 import Isotope.LambdaSeq.Models.Comparison
+import Isotope.LambdaSeq.Models.SynCategory
 
 /-!
 # Models of lambda-seq, the category they form, and the initial one
@@ -25,6 +26,8 @@ obligations (coherence in the typing derivation, soundness for `Equiv`).
 | `Models/Initial.lean` | existence and uniqueness of the interpretation; completeness |
 | `Models/Comparison.lean` | restriction of lambda-case models, and
   agreement with the term embedding |
+| `Models/SynCategory.lean` | the one-variable syntactic category and its three
+  category laws |
 
 ## What is proved
 
@@ -33,6 +36,7 @@ obligations (coherence in the typing derivation, soundness for `Equiv`).
 * `Syn.uniqueHom`, `Syn.isInitial` — `Syn S` is initial.
 * `Syn.equiv_of_denote_eq` — **equational completeness with respect to
   algebras**.
+* `Syn.SynCat.instCategory` — the one-variable syntactic category.
 * `Alg.ofCaseFunctor`, `Syn.toCase_mk` — the restriction functor from
   lambda-case models, and the fact that the map it forces out of the initial
   lambda-seq model is the term embedding.
@@ -46,8 +50,12 @@ and this repository proves no soundness theorem for any lambda-seq denotation
 with respect to `Equiv`.  `Syn.isInitial` says: initial *among algebras of the
 equational presentation*.
 
-The syntactic *category* (types as objects, one-variable terms as morphisms) is
-not built here: composition in it needs stability of `Equiv` under typed
-renaming, which lambda-seq does not have — it has no typed renaming metatheory
-at all.  That is not needed for initiality.
+The syntactic *category* of `Models/SynCategory.lean` carries exactly the three
+category laws.  No monoidal, premonoidal or Freyd structure is built on it, and
+none could be: lambda-seq has no type formers at all, so there is nothing to
+make a tensor or a coproduct out of.
+
+Its composition rests on `LocallyNameless.Equiv.rename` in
+`Isotope/LambdaSeq/Metatheory/Renaming.lean`, which also supplies lambda-seq's
+first typed renaming metatheory (`HasType.rename`, `.lift`, `.underBinder`).
 -/

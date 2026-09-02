@@ -132,3 +132,52 @@ can turn the internal syntax API into an arbitrary categorical model.
    “semantic soundness” for any `Eqv.sound` declaration.
 4. Treat SPARC TSO, refinement soundness/completeness, and ANF/SSA
    interconversion as new proof work, not ports of completed capstones.
+
+## Addendum: initiality for lambda-case and lambda-seq (`formalization/thesis`)
+
+This addendum concerns only the unrefined calculi in `formalization/thesis`,
+not the four frozen repositories audited above; it does not alter any row of
+the matrix.
+
+The matrix records, of the audited repositories, that "no category of syntax
+models or initial object is declared" and that "no category of models or unique
+model morphism is defined, so literal initiality and completeness with respect
+to all arbitrary models are not Lean theorems". For the lambda-case and
+lambda-seq calculi of `formalization/thesis` those two statements now have a
+qualified counterpart in Lean:
+
+* `Isotope.LambdaCase.Alg` and `Isotope.LambdaSeq.Alg` are categories of models
+  (`instCategory`), with a unique model morphism out of the quotiented syntax:
+  existence is `Syn.toHom`, uniqueness is `Syn.hom_eq_toHom`, and the two are
+  packaged as `Syn.uniqueHom` and `Syn.isInitial`.
+* Equational completeness with respect to those models is
+  `Syn.equiv_of_denote_eq`, with `Syn.denote_eq_iff_equiv` for both directions.
+* `#print axioms` on each of these reports only `propext`, `Classical.choice`
+  and `Quot.sound`.
+
+**The qualifier is essential and must be carried whenever these results are
+cited.** A "model" here is an *algebra of the equational presentation*: a
+carrier with one operation per term former, plus two propositional fields
+(coherence in the typing derivation, soundness for `Equiv`). It is **not** a
+Freyd, distributive or Elgot category. Nothing in this repository proves that a
+monad or a Freyd category yields such an algebra, because that means
+discharging exactly the coherence and lawfulness conditions that still have no
+instance anywhere here; and no theorem in this repository states that any
+monadic or categorical denotation of lambda-case or lambda-seq respects
+`Equiv`. So the results above may not be restated as initiality among, or
+completeness with respect to, arbitrary categorical models.
+
+Two further limits, recorded so they are not overstated later:
+
+* The one-variable syntactic categories (`Syn.SynCat.instCategory`, both
+  calculi) carry exactly the three category laws; lambda-case additionally has
+  binary coproducts with the full universal property
+  (`Syn.SynCat.hasBinaryCoproducts`). No premonoidal, Freyd, cartesian-value or
+  distributive structure is constructed, and the value/pure subcategory has no
+  definition, because `Pure` is nowhere proved stable under `Equiv`.
+* The empty type is **not** an initial object of the lambda-case syntactic
+  category, and no `HasFiniteCoproducts` instance is registered.
+  `Equiv.emptyInitial` fires only on a scrutinee of the literal form
+  `.abort a`, so it does not prove `bv 0 ≈ abort (bv 0)` at the empty type.
+  This is a gap in the presentation, not a proof of non-derivability: no
+  separating model was constructed.
