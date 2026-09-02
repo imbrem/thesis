@@ -136,7 +136,8 @@ section Interp
 
 open Isotope.Elgot
 
-variable {M : Type (u + 1) → Type (u + 1)} [Monad M] [Iterate M]
+variable {F : Type u → Type u} {B : Type (u + 1)}
+  {M : Type (u + 1) → Type (u + 1)} [Monad M] [Iterate M]
 
 /-- One step of interpretation: expose the head of a tree in the target monad,
 returning `inl` on a value and `inr` on a residual tree.  A tree with no visible
@@ -189,6 +190,78 @@ theorem interp_vis {R : Type u} (h : ∀ R : Type u, E R → M (ULift.{u + 1} R)
   refine congrArg _ (funext fun r => ?_)
   rw [pure_bind]
   rfl
+
+omit [Iterate M] [LawfulMonad M] [LawfulElgotMonad M] in
+/-- One interpretation step on a visible event: run the handler, then continue
+with the residual tree. -/
+@[simp] theorem interpStep_vis (h : ∀ R : Type u, E R → M (ULift.{u + 1} R)) {R : Type u}
+    (e : E R) (k : R → Tree E A) :
+    interpStep h (vis e k) = h R e >>= fun r => pure (Sum.inr (k r.down)) := by
+  simp only [interpStep, Tree.destruct_vis]
+  rw [dif_pos (show (Part.some (Visible.vis e k : Visible E A (Tree E A))).Dom from trivial)]
+  rfl
+
+/-- Interpreting a single triggered event is the handler itself. -/
+@[simp] theorem interp_trigger {R : Type u} (h : ∀ R : Type u, E R → M (ULift.{u + 1} R))
+    (e : E R) : interp h (trigger e) = h R e := by
+  rw [trigger, interp_vis]
+  refine Eq.trans (congrArg (h R e >>= ·) (funext fun r => ?_)) (bind_pure (h R e))
+  rw [show (ULift.up r.down : ULift.{u + 1} R) = r from rfl]
+  exact interp_ret h r
+
+/-- The divergent element of an iterative monad: iterate a body that never
+returns. -/
+def divergent (M : Type (u + 1) → Type (u + 1)) [Monad M] [Iterate M] (B : Type (u + 1)) :
+    M B :=
+  Isotope.Elgot.iter (fun _ : PUnit.{u + 2} => (pure (Sum.inr PUnit.unit) : M (B ⊕ PUnit))) ⟨⟩
+
+/-- Interpreting silent divergence gives the target's divergent element. -/
+theorem interp_diverge (h : ∀ R : Type u, E R → M (ULift.{u + 1} R)) :
+    interp h (diverge : Tree E A) = divergent M A := by
+  have hu := LawfulElgotMonad.uniformity
+    (fun _ : PUnit.{u + 2} => (pure (Sum.inr PUnit.unit) : M (A ⊕ PUnit)))
+    (interpStep h (E := E) (A := A)) (fun _ => diverge) ?_
+  · rw [divergent, hu, kcomp, liftPure, Function.comp_apply, pure_bind, interp]
+  · funext x
+    simp only [kcomp, liftPure, Function.comp_apply, pure_bind, interpStep_diverge]
+    rfl
+
+/-- Interpretation commutes with `map`. -/
+theorem interp_map (h : ∀ R : Type u, E R → M (ULift.{u + 1} R)) (f : A → B) (t : Tree E A) :
+    interp h (f <$> t) = f <$> interp h t := by
+  have hu := LawfulElgotMonad.uniformity
+    (mapReturn (interpStep h (E := E) (A := A)) (liftPure f))
+    (interpStep h (E := E) (A := B)) (fun s => f <$> s) ?_
+  · have hnat := LawfulElgotMonad.naturality (interpStep h (E := E) (A := A)) (liftPure f)
+    have hc : (kcomp (Isotope.Elgot.iter (interpStep h (E := E) (A := A))) (liftPure f)) t
+        = (kcomp (liftPure (fun s : Tree E A => f <$> s))
+            (Isotope.Elgot.iter (interpStep h (E := E) (A := B)))) t := by
+      rw [hnat, hu]
+    simp only [interp, ← bind_pure_comp]
+    simpa [kcomp, liftPure, Function.comp_def] using hc.symm
+  · funext s
+    simp only [kcomp, liftPure, Function.comp_apply, mapReturn, Function.comp_def,
+      bind_assoc, pure_bind]
+    rcases Tree.cases_three s with rfl | ⟨a, rfl⟩ | ⟨R, e, j, rfl⟩
+    · simp
+    · simp
+    · simp
+
+/-- Interpretation absorbs relabelling. -/
+theorem interp_translate (φ : ∀ R : Type u, E R → F R)
+    (h : ∀ R : Type u, F R → M (ULift.{u + 1} R)) (t : Tree E A) :
+    interp h (translate φ t) = interp (fun R e => h R (φ R e)) t := by
+  have hu := LawfulElgotMonad.uniformity
+    (interpStep (fun R e => h R (φ R e)) (E := E) (A := A))
+    (interpStep h (E := F) (A := A)) (fun s => translate φ s) ?_
+  · have hc := congrFun hu t
+    simpa [kcomp, liftPure, Function.comp_apply, interp] using hc.symm
+  · funext s
+    simp only [kcomp, liftPure, Function.comp_apply, pure_bind]
+    rcases Tree.cases_three s with rfl | ⟨a, rfl⟩ | ⟨R, e, j, rfl⟩
+    · simp
+    · simp
+    · simp
 
 end Interp
 

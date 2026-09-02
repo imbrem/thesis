@@ -35,6 +35,20 @@ theorem Tree.destruct_bind (t : Tree E A) (k : A → Tree E B) :
   · rw [vis_bind, Tree.destruct_vis, Tree.destruct_vis]
     simp
 
+/-- Mapping over a return. -/
+@[simp] theorem map_ret (f : A → B) (a : A) : f <$> (ret a : Tree E A) = ret (f a) := by
+  rw [← bind_pure_comp]; exact pure_bind a _
+
+/-- Mapping over silent divergence. -/
+@[simp] theorem map_diverge (f : A → B) : f <$> (diverge : Tree E A) = diverge := by
+  rw [← bind_pure_comp]; exact diverge_bind _
+
+/-- Mapping pushes under a visible event. -/
+@[simp] theorem map_vis (f : A → B) {R : Type u} (e : E R) (k : R → Tree E A) :
+    f <$> vis e k = vis e (fun r => f <$> k r) := by
+  rw [← bind_pure_comp, vis_bind]
+  exact congrArg (vis e) (funext fun r => bind_pure_comp f (k r))
+
 /-- The head of a pure computation. -/
 @[simp] theorem Tree.destruct_pure (a : A) :
     (pure a : Tree E A).destruct = Part.some (.ret a) := Tree.destruct_ret a
