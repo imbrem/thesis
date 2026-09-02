@@ -403,4 +403,44 @@ theorem Refines.sort_a_fwRw {τ π : PreTrace Loc Val A} (hτ : IsTrace τ)
     ∃ σ, Refines fwRwRules τ σ ∧ Refines aRules σ π :=
   h.sort castling_a_fwRw hτ
 
+/-- If `S` is already closed under `Forward` and `Rewind`, closing it under
+`{Fw, Rw} ∪ 𝔞` is closing it under `𝔞` alone.  The `𝔞`-side analogue of
+`closure_gcRules_eq`, in the range diagrams 61–66 reach. -/
+theorem closure_fwRw_aRules_eq {S : Set (PreTrace Loc Val A)} (hS : IsTraceSet S)
+    (hg : Closed fwRwRules S) : closure (fwRwRules ∪ aRules) S = closure aRules S :=
+  closure_eq_of_gClosed castling_a_fwRw hS hg
+
+/-!
+## Honest boundary
+
+1. **Only 6 of the 48 `𝔞` diagrams are proved.**  Table 5 (journal p.62) has
+   66 diagrams; `Isotope/Elgot/RA/Castling.lean` has 1–18 and this file has
+   61–66.  Diagrams 19–60 — `Ti`, `Ab` and `Di` against `Ls`, `Ex`, `Cn`, `St`
+   and `Mu` — are **not** proved, so **Lemma 8.3 (Rewrite Castling) is not
+   formalized**, and neither is Lemma 8.7 (Retroactive Closure), which rests on
+   it.  `castling_a_fwRw` is a proper fragment: `Castles aRules fwRwRules`, not
+   `Castles aRules gcRules`.
+2. **Why 19–60 are not cheap.**  The obstacle is uniform.  Take `Ti ⇄ St`
+   (diagrams 43, 44): the castled sequence stutters *first*, so its inserted
+   transition `⟨θ, θ⟩` lies in the source chronicle, where the rewritten message
+   is `ν` rather than `ε`.  For the intermediate pre-trace to be a trace one
+   needs `WellFormed (insert ν X)` from `WellFormed (insert ε X)` and
+   `ν ⊑vw ε` — which is **false in general**: `ν.vw ≤ ε.vw` may fail to point
+   into the memory at some location, so the *connected* clause of `WellFormed`
+   breaks.  What is needed is the paper's `Ls✓` (Lemma F.1, p.61), the
+   characterization of when the target of an `Ls`-rewrite is a trace, which
+   `Isotope/Elgot/RA/GTrace.lean` deliberately does not transcribe: it assumes
+   the target's memories are well formed rather than deriving it.  The same
+   `Ex✓`/`Cn✓` gap blocks diagrams 45–60, and diagrams 19–42 need in addition
+   the interaction of two message substitutions on overlapping suffixes.
+3. **What diagrams 61–66 need instead**, and why they go through: `Fw` and `Rw`
+   change no memory at all, so every memory of the intermediate pre-trace is a
+   memory of a pre-trace already known to be a trace.  No new well-formedness
+   obligation arises, and only the *view* conditions have to be transported —
+   which is what `ChroStep.closePts_tiAb`, `ChroStep.o_eq_tiAb`,
+   `dilute_memories` and Lemma 7.6 do.
+4. **`tiAbRules` and `fwRwRules` are ours.**  The paper has no name for either;
+   they exist only to state the fragment of Lemma 8.3 proved here.
+-/
+
 end Isotope.Elgot.RA

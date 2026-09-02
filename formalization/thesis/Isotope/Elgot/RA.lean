@@ -384,4 +384,27 @@ Read this before citing anything here as "the paper's".
   (a load returning a value that a strictly later write at the same location
   has already superseded), and the loop examples `iter_diverge`, `iter_exit`,
   `iter_store_diverge`.
+
+## The `𝔞` rules at the bind seam, and Rewrite Castling for `𝔞`
+
+Two further modules, each with its own honest boundary; read those before
+citing anything from them.
+
+* `Isotope/Elgot/RA/Mirror.lean` — the `Ls ↔ Ti`, `Ex ↔ Ab`, `Cn ↔ Di`
+  mirroring of journal p.41, which is the informal core of **Lemma 8.5
+  (Deferral of Closure)**, as theorems: `mirror_tighten`, `mirror_absorb`,
+  `mirror_dilute`, and their seam forms `seam_tighten`, `seam_absorb`,
+  `seam_dilute` in which the right operand's decomposition is *derived* from
+  "memories only grow along a chronicle".  `seam_left_step_tiAb` assembles the
+  first two into Deferral of Closure at one `Ti` or `Ab` step.  The paper
+  states the mirroring in prose and proves nothing about it, so this is
+  original work.  **Deferral of Closure is not proved**; the module docstring
+  states the four remaining obligations precisely, of which the substantial one
+  is well-formedness of the mirrored operand's memories — the paper's `Ls✓`,
+  `Ex✓`, `Cn✓` of Lemma F.1.
+* `Isotope/Elgot/RA/ACastling.lean` — **Rewrite Castling diagrams 61–66** of
+  Table 5 (p.62): the `𝔞` rules past `Forward` and `Rewind`, packaged as
+  `castling_a_fwRw : Castles aRules fwRwRules`.  Diagrams 19–60 are **not**
+  proved, so Lemma 8.3 and Lemma 8.7 (Retroactive Closure) remain open, and so
+  therefore does Proposition 7.8.
 -/

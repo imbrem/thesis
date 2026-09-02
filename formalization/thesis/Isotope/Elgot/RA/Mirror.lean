@@ -63,11 +63,65 @@ say, and it is why the paper can defer the closure.
   from the trace conditions (`seam_tighten`, `seam_absorb`); for `Di` we do
   not, because the seam's view conditions after a pull need Lemma 7.6 with
   side conditions that the caller must establish anyway.
-* Deferral of Closure itself is *not* proved.  Getting from these lemmas to
-  `(P★ >>=_G f★)★ = (P >>=_G f)★` needs, in addition, the freshness side
-  conditions discharged uniformly, an induction over rewrite *sequences* in
-  both operands, and the symmetric statements for the right operand.  See the
-  honest boundary in `Isotope/Elgot/RA/Abstract.lean`.
+* Deferral of Closure itself is *not* proved; see the honest boundary below.
+
+## Honest boundary
+
+What is proved here is one rewrite step, with the intermediate seam produced as
+a `Step`, never as a `TStep`.  Turning it into **Lemma 8.5 (Deferral of
+Closure)**, and hence into Proposition 7.8, needs exactly four further things.
+Stating them precisely is the point of this section; none of them is claimed.
+
+1. **The `Di` case of `seam_left_step_tiAb`.**  `seam_dilute` supplies the two
+   rewrites, but a seam is an element of `bindGen` only if the left operand's
+   final view is below the right operand's initial view.  For `Ti` and `Ab`
+   both views are untouched, so this is immediate; for `Di` the required
+   inequality is `ω[↑ε] ⊑ α'[↑ε]` from `ω ⊑ α'`, which is Lemma 7.6
+   (`View.pull_le_pull_of_scattered`) with side conditions that the seam has to
+   supply — a memory into which both views point, whose pull with `ε` deleted
+   lands in a scattered memory.  The obvious candidate is the target seam's
+   closing memory, and checking it is the missing step.
+
+2. **Trace-hood of the intermediate seam** — the *well-formedness obligation*.
+   `Refines` is reachability under `TStep`, which requires each intermediate to
+   be a trace, so the mirrored right operand `υ₀` must have well-formed
+   memories.  Concretely: `WellFormed (insert ν X)` from `WellFormed (insert ε X)`
+   and `ν ⊑vw ε` (for `Ls`), `WellFormed (insert ν (insert ε X))` from
+   `WellFormed (insert ε[i↦ν.i] X)` and `ν ⤙ ε` (for `Ex`), and
+   `WellFormed (μ[↑ε] \ {ε})` from `WellFormed μ` (for `Cn`).  **None of the
+   three holds unconditionally** — they are the paper's `Ls✓`, `Ex✓`, `Cn✓` of
+   Lemma F.1 (journal p.61), which `Isotope/Elgot/RA/GTrace.lean` deliberately
+   assumes rather than derives.  The `Cn` case is the substantial one: it needs
+   scatteredness of a pulled memory (the paper's "the segment is free"),
+   causal connectivity of the pull, and the points-to *cycle* condition under
+   pulling with a message removed.
+
+3. **Discharging the freshness hypothesis.**  `seam_left_step_tiAb` assumes
+   that the left operand's local messages do not occur in the right operand.
+   The assumption is not vacuous and not automatic: the seam condition
+   `τ.ch.c ⊆ υ.ch.o` is about the *target* `τ`, whose closing memory carries
+   `ε` rather than `ν`, so nothing stops a trace of `f r` from carrying `ν` for
+   unrelated reasons.  When it does, the mirror rewrite is not available *as
+   stated*: `Ls` is defined on the decomposition `η ⊎ {ν}`, whose `⊎` demands
+   that `ν` be absent, and a memory that already contains `ν` cannot be
+   presented that way.  Either the `𝔤` rules need a non-disjoint variant, or
+   that case has to be argued separately.  The paper does not raise the
+   question; it writes `⊎` throughout and never says what happens when the two
+   operands share a message.  (`seam_dilute` needs no such hypothesis, because
+   there `ν` and `ε` are *expected* on both sides of the seam.)
+
+4. **Induction over rewrite sequences, and the right operand.**  Given 1–3,
+   `seam_left_refines` and `seam_right_refines` of
+   `Isotope/Elgot/RA/Monad.lean` would have to be re-proved with the mirrored
+   shape (each step of the left operand rewriting the right operand as it
+   goes), giving `closure_bindGen_closure_left/right` at `𝔤𝔠𝔞` and so
+   Deferral of Closure.  The unit and associativity laws for `A` then follow
+   the paper's Example 8.6 (p.41), as they already do for `C`
+   (`Isotope/Elgot/RA/Assoc.lean`).
+
+Independently of 1–4, **Rewrite Castling for `x ∈ 𝔞`, `y ∈ 𝔤𝔠` is also
+needed** for Retroactive Closure (Lemma 8.7); see
+`Isotope/Elgot/RA/ACastling.lean`, which proves 6 of its 48 diagrams.
 -/
 
 universe u
