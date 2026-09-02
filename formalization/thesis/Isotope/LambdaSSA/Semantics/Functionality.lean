@@ -37,7 +37,7 @@ inductive HeterogeneousAgreement {Γ : VCtx τ} {t : Tm Φ} :
       {g : J.obj (ctxObj M Γ) ⟶ J.obj (M.obj B)}
       (hf : FactorsThroughEmpty J M f)
       (hg : FactorsThroughEmpty J M g)
-      (hp : hf.prefix = hg.prefix) : HeterogeneousAgreement hA hB f g
+      (hp : hf.emptyPrefix = hg.emptyPrefix) : HeterogeneousAgreement hA hB f g
 
 theorem HeterogeneousAgreement.eq_of_same_type
     {Γ : VCtx τ} {t : Tm Φ} {A : τ}
@@ -68,7 +68,7 @@ inductive DenotesAgreement
   | equal (hfg : f = g) : DenotesAgreement
   | bottom (hf : FactorsThroughEmpty J M f)
       (hg : FactorsThroughEmpty J M g)
-      (hp : hf.prefix = hg.prefix) : DenotesAgreement
+      (hp : hf.emptyPrefix = hg.emptyPrefix) : DenotesAgreement
 
 theorem DenotesAgreement.eq
     {Γ : VCtx τ} {t : Tm Φ} {A : τ} {h : Tm.HasType Γ t A}
