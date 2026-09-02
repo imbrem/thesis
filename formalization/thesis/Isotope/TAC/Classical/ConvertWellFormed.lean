@@ -363,6 +363,61 @@ structure UseScoping [DecidableEq Var] [DecidableEq Label]
     (convert source).PhisWellFormed ((sourceVars source).map Version.external)
       (.named label) block
 
+private theorem source_lookup_of_convert_lookup [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) (bid : BlockId Label)
+    {block : Block (Version Var Label) Op Label}
+    (h : (convert source).lookup bid = some block) :
+    ∃ b, source.lookup bid = some b ∧
+      block = convertBlock source (sourceVars source) bid b := by
+  rw [show convert source = cfg source (sourceVars source) from rfl,
+    lookup_cfg] at h
+  cases hb : source.lookup bid with
+  | none => simp [hb] at h
+  | some b =>
+      simp only [hb, Option.map_some, Option.some.injEq] at h
+      exact ⟨b, rfl, h.symm⟩
+
+private theorem mem_blocks_of_lookup [DecidableEq Label]
+    (source : CFG Var Op Label) {label : Label} {b : Block Var Op Label}
+    (h : source.lookup (.named label) = some b) : (label, b) ∈ source.blocks := by
+  change source.blocks.lookup label = some b at h
+  have go : ∀ xs : List (Label × Block Var Op Label),
+      xs.lookup label = some b → (label, b) ∈ xs := by
+    intro xs
+    induction xs with
+    | nil => simp [List.lookup]
+    | cons p ps ih =>
+        simp only [List.lookup]
+        split
+        · intro hp
+          simp only [Option.some.injEq] at hp
+          subst hp
+          rename_i heq
+          have hl : p.1 = label := (beq_iff_eq.mp heq).symm
+          cases p
+          simp_all
+        · intro hp
+          exact List.mem_cons_of_mem p (ih hp)
+  exact go source.blocks h
+
+theorem convert_useScoping [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) (hlabels : source.uniqueLabels) : UseScoping source where
+  entryBody := convert_entryBody source
+  entryTerminator := convert_entryTerminator source
+  entryPhis := convert_entryPhis source
+  blockBody label block h := by
+    rcases source_lookup_of_convert_lookup source (.named label) h with
+      ⟨b, hb, rfl⟩
+    exact convert_namedBody source label b (mem_blocks_of_lookup source hb)
+  blockTerminator label block h := by
+    rcases source_lookup_of_convert_lookup source (.named label) h with
+      ⟨b, hb, rfl⟩
+    exact convert_namedTerminator source label b (mem_blocks_of_lookup source hb)
+  blockPhis label block h := by
+    rcases source_lookup_of_convert_lookup source (.named label) h with
+      ⟨b, hb, rfl⟩
+    simpa [hb] using convert_namedPhis source label hlabels
+
 theorem externalVersions_nodup [DecidableEq Var] (source : CFG Var Op Label) :
     ((sourceVars source).map (Version.external : Var → Version Var Label)).Nodup := by
   have go : ∀ xs : List Var, xs.Nodup →
@@ -402,5 +457,13 @@ theorem convert_wellFormed [DecidableEq Var] [DecidableEq Label]
   blockBody := hscope.blockBody
   blockTerminator := hscope.blockTerminator
   blockPhis := hscope.blockPhis
+
+/-- Every structurally closed finite TAC graph is converted to a classical
+SSA graph.  No freshness oracle or dominator-tree choice is involved. -/
+theorem convert_wellFormed_auto [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) (hlabels : source.uniqueLabels)
+    (htargets : source.targetsExist) :
+    (convert source).WellFormed ((sourceVars source).map Version.external) :=
+  convert_wellFormed source hlabels htargets (convert_useScoping source hlabels)
 
 end Isotope.TAC.Classical.Convert
