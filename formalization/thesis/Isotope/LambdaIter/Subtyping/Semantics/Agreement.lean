@@ -19,7 +19,6 @@ open Isotope.LambdaIter.Subtyping.LocallyNameless
 
 open CategoryTheory CategoryTheory.Limits
 open Isotope.Elgot
-open Isotope.LambdaIter.LocallyNameless
 
 namespace Categorical
 
