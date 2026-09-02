@@ -114,15 +114,12 @@ inductive RegionDenotes : {Γ : VCtx τ} → {r : Region Φ} → {L : LCtx τ} �
       (de : RegionDenotes he fe)
       (db : ∀ i, RegionDenotes (hb i) (fb i))
       (dc : CollectiveDenotes J M Γ R L fb collective) :
-      RegionDenotes (.cfg R he hb) (bind J
-        (fe ≫ J.map (labelAppendSplit M (List.ofFn R) L)) (
-          J.map (DistributiveTensor.leftIso (ctxObj M Γ)
-            (labelObj M L) (labelObj M (List.ofFn R))).inv ≫
-          splitMapCoprod J _ _ ≫ coprod.desc
-            (J.map (CartesianMonoidalCategory.snd _ _))
-            (contextualLoop J
-              (J.map ((𝟙 (ctxObj M Γ)) ⊗ₘ labelObjToFinite M R) ≫
-                collective ≫ J.map (labelAppendSplit M (List.ofFn R) L)))))
+      RegionDenotes (.cfg R he hb) (caseWithContext J
+        (fe ≫ J.map (labelAppendSplit M (List.ofFn R) L))
+        (J.map (CartesianMonoidalCategory.snd _ _))
+        (contextualLoop J
+          (J.map ((𝟙 (ctxObj M Γ)) ⊗ₘ labelObjToFinite M R) ≫
+            collective ≫ J.map (labelAppendSplit M (List.ofFn R) L))))
 
 /-- Transport the graph across proof-irrelevant region typing evidence. -/
 theorem RegionDenotes.proof_irrel
