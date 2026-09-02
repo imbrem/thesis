@@ -18,6 +18,16 @@ variable {m : Type v → Type v} [Monad m] [LawfulMonad m]
 variable [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
 variable [InstructionModel Φ τ ε m]
 
+/-- Transport the monadic denotation graph across proof-irrelevant evidence
+for the same exact region typing judgment. -/
+theorem RegionDenotes.proof_irrel
+    {Γ : VCtx τ} {region : Region Φ} {L : LCtx τ}
+    {h h' : Region.HasType Γ region L}
+    {f : Env Γ → m (LabelDen L)}
+    (d : RegionDenotes (m := m) ε h f) : RegionDenotes (m := m) ε h' f := by
+  rw [Subsingleton.elim h' h]
+  exact d
+
 /-- Explicit semantic proof-irrelevance assumption for regions.  It is not
 derivable from the present raw typing relation: type formers and instruction
 typing are intentionally proof-relevant and need not be injective. -/
