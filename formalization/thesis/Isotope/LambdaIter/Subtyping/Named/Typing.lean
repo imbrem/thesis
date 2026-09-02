@@ -10,7 +10,10 @@ open TypeFormers
 
 variable [DecidableEq ν] [TypeFormers τ] [Subtyping τ] [HasTy Φ τ]
 
-inductive HasType : Ctx ν τ → Tm ν Φ → τ → Prop where
+/-- Proof-relevant named typing derivations.  Keeping these derivations in
+`Type` is essential for denotational semantics: the `sub` and `op` rules
+carry coercions whose interpretations are computational data. -/
+inductive HasType : Ctx ν τ → Tm ν Φ → τ → Type _ where
   | var (h : Ctx.lookup Γ x = some A) : HasType Γ (.var x) A
   | op (hf : InstTy f A B) (ha : HasType Γ a A) : HasType Γ (.op f a) B
   | let₁ (ha : HasType Γ a A) (hb : HasType (.snoc Γ x A) b B) :
