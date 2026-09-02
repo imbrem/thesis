@@ -78,6 +78,13 @@ inductive RegionDenotes : {Γ : VCtx τ} → {r : Region Φ} → {L : LCtx τ} �
       RegionDenotes (.let₂ ha hb) (bind J fa (
         J.map ((𝟙 _) ⊗ₘ (M.tensorIso _ _).hom) ≫
           J.map (ctxPairIso M _ _ _).hom ≫ fb))
+  | cfgZero {Γ : VCtx τ} {L : LCtx τ} {entry : Region Φ}
+      {R : Fin 0 → τ} {blocks : Fin 0 → Region Φ}
+      (he : Region.HasType Γ entry (List.ofFn R ++ L))
+      (hb : ∀ i, Region.HasType (R i :: Γ) (blocks i) (List.ofFn R ++ L))
+      {fe : J.obj (ctxObj M Γ) ⟶ J.obj (labelObj M L)}
+      (de : RegionDenotes he fe) :
+      RegionDenotes (.cfg R he hb) fe
   | cfg {n : Nat} {R : Fin n → τ} {Γ : VCtx τ} {L : LCtx τ}
       {entry : Region Φ} {blocks : Fin n → Region Φ}
       (he : Region.HasType Γ entry (List.ofFn R ++ L))
