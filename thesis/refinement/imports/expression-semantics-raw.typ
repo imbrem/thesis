@@ -10,7 +10,7 @@
 == Semantics of $lambda_(sans(i t e r))$ Expressions
 <refall:semantics-of-lambda_ensuremathmathsfiter-expressions>
 We now give the semantics of each of our term formers in
-Figure~@refall:fig:expr-densem by induction on derivations; we write
+@refall:fig:expr-densem by induction on derivations; we write
 $⟦ Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) a : A ⟧$
 to denote the appropriate derivation/sub-derivation. Each of them
 corresponds quite closely to the the underlying categorical structure.
@@ -96,7 +96,7 @@ $ ⟦ Gamma^(upright(bold(q))) mapsto Delta^(upright(bold(q))') ⟧ ; ⟦ Delta^
 ==== Substitution
 <refall:substitution>
 We proceed to give a semantics for substitution in
-Figure~@refall:fig:subst-den. We split up the input context into subcontexts
+@refall:fig:subst-den. We split up the input context into subcontexts
 for each #emph[used] variable, which are then simply interpreted using
 their denotation. Unused variables are simply represented via the left
 unitor. We can then state soundness of substitution in the following
@@ -186,7 +186,7 @@ as desired.
 
 We now proceed to give a sketch of the construction of
 $sans(T m) \( cal(R) \)$ and the proof of completeness; full details are
-given in Appendix~#todo[Cross-reference: `refall:apx:completeness`]. As is standard, our syntactic model
+given in Appendix~#conditional-ref("refall:apx:completeness"). As is standard, our syntactic model
 $sans(T m) \( cal(R) \)$ will have types as objects. To construct
 morphisms, we start with terms with a single free variable. We stratify
 these terms by type and effect as follows:
@@ -205,7 +205,7 @@ We can equip $sans(T m) \( cal(R) \)$ with the structure of a
 poset-enriched category by using the refinement relation as a partial
 order; it is trivial to see that this is well-defined. The rest of the
 structure of a $lambda_(sans(i t e r))$-model is given in
-Appendix~#todo[Cross-reference: `refall:apx:syn-model`]. To prove completeness, it then suffices to show
+Appendix~#conditional-ref("refall:apx:syn-model"). To prove completeness, it then suffices to show
 that $⟦ dot.op ⟧_(sans(T m) \( cal(R) \))$
 #emph[reflects] refinement. The details of how to do so are given in
-Appendix~#todo[Cross-reference: `refall:apx:packing`].
+Appendix~#conditional-ref("refall:apx:packing").
