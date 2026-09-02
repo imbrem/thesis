@@ -48,6 +48,32 @@ def insertUnderTop (k : Nat) (t : ITm Φ (n + 1)) : ITm Φ (n + k + 1) :=
   t.rename (Fin.cases 0 (fun i =>
     ⟨i.val + k + 1, by omega⟩))
 
+/-- Append a vector of retained dispatcher types to an exact bound context. -/
+def retainContext : (β : BCtx τ n) → (xs : List τ) → BCtx τ (n + xs.length)
+  | β, [] => β
+  | β, x :: xs => (retainContext β xs).snoc x
+
+private theorem retainContext_get (β : BCtx τ n) (xs : List τ) (i : Fin n) :
+    (retainContext β xs).get ⟨i.val + xs.length, by omega⟩ = β.get i := by
+  induction xs with
+  | nil => simpa [retainContext]
+  | cons x xs ih => simpa [retainContext] using ih
+
+/-- Typing specialization for inserting a vector of retained values below a
+block parameter. -/
+def insertUnderTop_hasType {β : BCtx τ n} {Y A : τ} {t : ITm Φ (n + 1)}
+    (retained : List τ)
+    (h : LambdaIter.LocallyNameless.HasType Φ
+      (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ) (.snoc β Y) t A) :
+    LambdaIter.LocallyNameless.HasType Φ (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ)
+      (.snoc (retainContext β retained) Y)
+      (insertUnderTop retained.length t) A :=
+  h.rename (Fin.cases 0 (fun i => ⟨i.val + retained.length + 1, by omega⟩)) (by
+    intro i
+    refine Fin.cases ?_ (fun j => ?_) i
+    · rfl
+    · exact retainContext_get β retained j)
+
 /-- Reassociate an appended label coproduct into either an external result or
 local feedback.  This is the syntactic counterpart of `labelAppendSplit` in
 the categorical region semantics. -/
