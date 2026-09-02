@@ -7,4 +7,5 @@ import Isotope.TAC.Bridge.Lambda3Addr
 import Isotope.TAC.Bridge.DomFlat
 import Isotope.TAC.Bridge.TypedDomFlat
 import Isotope.TAC.Bridge.ActualDomBBA
+import Isotope.TAC.Bridge.NamedDomBBA
 import Isotope.TAC.Bridge.DomFlatSemantics
