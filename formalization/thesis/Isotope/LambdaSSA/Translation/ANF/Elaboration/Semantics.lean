@@ -89,6 +89,14 @@ theorem transportHasType_bv_typed {Γ : Ctx ν τ} {β : BoundCtx τ n}
       ((r.typed i) ▸ (HasType.bv (Φ := Φ) (Γ := Γ) (β := β')
         (ι := r.toFun i))) := rfl
 
+/-- Forgetting atom typing commutes with transport in the result-type index. -/
+theorem atom_toLambdaIter_transport_type {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {a : Atom ν Φ n} {A B : τ} (e : A = B)
+    (h : Atom.HasType Γ β a A) :
+    ((e ▸ h).toLambdaIter) = (e ▸ h.toLambdaIter) := by
+  cases e
+  rfl
+
 @[simp] theorem atomRename_toTm (ρ : Fin n → Fin k) (a : Atom ν Φ n) :
     (atomRename ρ a).toTm = a.toTm.rename ρ := by
   induction a <;> simp [atomRename, Atom.toTm, Tm.rename, *]
@@ -154,6 +162,16 @@ theorem atomRename_exact_heq_unit {Γ : Ctx ν τ} {β : BoundCtx τ n}
   dsimp
   apply heq_of_transportHasType_eq (atomRename_toTm r.toFun .unit)
   exact transportHasType_proof_irrel _ rfl _
+
+theorem atomRename_exact_heq_bv {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {β' : BoundCtx τ k} (i : Fin n) (r : TypedRenaming β β') :
+    let ha : Atom.HasType (Φ := Φ) Γ β (.bv i) (β.get i) := .bv
+    let hl : HasType Φ Γ β (.bv i) (β.get i) := ha.toLambdaIter
+    HEq (atomRename_hasType r ha).toLambdaIter
+      (Isotope.LambdaIter.LocallyNameless.HasType.rename r hl) := by
+  dsimp [atomRename_hasType, Isotope.LambdaIter.LocallyNameless.HasType.rename]
+  exact heq_of_eq (atom_toLambdaIter_transport_type (r.typed i)
+    (Atom.HasType.bv (Φ := Φ) (Γ := Γ) (β := β') (i := r.toFun i)))
 
 @[simp] theorem denote_elaborate_fv {Γ : Ctx ν τ} {β : BoundCtx τ n}
     {x : ν} {A : τ} (hx : Γ.lookup x = some A)
