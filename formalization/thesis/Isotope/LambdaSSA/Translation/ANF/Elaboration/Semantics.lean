@@ -469,6 +469,25 @@ theorem denote_transportHasType {Γ : Ctx ν τ} {β : BoundCtx τ n}
   cases e
   rfl
 
+/-- Embedding exact typing into generic typing commutes with transport of the
+result type. -/
+theorem toGeneric_transport_type {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {t : Tm ν Φ n} {A B : τ} (e : A = B) (h : HasType Φ Γ β t A) :
+    HEq ((e ▸ h).toGeneric) (e ▸ h.toGeneric) := by
+  cases e
+  rfl
+
+/-- Embedding commutes with the dependent transport introduced when an exact
+bound-variable derivation is renamed. -/
+theorem toGeneric_rename_bv {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {β' : BoundCtx τ k} (i : Fin n) (r : TypedRenaming β β') :
+    HEq ((r.typed i ▸ (HasType.bv (Φ := Φ) (Γ := Γ) (β := β')
+      (ι := r.toFun i))).toGeneric)
+      (r.typed i ▸ (Isotope.LambdaIter.Subtyping.LocallyNameless.HasType.bv
+        (Φ := Φ) (Γ := Γ) (β := β') (ι := r.toFun i))) := by
+  exact toGeneric_transport_type (r.typed i)
+    (HasType.bv (Φ := Φ) (Γ := Γ) (β := β') (ι := r.toFun i))
+
 @[simp] theorem denote_elaborate_fv {Γ : Ctx ν τ} {β : BoundCtx τ n}
     {x : ν} {A : τ} (hx : Γ.lookup x = some A)
     (γ : CtxDen Γ) (ρ : BoundDen β) :
