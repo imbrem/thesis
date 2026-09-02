@@ -6,7 +6,6 @@ open Isotope.LambdaIter.LocallyNameless
 open Isotope.LambdaIter.Subtyping.LocallyNameless
 
 open CategoryTheory CategoryTheory.Limits Isotope.Elgot
-open Isotope.LambdaIter.LocallyNameless
 
 universe u v w q r
 
@@ -37,6 +36,7 @@ theorem categorical_denote_eq {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
   | op ha ih =>
       have hi := ih ρ
       unfold Categorical.denoteOfType at hi
+      unfold Categorical.ofTypeModel at hi
       simp [Categorical.denoteOfType, Categorical.denote, denote,
         Categorical.ofInstructionModel, Isotope.Elgot.kcomp, joinM,
         bind_map_left, hi]
@@ -105,19 +105,16 @@ theorem categorical_denote_eq {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
       intro e
       cases h : TypeModel.coprodEquiv _ _ e with
       | inl a =>
-          simp only [h]
-          rw [envSnocIso_toCategorical]
-          exact hil a
+          simpa [Isotope.Elgot.liftPure, h, envSnocIso_toCategorical] using hil a
       | inr b =>
-          simp only [h]
-          rw [envSnocIso_toCategorical]
-          exact hir b
+          simpa [Isotope.Elgot.liftPure, h, envSnocIso_toCategorical] using hir b
   | abort ha ih =>
       have hi := ih ρ
       unfold Categorical.denoteOfType at hi
       simp [Categorical.denoteOfType, Categorical.denote, denote,
-        Categorical.abort, Categorical.abort_of, Categorical.ofTypeModel, hi,
+        Categorical.abort, Categorical.abort_of, Categorical.ofTypeModel,
         Isotope.Elgot.kcomp, joinM, bind_map_left]
+      rw [← hi]
       apply bind_congr
       intro z
       exact Empty.elim (TypeModel.emptyEquiv z)
