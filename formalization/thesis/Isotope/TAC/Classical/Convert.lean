@@ -174,6 +174,44 @@ def incoming [DecidableEq Var] [DecidableEq Label] (cfg : CFG Var Op Label)
   (predecessors cfg bid).filterMap fun pred => (blockAt cfg pred).map fun b =>
     ⟨pred, .var (endEnv pred b x)⟩
 
+theorem incoming_predecessors_nodup [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) (bid : BlockId Label) (x : Var)
+    (hlabels : source.uniqueLabels) :
+    ((incoming source bid x).map Incoming.predecessor).Nodup := by
+  have mem_of_mem : ∀ (p : BlockId Label) (ps : List (BlockId Label)),
+      p ∈ (ps.filterMap fun pred => (blockAt source pred).map fun b =>
+        ⟨pred, .var (endEnv pred b x)⟩).map Incoming.predecessor → p ∈ ps := by
+    intro p ps
+    induction ps with
+    | nil => simp
+    | cons q qs ih =>
+        simp only [List.filterMap_cons]
+        cases hq : blockAt source q with
+        | none => simpa [hq] using fun h => List.mem_cons_of_mem q (ih h)
+        | some b =>
+            simp only [hq, Option.map_some, List.map_cons, List.mem_cons]
+            rintro (rfl | h)
+            · exact Or.inl rfl
+            · exact Or.inr (ih h)
+  have go : ∀ ps : List (BlockId Label), ps.Nodup →
+      ((ps.filterMap fun pred => (blockAt source pred).map fun b =>
+        ⟨pred, .var (endEnv pred b x)⟩).map Incoming.predecessor).Nodup := by
+    intro ps hps
+    induction ps with
+    | nil => simp
+    | cons pred ps ih =>
+        rw [List.nodup_cons] at hps
+        simp only [List.filterMap_cons]
+        cases hlookup : blockAt source pred with
+        | none => simpa [hlookup] using ih hps.2
+        | some block =>
+            simp only [hlookup, Option.map_some, List.map_cons, List.map_nil]
+            rw [List.nodup_cons]
+            refine ⟨?_, ih hps.2⟩
+            intro hmem
+            exact hps.1 (mem_of_mem pred ps hmem)
+  exact go (predecessors source bid) (predecessors_nodup source bid hlabels)
+
 def phis [DecidableEq Var] [DecidableEq Label] (cfg : CFG Var Op Label)
     (vars : List Var) (label : Label) : List (Phi (Version Var Label) Label) :=
   vars.map fun x => ⟨.phi label x, incoming cfg (.named label) x⟩
