@@ -62,6 +62,44 @@ def sourceStepOn [Monad m] [DecidableEq ν] [DecidableEq κ]
           | .branch next =>
               pure (.inr (restrict M (sourceVars source) ρ', next))
 
+/-- Project a raw converted store at a predecessor boundary.  The external
+projection in the missing-predecessor case is intentional: guarded stepping
+rejects that case whenever phis are present, while a program with no source
+variables has no phis and cannot observe which projection was selected. -/
+def projectBoundary [DecidableEq ν] [DecidableEq κ]
+    (source : Isotope.TAC.Classical.CFG ν φ κ)
+    (pred : BlockId κ) (target : MEnv M (Version ν κ)) : MEnv M ν :=
+  match source.lookup pred with
+  | some block => project (M := M) (endEnv pred block) target
+  | none => fun x => target (.external x)
+
+/-- Finite, executable recognition of store totality on the compiler
+interface.  It requires no equality on semantic values. -/
+def allPresent (vars : List ν) (source : MEnv M ν) : Bool :=
+  vars.all fun x => (source x).isSome
+
+theorem allPresent_eq_true_iff (vars : List ν) (source : MEnv M ν) :
+    allPresent M vars source = true ↔ TotalOn (M := M) vars source := by
+  rw [show allPresent M vars source =
+    vars.all (fun x => (source x).isSome) from rfl, List.all_eq_true]
+  constructor
+  · intro h x hx
+    exact Option.isSome_iff_exists.mp (h x hx)
+  · intro h x hx
+    exact Option.isSome_iff_exists.mpr (h x hx)
+
+/-- Source loop state retaining predecessor control solely so that the
+globally guarded body can reject exactly the malformed boundaries rejected by
+converted phi installation. -/
+abbrev GuardedState (M : Isotope.TAC.Densem.Monadic.Model φ m) (ν κ : Type) :=
+  MEnv M ν × BlockId κ × κ
+
+/-- Global comparison map proposed for Elgot uniformity. -/
+def observeState [DecidableEq ν] [DecidableEq κ]
+    (source : Isotope.TAC.Classical.CFG ν φ κ) :
+    MEnv M (Version ν κ) × BlockId κ × κ → GuardedState M ν κ
+  | (target, pred, label) => (projectBoundary M source pred target, pred, label)
+
 private theorem restrict_idem [DecidableEq ν] (vars : List ν)
     (source : MEnv M ν) :
     restrict M vars (restrict M vars source) = restrict M vars source := by
