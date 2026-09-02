@@ -47,6 +47,11 @@ inductive Block (ν : Type u) (φ : Type v) (κ : Type w) where
   | let₂ (fst snd : Binder ν) (rhs : Operand ν φ) (rest : Block ν φ κ)
   deriving Repr, DecidableEq
 
+structure CFG (ν : Type u) (φ : Type v) (κ : Type w) where
+  entry : Block ν φ κ
+  blocks : List (κ × Block ν φ κ)
+  deriving Repr, DecidableEq
+
 end Named
 
 namespace LocallyNameless
@@ -80,6 +85,11 @@ inductive Block (ν : Type u) (φ : Type v) (κ : Type w) :
   | terminator (term : Terminator ν φ κ n) : Block ν φ κ n
   | let₁ (rhs : Operand ν φ n) (rest : Block ν φ κ (n + 1)) : Block ν φ κ n
   | let₂ (rhs : Operand ν φ n) (rest : Block ν φ κ (n + 1 + 1)) : Block ν φ κ n
+  deriving Repr, DecidableEq
+
+structure CFG (ν : Type u) (φ : Type v) (κ : Type w) (n : Nat) where
+  entry : Block ν φ κ n
+  blocks : List (κ × Block ν φ κ n)
   deriving Repr, DecidableEq
 
 end LocallyNameless
@@ -120,9 +130,25 @@ def block [DecidableEq ν] (ρ : Scope ν n) :
 def closed [DecidableEq ν] (b : Named.Block ν φ κ) :
     LocallyNameless.Block ν φ κ 0 := block .nil b
 
+def cfg [DecidableEq ν] (ρ : Scope ν n) (g : Named.CFG ν φ κ) :
+    LocallyNameless.CFG ν φ κ n where
+  entry := block ρ g.entry
+  blocks := g.blocks.map fun pair => (pair.1, block ρ pair.2)
+
+def closedCFG [DecidableEq ν] (g : Named.CFG ν φ κ) :
+    LocallyNameless.CFG ν φ κ 0 := cfg .nil g
+
 /-- Alpha-equivalence is equality after forgetting binder spelling. -/
 def AlphaEq [DecidableEq ν] (left right : Named.Block ν φ κ) : Prop :=
   closed left = closed right
+
+def CFG.AlphaEq [DecidableEq ν] (left right : Named.CFG ν φ κ) : Prop :=
+  closedCFG left = closedCFG right
+
+theorem CFG.AlphaEq.semantic {α : Sort*} [DecidableEq ν]
+    (sem : LocallyNameless.CFG ν φ κ 0 → α)
+    {left right : Named.CFG ν φ κ} (h : CFG.AlphaEq left right) :
+    sem (closedCFG left) = sem (closedCFG right) := congrArg sem h
 
 @[refl] theorem AlphaEq.refl [DecidableEq ν] (b : Named.Block ν φ κ) :
     AlphaEq b b := rfl
@@ -164,6 +190,11 @@ inductive Block (φ : Type v) (κ : Type w) where
   | terminator (term : Terminator φ κ)
   | let₁ (rhs : Operand φ) (rest : Block φ κ)
   | let₂ (rhs : Operand φ) (rest : Block φ κ)
+  deriving Repr, DecidableEq
+
+structure CFG (φ : Type v) (κ : Type w) where
+  entry : Block φ κ
+  blocks : List (κ × Block φ κ)
   deriving Repr, DecidableEq
 
 inductive Value.Scoped : Nat → Value → Type where
@@ -223,6 +254,10 @@ def eraseBlock : LocallyNameless.Block Empty φ κ n → DeBruijn.Block φ κ
   | .terminator term => .terminator (eraseTerminator term)
   | .let₁ rhs rest => .let₁ (eraseOperand rhs) (eraseBlock rest)
   | .let₂ rhs rest => .let₂ (eraseOperand rhs) (eraseBlock rest)
+
+def eraseCFG (g : LocallyNameless.CFG Empty φ κ n) : DeBruijn.CFG φ κ where
+  entry := eraseBlock g.entry
+  blocks := g.blocks.map fun pair => (pair.1, eraseBlock pair.2)
 
 def scopeValue : (v : LocallyNameless.Value Empty n) →
     DeBruijn.Value.Scoped n (eraseValue v)
@@ -389,6 +424,54 @@ noncomputable def scopedEquiv : LocallyNameless.Block Empty φ κ n ≃
     apply Subtype.ext
     exact eraseBlock_embedBlock b.2.some
 
+/-- A whole raw CFG whose entry and every labelled block are scoped at the
+same external-variable depth. -/
+structure ScopedCFG (φ : Type v) (κ : Type w) (n : Nat) where
+  entry : {b : DeBruijn.Block φ κ // Nonempty (DeBruijn.Block.Scoped n b)}
+  blocks : List (κ × {b : DeBruijn.Block φ κ //
+    Nonempty (DeBruijn.Block.Scoped n b)})
+
+noncomputable def cfgScopedEquiv : LocallyNameless.CFG Empty φ κ n ≃
+    ScopedCFG φ κ n where
+  toFun g := {
+    entry := scopedEquiv g.entry
+    blocks := g.blocks.map fun pair => (pair.1, scopedEquiv pair.2) }
+  invFun g := {
+    entry := scopedEquiv.symm g.entry
+    blocks := g.blocks.map fun pair => (pair.1, scopedEquiv.symm pair.2) }
+  left_inv g := by
+    cases g with
+    | mk entry blocks =>
+        change LocallyNameless.CFG.mk (scopedEquiv.symm (scopedEquiv entry))
+          (List.map (fun pair => (pair.1, scopedEquiv.symm pair.2))
+            (List.map (fun pair => (pair.1, scopedEquiv pair.2)) blocks)) =
+          LocallyNameless.CFG.mk entry blocks
+        congr 1
+        · apply scopedEquiv.left_inv
+        · induction blocks with
+          | nil => rfl
+          | cons pair rest ih =>
+              simp only [List.map_cons]
+              have hp := scopedEquiv.left_inv pair.2
+              change scopedEquiv.symm (scopedEquiv pair.2) = pair.2 at hp
+              rw [hp, ih]
+  right_inv g := by
+    cases g with
+    | mk entry blocks =>
+        change ScopedCFG.mk (scopedEquiv (scopedEquiv.symm entry))
+          (List.map (fun pair => (pair.1, scopedEquiv pair.2))
+            (List.map (fun pair => (pair.1, scopedEquiv.symm pair.2)) blocks)) =
+          ScopedCFG.mk entry blocks
+        congr 1
+        · apply scopedEquiv.right_inv
+        · induction blocks with
+          | nil => rfl
+          | cons pair rest ih =>
+              simp only [List.map_cons]
+              have hp := scopedEquiv.right_inv pair.2
+              change scopedEquiv (scopedEquiv.symm pair.2) = pair.2 at hp
+              rw [hp, ih]
+
 end LocallyNameless.ToDeBruijn
 
 namespace Named.FromDensem
@@ -415,6 +498,10 @@ def block : Densem.Block φ ν κ → Named.Block ν φ κ
   | .terminator term => .terminator (terminator term)
   | .let₁ dst rhs rest => .let₁ (some dst) (operand rhs) (block rest)
   | .let₂ fst snd rhs rest => .let₂ (some fst) (some snd) (operand rhs) (block rest)
+
+def cfg (g : Densem.CFG φ ν κ) : Named.CFG ν φ κ where
+  entry := block g.entry
+  blocks := g.blocks.map fun pair => (pair.1, block pair.2)
 
 end Named.FromDensem
 
@@ -447,6 +534,12 @@ def block : Named.Block ν φ κ → Option (Densem.Block φ ν κ)
       (block rest).map fun tail => .let₂ fst snd (operand rhs) tail
   | .let₂ _ _ _ _ => none
 
+def cfg (g : Named.CFG ν φ κ) : Option (Densem.CFG φ ν κ) :=
+  (block g.entry).bind fun entry =>
+    (g.blocks.mapM fun pair =>
+      (block pair.2).bind fun out => some (pair.1, out)).bind fun blocks =>
+        some { entry, blocks }
+
 @[simp] theorem value_fromDensem (v : Densem.Value ν) :
     value (Named.FromDensem.value v) = v := by
   induction v <;> simp [value, Named.FromDensem.value, *]
@@ -469,6 +562,44 @@ def FullyNamed (b : Named.Block ν φ κ) : Prop := ∃ out, block b = some out
 
 theorem fullyNamed_fromDensem (b : Densem.Block φ ν κ) :
     FullyNamed (Named.FromDensem.block b) := ⟨b, block_fromDensem b⟩
+
+theorem blocks_fromDensem (blocks : List (κ × Densem.Block φ ν κ)) :
+    List.mapM (fun pair : κ × Named.Block ν φ κ =>
+        (block pair.2).bind fun out => some (pair.1, out))
+      (blocks.map fun pair => (pair.1, Named.FromDensem.block pair.2)) =
+      some blocks := by
+  induction blocks with
+  | nil => rfl
+  | cons pair rest ih =>
+      simp only [List.map_cons, List.mapM_cons, block_fromDensem]
+      simp only [Option.bind_some]
+      rw [ih]
+      rfl
+
+@[simp] theorem cfg_fromDensem (g : Densem.CFG φ ν κ) :
+    cfg (Named.FromDensem.cfg g) = some g := by
+  cases g with
+  | mk entry blocks =>
+      simp only [Named.FromDensem.cfg, cfg, block_fromDensem, Option.bind_some]
+      rw [blocks_fromDensem]
+      rfl
+
+/-- Whole-CFG complete-Elgot semantics commutes on the embedded existing
+named-variable presentation. -/
+theorem denote_fromDensem [Monad m] [Isotope.Elgot.Iterate m]
+    [DecidableEq ν] [DecidableEq κ]
+    (M : Densem.Monadic.Model φ m) (g : Densem.CFG φ ν κ)
+    (ρ : Densem.Monadic.Env M ν) :
+    (cfg (Named.FromDensem.cfg g)).map
+        (fun out => Densem.Monadic.CFG.denote M out ρ) =
+      some (Densem.Monadic.CFG.denote M g ρ) := by
+  rw [cfg_fromDensem]
+  rfl
+
+def FullyNamedCFG (g : Named.CFG ν φ κ) : Prop := ∃ out, cfg g = some out
+
+theorem fullyNamedCFG_fromDensem (g : Densem.CFG φ ν κ) :
+    FullyNamedCFG (Named.FromDensem.cfg g) := ⟨g, cfg_fromDensem g⟩
 
 end Named.ToDensem
 
