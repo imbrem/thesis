@@ -6,3 +6,5 @@ import Isotope.TAC.Densem.Phi
 import Isotope.TAC.Densem.Convert
 import Isotope.TAC.Densem.Fresh
 import Isotope.TAC.Densem.ConvertCFG
+import Isotope.TAC.Densem.Lookup
+import Isotope.TAC.Densem.ConvertRun
