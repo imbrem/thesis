@@ -143,6 +143,68 @@ theorem body_destinations_instr (bid : BlockId Label) [DecidableEq Var]
             · contradiction
         · exact ih _ _ d h
 
+theorem body_destination_index_ge (bid : BlockId Label) [DecidableEq Var]
+    (i : Nat) (ρ : Env Var Label) (xs : List (Instr Var Op)) :
+    ∀ d ∈ (body bid i ρ xs).1.flatMap Instr.defs,
+      ∀ j slot x, d = Version.instr bid j slot x → i ≤ j := by
+  induction xs generalizing i ρ with
+  | nil => simp [body]
+  | cons hd tl ih =>
+      cases hd <;> simp only [body, List.flatMap_cons, Instr.defs,
+        List.mem_append, List.mem_cons, List.not_mem_nil]
+      · intro d h j slot x hd
+        rcases h with (h | h)
+        · rcases h with (h | h)
+          · cases h; cases hd; exact Nat.le_refl _
+          · contradiction
+        · exact Nat.le_trans (Nat.le_add_right i 1) (ih _ _ d h j slot x hd)
+      · intro d h j slot x hd
+        rcases h with (h | h)
+        · rcases h with (h | h)
+          · cases h; cases hd; exact Nat.le_refl _
+          · rcases h with (h | h)
+            · cases h; cases hd; exact Nat.le_refl _
+            · contradiction
+        · exact Nat.le_trans (Nat.le_add_right i 1) (ih _ _ d h j slot x hd)
+
+theorem body_defs_nodup (bid : BlockId Label) [DecidableEq Var] [DecidableEq Label]
+    (i : Nat) (ρ : Env Var Label) (xs : List (Instr Var Op)) :
+    ((body bid i ρ xs).1.flatMap Instr.defs).Nodup := by
+  induction xs generalizing i ρ with
+  | nil => simp [body]
+  | cons hd tl ih =>
+      cases hd with
+      | assign x rhs =>
+          simp only [body, List.flatMap_cons, Instr.defs, List.singleton_append]
+          apply List.nodup_cons.mpr
+          constructor
+          · intro h
+            rcases body_destinations_instr bid (i + 1) _ _ _ h with ⟨j, s, y, e⟩
+            have hj := body_destination_index_ge bid (i + 1) _ _ _ h j s y e
+            cases e
+            omega
+          · exact ih _ _
+      | assignPair x y rhs =>
+          simp only [body, List.flatMap_cons, Instr.defs, List.cons_append,
+            List.singleton_append]
+          apply List.nodup_cons.mpr
+          constructor
+          · simp only [List.mem_cons]
+            intro h
+            rcases h with (h | h)
+            · cases h
+            · rcases body_destinations_instr bid (i + 1) _ _ _ h with ⟨j, s, z, e⟩
+              have hj := body_destination_index_ge bid (i + 1) _ _ _ h j s z e
+              cases e
+              omega
+          · apply List.nodup_cons.mpr
+            constructor
+            · intro h
+              rcases body_destinations_instr bid (i + 1) _ _ _ h with ⟨j, s, z, e⟩
+              have hj := body_destination_index_ge bid (i + 1) _ _ _ h j s z e
+              cases e
+              omega
+            · exact ih _ _
 theorem phi_destinations_source [DecidableEq Var] [DecidableEq Label]
     (source : CFG Var Op Label) (vars : List Var) (label : Label) :
     (phis source vars label).map (fun p => p.dst.source) = vars := by
