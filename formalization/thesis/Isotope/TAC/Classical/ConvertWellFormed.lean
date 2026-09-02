@@ -90,6 +90,83 @@ theorem convert_namedTerminator [DecidableEq Var] [DecidableEq Label]
       CFG.defs (convertBlock source (sourceVars source) (.named label) b)
     exact List.mem_append_right _ h
 
+private theorem mem_incoming [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) (bid : BlockId Label) (x : Var)
+    {inc : Incoming (Version Var Label) Label} (hinc : inc ∈ incoming source bid x) :
+    ∃ pred b, pred ∈ predecessors source bid ∧ source.lookup pred = some b ∧
+      inc = ⟨pred, .var (endEnv pred b x)⟩ := by
+  rw [incoming, List.mem_filterMap] at hinc
+  rcases hinc with ⟨pred, hpred, hp⟩
+  cases hb : blockAt source pred with
+  | none => simp [hb] at hp
+  | some b =>
+      simp only [hb, Option.map_some, Option.some.injEq] at hp
+      exact ⟨pred, b, hpred, hb, hp.symm⟩
+
+theorem convert_namedPhis [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) (label : Label) (hlabels : source.uniqueLabels) :
+    (convert source).PhisWellFormed ((sourceVars source).map Version.external)
+      (.named label)
+      (convertBlock source (sourceVars source) (.named label)
+        ((source.lookup (.named label)).getD source.entry)) := by
+  intro phi hphi
+  change phi ∈ phis source (sourceVars source) label at hphi
+  rw [phis, List.mem_map] at hphi
+  rcases hphi with ⟨x, hx, rfl⟩
+  refine ⟨incoming_predecessors_nodup source (.named label) x hlabels, ?_⟩
+  intro inc hinc
+  rcases mem_incoming source (.named label) x hinc with
+    ⟨pred, b, hpred, hb, rfl⟩
+  change BlockId.named label ∈ (convert source).successors pred ∧ _
+  refine ⟨?_, ?_⟩
+  · change BlockId.named label ∈
+      (cfg source (sourceVars source)).successors pred
+    rw [successors_cfg]
+    exact (mem_predecessors source pred (.named label)).1 hpred |>.1
+  · intro v hv
+    simp only [Value.uses, List.mem_singleton] at hv
+    subst v
+    rcases endEnv_start_or_def pred b x with h | h
+    · rw [h]
+      cases pred with
+      | entry =>
+          left
+          exact List.mem_map.mpr ⟨x, hx, rfl⟩
+      | named predLabel =>
+          right
+          refine ⟨convertBlock source (sourceVars source) (.named predLabel) b, ?_⟩
+          left
+          constructor
+          · change (convert source).lookup (.named predLabel) = _
+            simpa [convert, hb] using
+              (lookup_cfg source (sourceVars source) (.named predLabel))
+          ·
+            change Version.phi predLabel x ∈
+              CFG.defs (convertBlock source (sourceVars source) (.named predLabel) b)
+            apply List.mem_append_left
+            change Version.phi predLabel x ∈
+              (phis source (sourceVars source) predLabel).map Phi.dst
+            simp only [phis, List.map_map, Function.comp_apply]
+            change Version.phi predLabel x ∈
+              (sourceVars source).map (Version.phi predLabel)
+            exact List.mem_map.mpr ⟨x, hx, rfl⟩
+    · right
+      refine ⟨convertBlock source (sourceVars source) pred b, ?_⟩
+      left
+      constructor
+      · change (convert source).lookup pred = _
+        simpa [convert, hb] using (lookup_cfg source (sourceVars source) pred)
+      ·
+        change endEnv pred b x ∈ CFG.defs
+          (convertBlock source (sourceVars source) pred b)
+        cases pred with
+        | entry => simpa [convertBlock, CFG.defs, CFG.instrDefs] using h
+        | named l =>
+            change endEnv (.named l) b x ∈
+              (phis source (sourceVars source) l).map Phi.dst ++
+                (body (.named l) 0 (startEnv (.named l)) b.body).1.flatMap Instr.defs
+            exact List.mem_append_right _ h
+
 /-- The program-point obligations left after the conversion has established
 global freshness and preserved the source control-flow graph.  Keeping this
 predicate separate makes the precise remaining source-side obligation visible:
