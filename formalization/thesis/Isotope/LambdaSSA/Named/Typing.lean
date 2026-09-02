@@ -5,7 +5,7 @@ namespace Isotope.LambdaSSA.Named
 variable [LambdaIter.TypeFormers τ] [LambdaIter.HasTy Φ τ]
 variable [DecidableEq ν] [DecidableEq κ]
 
-inductive Tm.HasType : VCtx ν τ → Tm ν Φ → τ → Prop where
+inductive Tm.HasType : VCtx ν τ → Tm ν Φ → τ → Type _ where
   | var : LambdaIter.Ctx.lookup Γ x = some A → HasType Γ (.var x) A
   | op : HasType Γ a (LambdaIter.instrSrc f) →
       HasType Γ (.op f a) (LambdaIter.instrTrg f)
@@ -23,7 +23,7 @@ inductive Tm.HasType : VCtx ν τ → Tm ν Φ → τ → Prop where
       HasType Γ (.case e x l y r) C
   | abort : HasType Γ a LambdaIter.empty → HasType Γ (.abort a) A
 
-inductive Region.HasType : VCtx ν τ → Region ν κ Φ → LCtx κ τ → Prop where
+inductive Region.HasType : VCtx ν τ → Region ν κ Φ → LCtx κ τ → Type _ where
   | br {label : κ} {arg : Tm ν Φ} :
       LambdaIter.Ctx.lookup L label = some A → Tm.HasType Γ arg A →
       HasType Γ (.br label arg) L
