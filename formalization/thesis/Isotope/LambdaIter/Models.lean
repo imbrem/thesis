@@ -4,6 +4,7 @@ import Isotope.LambdaIter.Models.Examples
 import Isotope.LambdaIter.Models.Setoid
 import Isotope.LambdaIter.Models.Syntax
 import Isotope.LambdaIter.Models.SynCategory
+import Isotope.LambdaIter.Models.SynCoproduct
 import Isotope.LambdaIter.Models.Initial
 
 /-!
@@ -21,7 +22,8 @@ result type, one operation per term former, and two propositional obligations
 | `Models/Examples.lean` | constant models, and morphisms that are not identities |
 | `Models/Setoid.lean` | the setoid `Eqv` induces on typable terms, and its quotient |
 | `Models/Syntax.lean` | `Syn S : Alg S`, the quotiented syntax as a model, and `Syn.denote_mk` |
-| `Models/SynCategory.lean` | the one-variable syntactic *category* (three category laws only) |
+| `Models/SynCategory.lean` | the one-variable syntactic *category* (three category laws) |
+| `Models/SynCoproduct.lean` | binary coproducts in it, and iteration on hom-sets (no Elgot law) |
 | `Models/Initial.lean` | `Syn.uniqueHom`, `Syn.isInitial`, and equational completeness |
 
 ## Honest boundary
@@ -44,10 +46,14 @@ result type, one operation per term former, and two propositional obligations
   initiality or completeness for Freyd/Elgot models: that would require an
   `Alg` built from a Freyd category, which needs exactly the two missing
   coherence instances above.
-* `Models/SynCategory.lean` proves the three *category* laws for the quotient
-  and nothing else.  No premonoidal, coproduct, distributive or Elgot
-  structure on the syntactic category is constructed, so issue #57's request
-  for the syntactic Elgot model remains open; what is closed is the quotient,
-  the category laws, the unique interpretation into every algebra, and
-  completeness with respect to algebras.
+* The syntactic category (`Models/SynCategory.lean`, `Models/SynCoproduct.lean`)
+  is proved to be a category with binary coproducts, and its iteration
+  operator is proved well defined on classes.  **No Elgot law and no
+  premonoidal, monoidal or distributive structure is proved**, and the empty
+  type is not shown to be initial (see `Models/SynCoproduct.lean` for why it
+  probably is not derivable from the axioms as stated).  Issue #57's request
+  for the syntactic Elgot model therefore remains open; what is closed is the
+  quotient, the category and coproduct laws, well-definedness of iteration,
+  the unique interpretation into every algebra, and completeness with respect
+  to algebras.
 -/

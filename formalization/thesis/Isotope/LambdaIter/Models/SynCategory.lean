@@ -79,10 +79,10 @@ def SynCat (S : Sig.{u}) : Type u := S.Ty
 namespace SynCat
 
 /-- View a type of the signature as an object of the syntactic category. -/
-def of (A : S.Ty) : SynCat S := A
+@[reducible] def of (A : S.Ty) : SynCat S := A
 
 /-- The underlying type of an object of the syntactic category. -/
-def ty (A : SynCat S) : S.Ty := A
+@[reducible] def ty (A : SynCat S) : S.Ty := A
 
 /-- Morphisms `A ⟶ B` of the syntactic category: terms with one bound variable
 of type `A` and result type `B`, modulo `Eqv`.  This is exactly the carrier of
