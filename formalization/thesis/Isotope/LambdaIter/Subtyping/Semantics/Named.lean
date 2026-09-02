@@ -1,6 +1,6 @@
 import Isotope.Elgot.Basic
-import Isotope.LambdaIter.Named.Typing
-import Isotope.LambdaIter.Semantics.Instruction
+import Isotope.LambdaIter.Subtyping.Named.Typing
+import Isotope.LambdaIter.Subtyping.Semantics.Instruction
 
 /-!
 # Denotational semantics of named lambda-iter
@@ -11,7 +11,7 @@ shadowed context slots remain present semantically without affecting name
 resolution.
 -/
 
-namespace Isotope.LambdaIter.Semantics.Named
+namespace Isotope.LambdaIter.Subtyping.Semantics.Named
 
 open Isotope.Elgot
 open Isotope.LambdaIter
@@ -28,7 +28,7 @@ variable [InstructionModel Φ τ ε m]
 include ε in
 /-- Interpretation of a proof-relevant named typing derivation. -/
 def denote : {Γ : Ctx ν τ} → {t : LambdaIter.Named.Tm ν Φ} → {A : τ} →
-    LambdaIter.Named.HasType Γ t A → CtxDen Γ → m (TyDen A)
+    LambdaIter.Subtyping.Named.HasType Γ t A → CtxDen Γ → m (TyDen A)
   | _, _, _, .var h, γ => pure (CtxDen.lookup γ _ h)
   | _, _, _, .op hf ha, γ =>
       denote ha γ >>= fun a =>
@@ -68,7 +68,7 @@ def denote : {Γ : Ctx ν τ} → {t : LambdaIter.Named.Tm ν Φ} → {A : τ} �
 
 /-- A closed named derivation denotes a computation. -/
 def denoteClosed {t : LambdaIter.Named.Tm Empty Φ} {A : τ}
-    (h : LambdaIter.Named.HasType (.nil : Ctx Empty τ) t A) : m (TyDen A) :=
+    (h : LambdaIter.Subtyping.Named.HasType (.nil : Ctx Empty τ) t A) : m (TyDen A) :=
   denote (ε := ε) (m := m) h PUnit.unit
 
-end Isotope.LambdaIter.Semantics.Named
+end Isotope.LambdaIter.Subtyping.Semantics.Named
