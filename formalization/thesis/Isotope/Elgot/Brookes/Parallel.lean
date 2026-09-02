@@ -132,6 +132,13 @@ theorem mem_par_iff {x : Brookes c A} {y : Brookes c B} {w : Trace E} {a : A} {b
   · rintro ⟨w₀, t, u, ha, hb, hi, hr⟩
     exact ⟨w₀, ⟨t, u, ha, hb, hi⟩, hr⟩
 
+/-- Membership in a parallel composition, with the value component left
+general. -/
+theorem mem_par_iff' {x : Brookes c A} {y : Brookes c B} {w : Trace E} {p : A × B} :
+    (w, p) ∈ par x y ↔
+      ∃ w₀ t u, (t, p.1) ∈ x ∧ (u, p.2) ∈ y ∧ Interleave t u w₀ ∧ c.Refines w₀ w := by
+  obtain ⟨a, b⟩ := p; exact mem_par_iff
+
 /-! ## Structural laws -/
 
 /-- Parallel composition is monotone in both arguments. -/
