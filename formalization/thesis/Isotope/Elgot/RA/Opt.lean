@@ -1,5 +1,6 @@
 import Isotope.Elgot.RA.Opt.Basic
 import Isotope.Elgot.RA.Opt.Sequential
+import Isotope.Elgot.RA.Opt.StoreBuffering
 
 /-!
 # Program transformations in the release/acquire model
@@ -22,6 +23,13 @@ in `Isotope/Elgot/RA/Exchange.lean`.
 `Opt/Basic.lean`
 : `Comp.le_of_gen_subset_closure`; `Comp.approx_mono` and `Comp.iterate_mono`;
   `mem_pure_of_own_empty`; `Comp.traces_bind_pure_comp`.
+
+`Opt/StoreBuffering.lean`
+: `ra_admits_store_buffering` — an explicit single-transition trace, from the
+  paper's initial memory, in which `(x:=v₁ ; y?) ∥ (y:=v₁ ; x?)` returns
+  `⟨v₀, v₀⟩`.  The denotational form of the paper's operational Example 5.3
+  (journal p.19).  Valid at every rule set containing `Mumble`, hence at the
+  Concrete model `C` and at the Abstract model `A` alike.
 
 `Opt/Sequential.lean`
 : Irrelevant Read Elimination (Prop. E.3) and Introduction (Prop. E.2), and the
