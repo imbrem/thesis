@@ -1,5 +1,5 @@
 import Isotope.LambdaSSA.Translation.Expression
-import Isotope.LambdaIter.Metatheory.Typing
+import Isotope.LambdaIter.Metatheory
 
 /-! # Reverse translation from acyclic lambda-SSA regions to lambda-iter -/
 
@@ -82,11 +82,11 @@ def insertUnderTop_hasType {β : BCtx τ n} {Y A : τ} {t : ITm Φ (n + 1)}
     LambdaIter.LocallyNameless.HasType Φ (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ)
       (.snoc (retainContext β retained) Y)
       (insertUnderTop retained.length t) A :=
-  h.rename (Fin.cases 0 (fun i => ⟨i.val + retained.length + 1, by omega⟩)) (by
+  h.rename ⟨Fin.cases 0 (fun i => ⟨i.val + retained.length + 1, by omega⟩), by
     intro i
     refine Fin.cases ?_ (fun j => ?_) i
     · rfl
-    · exact retainContext_get β retained j)
+    · exact retainContext_get β retained j⟩
 
 /-- Eliminate a heterogeneous local-label coproduct and select its compiled
 block. `retained` records the case discriminants accumulated on the path. -/
@@ -294,7 +294,7 @@ private def lift_hasType {β : BCtx τ n} {A B : τ} {t : ITm Φ n}
       (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ) β t A) :
     LambdaIter.LocallyNameless.HasType Φ (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ)
       (.snoc β B) t.lift A :=
-  h.rename Fin.succ (fun _ => rfl)
+  h.rename (LambdaIter.LocallyNameless.TypedRenaming.succ β B)
 
 /-- Full reverse compiler.  A CFG becomes one iteration over the distinguished
 start state plus the coproduct of its local block labels. -/
