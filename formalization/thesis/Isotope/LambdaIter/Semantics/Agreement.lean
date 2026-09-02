@@ -23,6 +23,20 @@ namespace Categorical
 variable {τ : Type u} [TypeFormers τ] [Subtyping τ]
 variable [Semantics.TypeModel.{u, v} τ]
 
+private theorem types_coprodMap_comparison {X Y X' Y' : Type v}
+    (f : X → X') (g : Y → Y') :
+    coprod.map f g ≫ (Types.binaryCoproductIso X' Y').hom =
+      (Types.binaryCoproductIso X Y).hom ≫ Sum.map f g := by
+  apply coprod.hom_ext
+  · simp only [coprod.inl_map_assoc, Category.assoc,
+      Types.binaryCoproductIso_inl_comp_hom]
+    rw [← Category.assoc, Types.binaryCoproductIso_inl_comp_hom]
+    rfl
+  · simp only [coprod.inr_map_assoc, Category.assoc,
+      Types.binaryCoproductIso_inr_comp_hom]
+    rw [← Category.assoc, Types.binaryCoproductIso_inr_comp_hom]
+    rfl
+
 /-- A set-valued type model is a categorical type model in `Type`. -/
 @[reducible] noncomputable def ofTypeModel : Categorical.TypeModel τ (Type v) where
   obj := Semantics.TypeModel.interp
@@ -41,6 +55,55 @@ variable [Semantics.TypeModel.{u, v} τ]
     (fun X z => Empty.elim (Semantics.TypeModel.emptyEquiv z))
     (fun X f => by funext z; exact Empty.elim (Semantics.TypeModel.emptyEquiv z))
   subty d := Semantics.TypeModel.coe d
+
+private theorem ofTypeModel_coprodIso_hom_comparison (A B : τ) :
+    ((ofTypeModel (τ := τ)).coprodIso A B).hom ≫
+        (Types.binaryCoproductIso
+          ((ofTypeModel (τ := τ)).obj A)
+          ((ofTypeModel (τ := τ)).obj B)).hom =
+      (Equiv.toIso (Semantics.TypeModel.coprodEquiv A B)).hom := by
+  change (((Equiv.toIso (Semantics.TypeModel.coprodEquiv A B)).trans
+      (Types.binaryCoproductIso _ _).symm).hom ≫
+        (Types.binaryCoproductIso _ _).hom) = _
+  simp [Category.assoc]
+
+/-- The structural laws of a set-valued type model transport to the
+categorical model in `Type`. -/
+noncomputable instance ofTypeModelLawful [Semantics.LawfulTypeModel.{u, v} τ] :
+    Categorical.LawfulTypeModel τ (Type v) (ofTypeModel (τ := τ)) where
+  subty_refl A := by
+    simpa [ofTypeModel] using Semantics.LawfulTypeModel.coe_refl A
+  subty_trans f g := by
+    simpa [ofTypeModel, Function.comp_def] using
+      Semantics.LawfulTypeModel.coe_trans f g
+  subty_tensor f g := by
+    funext p
+    simpa [ofTypeModel] using
+      Semantics.LawfulTypeModel.coe_tensor f g p
+  subty_coprod f g := by
+    apply (cancel_mono (Types.binaryCoproductIso _ _).hom).1
+    rw [Category.assoc, Category.assoc, types_coprodMap_comparison]
+    rw [ofTypeModel_coprodIso_hom_comparison]
+    rw [← Category.assoc, ofTypeModel_coprodIso_hom_comparison]
+    funext s
+    change Semantics.TypeModel.coprodEquiv _ _
+        (Semantics.TypeModel.coe (Subty.coprod f g) s) =
+      Sum.map (Semantics.TypeModel.coe f) (Semantics.TypeModel.coe g)
+        (Semantics.TypeModel.coprodEquiv _ _ s)
+    exact Semantics.LawfulTypeModel.coe_coprod f g s
+  subty_empty A := by
+    funext z
+    simpa [ofTypeModel] using
+      Semantics.LawfulTypeModel.coe_empty A z
+  subty_unit A := by
+    rfl
+
+/-- Optional proof irrelevance transports independently of the structural
+laws. -/
+noncomputable instance ofTypeModelSubtyProofIrrelevant
+    [Semantics.SubtyProofIrrelevant.{u, v} τ] :
+    Categorical.SubtyProofIrrelevant τ (Type v) (ofTypeModel (τ := τ)) where
+  subty_eq f g := Semantics.SubtyProofIrrelevant.coe_eq f g
 
 variable {Φ : Type q} [HasTy Φ τ]
 variable {ε : Type r} [HasEff Φ ε] [Bot ε]
