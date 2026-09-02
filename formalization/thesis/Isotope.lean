@@ -7,12 +7,13 @@ import Isotope.Elgot.Basic
 import Isotope.Elgot.ITree
 import Isotope.Elgot.Kleisli
 import Isotope.Elgot.Nondet
+import Isotope.Elgot.RA
 import Isotope.Elgot.TSO
 import Isotope.Elgot.Transformer
 import Isotope.Elgot.WS
+import Isotope.LambdaCase
 import Isotope.LambdaIter
 import Isotope.LambdaSSA
-import Isotope.TAC
-import Isotope.LambdaCase
 import Isotope.LambdaSeq
 import Isotope.Pomset
+import Isotope.TAC
