@@ -528,4 +528,80 @@ theorem sourceBlock_restrict [Monad m] [LawfulMonad m]
         exact terminator_use_mem_blockSourceVars b hx⟩))
   exact core.symm.trans core'
 
+def restrictState [DecidableEq ν]
+    (g : Isotope.TAC.Classical.CFG ν φ κ) :
+    MEnv M ν × κ → MEnv M ν × κ
+  | (rho, label) => (restrict M (sourceVars g) rho, label)
+
+theorem sourceStep_restrict [Monad m] [LawfulMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    [Isotope.TAC.Densem.Phi.Monadic.LawfulFailure M]
+    (g : Isotope.TAC.Classical.CFG ν φ κ) (s : MEnv M ν × κ) :
+    (sourceStep M g s >>= fun result =>
+      pure (Sum.map id (restrictState M g) result)) =
+    sourceStepOn M g (restrictState M g s) := by
+  rcases s with ⟨rho, label⟩
+  simp only [sourceStep, sourceStepOn, restrictState]
+  cases hs : Isotope.TAC.Densem.Phi.lookup g label with
+  | none =>
+      simp only [hs]
+      exact Isotope.TAC.Densem.Phi.Monadic.LawfulFailure.fail_bind _
+  | some b =>
+      simp only [hs, bind_assoc]
+      have hb : (label, b) ∈ g.blocks :=
+        Isotope.TAC.Densem.Convert.lookup_some_mem hs
+      let finish : (MEnv M ν × Isotope.TAC.Densem.Exit κ M.Val) →
+          m (M.Val ⊕ (MEnv M ν × κ)) := fun result =>
+        match result.2 with
+        | .return a => pure (.inl a)
+        | .branch next => pure (.inr (result.1, next))
+      calc
+        _ = (Isotope.TAC.Densem.Monadic.Block.denote M rho
+              (Isotope.TAC.Densem.Classical.block b) >>= fun result =>
+            pure (restrict M (sourceVars g) result.1, result.2)) >>= finish := by
+          simp only [bind_assoc]
+          apply congrArg (fun continuation =>
+            Isotope.TAC.Densem.Monadic.Block.denote M rho
+              (Isotope.TAC.Densem.Classical.block b) >>= continuation)
+          funext result
+          rcases result with ⟨store, exit⟩
+          cases exit <;> simp [finish, restrictState]
+        _ = (Isotope.TAC.Densem.Monadic.Block.denote M
+              (restrict M (sourceVars g) rho)
+              (Isotope.TAC.Densem.Classical.block b) >>= fun result =>
+            pure (restrict M (sourceVars g) result.1, result.2)) >>= finish :=
+          congrArg (fun z => z >>= finish) (sourceBlock_restrict M g label b hb rho)
+        _ = _ := by
+          simp only [bind_assoc]
+          apply congrArg (fun continuation =>
+            Isotope.TAC.Densem.Monadic.Block.denote M
+              (restrict M (sourceVars g) rho)
+              (Isotope.TAC.Densem.Classical.block b) >>= continuation)
+          funext result
+          rcases result with ⟨store, exit⟩
+          cases exit <;> simp [finish, restrictState]
+
+theorem iter_source_restrict [Monad m] [LawfulMonad m]
+    [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    [Isotope.TAC.Densem.Phi.Monadic.LawfulFailure M]
+    (g : Isotope.TAC.Classical.CFG ν φ κ) (s : MEnv M ν × κ) :
+    Isotope.Elgot.iter (sourceStep M g) s =
+      Isotope.Elgot.iter (sourceStepOn M g) (restrictState M g s) := by
+  let f := sourceStep M g
+  let target := sourceStepOn M g
+  have comm : Isotope.Elgot.kcomp f
+      (Isotope.Elgot.liftPure (Sum.map id (restrictState M g))) =
+      Isotope.Elgot.kcomp (Isotope.Elgot.liftPure (restrictState M g)) target := by
+    funext state
+    simp only [Isotope.Elgot.kcomp, Isotope.Elgot.liftPure,
+      Function.comp_apply, pure_bind]
+    exact sourceStep_restrict M g state
+  have hu := Isotope.Elgot.LawfulElgotMonad.uniformity f target
+    (restrictState M g) comm
+  change Isotope.Elgot.iter f s =
+    Isotope.Elgot.iter target (restrictState M g s)
+  rw [hu]
+  simp [Isotope.Elgot.kcomp, Isotope.Elgot.liftPure]
+
 end Isotope.TAC.Densem.Convert.Monadic.Valid
