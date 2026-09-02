@@ -351,6 +351,111 @@ theorem instrRename_exact_atom {Γ : Ctx ν τ} {β : BoundCtx τ n}
       transportHasType_proof_irrel _ _ _
     _ = _ := atomRename_exact h r
 
+private def programOfHasType {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {p : Program ν Φ n} {A : τ} (_ : Program.HasType Γ β p A) := p
+
+private def instrOfHasType {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {i : Instr ν Φ n} {A : τ} (_ : Instr.HasType Γ β i A) := i
+
+private def atomOfHasType {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {a : Atom ν Φ n} {A : τ} (_ : Atom.HasType Γ β a A) := a
+
+private def upForProgram {n k : Nat} {β : BoundCtx τ n} {β' : BoundCtx τ k}
+    {Γ : Ctx ν τ} (r : TypedRenaming β β')
+    {p : Program ν Φ (n + 1)} {A B : τ}
+    (_ : Program.HasType (Φ := Φ) Γ (.snoc β A) p B) :
+    TypedRenaming (.snoc β A) (.snoc β' A) := r.up A
+
+private def upTwoForProgram {n k : Nat} {β : BoundCtx τ n} {β' : BoundCtx τ k}
+    {Γ : Ctx ν τ} (r : TypedRenaming β β')
+    {p : Program ν Φ (n + 2)} {A B C : τ}
+    (_ : Program.HasType (Φ := Φ) Γ (.snoc (.snoc β A) B) p C) :
+    TypedRenaming (.snoc (.snoc β A) B) (.snoc (.snoc β' A) B) :=
+  (r.up A).up B
+
+mutual
+  /-- Forgetting ANF Program typing commutes with typed renaming. -/
+  theorem programRename_exact {Γ : Ctx ν τ} {β : BoundCtx τ n}
+      {β' : BoundCtx τ k} {p : Program ν Φ n} {A : τ}
+      (h : Program.HasType Γ β p A) (r : TypedRenaming β β') :
+      transportHasType (programRename_toTm p r.toFun)
+          (programRename_hasType r h).toLambdaIter = h.toLambdaIter.rename r := by
+    cases h with
+    | ret h => exact programRename_exact_ret h r
+    | let₁ hi hb =>
+        let ei := instrRename_toTm (instrOfHasType hi) r.toFun
+        let ru := upForProgram r hb
+        let eb := programRename_toTm (programOfHasType hb) ru.toFun
+        calc
+          _ = transportHasType (congrArg₂ Tm.let₁ ei eb)
+              (.let₁ (instrRename_hasType r hi).toLambdaIter
+                (programRename_hasType ru hb).toLambdaIter) :=
+            transportHasType_proof_irrel _ _ _
+          _ = .let₁ (transportHasType ei (instrRename_hasType r hi).toLambdaIter)
+                (transportHasType eb
+                  (programRename_hasType ru hb).toLambdaIter) :=
+            transportHasType_let₁ ei eb _ _
+          _ = _ := congrArg₂ Isotope.LambdaIter.LocallyNameless.HasType.let₁
+            (instrRename_exact hi r) (programRename_exact hb ru)
+    | let₂ ha hb =>
+        let ea := atomRename_toTm r.toFun (atomOfHasType ha)
+        let ru := upTwoForProgram r hb
+        let eb := programRename_toTm (programOfHasType hb) ru.toFun
+        calc
+          _ = transportHasType (congrArg₂ Tm.let₂ ea eb)
+              (.let₂ (atomRename_hasType r ha).toLambdaIter
+                (programRename_hasType ru hb).toLambdaIter) :=
+            transportHasType_proof_irrel _ _ _
+          _ = .let₂ (transportHasType ea (atomRename_hasType r ha).toLambdaIter)
+                (transportHasType eb
+                  (programRename_hasType ru hb).toLambdaIter) :=
+            transportHasType_let₂ ea eb _ _
+          _ = _ := congrArg₂ Isotope.LambdaIter.LocallyNameless.HasType.let₂
+            (atomRename_exact ha r) (programRename_exact hb ru)
+
+  /-- Forgetting ANF Instr typing commutes with typed renaming. -/
+  theorem instrRename_exact {Γ : Ctx ν τ} {β : BoundCtx τ n}
+      {β' : BoundCtx τ k} {i : Instr ν Φ n} {A : τ}
+      (h : Instr.HasType Γ β i A) (r : TypedRenaming β β') :
+      transportHasType (instrRename_toTm i r.toFun)
+          (instrRename_hasType r h).toLambdaIter = h.toLambdaIter.rename r := by
+    cases h with
+    | atom h => exact instrRename_exact_atom h r
+    | case he hl hr =>
+        let ee := atomRename_toTm r.toFun (atomOfHasType he)
+        let rl := upForProgram r hl
+        let rr := upForProgram r hr
+        let el := programRename_toTm (programOfHasType hl) rl.toFun
+        let er := programRename_toTm (programOfHasType hr) rr.toFun
+        calc
+          _ = transportHasType (by cases ee; cases el; cases er; rfl)
+              (.case (atomRename_hasType r he).toLambdaIter
+                (programRename_hasType rl hl).toLambdaIter
+                (programRename_hasType rr hr).toLambdaIter) :=
+            transportHasType_proof_irrel _ _ _
+          _ = .case (transportHasType ee (atomRename_hasType r he).toLambdaIter)
+                (transportHasType el (programRename_hasType rl hl).toLambdaIter)
+                (transportHasType er (programRename_hasType rr hr).toLambdaIter) :=
+            transportHasType_case ee el er _ _ _
+          _ = _ := congrArg₃ Isotope.LambdaIter.LocallyNameless.HasType.case
+            (atomRename_exact he r) (programRename_exact hl rl)
+            (programRename_exact hr rr)
+    | iter ha hb =>
+        let ea := atomRename_toTm r.toFun (atomOfHasType ha)
+        let ru := upForProgram r hb
+        let eb := programRename_toTm (programOfHasType hb) ru.toFun
+        calc
+          _ = transportHasType (congrArg₂ Tm.iter ea eb)
+              (.iter (atomRename_hasType r ha).toLambdaIter
+                (programRename_hasType ru hb).toLambdaIter) :=
+            transportHasType_proof_irrel _ _ _
+          _ = .iter (transportHasType ea (atomRename_hasType r ha).toLambdaIter)
+                (transportHasType eb (programRename_hasType ru hb).toLambdaIter) :=
+            transportHasType_iter ea eb _ _
+          _ = _ := congrArg₂ Isotope.LambdaIter.LocallyNameless.HasType.iter
+            (atomRename_exact ha r) (programRename_exact hb ru)
+end
+
 
 @[simp] theorem denote_elaborate_fv {Γ : Ctx ν τ} {β : BoundCtx τ n}
     {x : ν} {A : τ} (hx : Γ.lookup x = some A)
