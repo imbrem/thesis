@@ -99,9 +99,8 @@ noncomputable def denote : {Γ : LambdaIter.Ctx ν τ} → {n : Nat} →
   | _, _, _, _, _, .bv => J.map (boundVar M _)
   | _, _, _, _, _, .op ha => denote ha ≫ InstructionModel.denote _
   | Γ, _, β, _, _, .let₁ ha hb =>
-      LambdaIter.Semantics.Categorical.bind J (denote ha) <|
+      LambdaIter.Subtyping.Semantics.Categorical.bind J (denote ha) <|
         J.map (envSnocIso M Γ β _).hom ≫ denote hb
-  | _, _, _, _, _, .sub ha d => denote ha ≫ J.map (M.subty d)
 
 end Denotation
 end Isotope.LambdaSeq.Semantics.Categorical

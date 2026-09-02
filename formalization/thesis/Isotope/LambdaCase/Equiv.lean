@@ -1,6 +1,5 @@
 import Isotope.LambdaCase.Typing
-import Isotope.LambdaIter.LocallyNameless.Equiv
-import Isotope.LambdaIter.Named.Equiv
+import Isotope.LambdaIter.Equiv
 
 /-! # Equational theory of lambda-case -/
 
@@ -10,21 +9,22 @@ namespace Named
 
 /-- The named presentation is the iteration-free fragment of the named
 lambda-iter theory.  Endpoints are necessarily images of lambda-case terms. -/
-def Eqv [DecidableEq ν] [LambdaIter.TypeFormers τ] [LambdaIter.Subtyping τ]
+def Eqv [DecidableEq ν] [LambdaIter.TypeFormers τ]
     [LambdaIter.HasTy Φ τ] [LambdaIter.HasEff Φ ε] (pureEff : ε)
     (Γ : Ctx ν τ) (a b : Tm ν Φ) (A : τ) : Prop :=
   LambdaIter.Named.Eqv pureEff Γ (embed a) (embed b) A
 
-theorem Eqv.embed [DecidableEq ν] [LambdaIter.TypeFormers τ] [LambdaIter.Subtyping τ]
+theorem Eqv.embed [DecidableEq ν] [LambdaIter.TypeFormers τ]
     [LambdaIter.HasTy Φ τ] [LambdaIter.HasEff Φ ε]
     {pureEff : ε} {Γ : Ctx ν τ} {a b : Tm ν Φ} {A : τ} :
-    Eqv pureEff Γ a b A → LambdaIter.Named.Eqv pureEff Γ (embed a) (embed b) A := id
+    Eqv pureEff Γ a b A →
+      LambdaIter.Named.Eqv pureEff Γ (embed a) (embed b) A := id
 
 end Named
 
 namespace LocallyNameless
 
-variable {τ : Type u} [LambdaIter.TypeFormers τ] [LambdaIter.Subtyping τ]
+variable {τ : Type u} [LambdaIter.TypeFormers τ]
 variable {ν : Type w} [DecidableEq ν]
 variable {Φ : Type q} [LambdaIter.HasTy Φ τ]
 variable {ε : Type r} [LambdaIter.HasEff Φ ε]
@@ -36,7 +36,6 @@ inductive Equiv (pureEff : ε) (Γ : Ctx ν τ) :
   | bvar : Equiv pureEff Γ β (.bv i) (.bv i) (β.get i)
   | symm : Equiv pureEff Γ β a b A → Equiv pureEff Γ β b a A
   | trans : Equiv pureEff Γ β a b A → Equiv pureEff Γ β b c A → Equiv pureEff Γ β a c A
-  | sub : Equiv pureEff Γ β a b A → LambdaIter.Subty A B → Equiv pureEff Γ β a b B
   | op (h : Equiv pureEff Γ β a a' (LambdaIter.instrSrc f)) :
       Equiv pureEff Γ β (.op f a) (.op f a') (LambdaIter.instrTrg f)
   | let₁ (ha : Equiv pureEff Γ β a a' A)
@@ -115,39 +114,8 @@ inductive Equiv (pureEff : ε) (Γ : Ctx ν τ) :
       (hb : HasType Φ Γ (.snoc β A) b B) (hc : HasType Φ Γ (.snoc β A) c B) :
       Equiv pureEff Γ β (.let₁ (.abort a) b) (.let₁ (.abort a) c) B
 
-/-- Every lambda-case equation is a lambda-iter equation. -/
-def Equiv.embed {pureEff : ε} {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
-    {a b : Tm ν Φ n} {A : τ} : Equiv pureEff Γ β a b A →
-    LambdaIter.LocallyNameless.Equiv pureEff Γ β a.embed b.embed A
-  | .var h => .var h
-  | .bvar => .bvar
-  | .symm h => .symm h.embed
-  | .trans h k => .trans h.embed k.embed
-  | .sub h d => .sub h.embed d
-  | .op h => .op h.embed
-  | .let₁ ha hb => .let₁ ha.embed hb.embed
-  | .unit => .unit
-  | .pair ha hb => .pair ha.embed hb.embed
-  | .let₂ ha hc => .let₂ ha.embed hc.embed
-  | .inl h => .inl h.embed
-  | .inr h => .inr h.embed
-  | .case he hl hr => .case he.embed hl.embed hr.embed
-  | .abort h => .abort h.embed
-  | .letBeta hp ha hb => by simpa using LambdaIter.LocallyNameless.Equiv.letBeta hp.embed ha.embed hb.embed
-  | .letEta ha => by simpa using LambdaIter.LocallyNameless.Equiv.letEta (pureEff := pureEff) ha.embed
-  | .unitEta ha => LambdaIter.LocallyNameless.Equiv.unitEta (pureEff := pureEff) ha.embed
-  | .pairBeta ha hb hc => by simpa only [Tm.embed, Tm.embed_lift] using LambdaIter.LocallyNameless.Equiv.pairBeta (pureEff := pureEff) ha.embed hb.embed hc.embed
-  | .pairEta ha => LambdaIter.LocallyNameless.Equiv.pairEta (pureEff := pureEff) ha.embed
-  | .caseBetaL he hl hr => LambdaIter.LocallyNameless.Equiv.caseBetaL (pureEff := pureEff) he.embed hl.embed hr.embed
-  | .caseBetaR he hl hr => LambdaIter.LocallyNameless.Equiv.caseBetaR (pureEff := pureEff) he.embed hl.embed hr.embed
-  | .caseEta he => LambdaIter.LocallyNameless.Equiv.caseEta (pureEff := pureEff) he.embed
-  | .bindOp ha hc => by simpa only [Tm.embed, Tm.embed_underBinder] using LambdaIter.LocallyNameless.Equiv.bindOp (pureEff := pureEff) ha.embed hc.embed
-  | .bindLet ha hb hc => by simpa only [Tm.embed, Tm.embed_underBinder] using LambdaIter.LocallyNameless.Equiv.bindLet (pureEff := pureEff) ha.embed hb.embed hc.embed
-  | .bindLetPair he hc hd => by simpa only [Tm.embed, Tm.embed_underBinder] using LambdaIter.LocallyNameless.Equiv.bindLetPair (pureEff := pureEff) he.embed hc.embed hd.embed
-  | .bindLetCase he hl hr hd => by simpa only [Tm.embed, Tm.embed_underBinder] using LambdaIter.LocallyNameless.Equiv.bindLetCase (pureEff := pureEff) he.embed hl.embed hr.embed hd.embed
-  | .bindPair ha hc => by simpa only [Tm.embed, Tm.embed_underTwoBinders] using LambdaIter.LocallyNameless.Equiv.bindPair (pureEff := pureEff) ha.embed hc.embed
-  | .bindCase he hl hr => by simpa only [Tm.embed, Tm.embed_underBinder] using LambdaIter.LocallyNameless.Equiv.bindCase (pureEff := pureEff) he.embed hl.embed hr.embed
-  | .emptyInitial ha hb hc => LambdaIter.LocallyNameless.Equiv.emptyInitial (pureEff := pureEff) ha.embed hb.embed hc.embed
-
+/- The exact theory is intentionally presented independently; its comparison
+with the raw-axiom closure is deferred until endpoint-typing transport is
+available for every commuting conversion. -/
 end LocallyNameless
 end Isotope.LambdaCase

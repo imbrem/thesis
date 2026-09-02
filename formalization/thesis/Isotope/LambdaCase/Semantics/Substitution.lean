@@ -141,7 +141,6 @@ theorem denote_rename {Γ : Ctx ν τ} {n k : Nat}
             _ = denote (m := m) (ε := ε) hr γ (BoundDen.pull (r.up _) (ρ, b)) :=
               ihr (r.up _) (ρ, b)
             _ = _ := by rw [BoundDen.pull_up]
-  | sub h d ih => simp only [HasType.rename]; unfold denote; rw [ih]
 
 def SubstDen {Γ : Ctx ν τ} {n k : Nat}
     {β : BoundCtx τ n} {β' : BoundCtx τ k} {σ : Fin n → Tm ν Φ k}
@@ -210,7 +209,6 @@ theorem denote_bsubst {Γ : Ctx ν τ} {n k : Nat}
       cases LambdaIter.Semantics.TypeModel.coprodEquiv _ _ e with
       | inl a => exact ihl (s := s.up _) (ρ' := (ρ', a)) (ρ := (ρ, a)) (hs.up _ a)
       | inr b => exact ihr (s := s.up _) (ρ' := (ρ', b)) (ρ := (ρ, b)) (hs.up _ b)
-  | sub h d ih => simp only [HasType.bsubst]; unfold denote; rw [ih s ρ' ρ hs]
 
 theorem denote_instantiate {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
     {a : Tm ν Φ n} {b : Tm ν Φ (n + 1)} {A B : τ}
@@ -227,7 +225,8 @@ theorem denote_instantiate {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
   intro i
   refine Fin.cases hx (fun j => ?_) i
   change denote (m := m) (ε := ε) (HasType.bv (i := j)) γ ρ = _
-  rfl
+  unfold denote
+  congr 1
 
 @[simp] theorem denote_lift {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
     {t : Tm ν Φ n} {A X : τ} (h : HasType Φ Γ β t A)
@@ -254,7 +253,9 @@ theorem denote_instantiate {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
     denote (m := m) (ε := ε) (h.underTwoBinders (X := X)) γ (((ρ, x), y), z) =
       denote (m := m) (ε := ε) h γ ((ρ, y), z) := by
   unfold HasType.underTwoBinders
-  exact (denote_rename (m := m) (ε := ε) h _ γ _).trans
-    (by rw [BoundDen.pull_underTwoBinders])
+  let r := LambdaIter.LocallyNameless.TypedRenaming.underTwoBinders β X Y Z
+  have hr := denote_rename (m := m) (ε := ε) h r γ (((ρ, x), y), z)
+  rw [BoundDen.pull_underTwoBinders] at hr
+  exact hr
 
 end Isotope.LambdaCase.Semantics

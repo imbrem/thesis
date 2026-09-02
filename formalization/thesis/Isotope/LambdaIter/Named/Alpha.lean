@@ -4,6 +4,7 @@ import Isotope.LambdaIter.Named.Subst
 
 namespace Isotope.LambdaIter.Named
 
+
 variable [DecidableEq ν] {Φ : Type*}
 
 /-- Independent named alpha-equivalence. Binder-renaming constructors require

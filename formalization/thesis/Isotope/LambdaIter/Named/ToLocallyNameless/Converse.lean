@@ -4,6 +4,7 @@ import Isotope.LambdaIter.Named.ToLocallyNameless.Alpha
 
 namespace Isotope.LambdaIter.Named.ToLocallyNameless
 
+
 universe u v
 
 /-- Whether the root is a `let₁` with an anonymous binder. This small
