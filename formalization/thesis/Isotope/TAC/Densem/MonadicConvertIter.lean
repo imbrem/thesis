@@ -1,6 +1,7 @@
 import Isotope.TAC.Densem.MonadicConvertCFG
 import Isotope.TAC.Densem.ConvertCFG
 import Isotope.TAC.Densem.MonadicClassical
+import Isotope.TAC.Densem.Lookup
 
 /-! # Iteration boundary square for monadic TAC-to-SSA conversion -/
 
@@ -238,7 +239,8 @@ abbrev GuardedState (M : Isotope.TAC.Densem.Monadic.Model φ m) (ν κ : Type) :
 def observeState [DecidableEq ν] [DecidableEq κ]
     (source : Isotope.TAC.Classical.CFG ν φ κ) :
     MEnv M (Version ν κ) × BlockId κ × κ → GuardedState M ν κ
-  | (target, pred, label) => (projectBoundary M source pred target, pred, label)
+  | (target, pred, label) =>
+      (restrict M (sourceVars source) (projectBoundary M source pred target), pred, label)
 
 /-- Globally defined source body used on the right of the Elgot-uniformity
 square.  It accepts precisely the boundary shapes on which canonical phis can
@@ -426,6 +428,148 @@ theorem step_observation_congr [Monad m] [LawfulMonad m]
       hlookup hblock hpred hpredBlock htotal hleft,
     step_denote_restrict M sourceCfg label pred predBlock block source right
       hlookup hblock hpred hpredBlock htotal hright]
+
+/-- The global square sought by Elgot uniformity.  All malformed and partial
+boundaries are represented explicitly by `guardedSourceStep`; hence the
+comparison map is total on the raw converted state space. -/
+theorem step_guarded_global [Monad m] [LawfulMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    [Isotope.TAC.Densem.Phi.Monadic.LawfulFailure M]
+    (sourceCfg : Isotope.TAC.Classical.CFG ν φ κ)
+    (state : MEnv M (Version ν κ) × BlockId κ × κ) :
+    (Isotope.TAC.Densem.Phi.Monadic.step M
+        (Isotope.TAC.Classical.Convert.convert sourceCfg) state >>= fun result =>
+      pure (Sum.map id (observeState M sourceCfg) result)) =
+    guardedSourceStep M sourceCfg (observeState M sourceCfg state) := by
+  rcases state with ⟨target, pred, label⟩
+  have hl := Isotope.TAC.Densem.Convert.lookup_convert sourceCfg label
+  cases hs : Isotope.TAC.Densem.Phi.lookup sourceCfg label with
+  | none =>
+      simp only [Isotope.TAC.Densem.Phi.Monadic.step, hl, hs, Option.map_none,
+        guardedSourceStep, observeState]
+      exact Isotope.TAC.Densem.Phi.Monadic.LawfulFailure.fail_bind _
+  | some block =>
+      have hblock := Isotope.TAC.Densem.Convert.lookup_some_mem hs
+      have hcfg : sourceCfg.lookup (.named label) = some block := by
+        rw [← Isotope.TAC.Densem.Lookup.phi_lookup_eq]
+        exact hs
+      cases hv : sourceVars sourceCfg with
+      | nil =>
+          let source := restrict M (sourceVars sourceCfg)
+            (projectBoundary M sourceCfg pred target)
+          let finish : MEnv M ν × Isotope.TAC.Densem.Exit κ M.Val →
+              m (M.Val ⊕ GuardedState M ν κ) := fun result =>
+            match result.2 with
+            | .return a => pure (.inl a)
+            | .branch next => pure (.inr
+                (restrict M (sourceVars sourceCfg) result.1, .named label, next))
+          have he := enter_named_denote_empty M sourceCfg label pred block source target
+            hblock hv
+          calc
+            _ = ((Isotope.TAC.Densem.Phi.Monadic.enter M target pred
+                  (convertBlock sourceCfg (sourceVars sourceCfg) (.named label) block) >>=
+                fun result => pure
+                  (restrict M (sourceVars sourceCfg)
+                    (project (M := M) (endEnv (.named label) block) result.1),
+                    result.2)) >>= finish) := by
+                  simp only [Isotope.TAC.Densem.Phi.Monadic.step, hl, hs,
+                    Option.map_some, bind_assoc]
+                  apply congrArg (fun k =>
+                    Isotope.TAC.Densem.Phi.Monadic.enter M target pred
+                      (convertBlock sourceCfg (sourceVars sourceCfg)
+                        (.named label) block) >>= k)
+                  funext result
+                  rcases result with ⟨rho, exit⟩
+                  cases exit <;> simp [finish, observeState, projectBoundary, hcfg,
+                    restrict_idem]
+            _ = ((Isotope.TAC.Densem.Monadic.Block.denote M source
+                    (Isotope.TAC.Densem.Classical.block block) >>= fun result =>
+                  pure (restrict M (sourceVars sourceCfg) result.1, result.2)) >>=
+                finish) := congrArg (fun z => z >>= finish) he
+            _ = _ := by
+              simp only [observeState, guardedSourceStep, hs, source, hv, allPresent,
+                List.all_nil, ↓reduceIte, bind_assoc]
+              apply congrArg (fun k => Isotope.TAC.Densem.Monadic.Block.denote M
+                (restrict M [] (projectBoundary M sourceCfg pred target))
+                (Isotope.TAC.Densem.Classical.block block) >>= k)
+              funext result
+              rcases result with ⟨rho, exit⟩
+              cases exit <;> simp [finish, hv, restrict_idem]
+      | cons x xs =>
+          by_cases hpred : pred ∈ predecessors sourceCfg (.named label)
+          · rcases lookup_of_mem_predecessors sourceCfg pred (.named label) hpred with
+              ⟨predBlock, hpredBlock⟩
+            have hproj : restrict M (sourceVars sourceCfg)
+                (projectBoundary M sourceCfg pred target) =
+                restrict M (sourceVars sourceCfg)
+                  (project (M := M) (endEnv pred predBlock) target) := by
+              simp [projectBoundary, hpredBlock]
+            by_cases hpresent : allPresent M (sourceVars sourceCfg)
+                (restrict M (sourceVars sourceCfg)
+                  (projectBoundary M sourceCfg pred target)) = true
+            · have htotal := (allPresent_eq_true_iff M _ _).1 hpresent
+              have hrel : EnvRelOn (M := M) (sourceVars sourceCfg)
+                  (endEnv pred predBlock)
+                  (restrict M (sourceVars sourceCfg)
+                    (projectBoundary M sourceCfg pred target)) target := by
+                intro y hy
+                rw [hproj]
+                simp [restrict, hy, project]
+              have hvld := step_denote_guarded_valid M sourceCfg label pred predBlock
+                block (restrict M (sourceVars sourceCfg)
+                  (projectBoundary M sourceCfg pred target)) target hs hblock hpred
+                hpredBlock htotal hrel
+              simp only [observeState]
+              rw [← hvld]
+              simp only [Isotope.TAC.Densem.Phi.Monadic.step, hl, hs,
+                Option.map_some, bind_assoc]
+              apply congrArg (fun k =>
+                Isotope.TAC.Densem.Phi.Monadic.enter M target pred
+                  (convertBlock sourceCfg (sourceVars sourceCfg) (.named label) block) >>= k)
+              funext result
+              rcases result with ⟨rho, exit⟩
+              cases exit <;> simp [observeState, projectBoundary, hcfg,
+                observeGuardedResult]
+            · have hnotTotal : ¬ TotalOn (M := M) (sourceVars sourceCfg)
+                  (restrict M (sourceVars sourceCfg)
+                    (projectBoundary M sourceCfg pred target)) := by
+                intro ht
+                exact hpresent ((allPresent_eq_true_iff M _ _).2 ht)
+              unfold TotalOn at hnotTotal
+              push_neg at hnotTotal
+              rcases hnotTotal with ⟨y, hy, hmissing⟩
+              have hsourceNone : restrict M (sourceVars sourceCfg)
+                  (projectBoundary M sourceCfg pred target) y = none := by
+                cases ho : restrict M (sourceVars sourceCfg)
+                    (projectBoundary M sourceCfg pred target) y with
+                | none => rfl
+                | some a => exact (hmissing a ho).elim
+              have htargetNone : target (endEnv pred predBlock y) = none := by
+                rw [hproj] at hsourceNone
+                simpa [restrict, hy, project] using hsourceNone
+              have hfail := assignments_convert_missing M sourceCfg
+                (sourceVars sourceCfg) label pred predBlock target hpred hpredBlock
+                ⟨y, hy, htargetNone⟩
+              simp [Isotope.TAC.Densem.Phi.Monadic.step, hl, hs, observeState,
+                guardedSourceStep, hpresent, convertBlock,
+                Isotope.TAC.Densem.Phi.Monadic.enter, hfail,
+                Isotope.TAC.Densem.Phi.Monadic.LawfulFailure.fail_bind]
+              simpa only [map_eq_pure_bind] using
+                (Isotope.TAC.Densem.Phi.Monadic.LawfulFailure.fail_bind
+                  (M := M) (fun result : M.Val ⊕
+                    (MEnv M (Version ν κ) × BlockId κ × κ) =>
+                      pure (Sum.map id (observeState M sourceCfg) result)))
+          · have hfail := assignments_convert_badPred M sourceCfg x xs label pred
+                target hpred
+            simp [Isotope.TAC.Densem.Phi.Monadic.step, hl, hs, observeState,
+              guardedSourceStep, hv, hpred, convertBlock,
+              Isotope.TAC.Densem.Phi.Monadic.enter, hfail,
+              Isotope.TAC.Densem.Phi.Monadic.LawfulFailure.fail_bind]
+            simpa only [map_eq_pure_bind] using
+              (Isotope.TAC.Densem.Phi.Monadic.LawfulFailure.fail_bind
+                (M := M) (fun result : M.Val ⊕
+                  (MEnv M (Version ν κ) × BlockId κ × κ) =>
+                    pure (Sum.map id (observeState M sourceCfg) result)))
 
 /-- Exact effectful commuting square for one reachable loop boundary.
 
