@@ -38,6 +38,18 @@ def twoLabels (X Y : τ) : Fin 2 → τ
   | ⟨0, _⟩ => X
   | ⟨1, _⟩ => Y
 
+mutual
+  def simpleInstr_all : (i : Instr Empty Φ n) → SimpleInstr i
+    | .atom a => .atom a
+    | .case e l r => .case e (simpleProgram_all l) (simpleProgram_all r)
+    | .iter init body => .iter init (simpleProgram_all body)
+
+  def simpleProgram_all : (p : Program Empty Φ n) → SimpleProgram p
+    | .ret a => .ret a
+    | .let₁ i body => .let₁ (simpleInstr_all i) (simpleProgram_all body)
+    | .let₂ _ body => .let₂ (simpleProgram_all body)
+end
+
 /-- Compile a straight-line ANF program in CPS, branching to `result` with
 its returned value. -/
 def simpleProgram (result : Nat) : {p : Program Empty Φ n} →
@@ -144,5 +156,18 @@ def simpleProgram_hasType {β : LambdaIter.LocallyNameless.BoundCtx τ n}
           exact LambdaSSA.Region.HasType.let₂ (atom_hasType ha)
             (simpleProgram_hasType hb hBody hout)
 termination_by sizeOf p
+
+/-- Compile any closed-free-name ANF program to an SSA region whose returned
+value is passed to the distinguished result label. -/
+def program (result : Nat) (p : Program Empty Φ n) : LambdaSSA.Region Φ :=
+  simpleProgram result (simpleProgram_all p)
+
+theorem program_hasType {β : LambdaIter.LocallyNameless.BoundCtx τ n}
+    {p : Program Empty Φ n}
+    (h : Program.HasType (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ) β p A)
+    (hout : LambdaSSA.At L result A) :
+    LambdaSSA.Region.HasType (LocallyNameless.ToDeBruijn.context β)
+      (program result p) L :=
+  simpleProgram_hasType (simpleProgram_all p) h hout
 
 end Isotope.LambdaSSA.Translation.ANF.ToSSA
