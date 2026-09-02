@@ -110,8 +110,12 @@ Universes: with `m : Type u → Type u` and `R S W : Type u`, all three transfor
   transformer needs a `noncomputable` marker.  `Set` is not a global `Monad`, so `Set`-based
   material needs `attribute [local instance] Set.monad`, or the `SetM` wrapper.
 
-**Axioms.**  Everything here uses only `propext`, `Classical.choice`, `Quot.sound`.  The abstract
-transformer development needs no choice at all; choice enters only through `Part`'s and `Set`'s
-own instances in the examples.  No new axiom is declared, and there is no `sorry`, `admit` or
-`unsafe` in this directory.
+**Axioms.**  Everything here uses only `propext`, `Classical.choice`, `Quot.sound`, checked with
+`#print axioms`.  The abstract development needs **no choice**: `Reader.instLawfulElgotMonad`,
+`State.instLawfulElgotMonad`, `Writer.instLawfulElgotMonad`, `Writer.iter_shift` and
+`Writer.forget_iter` all report exactly `[propext, Quot.sound]`, as do the carrier and naturality
+obstructions and `Writer.no_streamProd_self`.  `Classical.choice` appears only where Mathlib's own
+`Part` and `Set` machinery is used — the `Set` fixpoint obstruction, `countdown_distinguishes`,
+and the worked examples.  No new axiom is declared, and there is no `sorry`, `admit` or `unsafe`
+in this directory.
 -/
