@@ -1,0 +1,65 @@
+import Isotope.LambdaCase.Subtyping.Typing
+import Isotope.LambdaIter.Subtyping.Semantics.Categorical
+
+/-! # Distributive Freyd semantics of lambda-case -/
+
+universe v₁ v₂ u₁ u₂ u₃ u₄
+
+namespace Isotope.LambdaCase.Subtyping.Semantics.Categorical
+
+open CategoryTheory CategoryTheory.Category CategoryTheory.Limits
+open CategoryTheory.PremonoidalCategory
+open Isotope.LambdaIter.Subtyping.Semantics.Categorical
+open scoped MonoidalCategory
+
+variable {V : Type u₁} {C : Type u₂}
+  [Category.{v₁} V] [Category.{v₂} C]
+  [CartesianMonoidalCategory V] [SymmetricCategory V]
+  [PremonoidalCategory C] [SymmetricPremonoidalCategory C]
+  [HasFiniteCoproducts V] [HasFiniteCoproducts C]
+  [DistributiveTensor V] [DistributivePremonoidalCategory C]
+  (J : Functor V C) [DistributiveFreydCategory J]
+  {τ : Type u₃} [LambdaIter.TypeFormers τ] [LambdaIter.Subtyping τ]
+  (M : TypeModel τ V)
+  {ν : Type u₄} [DecidableEq ν]
+  {Φ : Type*} [LambdaIter.HasTy Φ τ] [InstructionModel J M Φ]
+
+/-- Reassociate an environment extended by a pair into one extended by its components. -/
+def envPairHom (Γ : Ctx ν τ) {n : Nat}
+    (β : LocallyNameless.BoundCtx τ n) (A B : τ) :
+    envObj M Γ β ⊗ (M.obj A ⊗ M.obj B) ⟶
+      envObj M Γ (.snoc (.snoc β A) B) :=
+  (α_ (ctxObj M Γ) (boundObj M β) (M.obj A ⊗ M.obj B)).hom ≫
+    ctxObj M Γ ◁ (α_ (boundObj M β) (M.obj A) (M.obj B)).inv
+
+/-- Lambda-case denotation in a distributive Freyd category.  In contrast to
+lambda-iter, neither `Iteration` nor any Elgot law occurs in the assumptions. -/
+noncomputable def denote : {Γ : Ctx ν τ} → {n : Nat} →
+    {β : LocallyNameless.BoundCtx τ n} →
+    {t : LocallyNameless.Tm ν Φ n} → {A : τ} →
+    LocallyNameless.HasType Φ Γ β t A →
+      (J.obj (envObj M Γ β) ⟶ J.obj (M.obj A))
+  | _, _, _, _, _, .fv h => J.map (freeLookup M _ h)
+  | _, _, _, _, _, .bv => J.map (boundVar M _)
+  | _, _, _, _, _, .op ha => denote ha ≫ InstructionModel.denote _
+  | Γ, _, β, _, _, .let₁ ha hb => bind J (denote ha) <|
+      J.map (envSnocIso M Γ β _).hom ≫ denote hb
+  | _, _, _, _, _, .unit =>
+      J.map (CartesianMonoidalCategory.toUnit _ ≫ M.unitIso.inv)
+  | _, _, _, _, _, .pair ha hb =>
+      pair J (denote ha) (denote hb) ≫ J.map (M.tensorIso _ _).inv
+  | Γ, _, β, _, _, .let₂ ha hc => bind J (denote ha) <|
+      J.map ((𝟙 _) ⊗ₘ (M.tensorIso _ _).hom) ≫
+        J.map (envPairHom M Γ β _ _) ≫ denote hc
+  | _, _, _, _, _, .inl ha =>
+      denote ha ≫ J.map (coprod.inl ≫ (M.coprodIso _ _).inv)
+  | _, _, _, _, _, .inr hb =>
+      denote hb ≫ J.map (coprod.inr ≫ (M.coprodIso _ _).inv)
+  | Γ, _, β, _, _, .case he hl hr =>
+      caseWithContext J (denote he ≫ J.map (M.coprodIso _ _).hom)
+        (J.map (envSnocIso M Γ β _).hom ≫ denote hl)
+        (J.map (envSnocIso M Γ β _).hom ≫ denote hr)
+  | _, _, _, _, _, .abort ha => abort J M (denote ha)
+  | _, _, _, _, _, .sub ha d => denote ha ≫ J.map (M.subty d)
+
+end Isotope.LambdaCase.Subtyping.Semantics.Categorical
