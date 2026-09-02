@@ -31,21 +31,29 @@ namespace CategoryTheory
 open Category Limits PremonoidalCategory
 open scoped MonoidalCategory
 
-/-- **Effectful Freyd category (subcategory presentation).**
-
-A symmetric premonoidal category `C` together with a monotone family of wide symmetric
-premonoidal subcategories `C_ε = eff ε`, indexed by an effect system `E` with a least element.
-The pure morphisms `C_⊥` are required to be central and to make the premonoidal tensor a
-cartesian product, which is the defining condition of a Freyd category. -/
-class EffectfulFreydCategory (E : Type u₃) [Preorder E] [OrderBot E]
+/-- A *lattice of subcategories indexed by effects*: a monotone family of wide symmetric
+premonoidal subcategories `C_ε = eff ε` of a symmetric premonoidal category `C`. -/
+class EffectLattice (E : Type u₃) [Preorder E]
     {C : Type u₂} [Category.{v₂} C] [PremonoidalCategory C] [SymmetricPremonoidalCategory C]
-    (eff : E → MorphismProperty C)
-    [IsCentralSubcategory (eff ⊥)] [IsSemiCartesianSubcategory (eff ⊥)]
-    [IsCartesianSubcategory (eff ⊥)] : Prop where
+    (eff : E → MorphismProperty C) : Prop where
   /-- More permissive effects allow more morphisms. -/
   eff_mono : Monotone eff
   /-- Each effect carves out a wide symmetric premonoidal subcategory. -/
   eff_subcategory (e : E) : IsSymmetricSubcategory (eff e)
+
+attribute [instance] EffectLattice.eff_subcategory
+
+/-- **Effectful Freyd category (subcategory presentation).**
+
+A symmetric premonoidal category `C` together with an effect lattice of wide subcategories
+`C_ε ⊆ C`, whose bottom member — the *pure* morphisms `C_⊥` — is central and makes the
+premonoidal tensor a cartesian product.  That last condition is exactly the defining condition
+of a Freyd category, with `C_⊥` playing the role of the value category. -/
+class EffectfulFreydCategory (E : Type u₃) [Preorder E] [OrderBot E]
+    {C : Type u₂} [Category.{v₂} C] [PremonoidalCategory C] [SymmetricPremonoidalCategory C]
+    (eff : E → MorphismProperty C)
+    [IsCentralSubcategory (eff ⊥)] [IsSemiCartesianSubcategory (eff ⊥)]
+    [IsCartesianSubcategory (eff ⊥)] : Prop extends EffectLattice E eff
 
 namespace EffectfulFreydCategory
 
@@ -55,9 +63,7 @@ variable {E : Type u₃} [Preorder E] [OrderBot E]
   [IsCentralSubcategory (eff ⊥)] [IsSemiCartesianSubcategory (eff ⊥)]
   [IsCartesianSubcategory (eff ⊥)] [EffectfulFreydCategory E eff]
 
-attribute [instance] eff_subcategory
-
-theorem pure_le (e : E) : eff ⊥ ≤ eff e := eff_mono (E := E) bot_le
+theorem pure_le (e : E) : eff ⊥ ≤ eff e := EffectLattice.eff_mono (eff := eff) bot_le
 
 theorem pure_mem {X Y : C} {f : X ⟶ Y} (hf : eff ⊥ f) (e : E) : eff e f := pure_le eff e _ hf
 
