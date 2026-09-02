@@ -13,6 +13,15 @@ import Isotope.Elgot.Brookes.SeqCst.Examples
 import Isotope.Elgot.Brookes.SeqCst.FullAbstraction
 import Isotope.Elgot.Brookes.SeqCst.Laws
 import Isotope.Elgot.Brookes.SeqCst.Litmus
+import Isotope.Elgot.Brookes.SeqCst.Op
+import Isotope.Elgot.Brookes.SeqCst.Op.Basic
+import Isotope.Elgot.Brookes.SeqCst.Op.Clauses
+import Isotope.Elgot.Brookes.SeqCst.Op.Counted
+import Isotope.Elgot.Brookes.SeqCst.Op.Par
+import Isotope.Elgot.Brookes.SeqCst.Op.Prop62
+import Isotope.Elgot.Brookes.SeqCst.Op.Seq
+import Isotope.Elgot.Brookes.SeqCst.Op.Traces
+import Isotope.Elgot.Brookes.SeqCst.Op.While
 import Isotope.Elgot.Brookes.SeqCst.Parallel
 import Isotope.Elgot.Brookes.SeqCst.Syntax
 import Isotope.Elgot.Brookes.TSO
@@ -68,6 +77,23 @@ consistency is that model with `S := Loc → Val`.
     denotational equations and as contextual equivalences.
   * `SeqCst.Example` — his `x:=0` versus `x:=0; x:=0`, worked out, with the
     context `[−] ∥ await x = 0 then x := 1` that the construction produces.
+* **An operational semantics for the parallel language**, in `Brookes/SeqCst/Op/`:
+  the small-step machine `SeqCst.Op.Red`/`Reds` on configurations
+  `Option (Com Loc Val) × Store Loc Val`, its transition traces `SeqCst.Op.Run`
+  and `SeqCst.Op.TTrace`, and their closure `SeqCst.Op.opDen`.
+  * `SeqCst.Op.opDen_eq_den` is **Proposition 6.2 for the machine of
+    `SeqCst/Op/Basic.lean`** (Brookes's own §3 machine is not formalized): the operational
+    trace semantics satisfies exactly the compositional clauses that `SeqCst.den`
+    takes as its definition.  Each clause is proved separately —
+    `opDen_skip`, `opDen_assign`, `opDen_await`, `opDen_ite`, `opDen_seq`,
+    `opDen_wh`, `opDen_par`.
+  * `SeqCst.Op.obs_iff_opObs` is **adequacy**, his
+    `M[C] = {(s,s') | (s,s') ∈ T[C]}`: the observation read off the denotation is
+    operational termination.
+  * `SeqCst.Op.opFullAbstraction : opDen C ≤ opDen C' ↔ OpCtxLe C C'`, with
+    `opFullAbstraction_eq` and the fully spelled-out `fullAbstraction_op` —
+    **full abstraction stated entirely operationally**, both sides in terms of
+    the machine.
 * `Brookes.ofFiniteTrace`, a morphism from the deterministic `FiniteTrace` model
   commuting with `pure`, `bind` and `iter` on the nose, together with the proof
   that it is not order-reflecting.
@@ -99,15 +125,23 @@ consistency is that model with `S := Loc → Val`.
   model is shipped.
 * **`SeqCst.read` is an extrapolation.**  The paper gives `write` only; `read` is
   the obvious dual and is flagged as such where it is defined.
-* **No operational semantics for the parallel language.**  Brookes defines `T`
-  and `M` operationally and *proves* the compositional clauses (his Proposition
-  6.2).  `SeqCst.den` takes those clauses as the definition and `SeqCst.obs`
-  reads `M` off it, so Proposition 6.2 — the bridge between the operational and
-  denotational definitions — is **not** formalized.  Full abstraction below is
-  therefore a theorem about the denotational `T` and the contextual preorder it
-  induces.  The full list of narrowings (restricted expressions, total finitely
-  indexed states, unrestricted `await` bodies, `ε`-freeness) is in the module
-  docstring of `Brookes/SeqCst/FullAbstraction.lean`.
+* **The operational semantics is ours, not transcribed.**  Proposition 6.2 *is*
+  now formalized (`SeqCst.Op.opDen_eq_den`, with adequacy
+  `SeqCst.Op.obs_iff_opObs`), so full abstraction can be and is stated
+  operationally (`SeqCst.Op.opFullAbstraction`).  But the small-step machine
+  `SeqCst.Op.Red`/`Reds` it is proved against is a reading of Brookes's journal
+  §3 transition system, not a transcription of it: his is over finite partial
+  states with a `dom(s)` discipline, and he restricts `await` bodies
+  syntactically to make them atomic, whereas `Red` is the natural total-state
+  reading with `await` bodies left unrestricted — so the language here is
+  *wider* than his.  `opDen_eq_den` therefore says that the transcribed clauses
+  are the transition trace semantics of a small-step machine; it is not an
+  independent check of the transcription against the paper's own machine, and on
+  the `await` clause in particular it holds by construction, since `Red.await`
+  stipulates atomicity for an arbitrary body.  The full list of narrowings
+  (restricted expressions, total finitely indexed states, unrestricted `await`
+  bodies, `ε`-freeness) is in the module docstring of
+  `Brookes/SeqCst/FullAbstraction.lean`.
 * **No state traces and no fair infinite traces.**  Brookes's Proposition 4.3
   (partial-correctness and state-trace contextual preorders coincide) and his
   §9 fine-grained granularity and fair extension are out of scope.
