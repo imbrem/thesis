@@ -204,6 +204,51 @@ theorem bindGen_parGen_subset {P : Set (PreTrace Loc Val A)}
   · change ζ'.ret = ((τ₁.seam τ₂ hcs₁).ret, (υ₁.seam υ₂ hcs₂).ret)
     exact hret'
 
+/-! ## The unit law, one direction only
+
+Table 3 (journal p.44) claims "Symmetric-Monoidal Laws, e.g.
+`M ∥ N ↠ match N ∥ M with ⟨b,a⟩.⟨a,b⟩`" and the Fig. 3 caption (p.12) claims
+"all symmetric-monoidal laws with the binary operator `∥` and the unit `⟨⟩`",
+with no proposition, proof or sketch anywhere.  Of the unit law we prove the
+direction `P ⊆ P ||| return r` (modulo pairing the returned value): the pure
+operand contributes a single stutter `⟨ξ.o, ξ.o⟩`, scheduled first, and `Mumble`
+absorbs it into the first transition of `P`'s trace.
+
+⚠ **The converse is not proved and was not attempted.**  It would have to
+remove, from an arbitrary shuffle, the stutters contributed by an arbitrary
+member of `(return r)★`; `Mumble` merges `⟨μ,ρ⟩⟨ρ,θ⟩` only when the memories
+match exactly, whereas chronicle adjacency gives only `⊆`.  Associativity of
+`∥∥∥` is likewise **neither proved nor attempted**; see the honest boundary in
+`Isotope/Elgot/RA.lean`. -/
+
+/-- Every trace of `P`, with its returned value paired with `r`, is a trace of
+`P ||| return r`: the pure operand's single stutter is scheduled first and
+mumbled away.  Original work. -/
+theorem mapRet_image_subset_parGen_pureGen (hMu : Rule.Mu ∈ R)
+    {P : Set (PreTrace Loc Val A)} (hP : IsTraceSet P) (r : B) :
+    PreTrace.mapRet (fun a ↦ (a, r)) '' P ⊆ closure R (parGen P (pureGen r)) := by
+  rintro _ ⟨τ, hτ, rfl⟩
+  have hτ' : IsTrace τ := hP _ hτ
+  have hh : (Chro.single (⟨τ.ch.o, τ.ch.o⟩ : Transition Loc Val)).c ⊆ τ.ch.o := by simp
+  refine ⟨⟨τ.ivw, (Chro.single (⟨τ.ch.o, τ.ch.o⟩ : Transition Loc Val)).append τ.ch hh,
+      τ.fvw, (τ.ret, r)⟩,
+    ⟨τ, hτ, ⟨τ.ivw, Chro.single ⟨τ.ch.o, τ.ch.o⟩, τ.ivw, r⟩,
+      ⟨τ.ivw, τ.ch.o, hτ'.wf_o, hτ'.openPts, rfl⟩, ?_, ?_, ?_, rfl⟩, ?_⟩
+  · change Interleave τ.ch.toList [(⟨τ.ch.o, τ.ch.o⟩ : Transition Loc Val)]
+      ([(⟨τ.ch.o, τ.ch.o⟩ : Transition Loc Val)] ++ τ.ch.toList)
+    exact (Interleave.append _ _).swap
+  · change IsInfMem τ.ch.o {τ.ivw, τ.ivw} τ.ivw
+    exact isInfMem_pair_self hτ'.openPts
+  · change τ.fvw = τ.fvw ⊔ τ.ivw
+    exact (sup_eq_left.mpr hτ'.mono).symm
+  · refine Refines.single ⟨Step.chro hMu (ChroStep.mumble _ _ [] τ.ch.rest τ.ch.o τ.ch.o
+      τ.ch.first.closing ?_ ?_), hτ'.mapRet⟩
+    · simp only [Chro.append_toList, Chro.single_toList, List.nil_append,
+        List.singleton_append]
+      rfl
+    · simp only [List.nil_append]
+      rfl
+
 /-! ## At the level of computations
 
 Both corollaries are stated at `R = 𝔠`, because both need Deferral of Closure at
@@ -236,6 +281,23 @@ theorem seqPair_le_par (P : Comp cRules Loc Val A) (Q : Comp cRules Loc Val B) :
   exact closure_subset_of_closed (closure_closed _ _)
     (subset_trans (pairGen_subset_parGen (by simp) P.isTrace Q.isTrace Q.closed)
       subset_closure)
+
+/-- `P ⊆ P ||| return r`, the reachable half of the unit law, at every rule set
+containing `Mumble`.  Original work; the converse is not proved. -/
+theorem mapRet_image_subset_par_pure (hMu : Rule.Mu ∈ R) (P : Comp R Loc Val A) (r : B) :
+    PreTrace.mapRet (fun a ↦ (a, r)) '' P.traces ⊆ (P.par (Pure.pure r)).traces := by
+  refine subset_trans (mapRet_image_subset_parGen_pureGen hMu P.isTrace r) ?_
+  rw [traces_par, traces_pure]
+  exact closure_mono (parGen_mono (subset_refl _) subset_closure)
+
+/-- The same on the other side, by Symmetry. -/
+theorem mapRet_image_subset_pure_par (hMu : Rule.Mu ∈ R) (P : Comp R Loc Val A) (r : B) :
+    PreTrace.mapRet (fun a ↦ (r, a)) '' P.traces
+      ⊆ ((Pure.pure r : Comp R Loc Val B).par P).traces := by
+  rintro _ ⟨τ, hτ, rfl⟩
+  rw [par_swap]
+  exact ⟨(τ.mapRet (fun a ↦ (a, r))),
+    mapRet_image_subset_par_pure hMu P r ⟨τ, hτ, rfl⟩, rfl⟩
 
 /-- **Proposition E.1, Generalized Sequencing** (journal p.58), for the
 `𝔠`-model.  The interaction of the concurrent tensor `∥∥∥` with the sequential

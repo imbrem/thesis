@@ -290,18 +290,23 @@ laws are. -/
 def PreTrace.mapRet (f : A → B) (τ : PreTrace Loc Val A) : PreTrace Loc Val B :=
   ⟨τ.ivw, τ.ch, τ.fvw, f τ.ret⟩
 
+/-- Relabelling leaves the initial view. -/
 @[simp] theorem PreTrace.mapRet_ivw (f : A → B) (τ : PreTrace Loc Val A) :
     (τ.mapRet f).ivw = τ.ivw := rfl
 
+/-- Relabelling leaves the chronicle. -/
 @[simp] theorem PreTrace.mapRet_ch (f : A → B) (τ : PreTrace Loc Val A) :
     (τ.mapRet f).ch = τ.ch := rfl
 
+/-- Relabelling leaves the final view. -/
 @[simp] theorem PreTrace.mapRet_fvw (f : A → B) (τ : PreTrace Loc Val A) :
     (τ.mapRet f).fvw = τ.fvw := rfl
 
+/-- Relabelling acts on the returned value. -/
 @[simp] theorem PreTrace.mapRet_ret (f : A → B) (τ : PreTrace Loc Val A) :
     (τ.mapRet f).ret = f τ.ret := rfl
 
+/-- Relabelling is functorial. -/
 @[simp] theorem PreTrace.mapRet_mapRet (f : A → B) (g : B → C) (τ : PreTrace Loc Val A) :
     (τ.mapRet f).mapRet g = τ.mapRet (fun a ↦ g (f a)) := rfl
 
@@ -326,9 +331,11 @@ theorem Step.mapRet (f : A → B) {τ π : PreTrace Loc Val A} (h : Step R τ π
   | condense hx l m ν ε hde hfν hfε h₁ h₂ =>
       exact Step.condense hx l m ν ε hde hfν hfε h₁ h₂
 
+/-- Trace-preserving rewrites survive relabelling. -/
 theorem TStep.mapRet (f : A → B) {τ π : PreTrace Loc Val A} (h : TStep R τ π) :
     TStep R (τ.mapRet f) (π.mapRet f) := ⟨h.1.mapRet f, h.2.mapRet⟩
 
+/-- Refinement survives relabelling. -/
 theorem Refines.mapRet (f : A → B) {τ π : PreTrace Loc Val A} (h : Refines R τ π) :
     Refines R (τ.mapRet f) (π.mapRet f) := by
   induction h with
@@ -400,6 +407,7 @@ operation, and not the sequential premonoidal tensor. -/
 def par (P : Comp R Loc Val A) (Q : Comp R Loc Val B) : Comp R Loc Val (A × B) :=
   Comp.close R (parGen P.traces Q.traces) (parGen_isTrace P.isTrace Q.isTrace)
 
+/-- The traces of a parallel composition. -/
 @[simp] theorem traces_par (P : Comp R Loc Val A) (Q : Comp R Loc Val B) :
     (P.par Q).traces = closure R (parGen P.traces Q.traces) := rfl
 
