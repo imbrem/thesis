@@ -116,6 +116,28 @@ def embedIter (t : Tm ν Φ n) : LambdaIter.LocallyNameless.Tm ν Φ n :=
   funext i
   exact Fin.cases rfl (fun _ => rfl) i
 
+@[simp] theorem embedIter_rename (ρ : Fin n → Fin m) (t : Tm ν Φ n) :
+    embedIter (rename ρ t) = LambdaIter.LocallyNameless.Tm.rename ρ (embedIter t) := by
+  simp [embedIter]
+
+@[simp] theorem embedIter_lift (t : Tm ν Φ n) :
+    embedIter (lift t) = LambdaIter.LocallyNameless.Tm.lift (embedIter t) := by
+  simp [embedIter]
+
+@[simp] theorem embedIter_underBinder (t : Tm ν Φ (n + 1)) :
+    embedIter (underBinder t) = LambdaIter.LocallyNameless.Tm.underBinder (embedIter t) := by
+  simp [embedIter]
+
+@[simp] theorem embedIter_bsubst (σ : Fin n → Tm ν Φ m) (t : Tm ν Φ n) :
+    embedIter (bsubst σ t) =
+      LambdaIter.LocallyNameless.Tm.bsubst (fun i => embedIter (σ i)) (embedIter t) := by
+  simp [embedIter]
+
+@[simp] theorem embedIter_instantiate (b : Tm ν Φ (n + 1)) (a : Tm ν Φ n) :
+    embedIter (instantiate b a) =
+      LambdaIter.LocallyNameless.Tm.instantiate (embedIter b) (embedIter a) := by
+  simp [embedIter]
+
 private def unembed : {n : Nat} → LambdaCase.LocallyNameless.Tm ν Φ n → Option (Tm ν Φ n)
   | _, .fv x => some (.fv x)
   | _, .bv i => some (.bv i)

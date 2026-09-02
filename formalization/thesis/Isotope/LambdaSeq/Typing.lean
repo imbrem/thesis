@@ -147,6 +147,28 @@ def HasType.embedIter {Γ : Ctx ν τ} {n : Nat}
       (LambdaSeq.LocallyNameless.Tm.embedIter t) A :=
   fun h => h.embedCase.embed
 
+inductive Pure [LambdaIter.HasEff Φ ε] (pureEff : ε) :
+    {n : Nat} → LambdaSeq.LocallyNameless.Tm ν Φ n → Prop where
+  | fv : Pure pureEff (.fv x)
+  | bv : Pure pureEff (.bv i)
+  | op (hf : LambdaIter.IsPure pureEff f) : Pure pureEff a → Pure pureEff (.op f a)
+  | let₁ : Pure pureEff a → Pure pureEff b → Pure pureEff (.let₁ a b)
+
+def Pure.embedCase {ε : Type r} [LambdaIter.HasEff Φ ε] {pureEff : ε} :
+    {n : Nat} → {t : LambdaSeq.LocallyNameless.Tm ν Φ n} → Pure pureEff t →
+      LambdaCase.Subtyping.LocallyNameless.Pure pureEff
+        (LambdaSeq.LocallyNameless.Tm.embedCase t)
+  | _, _, .fv => .fv
+  | _, _, .bv => .bv
+  | _, _, .op hf ha => .op hf ha.embedCase
+  | _, _, .let₁ ha hb => .let₁ ha.embedCase hb.embedCase
+
+def Pure.embedIter {ε : Type r} [LambdaIter.HasEff Φ ε] {pureEff : ε} :
+    {n : Nat} → {t : LambdaSeq.LocallyNameless.Tm ν Φ n} → Pure pureEff t →
+      LambdaIter.Subtyping.LocallyNameless.Pure pureEff
+        (LambdaSeq.LocallyNameless.Tm.embedIter t) :=
+  fun h => h.embedCase.embed
+
 end LocallyNameless
 end Subtyping
 end Isotope.LambdaSeq
