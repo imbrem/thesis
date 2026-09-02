@@ -19,6 +19,24 @@ variable {V : Type u₁} {C : Type u₂}
   {τ : Type u₃} [LambdaIter.TypeFormers τ] [LambdaIter.Subtyping τ]
   (M : TypeModel τ V)
 
+/-- The nullary part of distributivity omitted by `DistributiveTensor`:
+tensoring the interpreted initial type with an environment remains initial.
+It is optional because binary distributivity alone does not imply this law. -/
+class TensorEmptyStrict : Prop where
+  leftInitial (R : V) : IsInitial (R ⊗ (M.obj (LambdaIter.empty : τ)))
+  rightInitial (R : V) : IsInitial ((M.obj (LambdaIter.empty : τ)) ⊗ R)
+
+/-- The chosen Freyd functor carries the strict left tensor with empty to an
+initial computation object. -/
+noncomputable def computationTensorEmptyIsInitial [TensorEmptyStrict M] (R : V) :
+    IsInitial (J.obj (R ⊗ (M.obj (LambdaIter.empty : τ)))) :=
+  (TensorEmptyStrict.leftInitial (M := M) R).isInitialObj J
+
+/-- Symmetric companion of `computationTensorEmptyIsInitial`. -/
+noncomputable def computationEmptyTensorIsInitial [TensorEmptyStrict M] (R : V) :
+    IsInitial (J.obj ((M.obj (LambdaIter.empty : τ)) ⊗ R)) :=
+  (TensorEmptyStrict.rightInitial (M := M) R).isInitialObj J
+
 /-- A distributive Freyd functor carries the model's initial empty-type
 object to an initial computation object. -/
 noncomputable def computationEmptyIsInitial :
