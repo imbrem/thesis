@@ -1,4 +1,5 @@
 import Isotope.Elgot.Opt.StoreBuffering
+import Isotope.Elgot.Opt.WriteWrite
 
 /-!
 # Transformations compared across memory models
@@ -19,6 +20,18 @@ neither.  Model-internal transformation soundness for release/acquire lives in
   (it is unsound under release/acquire, by an explicit trace that is in one
   denotation and provably not in the other).  `store_buffering_separates`
   conjoins them.
+
+`Opt/WriteWrite.lean`
+: the two most elementary store optimizations, side by side.  Write-Read
+  Elimination `ℓ:=v ; ℓ? ↠ ℓ:=v ; v` transfers from sequential consistency to
+  the release/acquire *Concrete* model verbatim
+  (`write_read_elim_transfers`); Write-Write Elimination
+  `ℓ:=v ; ℓ:=w ↠ ℓ:=w` does not — it is sound under sequential consistency by a
+  single mumble and **unsound** in the release/acquire `𝔠`-model
+  (`write_write_elim_fails_in_cRules`), because a release/acquire memory keeps
+  the superseded write as a message and no `𝔠`-rule can delete it.  Table 3's
+  own labelling predicts the split: the Write-Read row carries no abstract-rule
+  label, Write-Write carries `Ab`.
 
 ## Honest boundary
 
@@ -51,14 +64,18 @@ Read this before citing anything here.
    translation between them is defined or claimed.  What the two halves share
    is the source program (up to each model's own denotation brackets), the
    class of observations, and the observed value.
-5. **A related but different separation, not claimed here.**  Write-Write
-   Elimination `ℓ:=v ; ℓ:=w ↠ ℓ:=w` is sound under sequential consistency
-   (`Brookes.SeqCst.write_le_write_write`) and is listed in the paper's Table 3
-   (journal p.44) as `ℓ:=w ; ℓ:=v ↠^Ab ℓ:=v` — that is, the **Abstract** model
-   validates it, using the abstract rule `Absorb`.  Anyone stating it as a
-   separation must say that it separates the *Concrete* model from the
-   *Abstract* one, not sequential consistency from release/acquire.  It is not
-   proved in either direction here.
+5. **`Opt/WriteWrite.lean` is a different kind of statement, and is labelled as
+   such.**  Write-Write Elimination is listed in the paper's Table 3
+   (journal p.44) as `ℓ:=w ; ℓ:=v ↠^Ab ℓ:=v`: the **Abstract** model `A`
+   validates it, using the abstract rule `Absorb`.  So
+   `write_write_elim_fails_in_cRules` separates a *level of the release/acquire
+   tower* from sequential consistency, not release/acquire from sequential
+   consistency, and it must never be stated without that caveat.  Two further
+   limits: the unsoundness is proved for `R ⊆ 𝔠` and **not** for the Concrete
+   model `C = 𝔤𝔠` (the argument runs on `Refines.c_sub`, which fails for `Ls`,
+   `Ex` and `Cn`); and Prop. E.10, the soundness at `A`, is **not** proved
+   here — the repository has the required `Absorb` rewrite only at one concrete
+   instance, `RA.Abstract.absorb_two_writes`.
 6. **Parallel composition is outside the monad** in both models, and this
    repository's `λ`-iter syntax has no parallel composition at all.  The
    separation is therefore a statement about the two *models*, not about the

@@ -37,6 +37,8 @@ statement in `Opt/` is checked against this reading in its docstring.
 * `mem_pure_of_own_empty`: a trace with no local messages *is* a trace of
   `return` of its own returned value.  This is the converse of
   `Closure.Refines.own_empty` and the engine of the read-elimination results.
+* `Step.c_sub` / `Step.o_sub` and their `Refines` closures: along a `𝔠`-rewriting
+  the closing memory only grows and the opening memory only shrinks.
 * `Comp.traces_bind_pure_comp`: `P >>= (return ∘ f)` is `P` with its returned
   values relabelled along `f`.  Available for every `𝔠 ⊆ R ⊆ 𝔤𝔠 ∪ {Ti, Ab}`,
   i.e. wherever the unit laws hold, and *proved by the unit-law argument* rather
@@ -65,6 +67,49 @@ set. -/
 theorem Comp.close_le {S : Set (PreTrace Loc Val A)} (hS : IsTraceSet S)
     {Q : Comp R Loc Val A} (h : S ⊆ Q.traces) : Comp.close R S hS ≤ Q :=
   closure_subset_of_closed Q.closed h
+
+/-! ## The memories at the ends of a `𝔠`-rewriting
+
+`ChroStep.c_sub` and `ChroStep.o_sub` say that a `𝔠`-rewrite of a chronicle can
+only grow the closing memory and shrink the opening one.  Lifting them from
+`ChroStep` to `Refines` is what lets an invariant on the closing memory of a
+*generating* trace be transported to every trace of the closure — the mechanism
+behind the unsoundness result of `Isotope/Elgot/Opt/WriteWrite.lean`.  Both fail
+for the `𝔤` rules, which replace messages rather than adding them. -/
+
+/-- A `𝔠`-rewrite only grows the closing memory. -/
+theorem Step.c_sub (hR : R ⊆ cRules) {τ π : PreTrace Loc Val A} (h : Step R τ π) :
+    τ.ch.c ⊆ π.ch.c := by
+  cases h with
+  | chro hx hc => exact hc.c_sub (hR hx)
+  | forward _ _ => exact subset_refl _
+  | rewind _ _ => exact subset_refl _
+  | condense hx => exact absurd (hR hx) (by simp)
+  | dilute hx => exact absurd (hR hx) (by simp)
+
+/-- A `𝔠`-rewrite only shrinks the opening memory. -/
+theorem Step.o_sub (hR : R ⊆ cRules) {τ π : PreTrace Loc Val A} (h : Step R τ π) :
+    π.ch.o ⊆ τ.ch.o := by
+  cases h with
+  | chro hx hc => exact hc.o_sub (hR hx)
+  | forward _ _ => exact subset_refl _
+  | rewind _ _ => exact subset_refl _
+  | condense hx => exact absurd (hR hx) (by simp)
+  | dilute hx => exact absurd (hR hx) (by simp)
+
+/-- A `𝔠`-rewriting sequence only grows the closing memory. -/
+theorem Refines.c_sub (hR : R ⊆ cRules) {τ π : PreTrace Loc Val A} (h : Refines R τ π) :
+    τ.ch.c ⊆ π.ch.c := by
+  induction h with
+  | refl => exact subset_refl _
+  | tail _ hstep ih => exact subset_trans ih (hstep.1.c_sub hR)
+
+/-- A `𝔠`-rewriting sequence only shrinks the opening memory. -/
+theorem Refines.o_sub (hR : R ⊆ cRules) {τ π : PreTrace Loc Val A} (h : Refines R τ π) :
+    π.ch.o ⊆ τ.ch.o := by
+  induction h with
+  | refl => exact subset_refl _
+  | tail _ hstep ih => exact subset_trans (hstep.1.o_sub hR) ih
 
 /-! ## Iteration is monotone -/
 
