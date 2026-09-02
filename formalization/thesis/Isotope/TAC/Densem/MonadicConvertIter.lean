@@ -1,5 +1,6 @@
 import Isotope.TAC.Densem.MonadicConvertCFG
 import Isotope.TAC.Densem.ConvertCFG
+import Isotope.TAC.Densem.MonadicClassical
 
 /-! # Iteration boundary square for monadic TAC-to-SSA conversion -/
 
@@ -87,6 +88,44 @@ theorem allPresent_eq_true_iff (vars : List ν) (source : MEnv M ν) :
     exact Option.isSome_iff_exists.mp (h x hx)
   · intro h x hx
     exact Option.isSome_iff_exists.mpr (h x hx)
+
+/-- Canonical phi installation fails as soon as one variable in its finite
+interface is absent at the predecessor boundary. -/
+theorem assignments_convert_missing [Monad m] [LawfulMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    [Isotope.TAC.Densem.Phi.Monadic.LawfulFailure M]
+    (source : Isotope.TAC.Classical.CFG ν φ κ) (vars : List ν)
+    (label : κ) (pred : BlockId κ)
+    (predBlock : Isotope.TAC.Classical.Block ν φ κ)
+    (target : MEnv M (Version ν κ))
+    (hpred : pred ∈ predecessors source (.named label))
+    (hpredBlock : source.lookup pred = some predBlock)
+    (hmissing : ∃ x ∈ vars, target (endEnv pred predBlock x) = none) :
+    Isotope.TAC.Densem.Phi.Monadic.assignments M target pred
+      (phis source vars label) = M.fail := by
+  induction vars with
+  | nil => simp at hmissing
+  | cons x xs ih =>
+      simp only [phis, List.map_cons,
+        Isotope.TAC.Densem.Phi.Monadic.assignments]
+      rw [incoming_select source (.named label) pred x predBlock hpred hpredBlock]
+      simp only [Isotope.TAC.Densem.Classical.value,
+        Isotope.TAC.Densem.Monadic.Value.denote]
+      rcases hmissing with ⟨y, hy, hnone⟩
+      rcases List.mem_cons.mp hy with rfl | hy
+      · rw [hnone]
+        exact Isotope.TAC.Densem.Phi.Monadic.LawfulFailure.fail_bind _
+      · cases hv : target (endEnv pred predBlock x) with
+        | none =>
+            exact Isotope.TAC.Densem.Phi.Monadic.LawfulFailure.fail_bind _
+        | some a =>
+            simp only [pure_bind]
+            change (do
+              let tail ← Isotope.TAC.Densem.Phi.Monadic.assignments M target pred
+                (phis source xs label)
+              pure ((Version.phi label x, a) :: tail)) = M.fail
+            rw [ih ⟨y, hy, hnone⟩]
+            exact Isotope.TAC.Densem.Phi.Monadic.LawfulFailure.fail_bind _
 
 /-- Source loop state retaining predecessor control solely so that the
 globally guarded body can reject exactly the malformed boundaries rejected by
