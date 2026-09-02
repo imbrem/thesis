@@ -214,6 +214,88 @@ def toPhi (cfg : CFG Var Op Label) : Classical.CFG Var Op Label where
     terminator := block.terminator.eraseArguments
   })
 
+/-! ### Structural normalization
+
+The predicates in this section state normalization directly on the two source
+syntaxes.  In particular, they do not define well-formedness by running either
+conversion and comparing its result. -/
+
+/-- Predecessor occurrences of `target`, in the same entry-then-block and
+left-to-right order used by `incomingColumn`. -/
+def phiPredecessors (cfg : Classical.CFG Var Op Label) (target : Label) :
+    List (BlockId Label) :=
+  (if target ∈ cfg.entry.terminator.targets then [.entry] else []) ++
+    cfg.blocks.flatMap fun (source, block) =>
+      if target ∈ block.terminator.targets then [.named source] else []
+
+/-- Every control-flow target denotes exactly one named block. -/
+def PhiTargetsDefined (cfg : Classical.CFG Var Op Label) : Prop :=
+  ∀ target,
+    target ∈ cfg.entry.terminator.targets ∨
+      (∃ source block, (source, block) ∈ cfg.blocks ∧
+        target ∈ block.terminator.targets) →
+    ∃! block, (target, block) ∈ cfg.blocks
+
+/-- Independent structural conditions for canonical classical phi form:
+destinations and block labels are unique, every target resolves, and each phi
+has exactly one incoming row per predecessor, in canonical predecessor order. -/
+def PhiStructurallyNormalized (cfg : Classical.CFG Var Op Label) : Prop :=
+  cfg.entry.phis = [] ∧
+  (cfg.blocks.map Prod.fst).Nodup ∧
+  PhiTargetsDefined cfg ∧
+  ∀ label block, (label, block) ∈ cfg.blocks →
+    (block.phis.map Phi.dst).Nodup ∧
+    ∀ phi, phi ∈ block.phis →
+      phi.incoming.map Incoming.predecessor = phiPredecessors cfg label ∧
+      (phi.incoming.map Incoming.predecessor).Nodup
+
+/-- Target lookup in the BBA syntax, used only to state its structural arity
+condition. -/
+def findBlock (cfg : CFG Var Op Label) (label : Label) : Option (Block Var Op Label) :=
+  (cfg.blocks.find? fun block => block.1 = label).map Prod.snd
+
+/-- All source/target occurrences after forgetting the argument vectors. -/
+def edgeKeys (cfg : CFG Var Op Label) : List (BlockId Label × Label) :=
+  cfg.sourcedEdges.map fun (source, target, _) => (source, target)
+
+/-- Independent structural conditions for canonical BBA form.  Entry has no
+parameters, block parameters and labels are unique, each source has at most one
+edge to a target, and every edge vector has the target block's arity. -/
+def BBAStructurallyNormalized (cfg : CFG Var Op Label) : Prop :=
+  cfg.entry.parameters = [] ∧
+  (cfg.blocks.map Prod.fst).Nodup ∧
+  cfg.edgeKeys.Nodup ∧
+  (∀ label block, (label, block) ∈ cfg.blocks → block.parameters.Nodup) ∧
+  ∀ source target arguments, (source, target, arguments) ∈ cfg.sourcedEdges →
+    ∃ block, cfg.findBlock target = some block ∧
+      arguments.length = block.parameters.length
+
+/-- Structural phi normalization exposes uniqueness of every incoming
+predecessor without referring to either translation. -/
+theorem PhiStructurallyNormalized.incoming_predecessors_nodup
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg)
+    {label : Label} {block : Classical.Block Var Op Label}
+    (hblock : (label, block) ∈ cfg.blocks) {phi : Phi Var Label}
+    (hphi : phi ∈ block.phis) :
+    (phi.incoming.map Incoming.predecessor).Nodup :=
+  (hcfg.2.2.2 label block hblock).2 phi hphi |>.2
+
+/-- Structural BBA normalization gives the uniform target arity required by
+the phi/BBA matrix transpose. -/
+theorem BBAStructurallyNormalized.edge_arity
+    {cfg : CFG Var Op Label} (hcfg : BBAStructurallyNormalized cfg)
+    {source : BlockId Label} {target : Label} {arguments : List (Value Var)}
+    (hedge : (source, target, arguments) ∈ cfg.sourcedEdges) :
+    ∃ block, cfg.findBlock target = some block ∧
+      arguments.length = block.parameters.length :=
+  hcfg.2.2.2.2 source target arguments hedge
+
+/-- In canonical BBA form source/target pairs have no duplicate occurrence. -/
+theorem BBAStructurallyNormalized.edge_keys_nodup
+    {cfg : CFG Var Op Label} (hcfg : BBAStructurallyNormalized cfg) :
+    cfg.edgeKeys.Nodup :=
+  hcfg.2.2.1
+
 /-- A normalized phi CFG is one on which moving operands to edges succeeds and
 canonicalizing them back is literally the identity.  Expanded, this requires
 an empty entry phi list, resolvable and coherent target definitions, one
