@@ -17,24 +17,27 @@ def atom : Atom Empty Φ n → LambdaSSA.Tm Φ
   | .inr a => .inr (atom a)
   | .abort a => .abort (atom a)
 
-/-- The straight-line fragment, before compiling control instructions to CFGs. -/
-inductive Instr.Simple : Instr Empty Φ n → Type _ where
-  | atom (a : Atom Empty Φ n) : Simple (.atom a)
+mutual
+  inductive SimpleInstr : Instr Empty Φ n → Type _ where
+    | atom (a : Atom Empty Φ n) : SimpleInstr (.atom a)
+    | case (e : Atom Empty Φ n) : SimpleProgram left → SimpleProgram right →
+        SimpleInstr (.case e left right)
 
-inductive Program.Simple : Program Empty Φ n → Type _ where
-  | ret (a : Atom Empty Φ n) : Simple (.ret a)
-  | let₁ : Instr.Simple i → Program.Simple body → Simple (.let₁ i body)
-  | let₂ : Program.Simple body → Simple (.let₂ a body)
-
-def simpleInstr : {i : Instr Empty Φ n} → Instr.Simple i → LambdaSSA.Tm Φ
-  | _, .atom a => atom a
+  inductive SimpleProgram : Program Empty Φ n → Type _ where
+    | ret (a : Atom Empty Φ n) : SimpleProgram (.ret a)
+    | let₁ : SimpleInstr i → SimpleProgram body → SimpleProgram (.let₁ i body)
+    | let₂ : SimpleProgram body → SimpleProgram (.let₂ a body)
+end
 
 /-- Compile a straight-line ANF program in CPS, branching to `result` with
 its returned value. -/
 def simpleProgram (result : Nat) : {p : Program Empty Φ n} →
-    Program.Simple p → LambdaSSA.Region Φ
+    SimpleProgram p → LambdaSSA.Region Φ
   | _, .ret a => .br result (atom a)
-  | _, .let₁ hi hb => .let₁ (simpleInstr hi) (simpleProgram result hb)
+  | _, .let₁ (.atom a) hb => .let₁ (atom a) (simpleProgram result hb)
+  | _, .let₁ (.case e hl hr) hb =>
+      .cfg (.case (atom e) (simpleProgram 0 hl) (simpleProgram 0 hr)) 1
+        (fun _ => simpleProgram (result + 1) hb)
   | _, .let₂ (a := a) hb => .let₂ (atom a) (simpleProgram result hb)
 
 variable {τ : Type u} [TypeFormers τ]
@@ -54,30 +57,42 @@ def atom_hasType {β : LambdaIter.LocallyNameless.BoundCtx τ n}
   | inr _ ih => exact .inr ih
   | abort _ ih => exact .abort ih
 
-def simpleInstr_hasType {β : LambdaIter.LocallyNameless.BoundCtx τ n}
-    {i : Instr Empty Φ n} (hs : Instr.Simple i)
-    (h : Instr.HasType (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ) β i A) :
-    LambdaSSA.Tm.HasType (LocallyNameless.ToDeBruijn.context β)
-      (simpleInstr hs) A := by
-  cases hs with
-  | atom _ => cases h with | atom h => exact atom_hasType h
+theorem at_succ {L : LambdaSSA.LCtx τ} (h : LambdaSSA.At L result A) :
+    LambdaSSA.At (X :: L) (result + 1) A := by
+  simpa [LambdaSSA.At] using h
 
 def simpleProgram_hasType {β : LambdaIter.LocallyNameless.BoundCtx τ n}
-    {p : Program Empty Φ n} (hs : Program.Simple p)
+    {p : Program Empty Φ n} (hs : SimpleProgram p)
     (h : Program.HasType (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ) β p A)
     (hout : LambdaSSA.At L result A) :
     LambdaSSA.Region.HasType (LocallyNameless.ToDeBruijn.context β)
       (simpleProgram result hs) L := by
-  induction hs with
+  cases hs with
   | ret a =>
       cases h with
       | ret ha => exact .br hout (atom_hasType ha)
-  | let₁ hi hb ih =>
+  | let₁ hi hb =>
       cases h with
       | let₁ hInstr hBody =>
-          exact .let₁ (simpleInstr_hasType hi hInstr) (ih hBody)
-  | let₂ hb ih =>
+          cases hi with
+          | atom a =>
+              cases hInstr with
+              | atom ha =>
+                  exact LambdaSSA.Region.HasType.let₁ (atom_hasType ha)
+                    (simpleProgram_hasType hb hBody hout)
+          | case e hl hr =>
+              cases hInstr with
+              | case he hleft hright =>
+                  refine LambdaSSA.Region.HasType.cfg (fun _ : Fin 1 => _) ?_
+                    (fun _ => simpleProgram_hasType hb hBody (at_succ hout))
+                  exact LambdaSSA.Region.HasType.case (atom_hasType he)
+                      (simpleProgram_hasType hl hleft (result := 0) (by simp [LambdaSSA.At]))
+                      (simpleProgram_hasType hr hright (result := 0) (by simp [LambdaSSA.At]))
+  | let₂ hb =>
       cases h with
-      | let₂ ha hBody => exact .let₂ (atom_hasType ha) (ih hBody)
+      | let₂ ha hBody =>
+          exact LambdaSSA.Region.HasType.let₂ (atom_hasType ha)
+            (simpleProgram_hasType hb hBody hout)
+termination_by sizeOf p
 
 end Isotope.LambdaSSA.Translation.ANF.ToSSA
