@@ -25,9 +25,8 @@ object.
 
 ## What this does not say
 
-Nothing here compares lambda-case with lambda-iter.  That comparison needs
-stability of the lambda-case equational theory under the embedding into
-lambda-iter, which is a separate piece of metatheory.
+Nothing here compares lambda-case with lambda-iter; that comparison is
+`Isotope/LambdaCase/Models/CompareIter.lean`.
 -/
 
 namespace Isotope.LambdaSeq

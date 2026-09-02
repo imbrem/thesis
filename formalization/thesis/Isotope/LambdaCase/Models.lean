@@ -4,6 +4,7 @@ import Isotope.LambdaCase.Models.Examples
 import Isotope.LambdaCase.Models.Setoid
 import Isotope.LambdaCase.Models.Syntax
 import Isotope.LambdaCase.Models.Initial
+import Isotope.LambdaCase.Models.CompareIter
 
 /-!
 # Models of lambda-case, the category they form, and the initial one
@@ -24,6 +25,8 @@ are exactly the parameters lambda-case's judgments take.
 | `Models/Setoid.lean` | the syntactic setoid: typable terms modulo `Equiv` |
 | `Models/Syntax.lean` | the syntactic model `Syn S : Alg S` |
 | `Models/Initial.lean` | existence and uniqueness of the interpretation; completeness |
+| `Models/CompareIter.lean` | restriction of lambda-iter models, and
+  agreement with the term embedding |
 
 ## What is proved
 
@@ -33,6 +36,13 @@ are exactly the parameters lambda-case's judgments take.
 * `Syn.uniqueHom`, `Syn.isInitial` — the two together: `Syn S` is initial.
 * `Syn.equiv_of_denote_eq` — **equational completeness with respect to
   algebras**, the corollary.
+* `Alg.ofIterFunctor`, `Syn.toIter_mk` — the restriction functor from
+  lambda-iter models, and the fact that the map initiality forces out of the
+  lambda-case syntactic model computes the lambda-iter denotation of the
+  embedded term.  This rests on
+  `LocallyNameless.Equiv.embedIter` in `Metatheory/EmbedIter.lean`, the
+  stability of the lambda-case theory under the inclusion into lambda-iter that
+  `Equiv.lean` had left deferred.
 
 ## Honest boundary
 
