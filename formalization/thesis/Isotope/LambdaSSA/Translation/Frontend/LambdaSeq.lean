@@ -31,10 +31,27 @@ end LocallyNameless
 
 namespace Named
 
+open Isotope.LambdaIter
+
 /-- Compile a closed named sequential term through its lambda-case embedding. -/
 def compile (t : Isotope.LambdaSeq.Named.Tm Empty Φ) : LambdaSSA.Region Φ :=
   Isotope.LambdaSSA.Translation.Frontend.LambdaCase.Named.compile
     (Isotope.LambdaSeq.Named.embedCase t)
+
+variable {τ : Type u} [TypeFormers τ]
+variable {ν : Type w} [DecidableEq ν]
+variable {Φ : Type q} [HasTy Φ τ]
+
+/-- Compile any well-typed closed named lambda-seq term. -/
+noncomputable def compileTyped {t : Isotope.LambdaSeq.Named.Tm ν Φ} {A : τ}
+    (h : Isotope.LambdaSeq.Named.HasType (Ctx.nil : Ctx ν τ) t A) :
+    LambdaSSA.Region Φ :=
+  Isotope.LambdaSSA.Translation.Frontend.LambdaCase.Named.compileTyped h.embedCase
+
+def compileTyped_hasType {t : Isotope.LambdaSeq.Named.Tm ν Φ} {A : τ}
+    (h : Isotope.LambdaSeq.Named.HasType (Ctx.nil : Ctx ν τ) t A) :
+    LambdaSSA.Region.HasType [] (compileTyped h) [A] :=
+  Isotope.LambdaSSA.Translation.Frontend.LambdaCase.Named.compileTyped_hasType h.embedCase
 
 end Named
 

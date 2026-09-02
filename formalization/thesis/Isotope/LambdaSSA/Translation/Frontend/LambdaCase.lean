@@ -1,5 +1,7 @@
 import Isotope.LambdaCase.Typing
 import Isotope.LambdaSSA.Translation.Frontend.Core
+import Isotope.LambdaSSA.Translation.Frontend.Closed
+import Isotope.LambdaSSA.Translation.Frontend.NamedToLocallyNameless
 
 /-! # Lambda-case frontends for lambda-SSA -/
 
@@ -29,6 +31,8 @@ def compile_hasType {β : Isotope.LambdaCase.LocallyNameless.BoundCtx τ n}
 end LocallyNameless
 
 namespace Named
+
+open Isotope.LambdaIter
 
 /-- Close a named lambda-case term over the empty name type by resolving its
 binders to de Bruijn indices. -/
@@ -63,6 +67,27 @@ def lower (t : Isotope.LambdaCase.Named.Tm Empty Φ) :
 
 def compile (t : Isotope.LambdaCase.Named.Tm Empty Φ) : LambdaSSA.Region Φ :=
   LocallyNameless.compile (lower t)
+
+variable {τ : Type u} [TypeFormers τ]
+variable {ν : Type w} [DecidableEq ν]
+variable {Φ : Type q} [HasTy Φ τ]
+
+noncomputable def closedTerm {t : Isotope.LambdaCase.Named.Tm ν Φ} {A : τ}
+    (h : Isotope.LambdaCase.Named.HasType (Ctx.nil : Ctx ν τ) t A) :
+    Σ t' : LambdaIter.LocallyNameless.Tm Empty Φ 0,
+      LambdaIter.LocallyNameless.HasType Φ (Ctx.nil : Ctx Empty τ) .nil t' A :=
+  Classical.choice ((NamedToLocallyNameless.translateHasTypeClosed h.embed).map
+    Closed.erase)
+
+/-- Compile any well-typed closed named lambda-case term. -/
+noncomputable def compileTyped {t : Isotope.LambdaCase.Named.Tm ν Φ} {A : τ}
+    (h : Isotope.LambdaCase.Named.HasType (Ctx.nil : Ctx ν τ) t A) :
+    LambdaSSA.Region Φ := Core.compile (closedTerm h).1
+
+def compileTyped_hasType {t : Isotope.LambdaCase.Named.Tm ν Φ} {A : τ}
+    (h : Isotope.LambdaCase.Named.HasType (Ctx.nil : Ctx ν τ) t A) :
+    LambdaSSA.Region.HasType [] (compileTyped h) [A] :=
+  Core.compile_hasType (closedTerm h).2
 
 end Named
 
