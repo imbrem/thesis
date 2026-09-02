@@ -602,6 +602,45 @@ theorem iter_guarded_global [Monad m] [LawfulMonad m]
   rw [hu]
   simp [Isotope.Elgot.kcomp, Isotope.Elgot.liftPure]
 
+/-- Source stepping with predecessor bookkeeping but without guards. -/
+def sourcePredStep [Monad m] [DecidableEq ν] [DecidableEq κ]
+    (source : Isotope.TAC.Classical.CFG ν φ κ) :
+    GuardedState M ν κ → m (M.Val ⊕ GuardedState M ν κ)
+  | (ρ, _, label) => sourceStepOn M source (ρ, label) >>= fun result =>
+      pure (Sum.map id (fun next => (next.1, .named label, next.2)) result)
+
+def erasePred : GuardedState M ν κ → MEnv M ν × κ
+  | (ρ, _, label) => (ρ, label)
+
+/-- Predecessor bookkeeping is semantically invisible to unguarded source
+iteration. -/
+theorem iter_sourcePred [Monad m] [LawfulMonad m]
+    [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    (sourceCfg : Isotope.TAC.Classical.CFG ν φ κ)
+    (state : GuardedState M ν κ) :
+    Isotope.Elgot.iter (sourcePredStep M sourceCfg) state =
+      Isotope.Elgot.iter (sourceStepOn M sourceCfg) (erasePred M state) := by
+  let f := sourcePredStep M sourceCfg
+  let g := sourceStepOn M sourceCfg
+  have comm : Isotope.Elgot.kcomp f
+      (Isotope.Elgot.liftPure (Sum.map id (erasePred M))) =
+      Isotope.Elgot.kcomp (Isotope.Elgot.liftPure (erasePred M)) g := by
+    funext s
+    rcases s with ⟨ρ, pred, label⟩
+    simp [f, g, sourcePredStep, erasePred, Isotope.Elgot.kcomp,
+      Isotope.Elgot.liftPure, bind_assoc]
+    have hid : Sum.map (id : M.Val → M.Val)
+        (erasePred M ∘ fun next : MEnv M ν × κ =>
+          (next.1, .named label, next.2)) = id := by
+      funext result
+      cases result <;> rfl
+    rw [hid, id_map]
+  have hu := Isotope.Elgot.LawfulElgotMonad.uniformity f g (erasePred M) comm
+  change Isotope.Elgot.iter f state = Isotope.Elgot.iter g (erasePred M state)
+  rw [hu]
+  simp [Isotope.Elgot.kcomp, Isotope.Elgot.liftPure]
+
 /-- Exact effectful commuting square for one reachable loop boundary.
 
 The hypotheses are precisely the boundary invariant established by entry
