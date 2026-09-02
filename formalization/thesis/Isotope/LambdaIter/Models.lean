@@ -1,6 +1,8 @@
 import Isotope.LambdaIter.Models.Alg
 import Isotope.LambdaIter.Models.Limits
 import Isotope.LambdaIter.Models.Examples
+import Isotope.LambdaIter.Models.HomOver
+import Isotope.LambdaIter.Models.Total
 
 /-!
 # Models of lambda-iter, and the category they form
