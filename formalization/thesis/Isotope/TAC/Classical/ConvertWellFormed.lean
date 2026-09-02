@@ -9,6 +9,37 @@ open Isotope.TAC.Classical
 universe u v w
 variable {Var : Type u} {Op : Type v} {Label : Type w}
 
+private theorem update_restricted_invariant [DecidableEq Var]
+    (vars : List Var) (ρ : Env Var Label) (base prior : List (Version Var Label))
+    (y : Var) (dst : Version Var Label)
+    (hρ : ∀ x ∈ vars, ρ x ∈ base ∨ ρ x ∈ prior) :
+    ∀ x ∈ vars, update ρ y dst x ∈ base ∨ update ρ y dst x ∈ dst :: prior := by
+  intro x hx
+  by_cases hxy : x = y
+  · subst x
+    exact .inr (by simp [update])
+  · rcases hρ x hx with h | h
+    · exact .inl (by simpa [update, hxy] using h)
+    · exact .inr (List.mem_cons_of_mem dst (by simpa [update, hxy] using h))
+
+private theorem updatePair_restricted_invariant [DecidableEq Var]
+    (vars : List Var) (ρ : Env Var Label) (base prior : List (Version Var Label))
+    (y z : Var) (dy dz : Version Var Label)
+    (hρ : ∀ x ∈ vars, ρ x ∈ base ∨ ρ x ∈ prior) :
+    ∀ x ∈ vars, update (update ρ y dy) z dz x ∈ base ∨
+      update (update ρ y dy) z dz x ∈ dy :: dz :: prior := by
+  intro x hx
+  by_cases hxz : x = z
+  · subst x
+    exact .inr (by simp [update])
+  · by_cases hxy : x = y
+    · subst x
+      exact .inr (by simp [update, hxz])
+    · rcases hρ x hx with h | h
+      · exact .inl (by simpa [update, hxz, hxy] using h)
+      · exact .inr (List.mem_cons_of_mem dy
+          (List.mem_cons_of_mem dz (by simpa [update, hxz, hxy] using h)))
+
 private theorem renameValue_uses_eq (ρ : Env Var Label) (v : Value Var) :
     (renameValue ρ v).uses = v.uses.map ρ := by
   induction v with
