@@ -151,8 +151,8 @@ mutual
         apply bind_congr
         intro e
         cases TypeModel.coprodEquiv _ _ e with
-        | inl a => simp only; exact denoteProgram_toLambdaIter hl γ (ρ, a)
-        | inr b => simp only; exact denoteProgram_toLambdaIter hr γ (ρ, b)
+        | inl a => rw [denoteProgram_toLambdaIter hl]
+        | inr b => rw [denoteProgram_toLambdaIter hr]
     | iter ha hb =>
         simp only [denoteInstr, Instr.HasType.toLambdaIter,
           Isotope.LambdaIter.LocallyNameless.HasType.toGeneric,
