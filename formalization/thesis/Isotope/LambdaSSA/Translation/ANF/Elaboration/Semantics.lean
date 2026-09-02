@@ -27,6 +27,28 @@ variable [Iterate m] [LawfulElgotMonad m] [InstructionModel Φ τ ε m]
     (atomRename ρ a).toTm = a.toTm.rename ρ := by
   induction a <;> simp [atomRename, Atom.toTm, Tm.rename, *]
 
+/-- Forgetting commutes with every mutually recursive ANF renaming. -/
+theorem programRename_toTm (p : Program ν Φ n) :
+    ∀ {k} (ρ : Fin n → Fin k), (programRename ρ p).toTm = p.toTm.rename ρ := by
+  induction p using Program.rec (motive_2 := fun n i =>
+    ∀ {k} (ρ : Fin n → Fin k), (instrRename ρ i).toTm = i.toTm.rename ρ) with
+  | ret a => intro k ρ; simp [programRename, Program.toTm, atomRename_toTm]
+  | let₁ i body ii ib =>
+      intro k ρ
+      simp only [programRename, Program.toTm, ii, ib, Syntax.rename_let₁]
+      congr 1
+  | let₂ a body ib =>
+      intro k ρ
+      simp only [programRename, Program.toTm, atomRename_toTm, ib, Syntax.rename_let₂]
+      congr 1
+  | atom a => simp [instrRename, Instr.toTm, atomRename_toTm]
+  | case e l r il ir =>
+      simp only [instrRename, Instr.toTm, atomRename_toTm, il, ir, Syntax.rename_case]
+      congr 1
+  | iter a body ib =>
+      simp only [instrRename, Instr.toTm, atomRename_toTm, ib, Syntax.rename_iter]
+      congr 1
+
 @[simp] theorem denote_elaborate_fv {Γ : Ctx ν τ} {β : BoundCtx τ n}
     {x : ν} {A : τ} (hx : Γ.lookup x = some A)
     (γ : CtxDen Γ) (ρ : BoundDen β) :
