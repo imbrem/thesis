@@ -5,6 +5,7 @@ import Isotope.Elgot.Brookes.Iteration
 import Isotope.Elgot.Brookes.Parallel
 import Isotope.Elgot.Brookes.SeqCst
 import Isotope.Elgot.Brookes.SeqCst.Parallel
+import Isotope.Elgot.Brookes.SeqCst.Chunk
 import Isotope.Elgot.Brookes.TSO
 import Isotope.Elgot.Brookes.Compare
 import Isotope.Elgot.Brookes.Examples
