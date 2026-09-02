@@ -1,4 +1,5 @@
 import Isotope.TAC.Densem.Classical
+import Isotope.TAC.Densem.MonadicClassical
 import Mathlib.Logic.Equiv.Defs
 
 /-! # Lambda three-address code and flat classical TAC
@@ -145,5 +146,26 @@ def classicalEquiv : ClassicalSyntax ν φ κ ≃ Syntax φ ν κ where
     apply Subtype.ext
     exact ofCFG_cfg cfg.1 cfg.2
   right_inv := cfg_ofCFG
+
+/-- The executable semantics commutes with the classical/lambda-three-address
+isomorphism at every fuel bound. -/
+theorem runFuel_classicalEquiv [DecidableEq ν] [DecidableEq κ]
+    (M : Densem.Model φ) (cfg : ClassicalSyntax ν φ κ)
+    (fuel : Nat) (env : Densem.Env M ν) :
+    Densem.Phi.runFuel M cfg.1 fuel env =
+      Densem.CFG.runFuel M (classicalEquiv cfg) fuel env := by
+  exact Densem.Phi.runFuel_phiFree M cfg.1 cfg.2 fuel env
+
+/-- The same square commutes for the direct complete-Elgot monadic semantics.
+The distinguished failure element must be a left zero, exactly as required by
+the phi-free semantic bridge. -/
+theorem denote_classicalEquiv [Monad m] [LawfulMonad m]
+    [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    (M : Densem.Monadic.Model φ m) [Densem.Phi.Monadic.LawfulFailure M]
+    (cfg : ClassicalSyntax ν φ κ) (env : Densem.Monadic.Env M ν) :
+    Densem.Phi.Monadic.denote M cfg.1 env =
+      Densem.Monadic.CFG.denote M (classicalEquiv cfg) env := by
+  exact Densem.Phi.Monadic.denote_phiFree M cfg.1 cfg.2 env
 
 end Isotope.TAC.Bridge.Lambda3Addr
