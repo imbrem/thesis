@@ -9,7 +9,7 @@ namespace Isotope.LambdaCase.Semantics.Categorical
 
 open CategoryTheory CategoryTheory.Category CategoryTheory.Limits
 open CategoryTheory.PremonoidalCategory
-open Isotope.LambdaIter.Semantics.Categorical
+open Isotope.LambdaIter.Subtyping.Semantics.Categorical
 open scoped MonoidalCategory
 
 variable {V : Type u₁} {C : Type u₂}
@@ -60,17 +60,5 @@ noncomputable def denote : {Γ : Ctx ν τ} → {n : Nat} →
         (J.map (envSnocIso M Γ β _).hom ≫ denote hl)
         (J.map (envSnocIso M Γ β _).hom ≫ denote hr)
   | _, _, _, _, _, .abort ha => abort J M (denote ha)
-  | _, _, _, _, _, .sub ha d => denote ha ≫ J.map (M.subty d)
-
-/-- Once iteration structure is available, interpreting a lambda-case term directly or
-first embedding it into lambda-iter gives the same categorical arrow. -/
-theorem denote_embed [Iteration C] [ElgotCategory C] [StrongElgotFreydCategory J]
-    {Γ : Ctx ν τ} {n : Nat} {β : LocallyNameless.BoundCtx τ n}
-    {t : LocallyNameless.Tm ν Φ n} {A : τ}
-    (h : LocallyNameless.HasType Φ Γ β t A) :
-    LambdaIter.Semantics.Categorical.denote J M h.embed = denote J M h := by
-  induction h <;>
-    simp only [LocallyNameless.HasType.embed,
-      LambdaIter.Semantics.Categorical.denote, denote, *]
 
 end Isotope.LambdaCase.Semantics.Categorical
