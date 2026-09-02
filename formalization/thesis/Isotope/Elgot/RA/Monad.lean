@@ -330,38 +330,32 @@ def close (S : Set (PreTrace Loc Val A)) (hS : IsTraceSet S) : Comp Loc Val A wh
     (close S hS).traces = closure S := rfl
 
 /-- `return r`. -/
-def pure (r : A) : Comp Loc Val A := close (pureGen r) (pureGen_isTrace r)
+protected def pure (r : A) : Comp Loc Val A := close (pureGen r) (pureGen_isTrace r)
 
 /-- `P >>= f`. -/
-def bind (P : Comp Loc Val A) (f : A → Comp Loc Val B) : Comp Loc Val B :=
+protected def bind (P : Comp Loc Val A) (f : A → Comp Loc Val B) : Comp Loc Val B :=
   close (bindGen P.traces (fun a ↦ (f a).traces))
     (bindGen_isTrace P.isTrace (fun a ↦ (f a).isTrace))
 
-@[simp] theorem traces_pure (r : A) :
-    (pure r : Comp Loc Val A).traces = closure (pureGen r) := rfl
-
-@[simp] theorem traces_bind (P : Comp Loc Val A) (f : A → Comp Loc Val B) :
-    (bind P f).traces = closure (bindGen P.traces (fun a ↦ (f a).traces)) := rfl
-
 instance : _root_.Monad (Comp Loc Val) where
-  pure := pure
-  bind := bind
+  pure := Comp.pure
+  bind := Comp.bind
 
-@[simp] theorem traces_pure' (r : A) :
+@[simp] theorem traces_pure (r : A) :
     (Pure.pure r : Comp Loc Val A).traces = closure (pureGen r) := rfl
 
-@[simp] theorem traces_bind' (P : Comp Loc Val A) (f : A → Comp Loc Val B) :
+@[simp] theorem traces_bind (P : Comp Loc Val A) (f : A → Comp Loc Val B) :
     (P >>= f).traces = closure (bindGen P.traces (fun a ↦ (f a).traces)) := rfl
 
 theorem pure_bind (r : A) (f : A → Comp Loc Val B) :
     (Pure.pure r : Comp Loc Val A) >>= f = f r := by
   apply ext
-  rw [traces_bind', traces_pure']
+  rw [traces_bind, traces_pure]
   exact closure_bindGen_pureGen_left r _ (fun a ↦ (f a).isTrace) (fun a ↦ (f a).closed)
 
 theorem bind_pure (P : Comp Loc Val A) : P >>= Pure.pure = P := by
   apply ext
-  rw [traces_bind']
+  rw [traces_bind]
   exact closure_bindGen_pureGen_right P.traces P.isTrace P.closed
 
 theorem bind_assoc (P : Comp Loc Val A) (f : A → Comp Loc Val B) (g : B → Comp Loc Val C) :
@@ -381,6 +375,79 @@ instance : LawfulMonad (Comp Loc Val) := LawfulMonad.mk'
   (id_map := fun x ↦ bind_pure x)
   (pure_bind := fun a f ↦ pure_bind a f)
   (bind_assoc := fun x f g ↦ bind_assoc x f g)
+
+/-! ## Order, bottom, and unions
+
+`T X` is ordered by inclusion (§7.2), `∅` is `𝔠`-closed, and closedness is a
+Horn condition, hence preserved by arbitrary unions.  These are the only
+ingredients the iteration operator needs. -/
+
+instance : PartialOrder (Comp Loc Val A) where
+  le P Q := P.traces ⊆ Q.traces
+  le_refl _ := subset_refl _
+  le_trans _ _ _ h₁ h₂ := subset_trans h₁ h₂
+  le_antisymm _ _ h₁ h₂ := ext (Set.Subset.antisymm h₁ h₂)
+
+theorem le_def {P Q : Comp Loc Val A} : P ≤ Q ↔ P.traces ⊆ Q.traces := Iff.rfl
+
+instance : OrderBot (Comp Loc Val A) where
+  bot := ⟨∅, fun _ h ↦ absurd h (by simp), closed_empty⟩
+  bot_le _ := by intro τ hτ; exact absurd hτ (by simp)
+
+@[simp] theorem traces_bot : (⊥ : Comp Loc Val A).traces = ∅ := rfl
+
+/-- The union of a family of computations. -/
+def iUnion {ι : Sort*} (x : ι → Comp Loc Val A) : Comp Loc Val A where
+  traces := ⋃ i, (x i).traces
+  isTrace := by
+    rintro τ hτ
+    rw [Set.mem_iUnion] at hτ
+    obtain ⟨i, hi⟩ := hτ
+    exact (x i).isTrace _ hi
+  closed := closed_iUnion (fun i ↦ (x i).closed)
+
+@[simp] theorem traces_iUnion {ι : Sort*} (x : ι → Comp Loc Val A) :
+    (iUnion x).traces = ⋃ i, (x i).traces := rfl
+
+theorem le_iUnion {ι : Sort*} (x : ι → Comp Loc Val A) (i : ι) : x i ≤ iUnion x := by
+  intro τ hτ; rw [traces_iUnion, Set.mem_iUnion]; exact ⟨i, hτ⟩
+
+theorem iUnion_le {ι : Sort*} {x : ι → Comp Loc Val A} {P : Comp Loc Val A}
+    (h : ∀ i, x i ≤ P) : iUnion x ≤ P := by
+  intro τ hτ
+  rw [traces_iUnion, Set.mem_iUnion] at hτ
+  obtain ⟨i, hi⟩ := hτ
+  exact h i hi
+
+theorem iUnion_const {ι : Sort*} [Nonempty ι] (P : Comp Loc Val A) :
+    iUnion (fun _ : ι ↦ P) = P := by
+  apply ext
+  rw [traces_iUnion, Set.iUnion_const]
+
+theorem bot_bind (f : A → Comp Loc Val B) : (⊥ : Comp Loc Val A) >>= f = ⊥ := by
+  apply ext; simp
+
+theorem bind_mono {P Q : Comp Loc Val A} {f g : A → Comp Loc Val B} (h : P ≤ Q)
+    (hfg : ∀ a, f a ≤ g a) : P >>= f ≤ Q >>= g := by
+  rw [le_def, traces_bind, traces_bind]
+  exact closure_mono (bindGen_mono h (fun a ↦ hfg a))
+
+theorem bind_mono_right {P : Comp Loc Val A} {f g : A → Comp Loc Val B}
+    (hfg : ∀ a, f a ≤ g a) : P >>= f ≤ P >>= g := bind_mono (le_refl P) hfg
+
+theorem iUnion_bind {ι : Sort*} (x : ι → Comp Loc Val A) (f : A → Comp Loc Val B) :
+    iUnion x >>= f = iUnion (fun i ↦ x i >>= f) := by
+  apply ext
+  rw [traces_bind, traces_iUnion, traces_iUnion, bindGen_iUnion_left, closure_iUnion]
+  rfl
+
+theorem bind_iUnion {ι : Sort*} (P : Comp Loc Val A) (f : ι → A → Comp Loc Val B) :
+    (P >>= fun a ↦ iUnion (fun i ↦ f i a)) = iUnion (fun i ↦ P >>= f i) := by
+  apply ext
+  rw [traces_bind, traces_iUnion]
+  rw [show (fun a ↦ (iUnion (fun i ↦ f i a)).traces) = (fun a ↦ ⋃ i, (f i a).traces) from rfl]
+  rw [bindGen_iUnion_right, closure_iUnion]
+  rfl
 
 end Comp
 
