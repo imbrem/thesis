@@ -30,6 +30,18 @@ comparison map canonical rather than choosing a second encoding of finite sums. 
 noncomputable def LabelDen (L : LCtx τ) : Type v :=
   Categorical.labelObj (typeModel (τ := τ)) L
 
+/-- The same finite label coproduct indexed before materializing `List.ofFn`. -/
+noncomputable def FiniteLabelDen {n : Nat} (R : Fin n → τ) : Type v :=
+  Categorical.finiteLabelObj (typeModel (τ := τ)) R
+
+noncomputable def finiteLabelInject {n : Nat} (R : Fin n → τ) (i : Fin n) :
+    TyDen (R i) → FiniteLabelDen R :=
+  Categorical.finiteLabelInject (typeModel (τ := τ)) R i
+
+noncomputable def labelDenToFinite {n : Nat} (R : Fin n → τ) :
+    LabelDen (List.ofFn R) → FiniteLabelDen R :=
+  Categorical.labelObjToFinite (typeModel (τ := τ)) R
+
 /-- Inject a value into the summand selected by typed label lookup evidence. -/
 noncomputable def labelInject {L : LCtx τ} (i : Nat) {A : τ} (h : At L i A) :
     TyDen A → LabelDen L :=
@@ -44,11 +56,10 @@ noncomputable def labelAppendSplit (R L : LCtx τ) :
 the corresponding local-label injection. -/
 structure CollectiveDenotes (Γ : VCtx τ) {n : Nat} (R : Fin n → τ) (L : LCtx τ)
     (block : ∀ i, Env (R i :: Γ) → m (LabelDen (List.ofFn R ++ L)))
-    (collective : Env Γ × LabelDen (List.ofFn R) →
+    (collective : Env Γ × FiniteLabelDen R →
       m (LabelDen (List.ofFn R ++ L))) : Prop where
   restrict (i : Fin n) (ρ : Env Γ) (a : TyDen (R i)) :
-    collective (ρ, labelInject (L := List.ofFn R) i.val (A := R i)
-      (by simp [At, i.isLt]) a) = block i (ρ, a)
+    collective (ρ, finiteLabelInject R i a) = block i (ρ, a)
 
 /-- Relational graph of the direct monadic region semantics.  Recursive CFGs
 feed locally targeted branches back through `iter`; externally targeted
@@ -93,7 +104,7 @@ inductive RegionDenotes (ε : Type r) [HasEff Φ ε] [Bot ε]
       (hb : ∀ i, Region.HasType (R i :: Γ) (blocks i) (List.ofFn R ++ L))
       {fe : Env Γ → m (LabelDen (List.ofFn R ++ L))}
       {fb : ∀ i, Env (R i :: Γ) → m (LabelDen (List.ofFn R ++ L))}
-      {collective : Env Γ × LabelDen (List.ofFn R) →
+      {collective : Env Γ × FiniteLabelDen R →
         m (LabelDen (List.ofFn R ++ L))}
       (de : RegionDenotes ε he fe)
       (db : ∀ i, RegionDenotes ε (hb i) (fb i))
@@ -103,7 +114,7 @@ inductive RegionDenotes (ε : Type r) [HasEff Φ ε] [Bot ε]
           (LabelDen (List.ofFn R))).hom (labelAppendSplit (List.ofFn R) L target) with
         | .inl external => pure external
         | .inr loopTarget => Isotope.Elgot.iter (m := m) (fun current =>
-            collective (ρ, current) >>= fun next =>
+            collective (ρ, labelDenToFinite R current) >>= fun next =>
               pure ((Types.binaryCoproductIso (LabelDen L)
                 (LabelDen (List.ofFn R))).hom
                   (labelAppendSplit (List.ofFn R) L next))) loopTarget)
