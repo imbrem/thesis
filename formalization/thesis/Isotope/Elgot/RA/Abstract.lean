@@ -51,11 +51,14 @@ paper's own initial memory, so this is not a defect of the transcription:
 
 > `return_A r` contains traces with local messages; `return_C r` does not.
 
-`Ti` and `Ab` are exercised positively by `absorb_two_writes` at the end of this
-file, which carries out the paper's `ℓ ≔ w ; ℓ ≔ v ↠ ℓ ≔ v` step (journal p.37)
-on a concrete trace; without it, nothing here would distinguish a faithful
-transcription of those two rules from an over-constrained one, since their
-`own_empty` cases are vacuous.
+`Ti` and `Ab` are exercised positively at the end of this file — by
+`absorb_two_writes`, which carries out the paper's `ℓ ≔ w ; ℓ ≔ v ↠ ℓ ≔ v` step
+(journal p.37) on a concrete trace, and by `tighten_write`, which advances the
+view of a local write to point at a later message at another location, the shape
+of the paper's `Ti` step for write–read reordering (journal §E.5, p.59).
+Without them nothing here would distinguish a faithful transcription of those
+two rules from an over-constrained one, since their `own_empty` cases are
+vacuous.
 
 Consequently the paper's route to Proposition 7.8 must be the one it sketches
 for associativity — Deferral of Closure (Lemma 8.5, journal p.41), whose
@@ -582,9 +585,9 @@ theorem absMsg_setI (t₀ : ℚ) (ℓ : Loc) (w v : Val) :
       = writeMsg ℓ v t₀ (t₀ + 2) (fun _ ↦ t₀) (by linarith) :=
   Msg.ext_fields rfl rfl rfl rfl
 
-theorem writeMsg_not_mem_initialMem (v₀ v : Val) (t₀ q t : ℚ) (ℓ : Loc) (h : q < t)
-    (hq : t₀ - 1 < q) :
-    writeMsg ℓ v q t (fun _ ↦ t₀) h ∉ initialMem (Loc := Loc) v₀ t₀ := by
+theorem writeMsg_not_mem_initialMem (v₀ v : Val) (t₀ q t : ℚ) (ℓ : Loc) (κ : View Loc)
+    (h : q < t) (hq : t₀ - 1 < q) :
+    writeMsg ℓ v q t κ h ∉ initialMem (Loc := Loc) v₀ t₀ := by
   intro hmem
   rw [mem_initialMem_iff] at hmem
   have hi := congrArg Msg.i hmem
@@ -598,36 +601,62 @@ theorem initialView_le_writeMsg_vw (t₀ q t : ℚ) (ℓ : Loc) (v : Val) (h : q
 
 variable [Finite Loc] [Nonempty Loc]
 
-/-- The initial memory extended by a set `S` of writes at one location `ℓ`, each
-carrying the initial view advanced at `ℓ` to its own final timestamp, each
-starting at or above `t₀`, and pairwise non-overlapping, is well formed.  This
-generalizes `storedMem_wellFormed`, which is the case `S = {ℓ:v@(t₀,t₀+1]}`. -/
-theorem union_initialMem_wellFormed (v₀ : Val) (t₀ : ℚ) (ℓ : Loc)
+/-- The initial memory extended by a set `S` of extra writes is well formed, as
+soon as: every extra message starts at or above `t₀`; extra messages at one
+location do not overlap; every extra message carries a common view `κ` advanced
+at its own location to its own final timestamp; `κ` points downwards into the
+result; and at most one extra message is pointed at by `κ`.
+
+This generalizes `storedMem_wellFormed` (the case `S = {ℓ:v@(t₀,t₀+1]}`,
+`κ = λ_. t₀`) and is what the `𝔞` examples below need.  The last two hypotheses
+are the ones that keep the paper's *cycle* condition true: an extra message can
+only be pointed at through `κ`, so if two of them were, they would point at each
+other and form a cycle of non-minimal messages. -/
+theorem union_initialMem_wellFormed (v₀ : Val) (t₀ : ℚ) (κ : View Loc)
     (S : Memory Loc Val) (hfin : S.Finite)
-    (hlc : ∀ χ ∈ S, χ.lc = ℓ)
-    (hvw : ∀ χ ∈ S, χ.vw = setView (fun _ ↦ t₀) ℓ χ.t)
     (hlo : ∀ χ ∈ S, t₀ ≤ χ.i)
-    (hsc : ∀ χ ∈ S, ∀ χ' ∈ S, (χ.seg ∩ χ'.seg).Nonempty → χ = χ') :
+    (hvw : ∀ χ ∈ S, χ.vw = setView κ χ.lc χ.t)
+    (hκle : ∀ χ ∈ S, κ χ.lc ≤ χ.t)
+    (hκpt : PointsDownInto κ (S ∪ initialMem (Loc := Loc) v₀ t₀))
+    (hsc : ∀ χ ∈ S, ∀ χ' ∈ S, χ.lc = χ'.lc → (χ.seg ∩ χ'.seg).Nonempty → χ = χ')
+    (hone : ∀ χ ∈ S, ∀ χ' ∈ S, κ χ.lc = χ.t → κ χ'.lc = χ'.t → χ = χ') :
     WellFormed (S ∪ initialMem (Loc := Loc) v₀ t₀) := by
-  have hinit := initialMem_wellFormed (Loc := Loc) v₀ t₀
   have hlt : ∀ χ ∈ S, t₀ < χ.t := fun χ hχ ↦ lt_of_le_of_lt (hlo χ hχ) χ.i_lt_t
-  have hge : ∀ χ ∈ S, (fun _ ↦ t₀ : View Loc) ≤ χ.vw := by
+  have hκvw : ∀ χ ∈ S, κ ≤ χ.vw := by
     intro χ hχ
     rw [hvw χ hχ]
-    exact le_setView (le_of_lt (hlt χ hχ))
-  -- a message of `S` and one of the initial memory never share a location and a segment
-  have hsplit : ∀ χ ∈ S, ∀ ℓ' : Loc, (χ.seg ∩ (initialMsg (Val := Val) v₀ t₀ ℓ').seg).Nonempty →
-      False := by
+    exact le_setView (hκle χ hχ)
+  -- an extra message and an initial one never share a location and a segment
+  have hsplit : ∀ χ ∈ S, ∀ ℓ' : Loc,
+      (χ.seg ∩ (initialMsg (Val := Val) v₀ t₀ ℓ').seg).Nonempty → False := by
     rintro χ hχ ℓ' ⟨x, hx1, hx2⟩
     simp only [Msg.seg, initialMsg_t, initialMsg_i, Set.mem_Ioc] at hx2
     simp only [Msg.seg, Set.mem_Ioc] at hx1
     have := hlo χ hχ
     linarith [hx1.1, hx2.2]
-  refine ⟨hfin.union (Set.finite_range _), ?_, ⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
-  · exact ⟨_, Or.inr ⟨Classical.arbitrary Loc, rfl⟩⟩
+  -- the view of an extra message reads `χ.t` at `χ.lc` and `κ` elsewhere
+  have hvw_self : ∀ χ ∈ S, χ.vw χ.lc = χ.t := by
+    intro χ hχ; rw [hvw χ hχ, setView_self]
+  have hvw_ne : ∀ χ ∈ S, ∀ ℓ' : Loc, ℓ' ≠ χ.lc → χ.vw ℓ' = κ ℓ' := by
+    intro χ hχ ℓ' h; rw [hvw χ hχ, setView_of_ne _ h]
+  -- an extra message can only be pointed at through `κ`
+  have hin : ∀ χ ∈ S, ∀ b ∈ S ∪ initialMem (Loc := Loc) v₀ t₀, b ≠ χ →
+      PointsTo b.vw χ → κ χ.lc = χ.t := by
+    rintro χ hχ b (hb | hb) hne hpt
+    · by_cases hlc : χ.lc = b.lc
+      · exact absurd (hsc b hb χ hχ hlc.symm ⟨χ.t, by
+          rw [PointsTo, hvw b hb, hlc, setView_self] at hpt
+          exact hpt ▸ b.t_mem_seg, χ.t_mem_seg⟩) hne
+      · rw [PointsTo, hvw_ne b hb χ.lc hlc] at hpt
+        exact hpt
+    · rw [mem_initialMem_iff] at hb
+      rw [PointsTo, hb] at hpt
+      exact absurd hpt.symm (ne_of_gt (hlt χ hχ))
+  refine ⟨hfin.union (Set.finite_range _), ⟨_, Or.inr ⟨Classical.arbitrary Loc, rfl⟩⟩,
+    ⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
   · -- scattered
     rintro χ (hχ | hχ) χ' (hχ' | hχ') hlceq hov
-    · exact hsc χ hχ χ' hχ' hov
+    · exact hsc χ hχ χ' hχ' hlceq hov
     · rw [mem_initialMem_iff] at hχ'
       exact absurd (hχ' ▸ hov) (fun h ↦ hsplit χ hχ χ'.lc h)
     · rw [mem_initialMem_iff] at hχ
@@ -639,14 +668,13 @@ theorem union_initialMem_wellFormed (v₀ : Val) (t₀ : ℚ) (ℓ : Loc)
   · -- connected
     rintro χ hχ ℓ''
     rcases hχ with hχ | hχ
-    · by_cases hl : ℓ'' = ℓ
+    · by_cases hl : ℓ'' = χ.lc
       · subst hl
-        refine ⟨χ, Or.inl hχ, hlc χ hχ, ?_⟩
-        change χ.vw χ.lc = χ.t
-        rw [hlc χ hχ, hvw χ hχ, setView_self]
-      · refine ⟨initialMsg v₀ t₀ ℓ'', Or.inr ⟨ℓ'', rfl⟩, rfl, ?_⟩
-        change χ.vw ℓ'' = t₀
-        rw [hvw χ hχ, setView_of_ne _ hl]
+        exact ⟨χ, Or.inl hχ, rfl, hvw_self χ hχ⟩
+      · obtain ⟨χ', hχ', hlc', hpt', -⟩ := hκpt ℓ''
+        refine ⟨χ', hχ', hlc', ?_⟩
+        rw [PointsTo, hlc', hvw_ne χ hχ ℓ'' hl, ← hlc']
+        exact hpt'
     · rw [mem_initialMem_iff] at hχ
       refine ⟨initialMsg v₀ t₀ ℓ'', Or.inr ⟨ℓ'', rfl⟩, rfl, ?_⟩
       change χ.vw ℓ'' = t₀
@@ -654,15 +682,13 @@ theorem union_initialMem_wellFormed (v₀ : Val) (t₀ : ℚ) (ℓ : Loc)
   · -- causally connected
     rintro χ hχ ℓ''
     rcases hχ with hχ | hχ
-    · by_cases hl : ℓ'' = ℓ
+    · by_cases hl : ℓ'' = χ.lc
       · subst hl
-        refine ⟨χ, Or.inl hχ, hlc χ hχ, ?_, le_refl _⟩
-        change χ.vw χ.lc = χ.t
-        rw [hlc χ hχ, hvw χ hχ, setView_self]
-      · refine ⟨initialMsg v₀ t₀ ℓ'', Or.inr ⟨ℓ'', rfl⟩, rfl, ?_, ?_⟩
-        · change χ.vw ℓ'' = t₀
-          rw [hvw χ hχ, setView_of_ne _ hl]
-        · exact hge χ hχ
+        exact ⟨χ, Or.inl hχ, rfl, hvw_self χ hχ, le_refl _⟩
+      · obtain ⟨χ', hχ', hlc', hpt', hle'⟩ := hκpt ℓ''
+        refine ⟨χ', hχ', hlc', ?_, le_trans hle' (hκvw χ hχ)⟩
+        rw [PointsTo, hlc', hvw_ne χ hχ ℓ'' hl, ← hlc']
+        exact hpt'
     · rw [mem_initialMem_iff] at hχ
       refine ⟨initialMsg v₀ t₀ ℓ'', Or.inr ⟨ℓ'', rfl⟩, rfl, ?_, ?_⟩
       · change χ.vw ℓ'' = t₀
@@ -672,24 +698,26 @@ theorem union_initialMem_wellFormed (v₀ : Val) (t₀ : ℚ) (ℓ : Loc)
   · -- cycles
     rintro χ hχ hcyc
     rcases hχ with hχ | hχ
-    · -- nothing points to a message of `S`, so it lies on no cycle
+    · -- an extra message on a cycle would be one of two `κ`-pointed messages
       exfalso
-      obtain ⟨b, -, hbmem, -, hbne, hbpt⟩ := Relation.TransGen.tail'_iff.mp hcyc
-      rw [PointsTo, hlc χ hχ] at hbpt
-      rcases hbmem with hb | hb
-      · refine hbne (hsc b hb χ hχ ⟨χ.t, ?_, χ.t_mem_seg⟩)
-        rw [hvw b hb] at hbpt
-        simp only [setView_self] at hbpt
-        exact hbpt ▸ b.t_mem_seg
-      · rw [mem_initialMem_iff] at hb
-        rw [hb] at hbpt
-        simp only [initialMsg_vw] at hbpt
-        exact absurd hbpt.symm (ne_of_gt (hlt χ hχ))
+      obtain ⟨b, hrefl, hbmem, -, hbne, hbpt⟩ := Relation.TransGen.tail'_iff.mp hcyc
+      have hedge : Gph (S ∪ initialMem v₀ t₀) b χ := ⟨hbmem, Or.inl hχ, hbne, hbpt⟩
+      have hbcyc : Relation.TransGen (Gph (S ∪ initialMem v₀ t₀)) b b :=
+        Relation.TransGen.head' hedge hrefl
+      have hbS : b ∈ S := by
+        rcases hbmem with hb | hb
+        · exact hb
+        · rw [mem_initialMem_iff] at hb
+          rw [PointsTo, hb] at hbpt
+          exact absurd hbpt.symm (ne_of_gt (hlt χ hχ))
+      obtain ⟨c, -, hcmem, -, hcne, hcpt⟩ := Relation.TransGen.tail'_iff.mp hbcyc
+      exact hbne (hone b hbS χ hχ (hin b hbS c hcmem hcne hcpt)
+        (hin χ hχ b hbmem hbne hbpt))
     · rw [mem_initialMem_iff] at hχ
       refine ⟨Or.inr (by rw [hχ]; exact ⟨χ.lc, rfl⟩), ?_⟩
       rintro χ' (hχ' | hχ') hlceq
-      · have : χ.t = t₀ := by rw [hχ]; rfl
-        rw [this]
+      · have h1 : χ.t = t₀ := by rw [hχ]; rfl
+        rw [h1]
         exact le_of_lt (hlt χ' hχ')
       · rw [mem_initialMem_iff] at hχ'
         have h1 : χ.t = t₀ := by rw [hχ]; rfl
@@ -704,18 +732,23 @@ theorem absorbMem_wellFormed (v₀ w v : Val) (t₀ : ℚ) (ℓ : Loc) :
       = {storedMsg t₀ ℓ w, absMsg t₀ ℓ v} ∪ initialMem v₀ t₀ := by
     rw [Set.insert_union, Set.singleton_union]
   rw [hset]
-  refine union_initialMem_wellFormed v₀ t₀ ℓ _
-    ((Set.finite_singleton _).insert _) ?_ ?_ ?_ ?_
-  · rintro χ (rfl | rfl) <;> rfl
+  refine union_initialMem_wellFormed v₀ t₀ (fun _ ↦ t₀) _
+    ((Set.finite_singleton _).insert _) ?_ ?_ ?_
+    (fun ℓ'' ↦ ⟨initialMsg v₀ t₀ ℓ'', Or.inr ⟨ℓ'', rfl⟩, rfl, rfl, le_refl _⟩) ?_ ?_
   · rintro χ (rfl | rfl) <;> simp
   · rintro χ (rfl | rfl) <;> simp
-  · rintro χ (rfl | rfl) χ' (rfl | rfl) ⟨x, hx1, hx2⟩ <;> try rfl
+  · rintro χ (rfl | rfl) <;> simp
+  · rintro χ (rfl | rfl) χ' (rfl | rfl) - ⟨x, hx1, hx2⟩ <;> try rfl
     · simp only [Msg.seg, storedMsg_i, storedMsg_t, absMsg_i, absMsg_t,
         Set.mem_Ioc] at hx1 hx2
       linarith [hx1.2, hx2.1]
     · simp only [Msg.seg, storedMsg_i, storedMsg_t, absMsg_i, absMsg_t,
         Set.mem_Ioc] at hx1 hx2
       linarith [hx1.1, hx2.2]
+  · rintro χ (rfl | rfl) χ' (rfl | rfl) h1 h2 <;> first
+      | rfl
+      | (exfalso; simp only [storedMsg_t, absMsg_t] at h1 h2;
+         linarith)
 
 theorem absorbedMem_wellFormed (v₀ v : Val) (t₀ : ℚ) (ℓ : Loc) :
     WellFormed (insert (writeMsg ℓ v t₀ (t₀ + 2) (fun _ ↦ t₀) (by linarith))
@@ -725,11 +758,16 @@ theorem absorbedMem_wellFormed (v₀ v : Val) (t₀ : ℚ) (ℓ : Loc) :
       = {writeMsg ℓ v t₀ (t₀ + 2) (fun _ ↦ t₀) (by linarith)} ∪ initialMem v₀ t₀ := by
     rw [Set.singleton_union]
   rw [hset]
-  refine union_initialMem_wellFormed v₀ t₀ ℓ _ (Set.finite_singleton _) ?_ ?_ ?_ ?_
-  · rintro χ rfl; rfl
+  refine union_initialMem_wellFormed v₀ t₀ (fun _ ↦ t₀) _ (Set.finite_singleton _) ?_ ?_ ?_
+    (fun ℓ'' ↦ ⟨initialMsg v₀ t₀ ℓ'', Or.inr ⟨ℓ'', rfl⟩, rfl, rfl, le_refl _⟩) ?_ ?_
   · rintro χ rfl; simp
   · rintro χ rfl; simp
-  · rintro χ rfl χ' rfl -; rfl
+  · rintro χ rfl; simp
+  · rintro χ rfl χ' rfl - -; rfl
+  · rintro χ rfl χ' rfl h1 -
+    exfalso
+    simp only [writeMsg_t] at h1
+    linarith
 
 /-- **`Absorb` merges two dovetailing local writes into one.**  This is the
 step the paper's `ℓ ≔ w ; ℓ ≔ v ↠ ℓ ≔ v` example calls for (journal p.37): the
@@ -763,12 +801,16 @@ theorem absorb_two_writes (v₀ w v : Val) (t₀ : ℚ) (ℓ : Loc) (r : A) :
     (storedMsg_not_mem_initialMem v₀ t₀ ℓ w) (storedMsg_not_mem_initialMem v₀ t₀ ℓ w)
     ?_ ?_ ?_ ?_ (by simp [listFree]) (by simp [listFree]) (by simp [listFree]) rfl ?_),
     ?_⟩
-  · exact writeMsg_not_mem_initialMem v₀ v t₀ (t₀ + 1) (t₀ + 2) ℓ (by linarith) (by linarith)
-  · exact writeMsg_not_mem_initialMem v₀ v t₀ (t₀ + 1) (t₀ + 2) ℓ (by linarith) (by linarith)
+  · exact writeMsg_not_mem_initialMem v₀ v t₀ (t₀ + 1) (t₀ + 2) ℓ (fun _ ↦ t₀)
+      (by linarith) (by linarith)
+  · exact writeMsg_not_mem_initialMem v₀ v t₀ (t₀ + 1) (t₀ + 2) ℓ (fun _ ↦ t₀)
+      (by linarith) (by linarith)
   · rw [absMsg_setI]
-    exact writeMsg_not_mem_initialMem v₀ v t₀ t₀ (t₀ + 2) ℓ (by linarith) (by linarith)
+    exact writeMsg_not_mem_initialMem v₀ v t₀ t₀ (t₀ + 2) ℓ (fun _ ↦ t₀)
+      (by linarith) (by linarith)
   · rw [absMsg_setI]
-    exact writeMsg_not_mem_initialMem v₀ v t₀ t₀ (t₀ + 2) ℓ (by linarith) (by linarith)
+    exact writeMsg_not_mem_initialMem v₀ v t₀ t₀ (t₀ + 2) ℓ (fun _ ↦ t₀)
+      (by linarith) (by linarith)
   · simp only [Chro.single_toList, List.nil_append, List.map_nil, List.cons.injEq,
       and_true, Transition.mk.injEq, true_and]
     rw [absMsg_setI]
@@ -847,5 +889,262 @@ theorem not_refines_cRules_absorb (v₀ w v : Val) (t₀ : ℚ) (ℓ : Loc) (r :
   · exact absurd h1 (storedMsg_not_mem_initialMem v₀ t₀ ℓ w)
 
 end Absorb
+
+/-! ## `Tighten` applied to a local write
+
+The paper's use of `Ti` (journal §E.5, p.59) is to *advance* the view carried by
+a local message so that it points at a later message at another location:
+*"All that remains is to tighten (Ti) `ℓ:v@(q,t]⟪α[ℓ↦t]⟫` to
+`ℓ:v@(q,t]⟪κ[ℓ↦t]⟫`."*  Two locations are essential — at the message's own
+location `≤vw` pins the view down, since it fixes the segment — so the memory
+below has a second write at `ℓ'` for the tightened view to point at.
+
+**Original work**: the paper constructs no trace.
+-/
+
+section Tighten
+
+variable [DecidableEq Loc]
+
+/-- The view that `Tighten` installs: the initial view advanced at `ℓ'` (to
+point at the write there) and at `ℓ` (to point at the message carrying it). -/
+def tiView (t₀ : ℚ) (ℓ ℓ' : Loc) : View Loc :=
+  setView (setView (fun _ ↦ t₀) ℓ' (t₀ + 1)) ℓ (t₀ + 1)
+
+/-- The tightened message: `ℓ:w@(t₀,t₀+1]` carrying `tiView`, which points at
+the write at `ℓ'` rather than at the initial message there. -/
+def tiMsg (t₀ : ℚ) (ℓ ℓ' : Loc) (w : Val) : Msg Loc Val :=
+  writeMsg ℓ w t₀ (t₀ + 1) (setView (fun _ ↦ t₀) ℓ' (t₀ + 1)) (by linarith)
+
+@[simp] theorem tiMsg_lc (t₀ : ℚ) (ℓ ℓ' : Loc) (w : Val) :
+    (tiMsg (Val := Val) t₀ ℓ ℓ' w).lc = ℓ := rfl
+
+@[simp] theorem tiMsg_vl (t₀ : ℚ) (ℓ ℓ' : Loc) (w : Val) :
+    (tiMsg (Loc := Loc) t₀ ℓ ℓ' w).vl = w := rfl
+
+@[simp] theorem tiMsg_i (t₀ : ℚ) (ℓ ℓ' : Loc) (w : Val) :
+    (tiMsg (Loc := Loc) t₀ ℓ ℓ' w).i = t₀ := rfl
+
+@[simp] theorem tiMsg_vw (t₀ : ℚ) (ℓ ℓ' : Loc) (w : Val) :
+    (tiMsg (Loc := Loc) t₀ ℓ ℓ' w).vw = tiView t₀ ℓ ℓ' := rfl
+
+@[simp] theorem tiMsg_t (t₀ : ℚ) (ℓ ℓ' : Loc) (w : Val) :
+    (tiMsg (Loc := Loc) t₀ ℓ ℓ' w).t = t₀ + 1 := by simp [tiMsg]
+
+theorem setView_mono {κ κ' : View Loc} (h : κ ≤ κ') (ℓ : Loc) (t : ℚ) :
+    setView κ ℓ t ≤ setView κ' ℓ t := by
+  intro ℓ''
+  by_cases hl : ℓ'' = ℓ
+  · subst hl; simp
+  · rw [setView_of_ne _ hl, setView_of_ne _ hl]; exact h ℓ''
+
+theorem setView_eq_self {κ : View Loc} {ℓ : Loc} {t : ℚ} (h : κ ℓ = t) :
+    setView κ ℓ t = κ := by rw [← h]; exact Function.update_eq_self ℓ κ
+
+theorem le_tiView (t₀ : ℚ) (ℓ ℓ' : Loc) : (fun _ ↦ t₀ : View Loc) ≤ tiView t₀ ℓ ℓ' := by
+  refine le_trans (le_setView (by simp)) (le_setView ?_)
+  by_cases h : ℓ = ℓ'
+  · subst h; simp
+  · rw [setView_of_ne _ h]; linarith
+
+/-- `Ti`'s premise: the two messages differ only in the view they carry. -/
+theorem storedMsg_leVw_tiMsg (t₀ : ℚ) (ℓ ℓ' : Loc) (w : Val) :
+    Msg.LeVw (storedMsg (Loc := Loc) t₀ ℓ w) (tiMsg t₀ ℓ ℓ' w) := by
+  refine ⟨rfl, rfl, Msg.seg_eq_iff.mpr ⟨rfl, by simp⟩, ?_⟩
+  rw [storedMsg_vw, tiMsg_vw, tiView]
+  exact setView_mono (le_setView (by simp)) ℓ (t₀ + 1)
+
+@[simp] theorem tiView_self (t₀ : ℚ) (ℓ ℓ' : Loc) : tiView t₀ ℓ ℓ' ℓ = t₀ + 1 :=
+  setView_self ..
+
+theorem tiView_other (t₀ : ℚ) {ℓ ℓ' : Loc} (h : ℓ' ≠ ℓ) : tiView t₀ ℓ ℓ' ℓ' = t₀ + 1 := by
+  rw [tiView, setView_of_ne _ h, setView_self]
+
+theorem tiView_of_ne {t₀ : ℚ} {ℓ ℓ' ℓ'' : Loc} (h : ℓ'' ≠ ℓ) (h' : ℓ'' ≠ ℓ') :
+    tiView t₀ ℓ ℓ' ℓ'' = t₀ := by
+  rw [tiView, setView_of_ne _ h, setView_of_ne _ h']
+
+variable [Finite Loc] [Nonempty Loc]
+
+/-- The memory before tightening: the initial memory with a write at `ℓ'` and a
+write at `ℓ` whose view points at the *initial* message at `ℓ'`. -/
+theorem tightenSrcMem_wellFormed (v₀ u w : Val) (t₀ : ℚ) (ℓ ℓ' : Loc) (hne : ℓ ≠ ℓ') :
+    WellFormed (insert (storedMsg (Loc := Loc) t₀ ℓ w) (storedMem v₀ t₀ ℓ' u)) := by
+  have hset : insert (storedMsg (Loc := Loc) t₀ ℓ w) (storedMem v₀ t₀ ℓ' u)
+      = {storedMsg t₀ ℓ w, storedMsg t₀ ℓ' u} ∪ initialMem v₀ t₀ := by
+    rw [Set.insert_union, Set.singleton_union]; rfl
+  rw [hset]
+  refine union_initialMem_wellFormed v₀ t₀ (fun _ ↦ t₀) _
+    ((Set.finite_singleton _).insert _) ?_ ?_ ?_
+    (fun ℓ'' ↦ ⟨initialMsg v₀ t₀ ℓ'', Or.inr ⟨ℓ'', rfl⟩, rfl, rfl, le_refl _⟩) ?_ ?_
+  · rintro χ (rfl | rfl) <;> simp
+  · rintro χ (rfl | rfl) <;> simp
+  · rintro χ (rfl | rfl) <;> simp
+  · rintro χ (rfl | rfl) χ' (rfl | rfl) h - <;> first
+      | rfl
+      | (exfalso; simp only [storedMsg_lc] at h; exact hne h)
+      | (exfalso; simp only [storedMsg_lc] at h; exact hne h.symm)
+  · rintro χ (rfl | rfl) χ' (rfl | rfl) h1 h2 <;> first
+      | rfl
+      | (exfalso; simp only [storedMsg_t] at h1 h2; linarith)
+
+/-- The memory after tightening: the write at `ℓ` now points at the write at
+`ℓ'`.  This is where the paper's cycle condition earns its keep — the pointed-at
+write is not minimal at its location, so it must not lie on a cycle. -/
+theorem tightenTgtMem_wellFormed (v₀ u w : Val) (t₀ : ℚ) (ℓ ℓ' : Loc) (hne : ℓ ≠ ℓ') :
+    WellFormed (insert (tiMsg (Loc := Loc) t₀ ℓ ℓ' w) (storedMem v₀ t₀ ℓ' u)) := by
+  have hκ : setView (fun _ ↦ t₀) ℓ' (t₀ + 1) ℓ' = t₀ + 1 := setView_self ..
+  have hβ : (storedMsg (Loc := Loc) t₀ ℓ' u).vw = setView (fun _ ↦ t₀) ℓ' (t₀ + 1) := rfl
+  have hset : insert (tiMsg (Loc := Loc) t₀ ℓ ℓ' w) (storedMem v₀ t₀ ℓ' u)
+      = {tiMsg t₀ ℓ ℓ' w, storedMsg t₀ ℓ' u} ∪ initialMem v₀ t₀ := by
+    rw [Set.insert_union, Set.singleton_union]; rfl
+  rw [hset]
+  refine union_initialMem_wellFormed v₀ t₀ (setView (fun _ ↦ t₀) ℓ' (t₀ + 1)) _
+    ((Set.finite_singleton _).insert _) ?_ ?_ ?_ ?_ ?_ ?_
+  · rintro χ (rfl | rfl) <;> simp
+  · rintro χ (rfl | rfl)
+    · rw [tiMsg_lc, tiMsg_t, tiMsg_vw, tiView]
+    · rw [storedMsg_lc, storedMsg_t, hβ]
+      exact (setView_eq_self hκ).symm
+  · rintro χ (rfl | rfl)
+    · rw [tiMsg_lc, tiMsg_t, setView_of_ne _ hne]; linarith
+    · rw [storedMsg_lc, storedMsg_t, hκ]
+  · intro ℓ''
+    by_cases h : ℓ'' = ℓ'
+    · subst h
+      refine ⟨storedMsg t₀ ℓ'' u, Or.inl (Set.mem_insert_of_mem _ rfl), rfl, ?_, ?_⟩
+      · rw [PointsTo, storedMsg_lc, storedMsg_t]; exact hκ
+      · rw [hβ]
+    · refine ⟨initialMsg v₀ t₀ ℓ'', Or.inr ⟨ℓ'', rfl⟩, rfl, ?_, ?_⟩
+      · rw [PointsTo, initialMsg_lc, initialMsg_t, setView_of_ne _ h]
+      · rw [initialMsg_vw]
+        exact le_setView (by simp)
+  · rintro χ (rfl | rfl) χ' (rfl | rfl) h - <;> first
+      | rfl
+      | (exfalso; simp only [tiMsg_lc, storedMsg_lc] at h; exact hne h)
+      | (exfalso; simp only [tiMsg_lc, storedMsg_lc] at h; exact hne h.symm)
+  · rintro χ (rfl | rfl) χ' (rfl | rfl) h1 h2 <;> first
+      | rfl
+      | (exfalso; simp only [tiMsg_lc, tiMsg_t, storedMsg_lc, storedMsg_t,
+           setView_of_ne _ hne] at h1 h2; linarith)
+
+omit [Finite Loc] [Nonempty Loc] in
+/-- Both memories of the tighten step close under `tiView`. -/
+theorem pointsDownInto_tiView (v₀ u : Val) (t₀ : ℚ) (ℓ ℓ' : Loc) (hne : ℓ ≠ ℓ')
+    (S : Memory Loc Val) (χ : Msg Loc Val) (hχ : χ ∈ S) (hlc : χ.lc = ℓ)
+    (ht : χ.t = t₀ + 1) (hvw : χ.vw ≤ tiView t₀ ℓ ℓ')
+    (hsub : storedMem v₀ t₀ ℓ' u ⊆ S) : PointsDownInto (tiView t₀ ℓ ℓ') S := by
+  intro ℓ''
+  by_cases h : ℓ'' = ℓ
+  · subst h
+    exact ⟨χ, hχ, hlc, by rw [PointsTo, hlc, tiView_self, ht], hvw⟩
+  · by_cases h' : ℓ'' = ℓ'
+    · subst h'
+      refine ⟨storedMsg t₀ ℓ'' u, hsub (storedMsg_mem v₀ t₀ ℓ'' u), rfl, ?_, ?_⟩
+      · rw [PointsTo, storedMsg_lc, storedMsg_t, tiView_other t₀ h]
+      · rw [storedMsg_vw]
+        refine le_setView ?_
+        rw [setView_of_ne _ (Ne.symm h)]
+        linarith
+    · refine ⟨initialMsg v₀ t₀ ℓ'', hsub (Set.mem_insert_of_mem _ ⟨ℓ'', rfl⟩), rfl, ?_, ?_⟩
+      · rw [PointsTo, initialMsg_lc, initialMsg_t, tiView_of_ne h h']
+      · rw [initialMsg_vw]; exact le_tiView t₀ ℓ ℓ'
+
+/-- **`Tighten` advances the view carried by a local write.**  The source memory
+has the local write `ℓ:w@(t₀,t₀+1]` whose view points at the *initial* message
+at `ℓ'`; the target has the same message carrying `tiView`, which points at the
+write `ℓ':u@(t₀,t₀+1]` instead.  This is the shape of the paper's `Ti` step for
+write–read reordering (journal §E.5, p.59).  **Original work.** -/
+theorem tighten_write (v₀ u w : Val) (t₀ : ℚ) (ℓ ℓ' : Loc) (hne : ℓ ≠ ℓ') (r : A) :
+    TStep gcaRules
+      (⟨fun _ ↦ t₀, Chro.single ⟨storedMem v₀ t₀ ℓ' u,
+          insert (storedMsg t₀ ℓ w) (storedMem v₀ t₀ ℓ' u)⟩,
+        tiView t₀ ℓ ℓ', r⟩ : PreTrace Loc Val A)
+      ⟨fun _ ↦ t₀, Chro.single ⟨storedMem v₀ t₀ ℓ' u,
+          insert (tiMsg t₀ ℓ ℓ' w) (storedMem v₀ t₀ ℓ' u)⟩,
+        tiView t₀ ℓ ℓ', r⟩ := by
+  have hlvw := storedMsg_leVw_tiMsg (Val := Val) t₀ ℓ ℓ' w
+  have hνμ : storedMsg (Loc := Loc) t₀ ℓ w ∉ storedMem v₀ t₀ ℓ' u := by
+    rintro (h | h)
+    · exact hne (congrArg Msg.lc h)
+    · exact storedMsg_not_mem_initialMem v₀ t₀ ℓ w h
+  have hεμ : tiMsg (Loc := Loc) t₀ ℓ ℓ' w ∉ storedMem v₀ t₀ ℓ' u := by
+    rintro (h | h)
+    · exact hne (congrArg Msg.lc h)
+    · exact writeMsg_not_mem_initialMem v₀ w t₀ t₀ (t₀ + 1) ℓ
+        (setView (fun _ ↦ t₀) ℓ' (t₀ + 1)) (by linarith) (by linarith) h
+  refine ⟨Step.chro (by simp) (ChroStep.tighten _ _ [] [] (storedMem v₀ t₀ ℓ' u)
+    (storedMem v₀ t₀ ℓ' u) (storedMsg t₀ ℓ w) (tiMsg t₀ ℓ ℓ' w) hlvw hνμ hνμ hεμ hεμ
+    (by simp [listFree]) (by simp [listFree]) rfl rfl), ?_⟩
+  refine ⟨?_, (pointsDownInto_initialMem v₀ t₀).mono (initialMem_subset_storedMem v₀ t₀ ℓ' u),
+    le_tiView t₀ ℓ ℓ', ?_, ?_⟩
+  · intro T hT
+    simp only [Chro.single_toList, List.mem_singleton] at hT
+    subst hT
+    exact ⟨storedMem_wellFormed v₀ t₀ ℓ' u, tightenTgtMem_wellFormed v₀ u w t₀ ℓ ℓ' hne,
+      Set.subset_insert _ _⟩
+  · exact pointsDownInto_tiView v₀ u t₀ ℓ ℓ' hne _ (tiMsg t₀ ℓ ℓ' w)
+      (Set.mem_insert _ _) rfl (by simp) (le_refl _) (Set.subset_insert _ _)
+  · intro χ hχ
+    simp only [Chro.single_own, Transition.own, Set.mem_diff, Set.mem_insert_iff] at hχ
+    obtain ⟨hχ1 | hχ1, hχ2⟩ := hχ
+    · subst hχ1
+      exact ⟨le_tiView t₀ ℓ ℓ', le_refl _, by simp⟩
+    · exact absurd hχ1 hχ2
+
+/-- The source of `tighten_write` is a trace. -/
+theorem tighten_write_src (v₀ u w : Val) (t₀ : ℚ) (ℓ ℓ' : Loc) (hne : ℓ ≠ ℓ') (r : A) :
+    IsTrace (⟨fun _ ↦ t₀, Chro.single ⟨storedMem v₀ t₀ ℓ' u,
+        insert (storedMsg t₀ ℓ w) (storedMem v₀ t₀ ℓ' u)⟩,
+      tiView t₀ ℓ ℓ', r⟩ : PreTrace Loc Val A) := by
+  have hlvw := storedMsg_leVw_tiMsg (Val := Val) t₀ ℓ ℓ' w
+  refine ⟨?_, (pointsDownInto_initialMem v₀ t₀).mono (initialMem_subset_storedMem v₀ t₀ ℓ' u),
+    le_tiView t₀ ℓ ℓ', ?_, ?_⟩
+  · intro T hT
+    simp only [Chro.single_toList, List.mem_singleton] at hT
+    subst hT
+    exact ⟨storedMem_wellFormed v₀ t₀ ℓ' u, tightenSrcMem_wellFormed v₀ u w t₀ ℓ ℓ' hne,
+      Set.subset_insert _ _⟩
+  · exact pointsDownInto_tiView v₀ u t₀ ℓ ℓ' hne _ (storedMsg t₀ ℓ w)
+      (Set.mem_insert _ _) rfl (by simp) hlvw.2.2.2 (Set.subset_insert _ _)
+  · intro χ hχ
+    simp only [Chro.single_own, Transition.own, Set.mem_diff, Set.mem_insert_iff] at hχ
+    obtain ⟨hχ1 | hχ1, hχ2⟩ := hχ
+    · subst hχ1
+      exact ⟨initialView_le_storedMsg_vw t₀ ℓ w, hlvw.2.2.2, by simp⟩
+    · exact absurd hχ1 hχ2
+
+/-- The `Tighten` step of `tighten_write` is not a `𝔠`-rewriting: it changes the
+local messages, which the `𝔠` rules preserve exactly. -/
+theorem not_refines_cRules_tighten (v₀ u w : Val) (t₀ : ℚ) (ℓ ℓ' : Loc) (hne : ℓ ≠ ℓ')
+    (r : A) :
+    ¬ Refines cRules
+      (⟨fun _ ↦ t₀, Chro.single ⟨storedMem v₀ t₀ ℓ' u,
+          insert (storedMsg t₀ ℓ w) (storedMem v₀ t₀ ℓ' u)⟩,
+        tiView t₀ ℓ ℓ', r⟩ : PreTrace Loc Val A)
+      ⟨fun _ ↦ t₀, Chro.single ⟨storedMem v₀ t₀ ℓ' u,
+          insert (tiMsg t₀ ℓ ℓ' w) (storedMem v₀ t₀ ℓ' u)⟩,
+        tiView t₀ ℓ ℓ', r⟩ := by
+  intro h
+  have hνμ : storedMsg (Loc := Loc) t₀ ℓ w ∉ storedMem v₀ t₀ ℓ' u := by
+    rintro (h' | h')
+    · exact hne (congrArg Msg.lc h')
+    · exact storedMsg_not_mem_initialMem v₀ t₀ ℓ w h'
+  have hown := h.own_eq (subset_refl _) (tighten_write_src v₀ u w t₀ ℓ ℓ' hne r)
+  simp only [Chro.single_own, Transition.own] at hown
+  have hmem : storedMsg (Loc := Loc) t₀ ℓ w ∈
+      insert (storedMsg t₀ ℓ w) (storedMem v₀ t₀ ℓ' u) \ storedMem v₀ t₀ ℓ' u :=
+    ⟨Set.mem_insert _ _, hνμ⟩
+  rw [hown] at hmem
+  simp only [Set.mem_diff, Set.mem_insert_iff] at hmem
+  obtain ⟨h1 | h1, -⟩ := hmem
+  · have := congrArg Msg.vw h1
+    simp only [storedMsg_vw, tiMsg_vw] at this
+    have h2 := congrFun this ℓ'
+    rw [setView_of_ne _ (Ne.symm hne), tiView_other t₀ (Ne.symm hne)] at h2
+    linarith
+  · exact hνμ h1
+
+end Tighten
 
 end Isotope.Elgot.RA

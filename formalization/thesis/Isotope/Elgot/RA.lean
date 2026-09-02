@@ -176,11 +176,17 @@ Read this before citing anything here as "the paper's".
   "insufficiently abstract" (p.26) but exhibits no separating trace anywhere;
   this is **original work**.
 * `absorb_two_writes` — a concrete `Absorb` rewrite merging the two dovetailing
-  local writes of the paper's `ℓ ≔ w ; ℓ ≔ v ↠ ℓ ≔ v` example (p.37) into one,
-  with `not_refines_cRules_absorb`.  Together with `dilute_return` this is what
-  keeps the `𝔞` constructors honest: their side conditions are jointly
+  local writes of the paper's `ℓ ≔ w ; ℓ ≔ v ↠ ℓ ≔ v` example (p.37) into one —
+  and `tighten_write`, a concrete `Tighten` rewrite advancing the view of a
+  local write to point at a later message at a second location, the shape of
+  the paper's write–read reordering step (§E.5, p.59); each with its
+  `not_refines_cRules_…` companion.  Together with `dilute_return` these keep
+  all three `𝔞` constructors honest: their side conditions are jointly
   satisfiable on genuine traces, which the vacuous `own_empty` cases for `Ti`
   and `Ab` do not show.  **Original work**: the paper constructs no trace.
+* `union_initialMem_wellFormed` — the initial memory extended by extra writes is
+  well formed under five explicit conditions, the last two of which are what
+  keeps the paper's *cycle* condition true.  Generalizes `storedMem_wellFormed`.
 * `View.pull_le_pull` — the paper's Lemma 7.6 (p.33).
 * `LawfulElgotMonad (Comp cRules Loc Val)` — fixpoint, naturality, codiagonal
   and pure uniformity for the union-of-unrollings iteration operator.  The
