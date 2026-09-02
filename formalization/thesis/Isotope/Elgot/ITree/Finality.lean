@@ -345,6 +345,16 @@ theorem Tree.destruct_eq_none_iff (t : Tree E A) : t.destruct = Part.none ↔ t 
   · intro h; rw [← Tree.construct_destruct t, h, construct_none]
   · rintro rfl; exact Tree.destruct_diverge
 
+/-- A tree with a return head is that return. -/
+theorem Tree.eq_ret_of_destruct {t : Tree E A} {a : A}
+    (h : t.destruct = Part.some (.ret a)) : t = ret a := by
+  rw [← Tree.construct_destruct t, h, construct_ret]
+
+/-- A tree with a visible head is that visible event. -/
+theorem Tree.eq_vis_of_destruct {t : Tree E A} {R : Type u} {e : E R} {k : R → Tree E A}
+    (h : t.destruct = Part.some (.vis e k)) : t = vis e k := by
+  rw [← Tree.construct_destruct t, h, construct_vis]
+
 /-! ## Coinduction through `destruct` -/
 
 /-- Coinduction: a `destruct`-bisimulation is contained in equality.  Two related
