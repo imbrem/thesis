@@ -61,6 +61,40 @@ structure CollectiveDenotes (Γ : VCtx τ) {n : Nat} (R : Fin n → τ) (L : LCt
   restrict (i : Fin n) (ρ : Env Γ) (a : TyDen (R i)) :
     collective (ρ, finiteLabelInject R i a) = block i (ρ, a)
 
+private def envToCategorical : {Γ : VCtx τ} →
+    Env Γ → Categorical.ctxObj (typeModel (τ := τ)) Γ
+  | [], _ => PUnit.unit
+  | _ :: _, ρ => (envToCategorical ρ.1, ρ.2)
+
+private def envFromCategorical : {Γ : VCtx τ} →
+    Categorical.ctxObj (typeModel (τ := τ)) Γ → Env Γ
+  | [], _ => PUnit.unit
+  | _ :: _, ρ => (envFromCategorical ρ.1, ρ.2)
+
+@[simp] private theorem envFrom_to {Γ : VCtx τ} (ρ : Env Γ) :
+    envFromCategorical (envToCategorical ρ) = ρ := by
+  induction Γ with
+  | nil => cases ρ; rfl
+  | cons _ _ ih => simp [envFromCategorical, envToCategorical, ih]
+
+/-- Every nonempty finite block family has a collective dispatcher. -/
+theorem collectiveDenotes_exists_succ (n : Nat) (Γ : VCtx τ)
+    (R : Fin (n + 1) → τ) (L : LCtx τ)
+    (block : ∀ i, Env (R i :: Γ) → m (LabelDen (List.ofFn R ++ L))) :
+    ∃ collective, CollectiveDenotes Γ R L block collective := by
+  let J := CategoryTheory.Kleisli.Adjunction.toKleisli
+    (CategoryTheory.ofTypeMonad m)
+  let M := Categorical.ofTypeModel (τ := τ)
+  let block' : ∀ i, J.obj (Categorical.ctxObj M (R i :: Γ)) ⟶
+      J.obj (Categorical.labelObj M (List.ofFn R ++ L)) :=
+    fun i => CategoryTheory.Kleisli.Hom.mk (fun ρ => block i (envFromCategorical ρ))
+  rcases Categorical.finiteCollective_exists_succ J M n Γ R
+      (Categorical.labelObj M (List.ofFn R ++ L)) block' with ⟨f, hf⟩
+  refine ⟨fun p => f.of (envToCategorical p.1, p.2), ⟨fun i ρ a => ?_⟩⟩
+  have h := congrFun (congrArg CategoryTheory.Kleisli.Hom.of (hf.restrict i))
+    (envToCategorical ρ, a)
+  simpa [J, M, block', finiteLabelInject, envFromCategorical] using h
+
 /-- Relational graph of the direct monadic region semantics.  Recursive CFGs
 feed locally targeted branches back through `iter`; externally targeted
 branches are returned. -/
@@ -118,5 +152,41 @@ inductive RegionDenotes (ε : Type r) [HasEff Φ ε] [Bot ε]
               pure ((Types.binaryCoproductIso (LabelDen L)
                 (LabelDen (List.ofFn R))).hom
                   (labelAppendSplit (List.ofFn R) L next))) loopTarget)
+
+private theorem regionDenotes_exists {Γ : VCtx τ} {region : Region Φ}
+    {L : LCtx τ} (h : Region.HasType Γ region L) :
+    ∃ f, RegionDenotes (m := m) ε h f := by
+  induction h with
+  | br h ha => exact ⟨_, .br (h := h) (denote_spec (ε := ε) ha)⟩
+  | case he hl hr ihl ihr =>
+      rcases ihl with ⟨fl, dl⟩
+      rcases ihr with ⟨fr, dr⟩
+      exact ⟨_, .case (denote_spec (ε := ε) he) dl dr⟩
+  | let₁ ha hb ih =>
+      rcases ih with ⟨fb, db⟩
+      exact ⟨_, .let₁ (denote_spec (ε := ε) ha) db⟩
+  | let₂ ha hb ih =>
+      rcases ih with ⟨fb, db⟩
+      exact ⟨_, .let₂ (denote_spec (ε := ε) ha) db⟩
+  | @cfg _ _ _ n _ R he hb ihe ihb =>
+      cases n with
+      | zero =>
+          rcases ihe with ⟨fe, de⟩
+          exact ⟨fe, .cfgZero he hb de⟩
+      | succ n =>
+          rcases ihe with ⟨fe, de⟩
+          choose fb db using ihb
+          rcases collectiveDenotes_exists_succ n _ R _ fb with ⟨fc, dc⟩
+          exact ⟨_, .cfg he hb de db dc⟩
+
+/-- A chosen direct monadic denotation of an exactly typed SSA region. -/
+noncomputable def Region.denote {Γ : VCtx τ} {region : Region Φ} {L : LCtx τ}
+    (h : Region.HasType Γ region L) : Env Γ → m (LabelDen L) :=
+  (regionDenotes_exists (ε := ε) (m := m) h).choose
+
+theorem Region.denote_spec {Γ : VCtx τ} {region : Region Φ} {L : LCtx τ}
+    (h : Region.HasType Γ region L) :
+    RegionDenotes (m := m) ε h (Region.denote (ε := ε) (m := m) h) :=
+  (regionDenotes_exists (ε := ε) (m := m) h).choose_spec
 
 end Isotope.LambdaSSA.Semantics.Monadic
