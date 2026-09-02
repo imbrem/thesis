@@ -11,6 +11,7 @@ import Isotope.Elgot.RA.Iteration
 import Isotope.Elgot.RA.Memory
 import Isotope.Elgot.RA.Categorical
 import Isotope.Elgot.RA.Examples
+import Isotope.Elgot.RA.ParExamples
 
 /-!
 # A release/acquire trace monad
@@ -240,6 +241,10 @@ Read this before citing anything here as "the paper's".
     contradicts its own statement of the direction; see the module docstring.
   - `Comp.mapRet_image_subset_par_pure` — `P ⊆ P ||| return r`, the reachable
     half of the unit law.  Original.
+  - `par_pure_pure_nonempty` and `par_pure_pure_ne_bot`
+    (`Isotope/Elgot/RA/ParExamples.lean`) — a concrete trace of
+    `return a ||| return b`, so that `Comp.par` is demonstrably not vacuous
+    despite `inf_μ` being characterised rather than constructed.
 * Worked examples in `Isotope/Elgot/RA/Examples.lean`: `pure_ne_pure`,
   `bot_ne_pure`, `storedMem_wellFormed` (a well-formed memory with two messages
   at one location), `mem_store`, `store_ne_pure`, `store_ne_bot`, `load_stale`
