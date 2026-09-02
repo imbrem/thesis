@@ -1,5 +1,6 @@
 import Isotope.Elgot.RA.State
 import Isotope.Elgot.RA.Trace
+import Isotope.Elgot.RA.Pull
 import Isotope.Elgot.RA.Rewrite
 import Isotope.Elgot.RA.Closure
 import Isotope.Elgot.RA.Monad
