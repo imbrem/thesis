@@ -78,6 +78,15 @@ theorem DenotesAgreement.eq
   | equal hfg => exact hfg
   | bottom hf hg hp => exact hf.eq_of_prefix hg hp
 
+theorem HeterogeneousAgreement.toDenotesAgreement
+    {Γ : VCtx τ} {t : Tm Φ} {A : τ} {h : Tm.HasType Γ t A}
+    {f g : J.obj (ctxObj M Γ) ⟶ J.obj (M.obj A)}
+    (a : HeterogeneousAgreement J M h h f g) :
+    DenotesAgreement J M (h := h) (f := f) (g := g) := by
+  cases a with
+  | equal hfg => exact .equal hfg
+  | bottom hf hg hp => exact .bottom hf hg hp
+
 /-- Once constructor-wise agreement has been established, functionality is a
 direct consequence; no independent semantic coherence assumption is needed. -/
 theorem Denotes.functional_of_agreement
