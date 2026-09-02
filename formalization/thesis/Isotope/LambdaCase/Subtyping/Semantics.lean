@@ -3,9 +3,10 @@ import Isotope.LambdaIter.Subtyping.Semantics.Denotation
 
 /-! # Monadic denotational semantics of lambda-case -/
 
-namespace Isotope.LambdaCase.Subtyping.Subtyping.Semantics
+namespace Isotope.LambdaCase.Subtyping.Semantics
 
 open Isotope.LambdaCase.LocallyNameless
+open Isotope.LambdaCase.Subtyping.LocallyNameless
 
 universe u v w q r
 
@@ -72,41 +73,41 @@ theorem denote_embed [LawfulMonad m] [Isotope.Elgot.Iterate m]
       denote (ε := ε) (m := m) h γ ρ := by
   induction h with
   | fv | bv | unit =>
-      unfold Isotope.LambdaCase.LocallyNameless.HasType.embed
+      unfold Isotope.LambdaCase.Subtyping.LocallyNameless.HasType.embed
       unfold LambdaIter.Subtyping.Semantics.denote denote
       rfl
   | op ha ih =>
-      unfold Isotope.LambdaCase.LocallyNameless.HasType.embed
+      unfold Isotope.LambdaCase.Subtyping.LocallyNameless.HasType.embed
       unfold LambdaIter.Subtyping.Semantics.denote denote
       simp only [ih ρ]
   | let₁ ha hb iha ihb =>
-      unfold Isotope.LambdaCase.LocallyNameless.HasType.embed
+      unfold Isotope.LambdaCase.Subtyping.LocallyNameless.HasType.embed
       unfold LambdaIter.Subtyping.Semantics.denote denote
       rw [iha ρ]
       congr 1
       funext a
       rw [ihb (ρ, a)]
   | pair ha hb iha ihb =>
-      unfold Isotope.LambdaCase.LocallyNameless.HasType.embed
+      unfold Isotope.LambdaCase.Subtyping.LocallyNameless.HasType.embed
       unfold LambdaIter.Subtyping.Semantics.denote denote
       rw [iha ρ, ihb ρ]
       rfl
   | let₂ ha hc iha ihc =>
-      unfold Isotope.LambdaCase.LocallyNameless.HasType.embed
+      unfold Isotope.LambdaCase.Subtyping.LocallyNameless.HasType.embed
       unfold LambdaIter.Subtyping.Semantics.denote denote
       congr 1
       · exact iha ρ
       funext ab
       exact ihc _
   | inl ha ih | inr ha ih | abort ha ih | sub ha _ ih =>
-      unfold Isotope.LambdaCase.LocallyNameless.HasType.embed
+      unfold Isotope.LambdaCase.Subtyping.LocallyNameless.HasType.embed
       unfold LambdaIter.Subtyping.Semantics.denote denote
       first
       | rfl
       | congr 1
         exact ih ρ
   | case he hl hr ihe ihl ihr =>
-      unfold Isotope.LambdaCase.LocallyNameless.HasType.embed
+      unfold Isotope.LambdaCase.Subtyping.LocallyNameless.HasType.embed
       unfold LambdaIter.Subtyping.Semantics.denote denote
       congr 1
       · exact ihe ρ
@@ -115,4 +116,4 @@ theorem denote_embed [LawfulMonad m] [Isotope.Elgot.Iterate m]
       · simp_all only
       · simp_all only
 
-end Isotope.LambdaCase.Subtyping.Subtyping.Semantics
+end Isotope.LambdaCase.Subtyping.Semantics

@@ -8,9 +8,10 @@ contrast, `Id` cannot support even an unconstrained total iteration operator
 of the shape required by lambda-iter.
 -/
 
-namespace Isotope.LambdaCase.Subtyping.Subtyping.Semantics.Identity
+namespace Isotope.LambdaCase.Subtyping.Semantics.Identity
 
 open Isotope.LambdaCase.LocallyNameless
+open Isotope.LambdaCase.Subtyping.LocallyNameless
 
 universe u v w q r
 
@@ -34,7 +35,7 @@ theorem eval_eq_denote {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
     (γ : CtxDen Γ) (ρ : BoundDen β) :
     eval (ε := ε) h γ ρ = denote (ε := ε) (m := Id) h γ ρ := rfl
 
-end Isotope.LambdaCase.Subtyping.Subtyping.Semantics.Identity
+end Isotope.LambdaCase.Subtyping.Semantics.Identity
 
 namespace Isotope.Elgot
 

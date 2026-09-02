@@ -3,9 +3,10 @@ import Isotope.LambdaCase.Subtyping.TypingSubst
 
 /-! # Semantics of lambda-case renaming and substitution -/
 
-namespace Isotope.LambdaCase.Subtyping.Subtyping.Semantics
+namespace Isotope.LambdaCase.Subtyping.Semantics
 
 open Isotope.LambdaCase.LocallyNameless
+open Isotope.LambdaCase.Subtyping.LocallyNameless
 
 universe u v w q r
 
@@ -260,4 +261,4 @@ theorem denote_instantiate {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
   rw [BoundDen.pull_underTwoBinders] at hr
   exact hr
 
-end Isotope.LambdaCase.Subtyping.Subtyping.Semantics
+end Isotope.LambdaCase.Subtyping.Semantics
