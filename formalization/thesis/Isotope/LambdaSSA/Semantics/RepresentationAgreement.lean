@@ -3,6 +3,7 @@ import Isotope.LambdaSSA.Named.ToLocallyNameless.Typing
 import Isotope.LambdaSSA.Semantics.Term
 import Isotope.LambdaSSA.Semantics.Region
 import Isotope.LambdaSSA.Semantics.Monadic.Term
+import Isotope.LambdaSSA.Semantics.Monadic.Region
 
 /-! # Semantic wrappers for closed surface representations -/
 
@@ -106,11 +107,12 @@ namespace Monadic
 
 open Isotope.LambdaIter
 open Isotope.LambdaIter.Subtyping.Semantics
+open Isotope.Elgot
 
 variable {τ : Type u} [TypeFormers τ] [Subtyping τ] [TypeModel.{u, v} τ]
 variable {Φ : Type q} [HasTy Φ τ] {ε : Type r} [HasEff Φ ε] [Bot ε]
 variable {m : Type v → Type v} [Monad m] [LawfulMonad m]
-  [InstructionModel Φ τ ε m]
+  [Iterate m] [LawfulElgotMonad m] [InstructionModel Φ τ ε m]
 
 noncomputable def denoteLocallyNamelessTm
     {β : LocallyNameless.BoundCtx τ n} {t : LocallyNameless.Tm Empty Φ n}
@@ -139,6 +141,47 @@ theorem denoteNamedTm_commutes {t : Named.Tm Empty Φ} (h : Named.Tm.HasType
     denoteNamedTm (ε := ε) (m := m) h =
       denoteLocallyNamelessTm (ε := ε) (m := m)
         (Named.ToLocallyNameless.translateTm_hasType (.nil) h) := rfl
+
+def LocallyNamelessRegionDenotes
+    {β : LocallyNameless.BoundCtx τ n} {δ : LocallyNameless.BoundCtx τ l}
+    {r : LocallyNameless.Region Empty Empty Φ n l}
+    (h : LocallyNameless.Region.HasType Φ
+      (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ)
+      (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ) β δ r)
+    (f : Semantics.Monadic.Env (LocallyNameless.ToDeBruijn.context β) →
+      m (Semantics.Monadic.LabelDen (LocallyNameless.ToDeBruijn.context δ))) : Prop :=
+  Semantics.Monadic.RegionDenotes (m := m) ε
+    (LocallyNameless.ToDeBruijn.eraseRegion_hasType h) f
+
+theorem locallyNamelessRegionDenotes_commutes
+    {β : LocallyNameless.BoundCtx τ n} {δ : LocallyNameless.BoundCtx τ l}
+    {r : LocallyNameless.Region Empty Empty Φ n l}
+    (h : LocallyNameless.Region.HasType Φ
+      (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ)
+      (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ) β δ r) (f) :
+    LocallyNamelessRegionDenotes (ε := ε) (m := m) h f ↔
+      Semantics.Monadic.RegionDenotes (m := m) ε
+        (LocallyNameless.ToDeBruijn.eraseRegion_hasType h) f := Iff.rfl
+
+def NamedRegionDenotes {r : Named.Region Empty Empty Φ} (h : Named.Region.HasType
+    (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ) r
+    (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ))
+    (f : Semantics.Monadic.Env ([] : List τ) →
+      m (Semantics.Monadic.LabelDen ([] : List τ))) : Prop :=
+  LocallyNamelessRegionDenotes (ε := ε) (m := m)
+    (Named.ToLocallyNameless.translateRegion_hasType
+      (ρ := .nil) (ls := .nil) (β := .nil) (δ := .nil) (.nil)
+      emptyLabelAlignment h) f
+
+theorem namedRegionDenotes_commutes {r : Named.Region Empty Empty Φ}
+    (h : Named.Region.HasType
+      (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ) r
+      (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ)) (f) :
+    NamedRegionDenotes (ε := ε) (m := m) h f ↔
+      LocallyNamelessRegionDenotes (ε := ε) (m := m)
+        (Named.ToLocallyNameless.translateRegion_hasType
+          (ρ := .nil) (ls := .nil) (β := .nil) (δ := .nil) (.nil)
+          emptyLabelAlignment h) f := Iff.rfl
 
 end Monadic
 
