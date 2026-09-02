@@ -6,6 +6,9 @@ import Isotope.LambdaIter.Subtyping.LocallyNameless.TypingSubst
 namespace Isotope.LambdaIter.Subtyping.Semantics
 
 open Isotope.LambdaIter.LocallyNameless
+open Isotope.LambdaIter.Subtyping.LocallyNameless
+
+open Isotope.LambdaIter.LocallyNameless
 
 universe u v w q r
 

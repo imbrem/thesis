@@ -2,6 +2,9 @@ import Isotope.LambdaIter.Subtyping.Named.Equiv
 
 namespace Isotope.LambdaIter.Subtyping.Named
 
+open Isotope.LambdaIter
+open Isotope.LambdaIter.Named
+
 open Isotope.LambdaIter.Named
 
 inductive Base where | nat
