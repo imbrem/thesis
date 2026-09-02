@@ -6,6 +6,8 @@ import Isotope.LambdaSSA.Structural
 
 namespace Isotope.LambdaSSA.Translation.ANF.ToSSA
 
+set_option relaxedAutoImplicit true
+
 open Isotope.LambdaIter
 
 def atom : Atom Empty Φ n → LambdaSSA.Tm Φ
