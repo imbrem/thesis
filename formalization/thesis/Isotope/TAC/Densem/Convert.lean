@@ -84,6 +84,36 @@ theorem incoming_select [DecidableEq ν] [DecidableEq κ]
   exact select_filterMap (predecessors source bid) pred (source.lookup ·)
     (fun q block => Isotope.TAC.Classical.Value.var (endEnv q block x)) hpred hb
 
+section Small
+
+variable {ν φ κ : Type} {M : Densem.Model φ}
+
+/-- Phi assignment simulation in the universe currently supported by the
+executable classical semantics. -/
+theorem assignments_convert [DecidableEq ν] [DecidableEq κ]
+    (source : Isotope.TAC.Classical.CFG ν φ κ) (vars : List ν)
+    (label : κ) (pred : BlockId κ) (b : Isotope.TAC.Classical.Block ν φ κ)
+    (target : Densem.Env M (Version ν κ)) (values : ν → M.Val)
+    (hpred : pred ∈ predecessors source (.named label))
+    (hb : source.lookup pred = some b)
+    (hvalues : ∀ x ∈ vars, target (endEnv pred b x) = some (values x)) :
+    Isotope.TAC.Densem.Phi.assignments M target pred (phis source vars label) =
+      some (vars.map fun x => (Version.phi label x, values x)) := by
+  induction vars with
+  | nil => rfl
+  | cons x xs ih =>
+      simp only [phis, List.map_cons, Isotope.TAC.Densem.Phi.assignments]
+      rw [incoming_select source (.named label) pred x b hpred hb]
+      change (do
+        let v ← target (endEnv pred b x)
+        return (Version.phi label x, v) ::
+          (← Isotope.TAC.Densem.Phi.assignments M target pred (phis source xs label))) = _
+      rw [hvalues x (by simp)]
+      rw [ih (fun y hy => hvalues y (by simp [hy]))]
+      rfl
+
+end Small
+
 theorem value_sim (M : Densem.Model φ) (current : Isotope.TAC.Classical.Convert.Env ν κ)
     (source : Densem.Env M ν) (target : Densem.Env M (Version ν κ))
     (h : EnvRel current source target) (a : Isotope.TAC.Classical.Value ν) :
