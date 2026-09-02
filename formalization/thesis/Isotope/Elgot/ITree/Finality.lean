@@ -377,6 +377,47 @@ theorem Tree.eq_of_bisim (R : Tree E A → Tree E A → Prop)
       exact congrArg (Visible.node ((x.destruct.get h₁).shape))
         (funext fun p => ih _ _ (hchild p))
 
+/-- Coinduction in trichotomy form, with no dependent transports: two related
+trees must both diverge, both return the same value, or both emit the same
+event with related continuations.  This is the form downstream proofs use. -/
+theorem Tree.eq_of_bisim' (R : Tree E A → Tree E A → Prop)
+    (hR : ∀ x y, R x y →
+      (x.destruct = Part.none ∧ y.destruct = Part.none) ∨
+      (∃ a : A, x.destruct = Part.some (.ret a) ∧ y.destruct = Part.some (.ret a)) ∨
+      (∃ (S : Type u) (e : E S) (j j' : S → Tree E A),
+        x.destruct = Part.some (.vis e j) ∧ y.destruct = Part.some (.vis e j') ∧
+          ∀ s, R (j s) (j' s)))
+    {x y : Tree E A} (h : R x y) : x = y := by
+  suffices hall : ∀ (n : Nat) (x y : Tree E A), R x y → x.observe n = y.observe n from
+    Tree.ext (fun n => hall n x y h)
+  intro n
+  induction n with
+  | zero => intro x y _; rfl
+  | succ n ih =>
+      intro x y hxy
+      rcases hR x y hxy with ⟨hx, hy⟩ | ⟨a, hx, hy⟩ | ⟨S, e, j, j', hx, hy, hj⟩
+      · rw [← Tree.construct_destruct x, ← Tree.construct_destruct y, hx, hy]
+      · rw [← Tree.construct_destruct x, ← Tree.construct_destruct y, hx, hy]
+      · rw [← Tree.construct_destruct x, ← Tree.construct_destruct y, hx, hy]
+        simp only [observe_construct, Part.map_eq_map, Part.map_some, Visible.map_vis]
+        exact congrArg (fun g => (Part.some (Visible.vis e g) : Approx E A (n + 1)))
+          (funext fun s => ih _ _ (hj s))
+
+/-- Reflexivity discharges the hypothesis of `Tree.eq_of_bisim'`, so a candidate
+bisimulation containing the diagonal need only be checked off it. -/
+theorem Tree.bisim'_refl (R : Tree E A → Tree E A → Prop) (hrefl : ∀ t, R t t)
+    (x : Tree E A) :
+      (x.destruct = Part.none ∧ x.destruct = Part.none) ∨
+      (∃ a : A, x.destruct = Part.some (.ret a) ∧ x.destruct = Part.some (.ret a)) ∨
+      (∃ (S : Type u) (e : E S) (j j' : S → Tree E A),
+        x.destruct = Part.some (.vis e j) ∧ x.destruct = Part.some (.vis e j') ∧
+          ∀ s, R (j s) (j' s)) := by
+  rcases Tree.cases_three x with rfl | ⟨a, rfl⟩ | ⟨S, e, j, rfl⟩
+  · exact Or.inl ⟨Tree.destruct_diverge, Tree.destruct_diverge⟩
+  · exact Or.inr (Or.inl ⟨a, Tree.destruct_ret a, Tree.destruct_ret a⟩)
+  · exact Or.inr (Or.inr ⟨S, e, j, j, Tree.destruct_vis e j, Tree.destruct_vis e j,
+      fun s => hrefl (j s)⟩)
+
 /-! ## Why finality is a separate construction -/
 
 /-- The hypothesis of `corec_unique` is exactly the `construct`-fixpoint
