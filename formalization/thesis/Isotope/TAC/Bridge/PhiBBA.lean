@@ -1,0 +1,1319 @@
+import Isotope.TAC.Classical.Syntax
+import Mathlib.Data.List.Basic
+import Mathlib.Data.List.Indexes
+import Mathlib.Logic.Equiv.Defs
+
+/-! # Classical phi nodes and basic-block arguments
+
+The paper takes flat basic blocks with arguments as its standard SSA syntax.
+This module records that syntax and the exact, finite-matrix correspondence
+between a block's phi interface and its block-argument interface.  The finite
+indices make predecessor and parameter order explicit; no proof-irrelevance or
+quotient by duplicate predecessor entries is hidden in the correspondence.
+-/
+
+namespace Isotope.TAC.Bridge.PhiBBA
+
+open Isotope.TAC.Classical
+
+universe u v w
+
+/-- A BBA terminator.  Every jump supplies the target block's arguments. -/
+inductive Terminator (Var : Type u) (Op : Type v) (Label : Type w) where
+  | br (target : Label) (arguments : List (Value Var))
+  | ret (value : Value Var)
+  | cond (scrutinee : Operand Var Op)
+      (thenBranch elseBranch : Terminator Var Op Label)
+deriving DecidableEq, Repr
+
+/-- A flat basic block with parameters rather than phi nodes. -/
+structure Block (Var : Type u) (Op : Type v) (Label : Type w) where
+  parameters : List Var
+  body : List (Instr Var Op)
+  terminator : Terminator Var Op Label
+deriving DecidableEq, Repr
+
+/-- Paper-style flat BBA SSA, with a distinguished nameless entry block. -/
+structure CFG (Var : Type u) (Op : Type v) (Label : Type w) where
+  entry : Block Var Op Label
+  blocks : List (Label × Block Var Op Label)
+deriving DecidableEq, Repr
+
+variable {Var : Type u} {Op : Type v} {Label : Type w}
+
+namespace Terminator
+
+/-- Forget jump arguments, obtaining the underlying classical CFG control. -/
+def eraseArguments : Terminator Var Op Label → Classical.Terminator Var Op Label
+  | .br target _ => .br target
+  | .ret value => .ret value
+  | .cond discr left right =>
+      .cond discr left.eraseArguments right.eraseArguments
+
+/-- Target and argument-vector occurrences, in textual left-to-right order. -/
+def edges : Terminator Var Op Label → List (Label × List (Value Var))
+  | .br target arguments => [(target, arguments)]
+  | .ret _ => []
+  | .cond _ left right => left.edges ++ right.edges
+
+@[simp] theorem targets_eraseArguments (t : Terminator Var Op Label) :
+    t.eraseArguments.targets = t.edges.map Prod.fst := by
+  induction t with
+  | br => rfl
+  | ret => rfl
+  | cond discr left right ihLeft ihRight =>
+      simp [eraseArguments, edges, ihLeft, ihRight,
+        Classical.Terminator.targets, List.map_append]
+
+end Terminator
+
+namespace CFG
+
+/-- Erase block parameters and edge arguments.  This is the common CFG
+skeleton shared by phi-SSA and BBA SSA. -/
+def eraseArguments (cfg : CFG Var Op Label) : Classical.CFG Var Op Label where
+  entry := {
+    phis := []
+    body := cfg.entry.body
+    terminator := cfg.entry.terminator.eraseArguments
+  }
+  blocks := cfg.blocks.map fun (label, block) => (label, {
+    phis := []
+    body := block.body
+    terminator := block.terminator.eraseArguments
+  })
+
+@[simp] theorem eraseArguments_entry_body (cfg : CFG Var Op Label) :
+    cfg.eraseArguments.entry.body = cfg.entry.body := rfl
+
+@[simp] theorem eraseArguments_block_labels (cfg : CFG Var Op Label) :
+    cfg.eraseArguments.blocks.map Prod.fst = cfg.blocks.map Prod.fst := by
+  simp [eraseArguments]
+
+end CFG
+
+/-! ## Whole-CFG normalization
+
+Classical phi syntax names a predecessor, whereas a BBA places the same value
+on an edge.  The translations below choose the textual order of the entry
+block followed by the named blocks as the canonical predecessor order.  A BBA
+is normalized precisely when every edge to a given target from a given source
+has the same, correctly-sized argument vector.  On the phi side this says that
+the entry has no phis and every named block contains exactly the corresponding
+canonical predecessor matrix.  The executable fixed-point predicates below
+also reject missing blocks, missing phi rows, and missing predecessor entries.
+-/
+
+section CFGConversion
+
+variable [DecidableEq Label]
+
+/-- Look up a named classical block. -/
+def findPhiBlock (cfg : Classical.CFG Var Op Label) (label : Label) :
+    Option (Classical.Block Var Op Label) :=
+  (cfg.blocks.find? fun block => block.1 = label).map Prod.snd
+
+/-- The value selected by one phi row for a particular predecessor. -/
+def findIncoming (predecessor : BlockId Label) (phi : Phi Var Label) :
+    Option (Value Var) :=
+  (phi.incoming.find? fun incoming => incoming.predecessor = predecessor).map
+    Incoming.value
+
+namespace Terminator
+
+/-- Put phi operands on every outgoing edge.  Failure exposes exactly the two
+ill-formed cases relevant here: an absent target or an absent predecessor row. -/
+def ofPhi (cfg : Classical.CFG Var Op Label) (source : BlockId Label) :
+    Classical.Terminator Var Op Label → Option (Terminator Var Op Label)
+  | .br target =>
+      (findPhiBlock cfg target).bind fun block =>
+        (block.phis.mapM fun phi => findIncoming source phi).map fun arguments =>
+          Terminator.br target arguments
+  | .ret value => pure (.ret value)
+  | .cond discr left right =>
+      return .cond discr (← ofPhi cfg source left) (← ofPhi cfg source right)
+
+@[simp] theorem eraseArguments_ofPhi {cfg : Classical.CFG Var Op Label}
+    {source : BlockId Label} {term : Classical.Terminator Var Op Label}
+    {result : Terminator Var Op Label} (h : ofPhi cfg source term = some result) :
+    result.eraseArguments = term := by
+  induction term generalizing result with
+  | br target =>
+      cases hblock : findPhiBlock cfg target with
+      | none => simp [ofPhi, hblock] at h
+      | some block =>
+        cases hargs : block.phis.mapM (fun phi => findIncoming source phi) with
+        | none => simp [ofPhi, hblock, hargs] at h
+        | some arguments =>
+          simp [ofPhi, hblock, hargs] at h
+          cases h
+          rfl
+  | ret value => simp [ofPhi] at h; cases h; rfl
+  | cond discr left right ihLeft ihRight =>
+      cases hleft : ofPhi cfg source left with
+      | none => simp [ofPhi, hleft] at h
+      | some left' =>
+        cases hright : ofPhi cfg source right with
+        | none => simp [ofPhi, hleft, hright] at h
+        | some right' =>
+          simp [ofPhi, hleft, hright] at h
+          cases h
+          simp [eraseArguments, ihLeft hleft, ihRight hright]
+
+end Terminator
+
+namespace CFG
+
+/-- Convert a classical phi CFG to a flat BBA, moving each phi operand to its
+source edge.  The distinguished entry cannot carry parameters. -/
+def ofPhi (cfg : Classical.CFG Var Op Label) : Option (CFG Var Op Label) := do
+  if cfg.entry.phis.isEmpty then
+    let entryTerm ← Terminator.ofPhi cfg .entry cfg.entry.terminator
+    let blocks ← cfg.blocks.mapM fun (label, block) => do
+      let term ← Terminator.ofPhi cfg (.named label) block.terminator
+      pure (label, {
+        parameters := block.phis.map Phi.dst
+        body := block.body
+        terminator := term
+      })
+    pure {
+      entry := { parameters := [], body := cfg.entry.body, terminator := entryTerm }
+      blocks := blocks
+    }
+  else none
+
+/-- All edge occurrences, decorated by their source block, in canonical
+entry-then-textual-block order. -/
+def sourcedEdges (cfg : CFG Var Op Label) :
+    List (BlockId Label × Label × List (Value Var)) :=
+  (cfg.entry.terminator.edges.map fun edge => (.entry, edge.1, edge.2)) ++
+    cfg.blocks.flatMap fun (source, block) =>
+      block.terminator.edges.map fun edge => (.named source, edge.1, edge.2)
+
+/-- Canonical incoming column `index` for a target.  Short edge vectors are
+omitted; the normalization predicate below therefore rejects them. -/
+def incomingColumn (cfg : CFG Var Op Label) (target : Label) (index : Nat) :
+    List (Incoming Var Label) :=
+  cfg.sourcedEdges.filterMap fun (source, destination, arguments) =>
+    if destination = target then
+      (arguments[index]?).map fun value => ⟨source, value⟩
+    else none
+
+/-- Move edge arguments into phi rows.  Textual source order fixes the order of
+every incoming list. -/
+def toPhi (cfg : CFG Var Op Label) : Classical.CFG Var Op Label where
+  entry := {
+    phis := []
+    body := cfg.entry.body
+    terminator := cfg.entry.terminator.eraseArguments
+  }
+  blocks := cfg.blocks.map fun (label, block) => (label, {
+    phis := block.parameters.mapIdx fun index parameter => {
+      dst := parameter
+      incoming := cfg.incomingColumn label index
+    }
+    body := block.body
+    terminator := block.terminator.eraseArguments
+  })
+
+/-! ### Structural normalization
+
+The predicates in this section state normalization directly on the two source
+syntaxes.  In particular, they do not define well-formedness by running either
+conversion and comparing its result. -/
+
+/-- Predecessor occurrences of `target`, in the same entry-then-block and
+left-to-right order used by `incomingColumn`. -/
+def phiPredecessors (cfg : Classical.CFG Var Op Label) (target : Label) :
+    List (BlockId Label) :=
+  (if target ∈ cfg.entry.terminator.targets then [.entry] else []) ++
+    cfg.blocks.flatMap fun (source, block) =>
+      if target ∈ block.terminator.targets then [.named source] else []
+
+/-- Source/target occurrences in a classical CFG.  Their uniqueness is the
+missing condition needed because `phiPredecessors` records predecessors, not
+parallel edge occurrences from the same predecessor. -/
+def phiEdgeKeys (cfg : Classical.CFG Var Op Label) :
+    List (BlockId Label × Label) :=
+  (cfg.entry.terminator.targets.map fun target => (.entry, target)) ++
+    cfg.blocks.flatMap fun (source, block) =>
+      block.terminator.targets.map fun target => (.named source, target)
+
+/-- Every control-flow target denotes exactly one named block. -/
+def PhiTargetsDefined (cfg : Classical.CFG Var Op Label) : Prop :=
+  ∀ target,
+    target ∈ cfg.entry.terminator.targets ∨
+      (∃ source block, (source, block) ∈ cfg.blocks ∧
+        target ∈ block.terminator.targets) →
+    ∃! block, (target, block) ∈ cfg.blocks
+
+/-- Independent structural conditions for canonical classical phi form:
+destinations and block labels are unique, every target resolves, and each phi
+has exactly one incoming row per predecessor, in canonical predecessor order. -/
+def PhiStructurallyNormalized (cfg : Classical.CFG Var Op Label) : Prop :=
+  cfg.entry.phis = [] ∧
+  (cfg.blocks.map Prod.fst).Nodup ∧
+  PhiTargetsDefined cfg ∧
+  (∀ label block, (label, block) ∈ cfg.blocks →
+    (block.phis.map Phi.dst).Nodup ∧
+    ∀ phi, phi ∈ block.phis →
+      phi.incoming.map Incoming.predecessor = phiPredecessors cfg label ∧
+      (phi.incoming.map Incoming.predecessor).Nodup) ∧
+  (phiEdgeKeys cfg).Nodup
+
+/-- Target lookup in the BBA syntax, used only to state its structural arity
+condition. -/
+def findBlock (cfg : CFG Var Op Label) (label : Label) : Option (Block Var Op Label) :=
+  (cfg.blocks.find? fun block => block.1 = label).map Prod.snd
+
+/-- All source/target occurrences after forgetting the argument vectors. -/
+def edgeKeys (cfg : CFG Var Op Label) : List (BlockId Label × Label) :=
+  cfg.sourcedEdges.map fun (source, target, _) => (source, target)
+
+/-- The phi rows structurally determined by one BBA header. -/
+def canonicalPhis (cfg : CFG Var Op Label) (label : Label)
+    (block : Block Var Op Label) : List (Phi Var Label) :=
+  block.parameters.mapIdx fun index parameter => {
+    dst := parameter
+    incoming := cfg.incomingColumn label index
+  }
+
+/-- Canonical target lookup stated directly over the BBA block table. -/
+def findCanonicalPhiBlock (cfg : CFG Var Op Label) (target : Label) :
+    Option (Classical.Block Var Op Label) :=
+  ((cfg.blocks.map fun (label, block) => (label, ({
+      phis := canonicalPhis cfg label block
+      body := block.body
+      terminator := block.terminator.eraseArguments
+    } : Classical.Block Var Op Label))).find? fun pair => pair.1 = target).map Prod.snd
+
+@[simp] theorem findPhiBlock_toPhi (cfg : CFG Var Op Label) (target : Label) :
+    findPhiBlock (toPhi cfg) target = cfg.findCanonicalPhiBlock target := rfl
+
+/-- A direct matrix condition on a terminator: looking up the source row in
+each target's canonical columns yields exactly the argument vector written on
+that edge.  This is a local edge/header condition rather than a whole-CFG
+fixed-point equation. -/
+def EdgeColumnsMatch (cfg : CFG Var Op Label) (source : BlockId Label) :
+    Terminator Var Op Label → Prop
+  | .br target arguments =>
+      ∃ block,
+        findCanonicalPhiBlock cfg target = some ({
+          phis := canonicalPhis cfg target block
+          body := block.body
+          terminator := block.terminator.eraseArguments
+        } : Classical.Block Var Op Label) ∧
+        (canonicalPhis cfg target block).mapM
+          (findIncoming source) = some arguments
+  | .ret _ => True
+  | .cond _ left right =>
+      EdgeColumnsMatch cfg source left ∧ EdgeColumnsMatch cfg source right
+
+/-- Independent structural conditions for canonical BBA form.  Entry has no
+parameters, block parameters and labels are unique, each source has at most one
+edge to a target, and every edge vector has the target block's arity. -/
+def BBAStructurallyNormalized (cfg : CFG Var Op Label) : Prop :=
+  cfg.entry.parameters = [] ∧
+  (cfg.blocks.map Prod.fst).Nodup ∧
+  cfg.edgeKeys.Nodup ∧
+  (∀ label block, (label, block) ∈ cfg.blocks → block.parameters.Nodup) ∧
+  (∀ source target arguments, (source, target, arguments) ∈ cfg.sourcedEdges →
+    ∃ block, cfg.findBlock target = some block ∧
+      arguments.length = block.parameters.length) ∧
+  EdgeColumnsMatch cfg .entry cfg.entry.terminator ∧
+  ∀ label block, (label, block) ∈ cfg.blocks →
+    EdgeColumnsMatch cfg (.named label) block.terminator
+
+/-- Structural phi normalization exposes uniqueness of every incoming
+predecessor without referring to either translation. -/
+theorem PhiStructurallyNormalized.incoming_predecessors_nodup
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg)
+    {label : Label} {block : Classical.Block Var Op Label}
+    (hblock : (label, block) ∈ cfg.blocks) {phi : Phi Var Label}
+    (hphi : phi ∈ block.phis) :
+    (phi.incoming.map Incoming.predecessor).Nodup :=
+  (hcfg.2.2.2.1 label block hblock).2 phi hphi |>.2
+
+/-- Each structural phi row covers the canonical predecessor list exactly,
+and hence has precisely its cardinality. -/
+theorem PhiStructurallyNormalized.incoming_length
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg)
+    {label : Label} {block : Classical.Block Var Op Label}
+    (hblock : (label, block) ∈ cfg.blocks) {phi : Phi Var Label}
+    (hphi : phi ∈ block.phis) :
+    phi.incoming.length = (phiPredecessors cfg label).length := by
+  have horder := (hcfg.2.2.2.1 label block hblock).2 phi hphi |>.1
+  simpa using congrArg List.length horder
+
+theorem findIncoming_exists_of_predecessor_mem
+    (source : BlockId Label) (phi : Phi Var Label)
+    (hsource : source ∈ phi.incoming.map Incoming.predecessor) :
+    ∃ value, findIncoming source phi = some value := by
+  rcases List.mem_map.mp hsource with ⟨incoming, hin, heq⟩
+  unfold findIncoming
+  cases hfind : phi.incoming.find? (fun row => row.predecessor = source) with
+  | some row => exact ⟨row.value, by simp⟩
+  | none =>
+      have hfalse := (List.find?_eq_none.mp hfind) incoming hin
+      simp [heq] at hfalse
+
+/-- Looking up a row once at each of its unique predecessor keys reconstructs
+the row, in order.  This is the list-level core of the global matrix
+transpose. -/
+theorem filterMap_findIncoming_eq (phi : Phi Var Label)
+    (hkeys : (phi.incoming.map Incoming.predecessor).Nodup) :
+    (phi.incoming.map Incoming.predecessor).filterMap (fun source =>
+      (findIncoming source phi).map fun value =>
+        ({ predecessor := source, value := value } : Incoming Var Label)) =
+      phi.incoming := by
+  cases phi with
+  | mk dst incoming =>
+    induction incoming with
+    | nil => rfl
+    | cons head tail ih =>
+        simp only [List.map_cons, List.nodup_cons] at hkeys
+        have hhead : findIncoming head.predecessor
+            ({ dst := dst, incoming := head :: tail } : Phi Var Label) =
+            some head.value := by
+          simp [findIncoming]
+        change (head.predecessor :: tail.map Incoming.predecessor).filterMap
+          (fun source => (findIncoming source
+            ({ dst := dst, incoming := head :: tail } : Phi Var Label)).map
+              fun value => ({ predecessor := source, value := value } :
+                Incoming Var Label)) = head :: tail
+        rw [List.filterMap_cons]
+        simp only [hhead, Option.map_some, List.cons.injEq, true_and]
+        have htailLookup : ∀ source, source ∈ tail.map Incoming.predecessor →
+            findIncoming source ({ dst := dst, incoming := head :: tail } : Phi Var Label) =
+              findIncoming source ({ dst := dst, incoming := tail } : Phi Var Label) := by
+          intro source hsource
+          have hne : head.predecessor ≠ source := by
+            intro heq
+            apply hkeys.1
+            simpa [heq] using hsource
+          simp [findIncoming, hne]
+        calc
+          _ = (tail.map Incoming.predecessor).filterMap (fun source =>
+              (findIncoming source
+                ({ dst := dst, incoming := tail } : Phi Var Label)).map fun value =>
+                  ({ predecessor := source, value := value } : Incoming Var Label)) := by
+            apply List.filterMap_congr
+            intro source hs
+            rw [htailLookup source hs]
+          _ = tail := ih hkeys.2
+
+theorem exists_getElem_of_mapM_eq_some {α β : Type*} (f : α → Option β)
+    {xs : List α} {ys : List β} (hmap : xs.mapM f = some ys)
+    {index : Nat} {x : α} (hx : xs[index]? = some x) :
+    ∃ y, f x = some y ∧ ys[index]? = some y := by
+  induction xs generalizing ys index with
+  | nil => simp at hx
+  | cons head tail ih =>
+      cases hhead : f head with
+      | none => simp [List.mapM_cons, hhead] at hmap
+      | some value =>
+          cases htail : tail.mapM f with
+          | none => simp [List.mapM_cons, hhead, htail] at hmap
+          | some values =>
+              simp [List.mapM_cons, hhead, htail] at hmap
+              subst ys
+              cases index with
+              | zero =>
+                  simp at hx
+                  subst x
+                  exact ⟨value, hhead, rfl⟩
+              | succ index =>
+                  simp only [List.getElem?_cons_succ] at hx ⊢
+                  exact ih htail hx
+
+theorem filterMap_eq_singleton_if_mem {α β : Type*} [DecidableEq α]
+    (xs : List α) (hxs : xs.Nodup) (target : α) (value : β) :
+    xs.filterMap (fun x => if x = target then some value else none) =
+      if target ∈ xs then [value] else [] := by
+  induction xs with
+  | nil => simp
+  | cons head tail ih =>
+      rw [List.nodup_cons] at hxs
+      by_cases heq : head = target
+      · subst head
+        rw [List.filterMap_cons]
+        simp only [ite_true]
+        rw [ih hxs.2]
+        simp [hxs.1]
+      · rw [List.filterMap_cons]
+        simp only [heq, ↓reduceIte, ih hxs.2]
+        by_cases hmem : target ∈ tail <;> simp [Ne.symm heq, hmem]
+
+theorem nodup_of_map_nodup {α β : Type*} (f : α → β) {xs : List α}
+    (h : (xs.map f).Nodup) : xs.Nodup := by
+  induction xs with
+  | nil => simp
+  | cons head tail ih =>
+      rw [List.map_cons, List.nodup_cons] at h
+      rw [List.nodup_cons]
+      refine ⟨?_, ih h.2⟩
+      intro hmem
+      exact h.1 (List.mem_map.mpr ⟨head, hmem, rfl⟩)
+
+theorem chunk_sublist_flatMap {α β : Type*} (f : α → List β)
+    {x : α} {xs : List α} (hx : x ∈ xs) :
+    (f x).Sublist (xs.flatMap f) := by
+  induction xs with
+  | nil => simp at hx
+  | cons head tail ih =>
+      rw [List.mem_cons] at hx
+      rcases hx with rfl | hx
+      · exact List.sublist_append_left _ _
+      · exact (ih hx).trans (List.sublist_append_right _ _)
+
+theorem findPhiBlock_mem_of_eq_some {cfg : Classical.CFG Var Op Label}
+    {label : Label} {block : Classical.Block Var Op Label}
+    (h : findPhiBlock cfg label = some block) : (label, block) ∈ cfg.blocks := by
+  unfold findPhiBlock at h
+  cases hfind : cfg.blocks.find? (fun pair => pair.1 = label) with
+  | none => simp [hfind] at h
+  | some pair =>
+      have hmem := List.mem_of_find?_eq_some hfind
+      have hlabel := List.find?_some hfind
+      simp only [hfind, Option.map_some, Option.some.injEq] at h
+      rcases pair with ⟨foundLabel, foundBlock⟩
+      simp only at h
+      subst foundBlock
+      simp only at hlabel
+      have : foundLabel = label := by simpa using hlabel
+      subst foundLabel
+      exact hmem
+
+theorem PhiStructurallyNormalized.findPhiBlock_exists
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg)
+    {target : Label}
+    (htarget : target ∈ cfg.entry.terminator.targets ∨
+      ∃ source block, (source, block) ∈ cfg.blocks ∧
+        target ∈ block.terminator.targets) :
+    ∃ block, findPhiBlock cfg target = some block := by
+  obtain ⟨block, hmem, _⟩ := hcfg.2.2.1 target htarget
+  unfold findPhiBlock
+  cases hfind : cfg.blocks.find? (fun pair => pair.1 = target) with
+  | some pair => exact ⟨pair.2, by simp⟩
+  | none =>
+      have hfalse := (List.find?_eq_none.mp hfind) (target, block) hmem
+      simp at hfalse
+
+theorem PhiStructurallyNormalized.findPhiBlock_eq_some
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg)
+    {target : Label} {block : Classical.Block Var Op Label}
+    (hblock : (target, block) ∈ cfg.blocks)
+    (hreached : target ∈ cfg.entry.terminator.targets ∨
+      ∃ source sourceBlock, (source, sourceBlock) ∈ cfg.blocks ∧
+        target ∈ sourceBlock.terminator.targets) :
+    findPhiBlock cfg target = some block := by
+  obtain ⟨found, hfound⟩ := hcfg.findPhiBlock_exists hreached
+  have hfoundMem := findPhiBlock_mem_of_eq_some hfound
+  obtain ⟨witness, _, hunique⟩ := hcfg.2.2.1 target hreached
+  have : found = block := (hunique found hfoundMem).trans (hunique block hblock).symm
+  simpa [this] using hfound
+
+theorem PhiStructurallyNormalized.filterMap_phiEdgeKeys
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg)
+    (target : Label) :
+    (phiEdgeKeys cfg).filterMap (fun key =>
+      if key.2 = target then some key.1 else none) =
+      phiPredecessors cfg target := by
+  have hall := hcfg.2.2.2.2
+  have hentryTagged :
+      (cfg.entry.terminator.targets.map fun destination =>
+        ((.entry : BlockId Label), destination)).Nodup :=
+    (List.nodup_append.mp hall).1
+  have hentry : cfg.entry.terminator.targets.Nodup :=
+    nodup_of_map_nodup _ hentryTagged
+  have hnamed : ∀ source block, (source, block) ∈ cfg.blocks →
+      block.terminator.targets.Nodup := by
+    intro source block hblock
+    have hchunk :
+        (block.terminator.targets.map fun destination =>
+          ((.named source : BlockId Label), destination)).Sublist
+          (phiEdgeKeys cfg) := by
+      apply (chunk_sublist_flatMap
+        (fun pair : Label × Classical.Block Var Op Label =>
+          pair.2.terminator.targets.map fun destination =>
+            ((.named pair.1 : BlockId Label), destination)) hblock).trans
+      exact List.sublist_append_right _ _
+    exact nodup_of_map_nodup _ (hall.sublist hchunk)
+  unfold phiEdgeKeys phiPredecessors
+  rw [List.filterMap_append]
+  have hentryEq := filterMap_eq_singleton_if_mem
+    cfg.entry.terminator.targets hentry target (.entry : BlockId Label)
+  simp only [List.filterMap_map, Function.comp_apply] at hentryEq ⊢
+  rw [hentryEq]
+  congr 1
+  have aux : ∀ xs : List (Label × Classical.Block Var Op Label),
+      (∀ pair, pair ∈ xs → pair ∈ cfg.blocks) →
+      (xs.flatMap fun (source, block) =>
+        block.terminator.targets.map fun destination =>
+          ((.named source : BlockId Label), destination)).filterMap
+          (fun key => if key.2 = target then some key.1 else none) =
+      xs.flatMap fun (source, block) =>
+        if target ∈ block.terminator.targets then [.named source] else [] := by
+    intro xs hsubset
+    induction xs with
+    | nil => rfl
+    | cons head tail ih =>
+        rcases head with ⟨source, block⟩
+        rw [List.flatMap_cons, List.filterMap_append, List.flatMap_cons]
+        have hlocal := filterMap_eq_singleton_if_mem block.terminator.targets
+          (hnamed source block (hsubset (source, block) List.mem_cons_self))
+          target (.named source : BlockId Label)
+        simp only [List.filterMap_map, Function.comp_apply] at hlocal ⊢
+        rw [hlocal]
+        rw [ih (fun pair hp => hsubset pair (List.Mem.tail (source, block) hp))]
+  exact aux cfg.blocks (fun _ h => h)
+
+theorem Terminator.ofPhi_exists_of_structural
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg)
+    (source : BlockId Label) (term : Classical.Terminator Var Op Label)
+    (htarget : ∀ target, target ∈ term.targets →
+      target ∈ cfg.entry.terminator.targets ∨
+        ∃ label block, (label, block) ∈ cfg.blocks ∧
+          target ∈ block.terminator.targets)
+    (hsource : ∀ target, target ∈ term.targets →
+      source ∈ phiPredecessors cfg target) :
+    ∃ result, Terminator.ofPhi cfg source term = some result := by
+  induction term with
+  | br target =>
+      have htargetMem : target ∈ (Classical.Terminator.br target :
+          Classical.Terminator Var Op Label).targets := by
+        simp [Classical.Terminator.targets]
+      obtain ⟨block, hfind⟩ := hcfg.findPhiBlock_exists (htarget target htargetMem)
+      have hblock := findPhiBlock_mem_of_eq_some hfind
+      have hrows := (hcfg.2.2.2.1 target block hblock).2
+      have hmap : ∃ arguments,
+          block.phis.mapM (findIncoming source) = some arguments := by
+        have aux : ∀ phis : List (Phi Var Label),
+            (∀ phi, phi ∈ phis → phi ∈ block.phis) →
+            ∃ arguments, phis.mapM (findIncoming source) = some arguments := by
+          intro phis hsubset
+          induction phis with
+          | nil => exact ⟨[], rfl⟩
+          | cons phi phis ih =>
+              have hp := (hrows phi (hsubset phi List.mem_cons_self)).1
+              have hmem : source ∈ phi.incoming.map Incoming.predecessor := by
+                rw [hp]
+                exact hsource target htargetMem
+              obtain ⟨value, hvalue⟩ :=
+                findIncoming_exists_of_predecessor_mem source phi hmem
+              obtain ⟨values, hvalues⟩ := ih
+                (fun phi' hphi' => hsubset phi' (List.Mem.tail phi hphi'))
+              exact ⟨value :: values, by simp [hvalue, hvalues]⟩
+        exact aux block.phis (fun _ h => h)
+      obtain ⟨arguments, harguments⟩ := hmap
+      exact ⟨.br target arguments, by simp [Terminator.ofPhi, hfind, harguments]⟩
+  | ret value => exact ⟨.ret value, rfl⟩
+  | cond discr left right ihLeft ihRight =>
+      obtain ⟨left', hleft⟩ := ihLeft
+        (fun target ht => htarget target (by simp [Classical.Terminator.targets, ht]))
+        (fun target ht => hsource target (by simp [Classical.Terminator.targets, ht]))
+      obtain ⟨right', hright⟩ := ihRight
+        (fun target ht => htarget target (by simp [Classical.Terminator.targets, ht]))
+        (fun target ht => hsource target (by simp [Classical.Terminator.targets, ht]))
+      exact ⟨.cond discr left' right', by
+        simp [Terminator.ofPhi, hleft, hright]⟩
+
+/-- One target column contributed by a converted terminator. -/
+def Terminator.edgeColumn (target : Label) (index : Nat)
+    (source : BlockId Label) : Terminator Var Op Label → List (Incoming Var Label)
+  | .br destination arguments =>
+      if destination = target then
+        (arguments[index]?).toList.map fun value => ⟨source, value⟩
+      else []
+  | .ret _ => []
+  | .cond _ left right =>
+      edgeColumn target index source left ++ edgeColumn target index source right
+
+theorem Terminator.edgeColumn_eq_filterMap_edges (term : Terminator Var Op Label)
+    (target : Label) (index : Nat) (source : BlockId Label) :
+    edgeColumn target index source term =
+      term.edges.filterMap (fun edge =>
+        if edge.1 = target then
+          (edge.2[index]?).map fun value =>
+            ({ predecessor := source, value := value } : Incoming Var Label)
+        else none) := by
+  induction term with
+  | br destination arguments =>
+      by_cases h : destination = target
+      · subst destination
+        cases hget : arguments[index]? <;>
+          simp [edgeColumn, Terminator.edges, hget]
+      · simp [edgeColumn, Terminator.edges, h]
+  | ret value => rfl
+  | cond discr left right ihLeft ihRight =>
+      simp [edgeColumn, Terminator.edges, List.filterMap_append, ihLeft, ihRight]
+
+theorem incomingColumn_eq_edgeColumns (cfg : CFG Var Op Label)
+    (target : Label) (index : Nat) :
+    cfg.incomingColumn target index =
+      Terminator.edgeColumn target index .entry cfg.entry.terminator ++
+        cfg.blocks.flatMap (fun (source, block) =>
+          Terminator.edgeColumn target index (.named source) block.terminator) := by
+  unfold incomingColumn sourcedEdges
+  rw [List.filterMap_append]
+  simp only [List.filterMap_map, Function.comp_apply,
+    List.filterMap_flatMap]
+  rw [Terminator.edgeColumn_eq_filterMap_edges]
+  congr 1
+  apply List.flatMap_congr
+  intro pair hpair
+  rcases pair with ⟨source, block⟩
+  exact (Terminator.edgeColumn_eq_filterMap_edges
+    block.terminator target index (.named source)).symm
+
+inductive BlocksConverted (cfg : Classical.CFG Var Op Label) :
+    List (Label × Classical.Block Var Op Label) →
+      List (Label × Block Var Op Label) → Prop
+  | nil : BlocksConverted cfg [] []
+  | cons (label : Label) (sourceBlock : Classical.Block Var Op Label)
+      (term : Terminator Var Op Label)
+      (hterm : Terminator.ofPhi cfg (.named label) sourceBlock.terminator = some term)
+      {sourceTail targetTail} (tail : BlocksConverted cfg sourceTail targetTail) :
+      BlocksConverted cfg ((label, sourceBlock) :: sourceTail)
+        ((label, {
+          parameters := sourceBlock.phis.map Phi.dst
+          body := sourceBlock.body
+          terminator := term }) :: targetTail)
+
+theorem blocksConverted_of_mapM {cfg : Classical.CFG Var Op Label}
+    {sourceBlocks : List (Label × Classical.Block Var Op Label)}
+    {targetBlocks : List (Label × Block Var Op Label)}
+    (h : sourceBlocks.mapM (fun (label, block) => do
+      let term ← Terminator.ofPhi cfg (.named label) block.terminator
+      pure (label, ({
+        parameters := block.phis.map Phi.dst
+        body := block.body
+        terminator := term } : Block Var Op Label))) = some targetBlocks) :
+    BlocksConverted cfg sourceBlocks targetBlocks := by
+  induction sourceBlocks generalizing targetBlocks with
+  | nil =>
+      simp at h
+      subst targetBlocks
+      exact .nil
+  | cons head tail ih =>
+      rcases head with ⟨label, block⟩
+      rw [List.mapM_cons] at h
+      rcases Option.bind_eq_some_iff.mp h with ⟨headResult, hhead, hrest⟩
+      rcases Option.bind_eq_some_iff.mp hhead with ⟨term, hterm, hheadResult⟩
+      simp at hheadResult
+      subst headResult
+      rcases Option.bind_eq_some_iff.mp hrest with ⟨tailResult, htail, hfinal⟩
+      simp at hfinal
+      subst targetBlocks
+      exact .cons label block term hterm (ih htail)
+
+structure Converted (cfg : Classical.CFG Var Op Label) (bba : CFG Var Op Label) : Prop where
+  entryTerm : Terminator.ofPhi cfg .entry cfg.entry.terminator =
+    some bba.entry.terminator
+  entryParameters : bba.entry.parameters = []
+  entryBody : bba.entry.body = cfg.entry.body
+  blocks : BlocksConverted cfg cfg.blocks bba.blocks
+
+theorem converted_of_ofPhi {cfg : Classical.CFG Var Op Label}
+    {bba : CFG Var Op Label} (h : ofPhi cfg = some bba) : Converted cfg bba := by
+  unfold ofPhi at h
+  split at h
+  · rcases Option.bind_eq_some_iff.mp h with ⟨entryTerm, hentry, hrest⟩
+    rcases Option.bind_eq_some_iff.mp hrest with ⟨blocks, hblocks, hfinal⟩
+    simp at hfinal
+    subst bba
+    exact ⟨hentry, rfl, rfl, blocksConverted_of_mapM hblocks⟩
+  · simp at h
+
+/-- A successful local conversion contributes exactly the selected phi value
+at each occurrence of its target. -/
+theorem Terminator.edgeColumn_ofPhi
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg)
+    {target : Label} {block : Classical.Block Var Op Label}
+    (hblock : (target, block) ∈ cfg.blocks)
+    {index : Nat} {phi : Phi Var Label} (hphi : block.phis[index]? = some phi)
+    (source : BlockId Label) (term : Classical.Terminator Var Op Label)
+    {result : Terminator Var Op Label}
+    (hresult : Terminator.ofPhi cfg source term = some result)
+    (hreached : ∀ destination, destination ∈ term.targets →
+      destination ∈ cfg.entry.terminator.targets ∨
+        ∃ label sourceBlock, (label, sourceBlock) ∈ cfg.blocks ∧
+          destination ∈ sourceBlock.terminator.targets) :
+    edgeColumn target index source result =
+      term.targets.filterMap (fun destination =>
+        if destination = target then
+          (findIncoming source phi).map fun value =>
+            ({ predecessor := source, value := value } : Incoming Var Label)
+        else none) := by
+  induction term generalizing result with
+  | br destination =>
+      cases hfind : findPhiBlock cfg destination with
+      | none => simp [Terminator.ofPhi, hfind] at hresult
+      | some found =>
+          cases hargs : found.phis.mapM (findIncoming source) with
+          | none => simp [Terminator.ofPhi, hfind, hargs] at hresult
+          | some arguments =>
+              simp [Terminator.ofPhi, hfind, hargs] at hresult
+              subst result
+              by_cases heq : destination = target
+              · subst destination
+                have hfindBlock := hcfg.findPhiBlock_eq_some hblock
+                  (hreached target (by simp [Classical.Terminator.targets]))
+                rw [hfindBlock] at hfind
+                cases hfind
+                obtain ⟨value, hvalue, hget⟩ :=
+                  exists_getElem_of_mapM_eq_some (findIncoming source) hargs hphi
+                simp [edgeColumn, Classical.Terminator.targets,
+                  hget, hvalue]
+              · simp [edgeColumn, Classical.Terminator.targets, heq]
+  | ret value =>
+      simp [Terminator.ofPhi] at hresult
+      subst result
+      rfl
+  | cond discr left right ihLeft ihRight =>
+      cases hleft : Terminator.ofPhi cfg source left with
+      | none => simp [Terminator.ofPhi, hleft] at hresult
+      | some left' =>
+          cases hright : Terminator.ofPhi cfg source right with
+          | none => simp [Terminator.ofPhi, hleft, hright] at hresult
+          | some right' =>
+              simp [Terminator.ofPhi, hleft, hright] at hresult
+              subst result
+              rw [edgeColumn]
+              rw [ihLeft hleft (fun destination hd => hreached destination
+                (by simp [Classical.Terminator.targets, hd]))]
+              rw [ihRight hright (fun destination hd => hreached destination
+                (by simp [Classical.Terminator.targets, hd]))]
+              simp [Classical.Terminator.targets, List.filterMap_append]
+
+theorem BlocksConverted.edgeColumns
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg)
+    {target : Label} {targetBlock : Classical.Block Var Op Label}
+    (htargetBlock : (target, targetBlock) ∈ cfg.blocks)
+    {index : Nat} {phi : Phi Var Label}
+    (hphi : targetBlock.phis[index]? = some phi)
+    {sourceBlocks : List (Label × Classical.Block Var Op Label)}
+    {targetBlocks : List (Label × Block Var Op Label)}
+    (hconverted : BlocksConverted cfg sourceBlocks targetBlocks)
+    (hsubset : ∀ pair, pair ∈ sourceBlocks → pair ∈ cfg.blocks) :
+    targetBlocks.flatMap (fun (source, block) =>
+      Terminator.edgeColumn target index (.named source) block.terminator) =
+    sourceBlocks.flatMap (fun (source, block) =>
+      block.terminator.targets.filterMap (fun destination =>
+        if destination = target then
+          (findIncoming (.named source) phi).map fun value =>
+            ({ predecessor := .named source, value := value } : Incoming Var Label)
+        else none)) := by
+  induction hconverted with
+  | nil => rfl
+  | cons label sourceBlock term hterm tail ih =>
+      rw [List.flatMap_cons, List.flatMap_cons]
+      change Terminator.edgeColumn target index (.named label) term ++ _ =
+        sourceBlock.terminator.targets.filterMap (fun destination =>
+          if destination = target then
+            (findIncoming (.named label) phi).map fun value =>
+              ({ predecessor := .named label, value := value } : Incoming Var Label)
+          else none) ++ _
+      rw [Terminator.edgeColumn_ofPhi hcfg htargetBlock hphi
+        (.named label) sourceBlock.terminator hterm]
+      · rw [ih (fun pair hp => hsubset pair
+          (List.Mem.tail (label, sourceBlock) hp))]
+      · intro destination hd
+        exact Or.inr ⟨label, sourceBlock,
+          hsubset (label, sourceBlock) List.mem_cons_self, hd⟩
+
+theorem Converted.incomingColumn
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg)
+    {bba : CFG Var Op Label} (hconverted : Converted cfg bba)
+    {target : Label} {targetBlock : Classical.Block Var Op Label}
+    (htargetBlock : (target, targetBlock) ∈ cfg.blocks)
+    {index : Nat} {phi : Phi Var Label} (hphi : targetBlock.phis[index]? = some phi) :
+    bba.incomingColumn target index = phi.incoming := by
+  rw [incomingColumn_eq_edgeColumns]
+  rw [Terminator.edgeColumn_ofPhi hcfg htargetBlock hphi .entry
+    cfg.entry.terminator hconverted.entryTerm]
+  · rw [hconverted.blocks.edgeColumns hcfg htargetBlock hphi (fun _ h => h)]
+    have hphiMem : phi ∈ targetBlock.phis := by
+      rcases List.getElem?_eq_some_iff.mp hphi with ⟨hi, heq⟩
+      rw [← heq]
+      exact List.getElem_mem hi
+    have hkeys := (hcfg.2.2.2.1 target targetBlock htargetBlock).2 phi hphiMem
+    have horder := hkeys.1
+    have hnodup := hkeys.2
+    have hedge := hcfg.filterMap_phiEdgeKeys target
+    have hcombined :
+        cfg.entry.terminator.targets.filterMap (fun destination =>
+          if destination = target then
+            (findIncoming (.entry : BlockId Label) phi).map fun value =>
+              ({ predecessor := .entry, value := value } : Incoming Var Label)
+          else none) ++
+        cfg.blocks.flatMap (fun (source, block) =>
+          block.terminator.targets.filterMap (fun destination =>
+            if destination = target then
+              (findIncoming (.named source) phi).map fun value =>
+                ({ predecessor := .named source, value := value } : Incoming Var Label)
+            else none)) =
+        (phiEdgeKeys cfg).filterMap (fun key =>
+          if key.2 = target then
+            (findIncoming key.1 phi).map fun value =>
+              ({ predecessor := key.1, value := value } : Incoming Var Label)
+          else none) := by
+      simp [phiEdgeKeys, List.filterMap_append, List.filterMap_flatMap]
+    rw [hcombined]
+    calc
+      _ = ((phiEdgeKeys cfg).filterMap (fun key =>
+          if key.2 = target then some key.1 else none)).filterMap (fun source =>
+            (findIncoming source phi).map fun value =>
+              ({ predecessor := source, value := value } : Incoming Var Label)) := by
+        symm
+        rw [List.filterMap_filterMap]
+        apply List.filterMap_congr
+        intro key hkey
+        by_cases heq : key.2 = target <;> simp [heq]
+      _ = (phiPredecessors cfg target).filterMap (fun source =>
+            (findIncoming source phi).map fun value =>
+              ({ predecessor := source, value := value } : Incoming Var Label)) := by
+        rw [hedge]
+      _ = phi.incoming := by
+        rw [← horder]
+        exact filterMap_findIncoming_eq phi hnodup
+  · intro destination hd
+    exact Or.inl hd
+
+theorem Converted.blocks_toPhi
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg)
+    {bba : CFG Var Op Label} (hconverted : Converted cfg bba)
+    {sourceBlocks : List (Label × Classical.Block Var Op Label)}
+    {targetBlocks : List (Label × Block Var Op Label)}
+    (hblocks : BlocksConverted cfg sourceBlocks targetBlocks)
+    (hsubset : ∀ pair, pair ∈ sourceBlocks → pair ∈ cfg.blocks) :
+    targetBlocks.map (fun (label, block) => (label, ({
+      phis := block.parameters.mapIdx fun index parameter => {
+        dst := parameter
+        incoming := bba.incomingColumn label index
+      }
+      body := block.body
+      terminator := block.terminator.eraseArguments
+    } : Classical.Block Var Op Label))) = sourceBlocks := by
+  induction hblocks with
+  | nil => rfl
+  | cons label sourceBlock term hterm tail ih =>
+      rw [List.map_cons]
+      have hsourceMem : (label, sourceBlock) ∈ cfg.blocks :=
+        hsubset (label, sourceBlock) List.mem_cons_self
+      have hphis :
+          (sourceBlock.phis.map Phi.dst).mapIdx (fun index parameter => ({
+            dst := parameter
+            incoming := bba.incomingColumn label index
+          } : Phi Var Label)) = sourceBlock.phis := by
+        apply List.ext_get
+        · simp
+        · intro index hleft hright
+          rw [List.get_eq_getElem, List.get_eq_getElem]
+          simp only [List.getElem_mapIdx, List.getElem_map]
+          have hget : sourceBlock.phis[index]? = some sourceBlock.phis[index] :=
+            List.getElem?_eq_getElem hright
+          rw [hconverted.incomingColumn hcfg hsourceMem hget]
+      change (label, ({
+        phis := (sourceBlock.phis.map Phi.dst).mapIdx _
+        body := sourceBlock.body
+        terminator := term.eraseArguments
+      } : Classical.Block Var Op Label)) :: _ = (label, sourceBlock) :: _
+      rw [hphis]
+      rw [Terminator.eraseArguments_ofPhi hterm]
+      rw [ih (fun pair hp => hsubset pair
+        (List.Mem.tail (label, sourceBlock) hp))]
+
+theorem Converted.toPhi_eq
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg)
+    {bba : CFG Var Op Label} (hconverted : Converted cfg bba) :
+    toPhi bba = cfg := by
+  have hentry : (toPhi bba).entry = cfg.entry := by
+    rcases hsource : cfg.entry with ⟨sourcePhis, sourceBody, sourceTerm⟩
+    rcases htarget : bba.entry with ⟨parameters, targetBody, targetTerm⟩
+    have hphis : sourcePhis = [] := by simpa [hsource] using hcfg.1
+    have hbody : targetBody = sourceBody := by
+      simpa [hsource, htarget] using hconverted.entryBody
+    have hterm : targetTerm.eraseArguments = sourceTerm := by
+      simpa [hsource, htarget] using
+        (Terminator.eraseArguments_ofPhi hconverted.entryTerm)
+    simp [toPhi, htarget, hphis, hbody, hterm]
+  have hblocks : (toPhi bba).blocks = cfg.blocks := by
+    exact Converted.blocks_toPhi hcfg hconverted hconverted.blocks (fun _ h => h)
+  cases cfg with
+  | mk sourceEntry sourceBlocks =>
+      cases bba with
+      | mk targetEntry targetBlocks =>
+          simp only [toPhi] at hentry hblocks ⊢
+          subst sourceEntry
+          subst sourceBlocks
+          rfl
+
+theorem PhiStructurallyNormalized.entryTerm_exists
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg) :
+    ∃ result, Terminator.ofPhi cfg .entry cfg.entry.terminator = some result := by
+  apply Terminator.ofPhi_exists_of_structural hcfg
+  · intro target ht
+    exact Or.inl ht
+  · intro target ht
+    simp [phiPredecessors, ht]
+
+theorem PhiStructurallyNormalized.blockTerm_exists
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg)
+    {label : Label} {block : Classical.Block Var Op Label}
+    (hblock : (label, block) ∈ cfg.blocks) :
+    ∃ result, Terminator.ofPhi cfg (.named label) block.terminator = some result := by
+  apply Terminator.ofPhi_exists_of_structural hcfg
+  · intro target ht
+    exact Or.inr ⟨label, block, hblock, ht⟩
+  · intro target ht
+    simp only [phiPredecessors, List.mem_append]
+    apply Or.inr
+    apply List.mem_flatMap.mpr
+    exact ⟨(label, block), hblock, by simp [ht]⟩
+
+/-- Structural phi normalization is sufficient for conversion to produce a
+concrete BBA. -/
+theorem PhiStructurallyNormalized.ofPhi_exists
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg) :
+    ∃ bba, ofPhi cfg = some bba := by
+  obtain ⟨entryTerm, hentryTerm⟩ := hcfg.entryTerm_exists
+  have hblocks : ∃ blocks : List (Label × Block Var Op Label),
+      cfg.blocks.mapM (fun (label, block) => do
+        let term ← Terminator.ofPhi cfg (.named label) block.terminator
+        pure (label, {
+          parameters := block.phis.map Phi.dst
+          body := block.body
+          terminator := term
+        })) = some blocks := by
+    have aux : ∀ xs : List (Label × Classical.Block Var Op Label),
+        (∀ pair, pair ∈ xs → pair ∈ cfg.blocks) →
+        ∃ blocks : List (Label × Block Var Op Label), xs.mapM (fun (label, block) => do
+          let term ← Terminator.ofPhi cfg (.named label) block.terminator
+          pure (label, {
+            parameters := block.phis.map Phi.dst
+            body := block.body
+            terminator := term
+          })) = some blocks := by
+      intro xs hsubset
+      induction xs with
+      | nil => exact ⟨[], rfl⟩
+      | cons head tail ih =>
+          rcases head with ⟨label, block⟩
+          obtain ⟨term, hterm⟩ := hcfg.blockTerm_exists
+            (hsubset (label, block) List.mem_cons_self)
+          obtain ⟨blocks, hblocks⟩ := ih
+            (fun pair hp => hsubset pair (List.Mem.tail (label, block) hp))
+          exact ⟨(label, {
+            parameters := block.phis.map Phi.dst
+            body := block.body
+            terminator := term
+          }) :: blocks, by
+            simpa [List.mapM_cons, hterm] using congrArg
+              (fun result => result.bind fun blocks => some ((label, {
+                parameters := block.phis.map Phi.dst
+                body := block.body
+                terminator := term
+              }) :: blocks)) hblocks⟩
+    exact aux cfg.blocks (fun _ h => h)
+  obtain ⟨blocks, hblocks⟩ := hblocks
+  refine ⟨{
+    entry := { parameters := [], body := cfg.entry.body, terminator := entryTerm }
+    blocks := blocks
+  }, ?_⟩
+  unfold ofPhi
+  rw [show cfg.entry.phis.isEmpty = true by simp [hcfg.1]]
+  simp only [if_true, hentryTerm]
+  rw [hblocks]
+  rfl
+
+/-- Structural BBA normalization gives the uniform target arity required by
+the phi/BBA matrix transpose. -/
+theorem BBAStructurallyNormalized.edge_arity
+    {cfg : CFG Var Op Label} (hcfg : BBAStructurallyNormalized cfg)
+    {source : BlockId Label} {target : Label} {arguments : List (Value Var)}
+    (hedge : (source, target, arguments) ∈ cfg.sourcedEdges) :
+    ∃ block, cfg.findBlock target = some block ∧
+      arguments.length = block.parameters.length :=
+  hcfg.2.2.2.2.1 source target arguments hedge
+
+/-- In canonical BBA form source/target pairs have no duplicate occurrence. -/
+theorem BBAStructurallyNormalized.edge_keys_nodup
+    {cfg : CFG Var Op Label} (hcfg : BBAStructurallyNormalized cfg) :
+    cfg.edgeKeys.Nodup :=
+  hcfg.2.2.1
+
+theorem Terminator.ofPhi_toPhi_of_edgeColumnsMatch
+    (cfg : CFG Var Op Label) (source : BlockId Label)
+    (term : Terminator Var Op Label) (h : EdgeColumnsMatch cfg source term) :
+    Terminator.ofPhi (toPhi cfg) source term.eraseArguments = some term := by
+  induction term with
+  | br target arguments =>
+      obtain ⟨block, hblock, hcolumns⟩ := h
+      simp only [Terminator.eraseArguments, Terminator.ofPhi]
+      rw [findPhiBlock_toPhi]
+      rw [hblock]
+      simp only [Option.bind_some]
+      rw [hcolumns]
+      rfl
+  | ret value => rfl
+  | cond discr left right ihLeft ihRight =>
+      simp only [EdgeColumnsMatch] at h
+      simp [Terminator.eraseArguments, Terminator.ofPhi,
+        ihLeft h.1, ihRight h.2]
+
+/-- The independent BBA structural conditions discharge the executable
+round-trip hypothesis. -/
+theorem BBAStructurallyNormalized.toRoundTrip
+    {cfg : CFG Var Op Label} (hcfg : BBAStructurallyNormalized cfg) :
+    ofPhi (toPhi cfg) = some cfg := by
+  rcases hcfg with ⟨hentry, _, _, _, _, hentryColumns, hblockColumns⟩
+  unfold ofPhi
+  rw [show (toPhi cfg).entry.phis.isEmpty = true from rfl]
+  simp only [if_true]
+  rw [show (toPhi cfg).entry.terminator =
+    cfg.entry.terminator.eraseArguments from rfl]
+  rw [Terminator.ofPhi_toPhi_of_edgeColumnsMatch _ _ _ hentryColumns]
+  have hblocks :
+      (toPhi cfg).blocks.mapM (fun (label, block) => do
+        let term ← Terminator.ofPhi (toPhi cfg) (.named label) block.terminator
+        pure (label, {
+          parameters := block.phis.map Phi.dst
+          body := block.body
+          terminator := term
+        })) = some cfg.blocks := by
+    rw [show (toPhi cfg).blocks = cfg.blocks.map (fun (label, block) =>
+      (label, ({
+        phis := canonicalPhis cfg label block
+        body := block.body
+        terminator := block.terminator.eraseArguments
+      } : Classical.Block Var Op Label))) from rfl, List.mapM_map]
+    have aux : ∀ xs : List (Label × Block Var Op Label),
+        (∀ pair, pair ∈ xs → pair ∈ cfg.blocks) →
+        xs.mapM ((fun (label, block) => do
+          let term ← Terminator.ofPhi (toPhi cfg) (.named label) block.terminator
+          pure (label, {
+            parameters := block.phis.map Phi.dst
+            body := block.body
+            terminator := term
+          })) ∘ (fun (label, block) =>
+            (label, ({
+              phis := canonicalPhis cfg label block
+              body := block.body
+              terminator := block.terminator.eraseArguments
+            } : Classical.Block Var Op Label)))) = some xs := by
+      intro xs hsubset
+      induction xs with
+      | nil => rfl
+      | cons head tail ih =>
+          rcases head with ⟨label, block⟩
+          have hm := hblockColumns label block
+            (hsubset (label, block) List.mem_cons_self)
+          simp only [List.mapM_cons, Function.comp_apply]
+          rw [Terminator.ofPhi_toPhi_of_edgeColumnsMatch _ _ _ hm]
+          rw [ih (fun pair hmem => hsubset pair (List.mem_cons_of_mem _ hmem))]
+          change some ((label, { block with
+            parameters := (canonicalPhis cfg label block).map Phi.dst }) :: tail) =
+            some ((label, block) :: tail)
+          congr 3
+          cases block with
+          | mk parameters body terminator =>
+            congr 1
+            rw [canonicalPhis, List.mapIdx_eq_zipIdx_map, List.map_map]
+            simpa only [Function.comp_apply] using
+              (List.zipIdx_map_fst (i := 0) parameters)
+    exact aux cfg.blocks (fun _ h => h)
+  rw [hblocks]
+  simp only [Option.pure_def]
+  rcases cfg with ⟨⟨parameters, body, terminator⟩, blocks⟩
+  change parameters = [] at hentry
+  subst parameters
+  rfl
+
+/-- A normalized phi CFG is one on which moving operands to edges succeeds and
+canonicalizing them back is literally the identity.  Expanded, this requires
+an empty entry phi list, resolvable and coherent target definitions, one
+incoming value for each source/target occurrence and phi row, and canonical
+row/source order. -/
+def PhiNormalized (cfg : Classical.CFG Var Op Label) : Prop :=
+  ∃ bba, ofPhi cfg = some bba ∧ toPhi bba = cfg
+
+/-- The independent structural phi conditions imply successful conversion and
+literal reconstruction. -/
+theorem PhiStructurallyNormalized.normalized
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg) :
+    PhiNormalized cfg := by
+  obtain ⟨bba, hbba⟩ := hcfg.ofPhi_exists
+  exact ⟨bba, hbba, (converted_of_ofPhi hbba).toPhi_eq hcfg⟩
+
+/-- A normalized BBA has rectangular edge vectors and is source-functional for
+each target; equivalently its canonical phis move back to the identical CFG. -/
+def BBANormalized (cfg : CFG Var Op Label) : Prop :=
+  ofPhi (toPhi cfg) = some cfg
+
+/-- Structural BBA normalization is sufficient for the former executable
+fixed-point interface. -/
+theorem BBAStructurallyNormalized.normalized
+    {cfg : CFG Var Op Label} (hcfg : BBAStructurallyNormalized cfg) :
+    BBANormalized cfg :=
+  hcfg.toRoundTrip
+
+@[simp] theorem toPhi_entry_phis (cfg : CFG Var Op Label) :
+    (toPhi cfg).entry.phis = [] := rfl
+
+/-- Erase phi rows while retaining the classical control-flow skeleton. -/
+def erasePhis (cfg : Classical.CFG Var Op Label) : Classical.CFG Var Op Label :=
+  { cfg with
+      entry := { cfg.entry with phis := [] }
+      blocks := cfg.blocks.map fun (label, block) =>
+        (label, { block with phis := [] }) }
+
+/-- Both presentations erase to exactly the same control-flow graph. -/
+theorem erasePhis_toPhi (cfg : CFG Var Op Label) :
+    erasePhis (toPhi cfg) = cfg.eraseArguments := by
+  cases cfg with
+  | mk entry blocks =>
+    cases entry
+    simp [erasePhis, toPhi, eraseArguments]
+
+/-- The phi-to-BBA-to-phi round trip for any successful normalized
+translation. -/
+theorem toPhi_ofPhi {cfg : Classical.CFG Var Op Label}
+    (hcfg : PhiNormalized cfg) {bba : CFG Var Op Label}
+    (h : ofPhi cfg = some bba) : toPhi bba = cfg := by
+  rcases hcfg with ⟨canonical, hcanonical, hround⟩
+  have : canonical = bba := Option.some.inj (hcanonical.symm.trans h)
+  simpa [this] using hround
+
+/-- The BBA-to-phi-to-BBA round trip is the executable content of BBA
+normalization. -/
+theorem ofPhi_toPhi {cfg : CFG Var Op Label} (hcfg : BBANormalized cfg) :
+    ofPhi (toPhi cfg) = some cfg := hcfg
+
+/-- A successful normalized conversion preserves the erased CFG exactly. -/
+theorem erase_ofPhi {cfg : Classical.CFG Var Op Label}
+    (hcfg : PhiNormalized cfg) {bba : CFG Var Op Label}
+    (h : ofPhi cfg = some bba) : erasePhis cfg = bba.eraseArguments := by
+  rw [← toPhi_ofPhi hcfg h]
+  exact erasePhis_toPhi bba
+
+/-- Exact equivalence between the two normalized whole-CFG presentations. -/
+noncomputable def normalizedEquiv :
+    {cfg : Classical.CFG Var Op Label // PhiNormalized cfg} ≃
+      {cfg : CFG Var Op Label // BBANormalized cfg} where
+  toFun cfg := by
+    let bba := Classical.choose cfg.property
+    have hbba := (Classical.choose_spec cfg.property).1
+    have hround := (Classical.choose_spec cfg.property).2
+    exact ⟨bba, by rw [BBANormalized, hround]; exact hbba⟩
+  invFun cfg := ⟨toPhi cfg, ⟨cfg, cfg.property, rfl⟩⟩
+  left_inv cfg := by
+    apply Subtype.ext
+    exact (Classical.choose_spec cfg.property).2
+  right_inv cfg := by
+    apply Subtype.ext
+    let hx : PhiNormalized (toPhi cfg.val) :=
+      ⟨cfg.val, (show ofPhi (toPhi cfg.val) = some cfg.val from cfg.property), rfl⟩
+    have hchosen := (Classical.choose_spec hx).1
+    exact Option.some.inj (hchosen.symm.trans cfg.property)
+
+end CFG
+
+end CFGConversion
+
+/-- A normalized phi interface with `P` ordered predecessor occurrences and
+`A` ordered phi destinations.  `incoming a p` is phi-row-major. -/
+structure PhiTable (Var : Type u) (Label : Type w) (P A : Nat) where
+  destination : Fin A → Var
+  predecessor : Fin P → BlockId Label
+  incoming : Fin A → Fin P → Value Var
+
+/-- The same interface in block-argument form.  `argument p a` is
+edge-row-major, i.e. the transpose of `PhiTable.incoming`. -/
+structure Header (Var : Type u) (Label : Type w) (P A : Nat) where
+  parameter : Fin A → Var
+  predecessor : Fin P → BlockId Label
+  argument : Fin P → Fin A → Value Var
+
+namespace PhiTable
+
+def toHeader (table : PhiTable Var Label P A) : Header Var Label P A where
+  parameter := table.destination
+  predecessor := table.predecessor
+  argument p a := table.incoming a p
+
+/-- Render a normalized table in the repository's ordinary list-based phi
+syntax.  Both list orders are now canonical and duplicate edge occurrences
+remain distinguishable by their positions. -/
+def toPhis (table : PhiTable Var Label P A) : List (Phi Var Label) :=
+  List.ofFn fun a => {
+    dst := table.destination a
+    incoming := List.ofFn fun p => {
+      predecessor := table.predecessor p
+      value := table.incoming a p
+    }
+  }
+
+@[simp] theorem toPhis_length (table : PhiTable Var Label P A) :
+    table.toPhis.length = A := by simp [toPhis]
+
+end PhiTable
+
+namespace Header
+
+def toPhiTable (header : Header Var Label P A) : PhiTable Var Label P A where
+  destination := header.parameter
+  predecessor := header.predecessor
+  incoming a p := header.argument p a
+
+def parameters (header : Header Var Label P A) : List Var :=
+  List.ofFn header.parameter
+
+def edgeArguments (header : Header Var Label P A) : List (List (Value Var)) :=
+  List.ofFn fun p => List.ofFn fun a => header.argument p a
+
+@[simp] theorem parameters_length (header : Header Var Label P A) :
+    header.parameters.length = A := by simp [parameters]
+
+@[simp] theorem edgeArguments_length (header : Header Var Label P A) :
+    header.edgeArguments.length = P := by simp [edgeArguments]
+
+theorem edgeArguments_rectangular (header : Header Var Label P A)
+    (arguments : List (Value Var)) (h : arguments ∈ header.edgeArguments) :
+    arguments.length = A := by
+  simp only [edgeArguments, List.mem_ofFn] at h
+  obtain ⟨p, rfl⟩ := h
+  simp
+
+end Header
+
+@[simp] theorem PhiTable.toPhiTable_toHeader (table : PhiTable Var Label P A) :
+    table.toHeader.toPhiTable = table := by
+  cases table
+  rfl
+
+@[simp] theorem Header.toHeader_toPhiTable (header : Header Var Label P A) :
+    header.toPhiTable.toHeader = header := by
+  cases header
+  rfl
+
+/-- Exact phi-node/block-argument correspondence for a fixed ordered
+predecessor interface and fixed block arity. -/
+def phiTableEquivHeader :
+    PhiTable Var Label P A ≃ Header Var Label P A where
+  toFun := PhiTable.toHeader
+  invFun := Header.toPhiTable
+  left_inv := PhiTable.toPhiTable_toHeader
+  right_inv := Header.toHeader_toPhiTable
+
+/-- The concrete matrix-transposition law: the value supplied by predecessor
+occurrence `p` to block parameter `a` is exactly the corresponding phi input. -/
+@[simp] theorem argument_toHeader (table : PhiTable Var Label P A)
+    (p : Fin P) (a : Fin A) :
+    table.toHeader.argument p a = table.incoming a p := rfl
+
+@[simp] theorem incoming_toPhiTable (header : Header Var Label P A)
+    (a : Fin A) (p : Fin P) :
+    header.toPhiTable.incoming a p = header.argument p a := rfl
+
+end Isotope.TAC.Bridge.PhiBBA

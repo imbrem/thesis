@@ -72,6 +72,11 @@ def subst (σ : Nat → Tm Φ) : Tm Φ → Tm Φ
   | .case a l r => .case (a.subst σ) (l.subst (liftSubst σ)) (r.subst (liftSubst σ))
   | .abort a => .abort (a.subst σ)
 
+/-- Substitute a term for de Bruijn variable zero. -/
+def subst0 (a : Tm Φ) : Nat → Tm Φ
+  | 0 => a
+  | n + 1 => .var n
+
 end Tm
 
 /-- A straight-line sequence of SSA definitions. -/
@@ -93,6 +98,19 @@ def rename (ρ : Nat → Nat) : Body Φ → Body Φ
   | .let₁ a b => .let₁ (a.rename ρ) (b.rename (lift ρ))
   | .let₂ a b => .let₂ (a.rename ρ) (b.rename (liftN 2 ρ))
 
+def subst (σ : Nat → Tm Φ) : Body Φ → Body Φ
+  | .nil => .nil
+  | .let₁ a b => .let₁ (a.subst σ) (b.subst (Tm.liftSubst σ))
+  | .let₂ a b => .let₂ (a.subst σ) (b.subst (Tm.liftSubstN 2 σ))
+
+@[simp] theorem bound_rename (b : Body Φ) (ρ : Nat → Nat) :
+    (b.rename ρ).bound = b.bound := by
+  induction b generalizing ρ <;> simp [rename, bound, *]
+
+@[simp] theorem bound_subst (b : Body Φ) (σ : Nat → Tm Φ) :
+    (b.subst σ).bound = b.bound := by
+  induction b generalizing σ <;> simp [subst, bound, *]
+
 end Body
 
 /-- Control transfer at the end of a block. -/
@@ -111,6 +129,11 @@ def renameLabels (ρ : Nat → Nat) : Terminator Φ → Terminator Φ
   | .br ℓ a => .br (ρ ℓ) a
   | .case a l r => .case a (l.renameLabels ρ) (r.renameLabels ρ)
 
+def substVars (σ : Nat → Tm Φ) : Terminator Φ → Terminator Φ
+  | .br ℓ a => .br ℓ (a.subst σ)
+  | .case a l r =>
+      .case (a.subst σ) (l.substVars (Tm.liftSubst σ)) (r.substVars (Tm.liftSubst σ))
+
 end Terminator
 
 /-- A straight-line body followed by a terminator. -/
@@ -126,6 +149,9 @@ def renameVars (ρ : Nat → Nat) (b : Block Φ) : Block Φ :=
 
 def renameLabels (ρ : Nat → Nat) (b : Block Φ) : Block Φ :=
   ⟨b.body, b.terminator.renameLabels ρ⟩
+
+def substVars (σ : Nat → Tm Φ) (b : Block Φ) : Block Φ :=
+  ⟨b.body.subst σ, b.terminator.substVars (Tm.liftSubstN b.body.bound σ)⟩
 
 end Block
 
@@ -153,6 +179,46 @@ def renameLabels (ρ : Nat → Nat) : Region Φ → Region Φ
   | .let₂ a r => .let₂ a (r.renameLabels ρ)
   | .cfg e n bs =>
       .cfg (e.renameLabels (liftN n ρ)) n (fun i => (bs i).renameLabels (liftN n ρ))
+
+def substVars (σ : Nat → Tm Φ) : Region Φ → Region Φ
+  | .br ℓ a => .br ℓ (a.subst σ)
+  | .case a l r =>
+      .case (a.subst σ) (l.substVars (Tm.liftSubst σ)) (r.substVars (Tm.liftSubst σ))
+  | .let₁ a r => .let₁ (a.subst σ) (r.substVars (Tm.liftSubst σ))
+  | .let₂ a r => .let₂ (a.subst σ) (r.substVars (Tm.liftSubstN 2 σ))
+  | .cfg e n bs =>
+      .cfg (e.substVars σ) n (fun i => (bs i).substVars (Tm.liftSubst σ))
+
+/-- Simultaneous substitution for labels.  Each replacement region has one
+distinguished value variable, which receives the argument of the branch. -/
+abbrev LabelSubst (Φ : Type u) := Nat → Region Φ
+
+namespace LabelSubst
+
+def id : LabelSubst Φ := fun ℓ => .br ℓ (.var 0)
+
+def liftVars (σ : LabelSubst Φ) : LabelSubst Φ :=
+  fun ℓ => (σ ℓ).renameVars (LambdaSSA.lift Nat.succ)
+
+def lift (σ : LabelSubst Φ) : LabelSubst Φ
+  | 0 => .br 0 (.var 0)
+  | ℓ + 1 => (σ ℓ).renameLabels Nat.succ
+
+def liftN : Nat → LabelSubst Φ → LabelSubst Φ
+  | 0, σ => σ
+  | n + 1, σ => lift (liftN n σ)
+
+end LabelSubst
+
+def substLabels (σ : LabelSubst Φ) : Region Φ → Region Φ
+  | .br ℓ a => (σ ℓ).substVars (Tm.subst0 a)
+  | .case a l r =>
+      .case a (l.substLabels σ.liftVars) (r.substLabels σ.liftVars)
+  | .let₁ a r => .let₁ a (r.substLabels σ.liftVars)
+  | .let₂ a r => .let₂ a (r.substLabels σ.liftVars.liftVars)
+  | .cfg e n bs =>
+      .cfg (e.substLabels (σ.liftN n)) n
+        (fun i => (bs i).substLabels (σ.liftN n).liftVars)
 
 end Region
 
