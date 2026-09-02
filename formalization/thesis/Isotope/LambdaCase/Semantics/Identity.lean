@@ -15,11 +15,11 @@ open Isotope.LambdaCase.LocallyNameless
 universe u v w q r
 
 variable {τ : Type u} [LambdaIter.TypeFormers τ] [LambdaIter.Subtyping τ]
-  [LambdaIter.Semantics.TypeModel.{u, v} τ]
+  [LambdaIter.Subtyping.Semantics.TypeModel.{u, v} τ]
 variable {ν : Type w} [DecidableEq ν]
 variable {Φ : Type q} [LambdaIter.HasTy Φ τ]
 variable {ε : Type r} [LambdaIter.HasEff Φ ε] [Bot ε]
-variable [LambdaIter.Semantics.InstructionModel Φ τ ε Id]
+variable [LambdaIter.Subtyping.Semantics.InstructionModel Φ τ ε Id]
 
 /-- Direct evaluation of lambda-case terms into their interpreted Lean type. -/
 def eval {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
