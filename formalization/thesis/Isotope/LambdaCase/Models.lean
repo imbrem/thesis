@@ -5,6 +5,8 @@ import Isotope.LambdaCase.Models.Setoid
 import Isotope.LambdaCase.Models.Syntax
 import Isotope.LambdaCase.Models.Initial
 import Isotope.LambdaCase.Models.CompareIter
+import Isotope.LambdaCase.Models.SynCategory
+import Isotope.LambdaCase.Models.SynCoproduct
 
 /-!
 # Models of lambda-case, the category they form, and the initial one
@@ -27,6 +29,10 @@ are exactly the parameters lambda-case's judgments take.
 | `Models/Initial.lean` | existence and uniqueness of the interpretation; completeness |
 | `Models/CompareIter.lean` | restriction of lambda-iter models, and
   agreement with the term embedding |
+| `Models/SynCategory.lean` | the one-variable syntactic category and its three
+  category laws |
+| `Models/SynCoproduct.lean` | binary coproducts in that category, with the
+  full universal property |
 
 ## What is proved
 
@@ -36,6 +42,11 @@ are exactly the parameters lambda-case's judgments take.
 * `Syn.uniqueHom`, `Syn.isInitial` — the two together: `Syn S` is initial.
 * `Syn.equiv_of_denote_eq` — **equational completeness with respect to
   algebras**, the corollary.
+* `Syn.SynCat.instCategory` — the one-variable syntactic category, whose
+  composition is well defined because of
+  `LocallyNameless.Equiv.rename` in `Metatheory/EquivSubst.lean`; and
+  `Syn.SynCat.hasBinaryCoproducts` — the object-language coproduct really is a
+  coproduct there.
 * `Alg.ofIterFunctor`, `Syn.toIter_mk` — the restriction functor from
   lambda-iter models, and the fact that the map initiality forces out of the
   lambda-case syntactic model computes the lambda-iter denotation of the
@@ -56,16 +67,16 @@ are exactly the parameters lambda-case's judgments take.
 * `Syn.isInitial` therefore says: initial *among algebras of the equational
   presentation*.  It does not say initial among Freyd categories, and it must
   not be restated that way.
-* The syntactic *category* (types as objects, one-variable terms as morphisms)
-  is **not** built here.  Composition in it would need stability of `Equiv`
-  under typed renaming, which lambda-case does not have: unlike lambda-iter,
-  lambda-case does not factor its axioms through a raw axiom relation, so every
-  one of its fifteen axioms carries its own typing witnesses that a renaming
-  would have to rebuild.  That is a separate piece of metatheory, and it is not
-  needed for initiality.
-* The empty type is likewise not exhibited as an initial object of any
-  syntactic category: `Equiv.emptyInitial` fires only when the scrutinee of a
-  `let` is literally of the form `.abort a`, so it does not prove
-  `bv 0 ≈ abort (bv 0)` at the empty type.  This is a gap in the presentation
-  rather than a proof of non-derivability — no separating model is built here.
+* The syntactic *category* of `Models/SynCategory.lean` carries exactly the
+  three category laws, and `Models/SynCoproduct.lean` adds binary coproducts.
+  No premonoidal, Freyd, cartesian-value or distributive structure is
+  constructed on it, and none is claimed.  In particular the value/pure
+  subcategory has no definition, because `Pure` is nowhere proved stable under
+  `Equiv`.
+* The empty type is **not** exhibited as an initial object of the syntactic
+  category, and no `HasFiniteCoproducts` instance is registered:
+  `Equiv.emptyInitial` fires only when the scrutinee of a `let` is literally of
+  the form `.abort a`, so it does not prove `bv 0 ≈ abort (bv 0)` at the empty
+  type.  This is a gap in the presentation rather than a proof of
+  non-derivability — no separating model is built here.
 -/

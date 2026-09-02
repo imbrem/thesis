@@ -4,6 +4,9 @@ import Isotope.LambdaCase.TypingSubst
 import Isotope.LambdaCase.Equiv
 import Isotope.LambdaCase.Metatheory
 import Isotope.LambdaCase.Metatheory.EmbedIter
+import Isotope.LambdaCase.Metatheory.Syntax
+import Isotope.LambdaCase.Metatheory.EquivSubst
+import Isotope.LambdaCase.Metatheory.Shift
 import Isotope.LambdaCase.Semantics
 import Isotope.LambdaCase.Semantics.Categorical
 import Isotope.LambdaCase.Semantics.Effects
