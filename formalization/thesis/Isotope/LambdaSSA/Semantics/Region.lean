@@ -72,6 +72,33 @@ theorem collectiveDenotes_one (Γ : VCtx τ) (R : Fin 1 → τ) (L : LCtx τ)
   simp only [List.ofFn, List.get_cons_zero, labelInject]
   simp
 
+/-- Every nonempty finite family of blocks has a collective arrow. -/
+theorem collectiveDenotes_exists_succ (n : Nat) (Γ : VCtx τ)
+    (R : Fin (n + 1) → τ) (L : LCtx τ)
+    (block : ∀ i, J.obj (ctxObj M (R i :: Γ)) ⟶
+      J.obj (labelObj M (List.ofFn R ++ L))) :
+    ∃ f, CollectiveDenotes J M Γ R L block f := by
+  induction n generalizing R with
+  | zero => exact ⟨_, collectiveDenotes_one J M Γ R L block⟩
+  | succ n ih =>
+      let Rt : Fin (n + 1) → τ := fun i => R i.succ
+      let blockt : ∀ i, J.obj (ctxObj M (Rt i :: Γ)) ⟶
+          J.obj (labelObj M (List.ofFn Rt ++ L)) := fun i => by
+        simpa [Rt, List.ofFn] using block i.succ
+      rcases ih Rt blockt with ⟨ft, dft⟩
+      let f := J.map ((𝟙 (ctxObj M Γ)) ⊗ₘ
+          (labelConsIso M (R 0) (List.ofFn Rt)).hom) ≫
+        J.map (DistributiveTensor.leftIso (ctxObj M Γ)
+          (M.obj (R 0)) (labelObj M (List.ofFn Rt))).inv ≫
+        splitMapCoprod J _ _ ≫ coprod.desc (block 0) (by
+          simpa [Rt, List.ofFn] using ft)
+      refine ⟨f, ?_⟩
+      constructor
+      intro i
+      refine Fin.cases ?_ (fun j => ?_) i
+      · simp [f, List.ofFn, labelInject, Rt]
+      · simpa [f, List.ofFn, labelInject, Rt] using dft.restrict j
+
 /-- Structural denotation graph for the non-recursive region constructors.
 The absence of a `cfg` constructor is intentional: recursive CFG wiring is a
 separate Elgot construction, whereas these rules require only a distributive
@@ -167,5 +194,42 @@ theorem regionDenotes_exists_nonrecursive
           rcases de with ⟨fe, de⟩
           exact ⟨fe, .cfgZero he hb de⟩
       | succ n => exact cfgWitness he hb
+
+private theorem regionDenotes_exists
+    {Γ : VCtx τ} {r : Region Φ} {L : LCtx τ}
+    (h : Region.HasType Γ r L) : ∃ f, RegionDenotes J M h f := by
+  induction h with
+  | br h ha => exact ⟨_, .br (denote_spec J M ha)⟩
+  | case he hl hr ihe ihl ihr =>
+      rcases ihl with ⟨fl, dl⟩
+      rcases ihr with ⟨fr, dr⟩
+      exact ⟨_, .case (denote_spec J M he) dl dr⟩
+  | let₁ ha hb iha ihb =>
+      rcases ihb with ⟨fb, db⟩
+      exact ⟨_, .let₁ (denote_spec J M ha) db⟩
+  | let₂ ha hb iha ihb =>
+      rcases ihb with ⟨fb, db⟩
+      exact ⟨_, .let₂ (denote_spec J M ha) db⟩
+  | cfg R he hb ihe ihb =>
+      cases n with
+      | zero =>
+          rcases ihe with ⟨fe, de⟩
+          exact ⟨fe, .cfgZero he hb de⟩
+      | succ n =>
+          rcases ihe with ⟨fe, de⟩
+          choose fb db using ihb
+          rcases collectiveDenotes_exists_succ J M n Γ R L fb with ⟨fc, dc⟩
+          exact ⟨_, .cfg he hb de db dc⟩
+
+/-- Chosen denotation of an exactly typed SSA region. -/
+noncomputable def Region.denote {Γ : VCtx τ} {r : Region Φ} {L : LCtx τ}
+    (h : Region.HasType Γ r L) :
+    J.obj (ctxObj M Γ) ⟶ J.obj (labelObj M L) :=
+  (regionDenotes_exists J M h).choose
+
+theorem Region.denote_spec {Γ : VCtx τ} {r : Region Φ} {L : LCtx τ}
+    (h : Region.HasType Γ r L) :
+    RegionDenotes J M h (Region.denote J M h) :=
+  (regionDenotes_exists J M h).choose_spec
 
 end Isotope.LambdaSSA.Semantics.Categorical
