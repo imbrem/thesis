@@ -6,8 +6,9 @@ universe v₁ v₂ u₁ u₂ u₃
 
 namespace Isotope.LambdaSSA.Semantics.Categorical
 
-open CategoryTheory CategoryTheory.Limits
+open CategoryTheory CategoryTheory.Category CategoryTheory.Limits
 open Isotope.LambdaIter.Subtyping.Semantics.Categorical
+open scoped MonoidalCategory
 
 variable {V : Type u₁} {C : Type u₂}
   [Category.{v₁} V] [Category.{v₂} C]
@@ -22,7 +23,7 @@ variable {V : Type u₁} {C : Type u₂}
 /-- The nullary part of distributivity omitted by `DistributiveTensor`:
 tensoring the interpreted initial type with an environment remains initial.
 It is optional because binary distributivity alone does not imply this law. -/
-class TensorEmptyStrict : Prop where
+class TensorEmptyStrict where
   leftInitial (R : V) : IsInitial (R ⊗ (M.obj (LambdaIter.empty : τ)))
   rightInitial (R : V) : IsInitial ((M.obj (LambdaIter.empty : τ)) ⊗ R)
 
