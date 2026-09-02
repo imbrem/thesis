@@ -25,8 +25,8 @@ nothing else.
   monad"; ESOP Proposition 6.6), which is **stated without proof**: the paper's
   only supporting argument anywhere, Example 8.6 (journal p.41), treats
   associativity alone, and no unit law is argued for any model.  So these two
-  theorems are **original work, not a port**.  Associativity for `C` remains
-  open here; see `Isotope/Elgot/RA/Monad.lean`.
+  theorems are **original work, not a port**.  Associativity for `C` is proved
+  in `Isotope/Elgot/RA/Assoc.lean`, completing Proposition 7.7.
 
 * `not_bind_pure` — the Null and Generating models are **not** monads, because
   right neutrality fails.  This is the paper's own remark at journal p.30 (ESOP

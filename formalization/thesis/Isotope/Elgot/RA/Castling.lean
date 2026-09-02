@@ -31,6 +31,13 @@ so its transitions are well-formed for free, and the three transfer lemmas
 here are therefore ours, not a port, though the case analysis follows the
 paper's.
 
+⚠ One point of the reading of `Condense` is load-bearing here: its rewritten
+suffix may be empty, so that the rule may pull a whole pre-trace along a
+message occurring nowhere in it (see item 10 of the honest boundary in
+`Isotope/Elgot/RA.lean`).  In `castle_stutter` the inserted stutter transition
+can be the only one carrying `ε`, and then the castled `Cn`-rewrite is exactly
+such a pure pull; with the stricter reading this case would be false.
+
 `Castles` packages the conclusion as an interface, so that the consequences —
 `Refines.sort`, `closure_eq_of_gClosed` — are proved once and hold for any rule
 sets that castle.

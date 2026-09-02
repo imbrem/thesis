@@ -19,9 +19,9 @@ open CategoryTheory
 variable (Loc Val : Type)
 
 /-- The Kleisli category of the release/acquire `𝔠`-monad is an Elgot category.
-The Concrete model `C = Comp gcRules` is not covered: its associativity law is
-open, so it has no `LawfulMonad` instance.  See the honest boundary in
-`Isotope/Elgot/RA.lean`. -/
+The same holds for the Concrete model `C = Comp gcRules`; that instance needs
+its associativity law and so lives in `Isotope/Elgot/RA/Assoc.lean`
+(`nonempty_elgotCategory_concrete`). -/
 theorem nonempty_elgotCategory :
     Nonempty (ElgotCategory (Kleisli (Kleisli.Type.TM (Comp cRules Loc Val : Type u → Type u)))) :=
   ⟨inferInstance⟩

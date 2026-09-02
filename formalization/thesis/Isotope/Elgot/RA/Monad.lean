@@ -32,14 +32,16 @@ version's `M`).
   `Rewind` and a run of `Stutter`s, or absorbed into it by a run of `Stutter`s
   and a `Forward`.
 
-* **Associativity is proved for `R ⊆ 𝔠` only.**  It rests on *deferral of
-  closure* at the seam (`bindGen_closure_left`/`right`), which is **false for
-  the `𝔤` rules**: `Loosen`, `Expel` and `Condense` replace messages in the
-  closing memory of the left operand, so neither `ChroStep.c_sub` nor
-  `ChroStep.o_sub` holds and the seam condition `τ.ch.c ⊆ υ.ch.o` is not
-  transported backwards along a rewrite.  The paper's own route (journal §8.1)
-  goes through Proposition 7.5 and Rewrite Castling instead; neither is
-  formalized here.  See the honest boundary in `Isotope/Elgot/RA.lean`.
+* **Associativity is proved *in this file* for `R ⊆ 𝔠` only.**  It rests on
+  *deferral of closure* at the seam (`bindGen_closure_left`/`right`), which is
+  **false for the `𝔤` rules**: `Loosen`, `Expel` and `Condense` replace
+  messages in the closing memory of the left operand, so neither
+  `ChroStep.c_sub` nor `ChroStep.o_sub` holds and the seam condition
+  `τ.ch.c ⊆ υ.ch.o` is not transported backwards along a rewrite.  For the
+  Concrete model `𝔤𝔠` the paper's own route is taken instead — Proposition 7.5
+  and Rewrite Castling reduce it to the `𝔠` case proved here; see
+  `Isotope/Elgot/RA/Generating.lean`, `Isotope/Elgot/RA/Castling.lean` and
+  `Isotope/Elgot/RA/Assoc.lean`.
 -/
 
 universe u
@@ -587,8 +589,8 @@ theorem right_neutrality (hcR : cRules ⊆ R) (hRg : R ⊆ gcRules) (P : Comp R 
   exact closure_bindGen_pureGen_right hcR hRg P.traces P.isTrace P.closed
 
 /-- **Associativity** (journal §7.1, p.27), for `R ⊆ 𝔠`.  It uses deferral of
-closure at the seam, which is false for the `𝔤` rules; see the module
-docstring. -/
+closure at the seam, which is false for the `𝔤` rules; for the Concrete model
+see `Concrete.associativity` in `Isotope/Elgot/RA/Assoc.lean`. -/
 theorem associativity (hR : R ⊆ cRules) (P : Comp R Loc Val A) (f : A → Comp R Loc Val B)
     (g : B → Comp R Loc Val C) : P >>= f >>= g = P >>= fun a ↦ f a >>= g := by
   apply ext
