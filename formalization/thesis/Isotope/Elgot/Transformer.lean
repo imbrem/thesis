@@ -2,6 +2,7 @@ import Isotope.Elgot.Transformer.Reader
 import Isotope.Elgot.Transformer.State
 import Isotope.Elgot.Transformer.Writer
 import Isotope.Elgot.Transformer.Writer.Divergence
+import Isotope.Elgot.Transformer.Writer.Infinite
 
 /-!
 # Elgot-preserving monad transformers
@@ -14,6 +15,9 @@ import Isotope.Elgot.Transformer.Writer.Divergence
   nonterminating run is discarded along with the run.
 * `Isotope.Elgot.Transformer.Writer.Divergence` — three obstruction theorems showing that no
   monoid can retain the output of a divergent loop, so the discard is forced.
+* `Isotope.Elgot.Transformer.Writer.Infinite` — the typeclass interface a *productive* writer would
+  need (`StreamProd`, `StreamMulAction`), and the theorem that its fixed-point equation cannot be
+  solved inside `W`.  No productive-writer iteration operator is constructed.
 
 Both carry `Iterate` and `LawfulElgotMonad` instances derived from those of `m`.
 -/
