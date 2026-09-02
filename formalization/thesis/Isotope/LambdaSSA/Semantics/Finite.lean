@@ -41,34 +41,22 @@ noncomputable def labelConsFrom (A : τ) (L : LCtx τ) :
     Limits.Sigma.ι (fun k : Fin L.length => M.obj (L.get k)) i ≫ coprod.inr ≫
       labelConsFrom M A L = Limits.Sigma.ι
         (fun k : Fin (A::L).length => M.obj ((A::L).get k)) i.succ := by
-  simp only [labelConsFrom, Category.assoc, coprod.inr_desc, Limits.Sigma.ι_desc]
+  unfold labelConsFrom
+  calc
+    _ = Limits.Sigma.ι (fun k : Fin L.length => M.obj (L.get k)) i ≫
+        Limits.Sigma.desc (fun j => Limits.Sigma.ι
+          (fun k : Fin (A::L).length => M.obj ((A::L).get k)) j.succ) := by
+      exact congrArg _ (coprod.inr_desc _ _)
+    _ = _ := Limits.Sigma.ι_desc _ _
 
-noncomputable def labelConsIso (A : τ) (L : LCtx τ) :
-    labelObj M (A :: L) ≅ M.obj A ⨿ labelObj M L where
-  hom := labelConsTo M A L
-  inv := labelConsFrom M A L
-  hom_inv_id := by
-    apply Limits.Sigma.hom_ext
-    intro i
-    refine Fin.cases ?_ (fun j => ?_) i
-    · simp only [Category.assoc, labelConsTo_head_assoc, labelConsFrom_head, comp_id]
-    · simp only [Category.assoc, labelConsTo_tail_assoc, labelConsFrom_tail, comp_id]
-  inv_hom_id := by
-    apply coprod.hom_ext
-    · simp only [Category.assoc, labelConsFrom_head_assoc, labelConsTo_head, comp_id]
-    · apply Limits.Sigma.hom_ext
-      intro i
-      simp only [Category.assoc, labelConsFrom_tail_assoc, labelConsTo_tail, comp_id]
+/-- Eliminate the unique summand of a singleton label context. -/
+noncomputable def labelSingletonTo (A : τ) : labelObj M [A] ⟶ M.obj A :=
+  Limits.Sigma.desc fun i => eqToHom (by fin_cases i; rfl)
 
-/-- The label object of a singleton context is its unique summand. -/
-noncomputable def labelSingletonIso (A : τ) : labelObj M [A] ≅ M.obj A where
-  hom := Limits.Sigma.desc fun _ => 𝟙 _
-  inv := Limits.Sigma.ι (fun _ : Fin 1 => M.obj A) 0
-  hom_inv_id := by
-    apply Limits.Sigma.hom_ext
-    intro i
-    fin_cases i
-    simp
-  inv_hom_id := by simp
+@[reassoc (attr := simp)] theorem labelSingletonTo_ι (A : τ) :
+    Limits.Sigma.ι (fun i : Fin [A].length => M.obj ([A].get i)) 0 ≫
+      labelSingletonTo M A = 𝟙 _ := by
+  rw [labelSingletonTo, Limits.Sigma.ι_desc]
+  rfl
 
 end Isotope.LambdaSSA.Semantics.Categorical

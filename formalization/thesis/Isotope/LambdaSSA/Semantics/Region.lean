@@ -65,7 +65,7 @@ theorem collectiveDenotes_one (Γ : VCtx τ) (R : Fin 1 → τ) (L : LCtx τ)
     (block : ∀ i, J.obj (ctxObj M (R i :: Γ)) ⟶
       J.obj (labelObj M (List.ofFn R ++ L))) :
     CollectiveDenotes J M Γ R L block
-      (J.map ((𝟙 (ctxObj M Γ)) ⊗ₘ (labelSingletonIso M (R 0)).hom) ≫ block 0) := by
+      (J.map ((𝟙 (ctxObj M Γ)) ⊗ₘ labelSingletonTo M (R 0)) ≫ block 0) := by
   constructor
   intro i
   fin_cases i
@@ -87,7 +87,7 @@ theorem collectiveDenotes_exists_succ (n : Nat) (Γ : VCtx τ)
         simpa [Rt, List.ofFn] using block i.succ
       rcases ih Rt blockt with ⟨ft, dft⟩
       let f := J.map ((𝟙 (ctxObj M Γ)) ⊗ₘ
-          (labelConsIso M (R 0) (List.ofFn Rt)).hom) ≫
+          labelConsTo M (R 0) (List.ofFn Rt)) ≫
         J.map (DistributiveTensor.leftIso (ctxObj M Γ)
           (M.obj (R 0)) (labelObj M (List.ofFn Rt))).inv ≫
         splitMapCoprod J _ _ ≫ coprod.desc (block 0) (by
