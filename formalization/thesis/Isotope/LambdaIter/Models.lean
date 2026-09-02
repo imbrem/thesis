@@ -5,6 +5,7 @@ import Isotope.LambdaIter.Models.Setoid
 import Isotope.LambdaIter.Models.Syntax
 import Isotope.LambdaIter.Models.SynCategory
 import Isotope.LambdaIter.Models.SynCoproduct
+import Isotope.LambdaIter.Models.SynIteration
 import Isotope.LambdaIter.Models.Initial
 
 /-!
@@ -23,7 +24,8 @@ result type, one operation per term former, and two propositional obligations
 | `Models/Setoid.lean` | the setoid `Eqv` induces on typable terms, and its quotient |
 | `Models/Syntax.lean` | `Syn S : Alg S`, the quotiented syntax as a model, and `Syn.denote_mk` |
 | `Models/SynCategory.lean` | the one-variable syntactic *category* (three category laws) |
-| `Models/SynCoproduct.lean` | binary coproducts in it, and iteration on hom-sets (no Elgot law) |
+| `Models/SynCoproduct.lean` | binary coproducts in it, and iteration on hom-sets |
+| `Models/SynIteration.lean` | the Elgot fixpoint law for that iteration operator |
 | `Models/Initial.lean` | `Syn.uniqueHom`, `Syn.isInitial`, and equational completeness |
 
 ## Honest boundary
@@ -48,8 +50,9 @@ result type, one operation per term former, and two propositional obligations
   coherence instances above.
 * The syntactic category (`Models/SynCategory.lean`, `Models/SynCoproduct.lean`)
   is proved to be a category with binary coproducts, and its iteration
-  operator is proved well defined on classes.  **No Elgot law and no
-  premonoidal, monoidal or distributive structure is proved**, and the empty
+  operator is proved well defined on classes and to satisfy the **fixpoint
+  law**.  **No other Elgot law (naturality, codiagonal, uniformity, strength)
+  and no premonoidal, monoidal or distributive structure is proved**, and the empty
   type is not shown to be initial (see `Models/SynCoproduct.lean` for why it
   probably is not derivable from the axioms as stated).  Issue #57's request
   for the syntactic Elgot model therefore remains open; what is closed is the
