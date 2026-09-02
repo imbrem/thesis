@@ -3,6 +3,8 @@ import Isotope.Elgot.RA.Trace
 import Isotope.Elgot.RA.Rewrite
 import Isotope.Elgot.RA.Closure
 import Isotope.Elgot.RA.Monad
+import Isotope.Elgot.RA.Bounds
+import Isotope.Elgot.RA.Parallel
 import Isotope.Elgot.RA.Concrete
 import Isotope.Elgot.RA.Iteration
 import Isotope.Elgot.RA.Memory
