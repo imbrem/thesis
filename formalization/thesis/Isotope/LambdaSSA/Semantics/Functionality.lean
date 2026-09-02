@@ -40,4 +40,13 @@ theorem DenotesAgreement.eq
   | equal hfg => exact hfg
   | bottom hf hg hp => exact hf.eq_of_prefix hg hp
 
+/-- Once constructor-wise agreement has been established, functionality is a
+direct consequence; no independent semantic coherence assumption is needed. -/
+theorem Denotes.functional_of_agreement
+    {Γ : VCtx τ} {t : Tm Φ} {A : τ} {h : Tm.HasType Γ t A}
+    {f g : J.obj (ctxObj M Γ) ⟶ J.obj (M.obj A)}
+    (_df : Denotes J M h f) (_dg : Denotes J M h g)
+    (a : DenotesAgreement J M (h := h) (f := f) (g := g)) : f = g :=
+  a.eq
+
 end Isotope.LambdaSSA.Semantics.Categorical
