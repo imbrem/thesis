@@ -16,4 +16,5 @@ import Isotope.LambdaIter.MinimalElaboration
 import Isotope.LambdaIter.Semantics
 import Isotope.LambdaIter.Subtyping.Minimal
 import Isotope.LambdaIter.Signature.Category
+import Isotope.LambdaIter.Signature.Examples
 import Isotope.LambdaIter.Models
