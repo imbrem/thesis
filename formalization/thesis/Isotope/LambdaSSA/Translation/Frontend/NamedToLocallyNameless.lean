@@ -4,7 +4,7 @@ import Isotope.LambdaIter.Semantics.Categorical
 
 /-! # Exact typed named-to-locally-nameless translation -/
 
-universe v₁ v₂ u₁ u₂
+universe v₁ v₂ u₁ u₂ v r
 
 namespace Isotope.LambdaSSA.Translation.Frontend.NamedToLocallyNameless
 
@@ -137,5 +137,40 @@ theorem denoteClosedChosen_independent
     k (chooseHasTypeClosed h)
 
 end Categorical
+
+section Monadic
+
+variable [Subtyping τ]
+variable [Subtyping.Semantics.TypeModel.{u, v} τ]
+variable {ε : Type r} [HasEff Φ ε] [Bot ε]
+variable {m : Type v → Type v} [Monad m] [LawfulMonad m] [Isotope.Elgot.Iterate m]
+variable [Subtyping.Semantics.InstructionModel Φ τ ε m]
+
+/-- Monadic denotation of a closed named term through the canonical chosen
+exact locally-nameless typing witness. -/
+noncomputable def denoteClosedChosenMonadic {Γ : Ctx ν τ}
+    {t : LambdaIter.Named.Tm ν Φ} {A : τ}
+    (h : LambdaIter.Named.HasType Φ Γ t A)
+    (γ : Subtyping.Semantics.CtxDen Γ) : m (Subtyping.Semantics.TyDen A) :=
+  LambdaIter.Semantics.denote (ε := ε) (m := m) (chooseHasTypeClosed h)
+    γ PUnit.unit
+
+/-- The monadic named-to-locally-nameless square for any selected witness;
+exact typing coherence makes the result independent of that selection. -/
+theorem denoteClosedChosenMonadic_independent
+    [LambdaIter.Semantics.TypingCoherent (τ := τ) (ν := ν) (Φ := Φ)
+      (ε := ε) (m := m)]
+    {Γ : Ctx ν τ} {t : LambdaIter.Named.Tm ν Φ} {A : τ}
+    (h : LambdaIter.Named.HasType Φ Γ t A)
+    (k : LambdaIter.LocallyNameless.HasType Φ Γ .nil
+      (LambdaIter.Named.ToLocallyNameless.translateClosed t) A)
+    (γ : Subtyping.Semantics.CtxDen Γ) :
+    LambdaIter.Semantics.denote (ε := ε) (m := m) k γ PUnit.unit =
+      denoteClosedChosenMonadic (ε := ε) (m := m) h γ := by
+  have hk := LambdaIter.Semantics.TypingCoherent.denote_eq
+    (τ := τ) (ε := ε) (m := m) k (chooseHasTypeClosed h)
+  exact congrFun (congrFun hk γ) PUnit.unit
+
+end Monadic
 
 end Isotope.LambdaSSA.Translation.Frontend.NamedToLocallyNameless

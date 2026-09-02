@@ -46,4 +46,12 @@ def denote {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n} {t : Tm ν Φ n} {A :
     (h : HasType Φ Γ β t A) : CtxDen Γ → BoundDen β → m (TyDen A) :=
   Subtyping.Semantics.denote (ε := ε) (m := m) h.toGeneric
 
+/-- Optional coherence of monadic denotation with respect to exact typing
+witnesses.  As in the categorical model this need not follow from arbitrary,
+possibly non-injective object-language type formers. -/
+class TypingCoherent : Prop where
+  denote_eq {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+      {t : Tm ν Φ n} {A : τ} (h k : HasType Φ Γ β t A) :
+    denote (ε := ε) (m := m) h = denote (ε := ε) (m := m) k
+
 end Isotope.LambdaIter.Semantics
