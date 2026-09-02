@@ -1,4 +1,5 @@
 import Isotope.TAC.Classical.Syntax
+import Mathlib.Data.List.Indexes
 import Mathlib.Logic.Equiv.Defs
 
 /-! # Classical phi nodes and basic-block arguments
@@ -258,6 +259,33 @@ def findBlock (cfg : CFG Var Op Label) (label : Label) : Option (Block Var Op La
 def edgeKeys (cfg : CFG Var Op Label) : List (BlockId Label × Label) :=
   cfg.sourcedEdges.map fun (source, target, _) => (source, target)
 
+/-- The phi rows structurally determined by one BBA header. -/
+def canonicalPhis (cfg : CFG Var Op Label) (label : Label)
+    (block : Block Var Op Label) : List (Phi Var Label) :=
+  block.parameters.mapIdx fun index parameter => {
+    dst := parameter
+    incoming := cfg.incomingColumn label index
+  }
+
+/-- A direct matrix condition on a terminator: looking up the source row in
+each target's canonical columns yields exactly the argument vector written on
+that edge.  This is a local edge/header condition rather than a whole-CFG
+fixed-point equation. -/
+def EdgeColumnsMatch (cfg : CFG Var Op Label) (source : BlockId Label) :
+    Terminator Var Op Label → Prop
+  | .br target arguments =>
+      ∃ block,
+        findPhiBlock (toPhi cfg) target = some ({
+          phis := canonicalPhis cfg target block
+          body := block.body
+          terminator := block.terminator.eraseArguments
+        } : Classical.Block Var Op Label) ∧
+        (canonicalPhis cfg target block).mapM
+          (findIncoming source) = some arguments
+  | .ret _ => True
+  | .cond _ left right =>
+      EdgeColumnsMatch cfg source left ∧ EdgeColumnsMatch cfg source right
+
 /-- Independent structural conditions for canonical BBA form.  Entry has no
 parameters, block parameters and labels are unique, each source has at most one
 edge to a target, and every edge vector has the target block's arity. -/
@@ -266,9 +294,12 @@ def BBAStructurallyNormalized (cfg : CFG Var Op Label) : Prop :=
   (cfg.blocks.map Prod.fst).Nodup ∧
   cfg.edgeKeys.Nodup ∧
   (∀ label block, (label, block) ∈ cfg.blocks → block.parameters.Nodup) ∧
-  ∀ source target arguments, (source, target, arguments) ∈ cfg.sourcedEdges →
+  (∀ source target arguments, (source, target, arguments) ∈ cfg.sourcedEdges →
     ∃ block, cfg.findBlock target = some block ∧
-      arguments.length = block.parameters.length
+      arguments.length = block.parameters.length) ∧
+  EdgeColumnsMatch cfg .entry cfg.entry.terminator ∧
+  ∀ label block, (label, block) ∈ cfg.blocks →
+    EdgeColumnsMatch cfg (.named label) block.terminator
 
 /-- Structural phi normalization exposes uniqueness of every incoming
 predecessor without referring to either translation. -/
@@ -280,6 +311,17 @@ theorem PhiStructurallyNormalized.incoming_predecessors_nodup
     (phi.incoming.map Incoming.predecessor).Nodup :=
   (hcfg.2.2.2 label block hblock).2 phi hphi |>.2
 
+/-- Each structural phi row covers the canonical predecessor list exactly,
+and hence has precisely its cardinality. -/
+theorem PhiStructurallyNormalized.incoming_length
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg)
+    {label : Label} {block : Classical.Block Var Op Label}
+    (hblock : (label, block) ∈ cfg.blocks) {phi : Phi Var Label}
+    (hphi : phi ∈ block.phis) :
+    phi.incoming.length = (phiPredecessors cfg label).length := by
+  have horder := (hcfg.2.2.2 label block hblock).2 phi hphi |>.1
+  simpa using congrArg List.length horder
+
 /-- Structural BBA normalization gives the uniform target arity required by
 the phi/BBA matrix transpose. -/
 theorem BBAStructurallyNormalized.edge_arity
@@ -288,13 +330,99 @@ theorem BBAStructurallyNormalized.edge_arity
     (hedge : (source, target, arguments) ∈ cfg.sourcedEdges) :
     ∃ block, cfg.findBlock target = some block ∧
       arguments.length = block.parameters.length :=
-  hcfg.2.2.2.2 source target arguments hedge
+  hcfg.2.2.2.2.1 source target arguments hedge
 
 /-- In canonical BBA form source/target pairs have no duplicate occurrence. -/
 theorem BBAStructurallyNormalized.edge_keys_nodup
     {cfg : CFG Var Op Label} (hcfg : BBAStructurallyNormalized cfg) :
     cfg.edgeKeys.Nodup :=
   hcfg.2.2.1
+
+theorem Terminator.ofPhi_toPhi_of_edgeColumnsMatch
+    (cfg : CFG Var Op Label) (source : BlockId Label)
+    (term : Terminator Var Op Label) (h : EdgeColumnsMatch cfg source term) :
+    Terminator.ofPhi (toPhi cfg) source term.eraseArguments = some term := by
+  induction term with
+  | br target arguments =>
+      obtain ⟨block, hblock, hcolumns⟩ := h
+      simp only [Terminator.eraseArguments, Terminator.ofPhi]
+      rw [hblock]
+      simp only [Option.bind_some]
+      rw [hcolumns]
+      rfl
+  | ret value => rfl
+  | cond discr left right ihLeft ihRight =>
+      simp only [EdgeColumnsMatch] at h
+      simp [Terminator.eraseArguments, Terminator.ofPhi,
+        ihLeft h.1, ihRight h.2]
+
+/-- The independent BBA structural conditions discharge the executable
+round-trip hypothesis. -/
+theorem BBAStructurallyNormalized.toRoundTrip
+    {cfg : CFG Var Op Label} (hcfg : BBAStructurallyNormalized cfg) :
+    ofPhi (toPhi cfg) = some cfg := by
+  rcases hcfg with ⟨hentry, _, _, _, _, hentryColumns, hblockColumns⟩
+  unfold ofPhi
+  rw [show (toPhi cfg).entry.phis.isEmpty = true from rfl]
+  simp only [if_true]
+  rw [show (toPhi cfg).entry.terminator =
+    cfg.entry.terminator.eraseArguments from rfl]
+  rw [Terminator.ofPhi_toPhi_of_edgeColumnsMatch _ _ _ hentryColumns]
+  have hblocks :
+      (toPhi cfg).blocks.mapM (fun (label, block) => do
+        let term ← Terminator.ofPhi (toPhi cfg) (.named label) block.terminator
+        pure (label, {
+          parameters := block.phis.map Phi.dst
+          body := block.body
+          terminator := term
+        })) = some cfg.blocks := by
+    rw [show (toPhi cfg).blocks = cfg.blocks.map (fun (label, block) =>
+      (label, ({
+        phis := canonicalPhis cfg label block
+        body := block.body
+        terminator := block.terminator.eraseArguments
+      } : Classical.Block Var Op Label))) from rfl, List.mapM_map]
+    have aux : ∀ xs : List (Label × Block Var Op Label),
+        (∀ pair, pair ∈ xs → pair ∈ cfg.blocks) →
+        xs.mapM ((fun (label, block) => do
+          let term ← Terminator.ofPhi (toPhi cfg) (.named label) block.terminator
+          pure (label, {
+            parameters := block.phis.map Phi.dst
+            body := block.body
+            terminator := term
+          })) ∘ (fun (label, block) =>
+            (label, ({
+              phis := canonicalPhis cfg label block
+              body := block.body
+              terminator := block.terminator.eraseArguments
+            } : Classical.Block Var Op Label)))) = some xs := by
+      intro xs hsubset
+      induction xs with
+      | nil => rfl
+      | cons head tail ih =>
+          rcases head with ⟨label, block⟩
+          have hm := hblockColumns label block
+            (hsubset (label, block) List.mem_cons_self)
+          simp only [List.mapM_cons, Function.comp_apply]
+          rw [Terminator.ofPhi_toPhi_of_edgeColumnsMatch _ _ _ hm]
+          rw [ih (fun pair hmem => hsubset pair (List.mem_cons_of_mem _ hmem))]
+          change some ((label, { block with
+            parameters := (canonicalPhis cfg label block).map Phi.dst }) :: tail) =
+            some ((label, block) :: tail)
+          congr 3
+          cases block with
+          | mk parameters body terminator =>
+            congr 1
+            rw [canonicalPhis, List.mapIdx_eq_zipIdx_map, List.map_map]
+            simpa only [Function.comp_apply] using
+              (List.zipIdx_map_fst (i := 0) parameters)
+    exact aux cfg.blocks (fun _ h => h)
+  rw [hblocks]
+  simp only [Option.pure_def]
+  rcases cfg with ⟨⟨parameters, body, terminator⟩, blocks⟩
+  change parameters = [] at hentry
+  subst parameters
+  rfl
 
 /-- A normalized phi CFG is one on which moving operands to edges succeeds and
 canonicalizing them back is literally the identity.  Expanded, this requires
@@ -308,6 +436,13 @@ def PhiNormalized (cfg : Classical.CFG Var Op Label) : Prop :=
 each target; equivalently its canonical phis move back to the identical CFG. -/
 def BBANormalized (cfg : CFG Var Op Label) : Prop :=
   ofPhi (toPhi cfg) = some cfg
+
+/-- Structural BBA normalization is sufficient for the former executable
+fixed-point interface. -/
+theorem BBAStructurallyNormalized.normalized
+    {cfg : CFG Var Op Label} (hcfg : BBAStructurallyNormalized cfg) :
+    BBANormalized cfg :=
+  hcfg.toRoundTrip
 
 @[simp] theorem toPhi_entry_phis (cfg : CFG Var Op Label) :
     (toPhi cfg).entry.phis = [] := rfl
