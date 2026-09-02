@@ -5,8 +5,12 @@ import Isotope.CategoryTheory.Monad
 import Isotope.CategoryTheory.Premonoidal
 import Isotope.Elgot.Basic
 import Isotope.Elgot.Kleisli
+import Isotope.Elgot.Nondet
 import Isotope.Elgot.TSO
+import Isotope.Elgot.Transformer
 import Isotope.Elgot.WS
 import Isotope.LambdaIter
 import Isotope.LambdaSSA
+import Isotope.LambdaCase
+import Isotope.LambdaSeq
 import Isotope.Pomset

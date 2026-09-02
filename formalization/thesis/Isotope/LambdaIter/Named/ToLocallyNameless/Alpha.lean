@@ -2,6 +2,7 @@ import Isotope.LambdaIter.Named.ToLocallyNameless
 
 namespace Isotope.LambdaIter.Named.ToLocallyNameless
 
+
 private theorem translate_subst_under_binder [DecidableEq ν]
     {ρ σ : Scope ν n} (x y : ν) (q : Binder ν) (b : Named.Tm ν Φ)
     (ih : ∀ {n} {ρ σ : Scope ν n},
