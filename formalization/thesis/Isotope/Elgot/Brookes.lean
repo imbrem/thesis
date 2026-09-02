@@ -2,7 +2,16 @@ import Isotope.Elgot.Brookes.Basic
 import Isotope.Elgot.Brookes.Closure
 import Isotope.Elgot.Brookes.Monad
 import Isotope.Elgot.Brookes.Iteration
+import Isotope.Elgot.Brookes.Parallel
 import Isotope.Elgot.Brookes.SeqCst
+import Isotope.Elgot.Brookes.SeqCst.Parallel
+import Isotope.Elgot.Brookes.SeqCst.Chunk
+import Isotope.Elgot.Brookes.SeqCst.Syntax
+import Isotope.Elgot.Brookes.SeqCst.Context
+import Isotope.Elgot.Brookes.SeqCst.Definability
+import Isotope.Elgot.Brookes.SeqCst.FullAbstraction
+import Isotope.Elgot.Brookes.SeqCst.Laws
+import Isotope.Elgot.Brookes.SeqCst.Examples
 import Isotope.Elgot.Brookes.TSO
 import Isotope.Elgot.Brookes.Compare
 import Isotope.Elgot.Brookes.Examples
@@ -28,6 +37,34 @@ consistency is that model with `S := Loc → Val`.
   Iteration is computable; no choice principle is used.
 * `SeqCst.rewriting` — the stuttering/mumbling closure — with `SeqCst.write`
   (the paper's definition) and `SeqCst.read`.
+* `Brookes.par`, parallel composition by trace shuffling, with monotonicity,
+  strictness, continuity for arbitrary unions, commutativity, associativity
+  (subject to `DefersPar`, discharged for sequential consistency by
+  `SeqCst.defersPar`), and the sequencing laws `C₁;(C₂ ∥ C₃) ⊑ (C₁;C₂) ∥ C₃`
+  and `C₁;C₂ ⊑ C₁ ∥ C₂`.
+* **Full abstraction for the shared-variable parallel language**
+  (Brookes, *Full Abstraction for a Shared-Variable Parallel Language*,
+  Inform. and Comput. 127(2):145–163, 1996, Proposition 7.1), in
+  `Brookes/SeqCst/`:
+  * `SeqCst.Chunk` — a normal form for stutter/mumble refinement
+    (`chunk_iff_refines`), the interference-free executions `Chain`, the
+    reconstruction `zip s u s'` of a trace from its interruptions, and the Key
+    Lemma `chunk_of_interleave_chain`.  This is the combinatorial step Brookes
+    dismisses as "easy to see"; nothing of it is in the paper.
+  * `SeqCst.Com`, `SeqCst.den` — his command syntax and the trace semantics of
+    his Proposition 6.2, taken here as the *definition*; `SeqCst.obs` is his
+    `M`, with `obs_bind` making it a monad morphism into relations.
+  * `SeqCst.Ctx`, `SeqCst.CtxLe` — one-hole program contexts and his
+    substitutive preorder `≤_M`; `den_le_ctxLe` is **soundness**.
+  * `SeqCst.DO`, `SeqCst.sep`, `SeqCst.obs_sep_iff` — his `DO_α` and `P_α[−]`,
+    with the exact characterisation of what they observe; `ctxLe_den_le` is
+    **completeness**.
+  * `SeqCst.fullAbstraction : den C ≤ den C' ↔ CtxLe C C'` and
+    `SeqCst.fullAbstraction_eq : den C = den C' ↔ CtxEq C C'`.
+  * `SeqCst.Laws` — his Proposition 8.1 laws of parallel programming, as
+    denotational equations and as contextual equivalences.
+  * `SeqCst.Example` — his `x:=0` versus `x:=0; x:=0`, worked out, with the
+    context `[−] ∥ await x = 0 then x := 1` that the construction produces.
 * `Brookes.ofFiniteTrace`, a morphism from the deterministic `FiniteTrace` model
   commuting with `pure`, `bind` and `iter` on the nose, together with the proof
   that it is not order-reflecting.
@@ -59,6 +96,18 @@ consistency is that model with `S := Loc → Val`.
   model is shipped.
 * **`SeqCst.read` is an extrapolation.**  The paper gives `write` only; `read` is
   the obvious dual and is flagged as such where it is defined.
+* **No operational semantics for the parallel language.**  Brookes defines `T`
+  and `M` operationally and *proves* the compositional clauses (his Proposition
+  6.2).  `SeqCst.den` takes those clauses as the definition and `SeqCst.obs`
+  reads `M` off it, so Proposition 6.2 — the bridge between the operational and
+  denotational definitions — is **not** formalized.  Full abstraction below is
+  therefore a theorem about the denotational `T` and the contextual preorder it
+  induces.  The full list of narrowings (restricted expressions, total finitely
+  indexed states, unrestricted `await` bodies, `ε`-freeness) is in the module
+  docstring of `Brookes/SeqCst/FullAbstraction.lean`.
+* **No state traces and no fair infinite traces.**  Brookes's Proposition 4.3
+  (partial-correctness and state-trace contextual preorders coincide) and his
+  §9 fine-grained granularity and fair extension are out of scope.
 * The paper's closure-operator axioms (extensive, idempotent, distributing over
   countable unions) are **not sufficient** for `B_c` to be a monad: the unit and
   associativity laws additionally need compatibility with concatenation.  That
@@ -92,8 +141,9 @@ be reproved:
 * The bridge `Brookes.ofFiniteTrace` and its `pure`/`bind`/`iter` equations
   (`Brookes/Compare.lean`), which are stated for an arbitrary `Rewriting`.
 
-Only `Brookes/SeqCst.lean` is specific to stuttering and mumbling; a new model
-should mirror that file and nothing else.
+Only `Brookes/SeqCst.lean` and `Brookes/SeqCst/` are specific to stuttering and
+mumbling; a new model should mirror those and nothing else.  `Brookes/Parallel.lean`
+is generic: a new model supplies only its own `DefersPar` proof.
 
 `Brookes/TSO.lean` is the worked instance: a store-buffer model of TSO weak
 memory obtained by keeping the stuttering and mumbling rules and enriching the
