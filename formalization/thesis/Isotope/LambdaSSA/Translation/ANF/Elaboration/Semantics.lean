@@ -173,6 +173,80 @@ theorem atomRename_exact_heq_bv {Γ : Ctx ν τ} {β : BoundCtx τ n}
   exact heq_of_eq (atom_toLambdaIter_transport_type (r.typed i)
     (Atom.HasType.bv (Φ := Φ) (Γ := Γ) (β := β') (i := r.toFun i)))
 
+/-- The normalized exact-renaming equation is closed under pairing. -/
+theorem atomRename_exact_pair {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {β' : BoundCtx τ k} {a b : Atom ν Φ n}
+    (ha : Atom.HasType Γ β a A) (hb : Atom.HasType Γ β b B)
+    (r : TypedRenaming β β')
+    (iha : transportHasType (atomRename_toTm r.toFun a)
+      (atomRename_hasType r ha).toLambdaIter = ha.toLambdaIter.rename r)
+    (ihb : transportHasType (atomRename_toTm r.toFun b)
+      (atomRename_hasType r hb).toLambdaIter = hb.toLambdaIter.rename r) :
+    transportHasType (atomRename_toTm r.toFun (.pair a b))
+        (atomRename_hasType r (.pair ha hb)).toLambdaIter =
+      (Atom.HasType.toLambdaIter (.pair ha hb)).rename r := by
+  let ea := atomRename_toTm r.toFun a
+  let eb := atomRename_toTm r.toFun b
+  calc
+    _ = transportHasType (congrArg₂ Tm.pair ea eb)
+        (.pair (atomRename_hasType r ha).toLambdaIter
+          (atomRename_hasType r hb).toLambdaIter) := transportHasType_proof_irrel _ _ _
+    _ = .pair (transportHasType ea (atomRename_hasType r ha).toLambdaIter)
+          (transportHasType eb (atomRename_hasType r hb).toLambdaIter) :=
+      transportHasType_pair ea eb _ _
+    _ = _ := congrArg₂ Isotope.LambdaIter.LocallyNameless.HasType.pair iha ihb
+
+theorem atomRename_exact_inl {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {β' : BoundCtx τ k} {a : Atom ν Φ n}
+    (h : Atom.HasType Γ β a A) (r : TypedRenaming β β')
+    (ih : transportHasType (atomRename_toTm r.toFun a)
+      (atomRename_hasType r h).toLambdaIter = h.toLambdaIter.rename r) :
+    transportHasType (atomRename_toTm r.toFun (.inl a))
+        (atomRename_hasType r (.inl (B := B) h)).toLambdaIter =
+      (Atom.HasType.toLambdaIter (.inl (B := B) h)).rename r := by
+  let e := atomRename_toTm r.toFun a
+  calc
+    _ = transportHasType (congrArg Tm.inl e)
+        (.inl (B := B) (atomRename_hasType r h).toLambdaIter) :=
+      transportHasType_proof_irrel _ _ _
+    _ = .inl (B := B) (transportHasType e (atomRename_hasType r h).toLambdaIter) :=
+      transportHasType_inl e _
+    _ = _ := congrArg (Isotope.LambdaIter.LocallyNameless.HasType.inl (B := B)) ih
+
+theorem atomRename_exact_inr {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {β' : BoundCtx τ k} {b : Atom ν Φ n}
+    (h : Atom.HasType Γ β b B) (r : TypedRenaming β β')
+    (ih : transportHasType (atomRename_toTm r.toFun b)
+      (atomRename_hasType r h).toLambdaIter = h.toLambdaIter.rename r) :
+    transportHasType (atomRename_toTm r.toFun (.inr b))
+        (atomRename_hasType r (.inr (A := A) h)).toLambdaIter =
+      (Atom.HasType.toLambdaIter (.inr (A := A) h)).rename r := by
+  let e := atomRename_toTm r.toFun b
+  calc
+    _ = transportHasType (congrArg Tm.inr e)
+        (.inr (A := A) (atomRename_hasType r h).toLambdaIter) :=
+      transportHasType_proof_irrel _ _ _
+    _ = .inr (A := A) (transportHasType e (atomRename_hasType r h).toLambdaIter) :=
+      transportHasType_inr e _
+    _ = _ := congrArg (Isotope.LambdaIter.LocallyNameless.HasType.inr (A := A)) ih
+
+theorem atomRename_exact_abort {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {β' : BoundCtx τ k} {a : Atom ν Φ n}
+    (h : Atom.HasType Γ β a LambdaIter.empty) (r : TypedRenaming β β')
+    (ih : transportHasType (atomRename_toTm r.toFun a)
+      (atomRename_hasType r h).toLambdaIter = h.toLambdaIter.rename r) :
+    transportHasType (atomRename_toTm r.toFun (.abort a))
+        (atomRename_hasType r (.abort (A := A) h)).toLambdaIter =
+      (Atom.HasType.toLambdaIter (.abort (A := A) h)).rename r := by
+  let e := atomRename_toTm r.toFun a
+  calc
+    _ = transportHasType (congrArg Tm.abort e)
+        (.abort (C := A) (atomRename_hasType r h).toLambdaIter) :=
+      transportHasType_proof_irrel _ _ _
+    _ = .abort (C := A) (transportHasType e (atomRename_hasType r h).toLambdaIter) :=
+      transportHasType_abort e _
+    _ = _ := congrArg (Isotope.LambdaIter.LocallyNameless.HasType.abort (C := A)) ih
+
 @[simp] theorem denote_elaborate_fv {Γ : Ctx ν τ} {β : BoundCtx τ n}
     {x : ν} {A : τ} (hx : Γ.lookup x = some A)
     (γ : CtxDen Γ) (ρ : BoundDen β) :
