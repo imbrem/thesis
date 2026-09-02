@@ -37,6 +37,35 @@ theorem transportHasType_heq {Γ : Ctx ν τ} {β : BoundCtx τ n}
   subst t'
   rfl
 
+@[simp] theorem transportHasType_op {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {a a' : Tm ν Φ n} (e : a = a')
+    (h : HasType Φ Γ β a (instrSrc f)) :
+    transportHasType (congrArg (Tm.op f) e) (.op h) =
+      .op (transportHasType e h) := by cases e; rfl
+
+@[simp] theorem transportHasType_pair {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {a a' b b' : Tm ν Φ n} (ea : a = a') (eb : b = b')
+    (ha : HasType Φ Γ β a A) (hb : HasType Φ Γ β b B) :
+    transportHasType (by cases ea; cases eb; rfl) (.pair ha hb) =
+      .pair (transportHasType ea ha) (transportHasType eb hb) := by
+  cases ea; cases eb; rfl
+
+@[simp] theorem transportHasType_inl {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {a a' : Tm ν Φ n} (e : a = a') (h : HasType Φ Γ β a A) :
+    transportHasType (congrArg Tm.inl e) (.inl (B := B) h) =
+      .inl (B := B) (transportHasType e h) := by cases e; rfl
+
+@[simp] theorem transportHasType_inr {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {b b' : Tm ν Φ n} (e : b = b') (h : HasType Φ Γ β b B) :
+    transportHasType (congrArg Tm.inr e) (.inr (A := A) h) =
+      .inr (A := A) (transportHasType e h) := by cases e; rfl
+
+@[simp] theorem transportHasType_abort {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {a a' : Tm ν Φ n} (e : a = a')
+    (h : HasType Φ Γ β a LambdaIter.empty) :
+    transportHasType (congrArg Tm.abort e) (.abort (C := A) h) =
+      .abort (C := A) (transportHasType e h) := by cases e; rfl
+
 @[simp] theorem atomRename_toTm (ρ : Fin n → Fin k) (a : Atom ν Φ n) :
     (atomRename ρ a).toTm = a.toTm.rename ρ := by
   induction a <;> simp [atomRename, Atom.toTm, Tm.rename, *]
