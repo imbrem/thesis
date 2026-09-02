@@ -13,7 +13,6 @@ import Isotope.Elgot.ITree.Events
 import Isotope.Elgot.ITree.Refinement
 import Isotope.Elgot.ITree.Relation
 import Isotope.Elgot.ITree.Combinators
-import Isotope.Elgot.ITree.Raw
 import Isotope.Elgot.ITree.Freyd
 
 /-!
