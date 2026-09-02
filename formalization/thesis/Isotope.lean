@@ -16,3 +16,4 @@ import Isotope.LambdaIter
 import Isotope.LambdaSSA
 import Isotope.LambdaSeq
 import Isotope.Pomset
+import Isotope.TAC
