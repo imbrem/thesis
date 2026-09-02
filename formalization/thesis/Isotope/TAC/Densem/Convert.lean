@@ -169,12 +169,39 @@ theorem value_sim (M : Densem.Model φ) (current : Isotope.TAC.Classical.Convert
   | unit => rfl
   | pair l r il ir => simp [renameValue, valueDenote, il, ir]
 
+theorem value_sim_on (M : Densem.Model φ)
+    (needed : List ν) (current : Isotope.TAC.Classical.Convert.Env ν κ)
+    (source : Densem.Env M ν) (target : Densem.Env M (Version ν κ))
+    (h : EnvRelOn needed current source target) (a : Isotope.TAC.Classical.Value ν)
+    (huses : ∀ x ∈ a.uses, x ∈ needed) :
+    valueDenote M target (renameValue current a) = valueDenote M source a := by
+  induction a with
+  | var x => exact h x (huses x (by simp [Isotope.TAC.Classical.Value.uses]))
+  | unit => rfl
+  | pair l r il ir =>
+      simp only [Isotope.TAC.Classical.Value.uses, List.mem_append] at huses
+      simp [renameValue, valueDenote,
+        il (fun x hx => huses x (.inl hx)), ir (fun x hx => huses x (.inr hx))]
+
 theorem operand_sim (M : Densem.Model φ) (current : Isotope.TAC.Classical.Convert.Env ν κ)
     (source : Densem.Env M ν) (target : Densem.Env M (Version ν κ))
     (h : EnvRel current source target) (a : Isotope.TAC.Classical.Operand ν φ) :
     operandDenote M target (renameOperand current a) =
       operandDenote M source a := by
   cases a <;> simp [renameOperand, operandDenote, value_sim M current source target h]
+
+theorem operand_sim_on (M : Densem.Model φ)
+    (needed : List ν) (current : Isotope.TAC.Classical.Convert.Env ν κ)
+    (source : Densem.Env M ν) (target : Densem.Env M (Version ν κ))
+    (h : EnvRelOn needed current source target) (a : Isotope.TAC.Classical.Operand ν φ)
+    (huses : ∀ x ∈ a.uses, x ∈ needed) :
+    operandDenote M target (renameOperand current a) = operandDenote M source a := by
+  cases a with
+  | value v | app _ v | inl v | inr v =>
+      simp only [renameOperand, operandDenote]
+      rw [value_sim_on M needed current source target h v
+        (fun x hx => huses x (by simpa [Isotope.TAC.Classical.Operand.uses] using hx))]
+  | abort => rfl
 
 theorem terminator_sim (M : Densem.Model φ) (current : Isotope.TAC.Classical.Convert.Env ν κ)
     (source : Densem.Env M ν) (target : Densem.Env M (Version ν κ))
