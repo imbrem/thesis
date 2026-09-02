@@ -1,4 +1,5 @@
 import Isotope.LambdaSSA.Translation.Expression
+import Isotope.LambdaIter.Metatheory.Typing
 
 /-! # Reverse translation from acyclic lambda-SSA regions to lambda-iter -/
 
@@ -41,6 +42,11 @@ def cfgStart {n : Nat} : ITm Φ n := .inl .unit
 
 /-- Embed a local-label destination into the simultaneous iteration state. -/
 def cfgLocal {n : Nat} (target : ITm Φ n) : ITm Φ n := .inr target
+
+/-- Insert `k` retained dispatcher values below a block's newest parameter. -/
+def insertUnderTop (k : Nat) (t : ITm Φ (n + 1)) : ITm Φ (n + k + 1) :=
+  t.rename (Fin.cases 0 (fun i =>
+    ⟨i.val + k + 1, by omega⟩))
 
 /-- Reassociate an appended label coproduct into either an external result or
 local feedback.  This is the syntactic counterpart of `labelAppendSplit` in
