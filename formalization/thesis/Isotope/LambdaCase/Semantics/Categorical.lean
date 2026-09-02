@@ -61,4 +61,37 @@ noncomputable def denote : {Γ : Ctx ν τ} → {n : Nat} →
         (J.map (envSnocIso M Γ β _).hom ≫ denote hr)
   | _, _, _, _, _, .abort ha => abort J M (denote ha)
 
+/-- The comparison denotation obtained by choosing the typing witness produced
+by the inclusion into exact lambda-iter.  This is kept separate from `denote`:
+agreement with the independently recursive semantics is a coherence property,
+not definitional equality for arbitrary proof-relevant type formers. -/
+noncomputable def denoteChosen [Iteration C] [ElgotCategory C]
+    [StrongElgotFreydCategory J]
+    {Γ : Ctx ν τ} {n : Nat} {β : LocallyNameless.BoundCtx τ n}
+    {t : LocallyNameless.Tm ν Φ n} {A : τ}
+    (h : LocallyNameless.HasType Φ Γ β t A) :=
+  LambdaIter.LocallyNameless.Categorical.denote J M h.embed
+
+/-- Inclusion commutes with the chosen categorical denotation. -/
+theorem denoteChosen_embed [Iteration C] [ElgotCategory C]
+    [StrongElgotFreydCategory J]
+    {Γ : Ctx ν τ} {n : Nat} {β : LocallyNameless.BoundCtx τ n}
+    {t : LocallyNameless.Tm ν Φ n} {A : τ}
+    (h : LocallyNameless.HasType Φ Γ β t A) :
+    LambdaIter.LocallyNameless.Categorical.denote J M h.embed =
+      denoteChosen J M h := rfl
+
+/-- Under exact typing coherence, replacing the inclusion-produced witness by
+any other exact lambda-iter typing witness for the embedded term is harmless. -/
+theorem denoteChosen_independent [Iteration C] [ElgotCategory C]
+    [StrongElgotFreydCategory J]
+    [LambdaIter.LocallyNameless.Categorical.TypingCoherent (ν := ν) (Φ := Φ) J M]
+    {Γ : Ctx ν τ} {n : Nat} {β : LocallyNameless.BoundCtx τ n}
+    {t : LocallyNameless.Tm ν Φ n} {A : τ}
+    (h : LocallyNameless.HasType Φ Γ β t A)
+    (k : LambdaIter.LocallyNameless.HasType Φ Γ β t.embed A) :
+    LambdaIter.LocallyNameless.Categorical.denote J M k =
+      denoteChosen J M h :=
+  LambdaIter.LocallyNameless.Categorical.TypingCoherent.denote_eq k h.embed
+
 end Isotope.LambdaCase.Semantics.Categorical
