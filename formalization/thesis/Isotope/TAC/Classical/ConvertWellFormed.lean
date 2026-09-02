@@ -60,6 +60,36 @@ theorem convert_entryTerminator [DecidableEq Var] [DecidableEq Label]
       CFG.defs (convert source).entry
     simpa [convert, cfg, convertBlock, CFG.defs, CFG.instrDefs] using h
 
+theorem blockTerminator_use_mem_sourceVars [DecidableEq Var]
+    (source : CFG Var Op Label) {label : Label} {b : Block Var Op Label}
+    (hb : (label, b) ∈ source.blocks) {x : Var} (hx : x ∈ b.terminator.uses) :
+    x ∈ sourceVars source :=
+  (mem_sourceVars source x).2
+    (.inr ⟨(label, b), hb, terminator_use_mem_blockSourceVars b hx⟩)
+
+theorem convert_namedTerminator [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) (label : Label) (b : Block Var Op Label)
+    (hb : (label, b) ∈ source.blocks) :
+    (convert source).TerminatorUsesWellScoped
+      ((sourceVars source).map Version.external) (.named label)
+      (convertBlock source (sourceVars source) (.named label) b) := by
+  intro v hv
+  change v ∈ (renameTerminator (endEnv (.named label) b) b.terminator).uses at hv
+  rw [renameTerminator_uses_eq] at hv
+  rcases List.mem_map.mp hv with ⟨x, hx, rfl⟩
+  rcases endEnv_start_or_def (.named label) b x with h | h
+  · right
+    change endEnv (.named label) b x ∈
+      CFG.defs (convertBlock source (sourceVars source) (.named label) b)
+    rw [h]
+    apply List.mem_append_left
+    change Version.phi label x ∈ (phis source (sourceVars source) label).map Phi.dst
+    simp [phis, blockTerminator_use_mem_sourceVars source hb hx]
+  · right
+    change endEnv (.named label) b x ∈
+      CFG.defs (convertBlock source (sourceVars source) (.named label) b)
+    exact List.mem_append_right _ h
+
 /-- The program-point obligations left after the conversion has established
 global freshness and preserved the source control-flow graph.  Keeping this
 predicate separate makes the precise remaining source-side obligation visible:
