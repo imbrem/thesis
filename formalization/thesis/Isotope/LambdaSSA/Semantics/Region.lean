@@ -206,4 +206,15 @@ theorem Region.denote_spec {Γ : VCtx τ} {r : Region Φ} {L : LCtx τ}
     RegionDenotes J M h (Region.denote J M h) :=
   (regionDenotes_exists J M h).choose_spec
 
+/-- Under the explicit region-coherence assumption, every structural
+denotation is the chosen categorical denotation. -/
+theorem RegionDenotes.eq_denote
+    [RegionTypingCoherent (Φ := Φ) J M]
+    {Γ : VCtx τ} {r : Region Φ} {L : LCtx τ}
+    {h : Region.HasType Γ r L}
+    {f : J.obj (ctxObj M Γ) ⟶ J.obj (labelObj M L)}
+    (d : RegionDenotes J M h f) :
+    f = Region.denote J M h :=
+  RegionTypingCoherent.denotes_eq d (Region.denote_spec J M h)
+
 end Isotope.LambdaSSA.Semantics.Categorical
