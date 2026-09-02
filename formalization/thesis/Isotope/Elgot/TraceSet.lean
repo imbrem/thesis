@@ -1,6 +1,9 @@
 import Isotope.Elgot.TraceSet.Basic
 import Isotope.Elgot.TraceSet.Iteration
 import Isotope.Elgot.TraceSet.Laws
+import Isotope.Elgot.TraceSet.Nondeterminism
+import Isotope.Elgot.TraceSet.Compare
+import Isotope.Elgot.TraceSet.Examples
 
 /-!
 # Nondeterministic trace sets as an Elgot monad
@@ -8,7 +11,11 @@ import Isotope.Elgot.TraceSet.Laws
 `TraceSet E T A` is a set of `Trace E T A`, where a trace is either termination
 with a value and an accumulated effect from `E`, or divergence carrying an
 infinite observation from `T`.  This is the nondeterministic counterpart of the
-deterministic `Isotope.Elgot.FiniteTrace` model of `Isotope.Elgot.Trace`.
+deterministic `FiniteTrace` model in the module `Isotope.Elgot.Trace`.
+
+Note the naming: the *inductive* `Isotope.Elgot.Trace` introduced here (a single
+observation) is a different thing from the *module* `Isotope.Elgot.Trace`, which
+defines `FiniteTrace`.
 
 ## Honest boundary
 
@@ -22,9 +29,13 @@ deterministic `Isotope.Elgot.FiniteTrace` model of `Isotope.Elgot.Trace`.
   and uniformity along **pure** maps — under `[Monoid E] [MulAction E T]`.
 * Nondeterminism: union/`bind`/`iter` compatibility and monotonicity
   (`Isotope.Elgot.TraceSet.Nondeterminism`).
-* The comparison with `FiniteTrace`: the deterministic model embeds as a monad
-  morphism that also commutes with iteration
+* The comparison with `FiniteTrace`: the deterministic model embeds as an
+  injective monad morphism that also commutes with iteration
   (`Isotope.Elgot.TraceSet.Compare`).
+* Consequently the Kleisli category of `TraceSet E T` inherits the
+  `ElgotCategory` / `ElgotFreydCategory` structure of
+  `Isotope.CategoryTheory.Monad.Elgot` and the `LambdaIter` soundness theorems,
+  with no further work.
 
 **Not proved, and not claimed.**
 
@@ -43,5 +54,5 @@ deterministic `Isotope.Elgot.FiniteTrace` model of `Isotope.Elgot.Trace`.
   least element for nondeterministic refinement (`∅ ∪ x = x`).  It is
   deliberately *not* an absorbing "undefined behaviour" element; nothing in this
   development conflates the two.  See
-  `Isotope.Elgot.TraceSet.discarded_divergence_ne_ub`.
+  `Isotope.Elgot.TraceSet.discarded_divergence_not_absorbing`.
 -/
