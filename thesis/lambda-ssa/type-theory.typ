@@ -23,17 +23,12 @@ of #emph[labels] $ell \( A \)$, where $A$ is the parameter type that
 must be passed on a jump to the label $ell$. The grammar for types,
 contexts, and label-contexts is given in @fig:ssa-types.
 
-#figure([#block[
-  #block[
-  \<$A \, B \, C$\> ::= $X$ | $A ⊗ B$ | $upright(bold(1))$ |
-  $A + B$ | $upright(bold(0))$
-
-  \<$Gamma$\> ::= $dot.op$ | $Gamma \, x : A$
-
-  \<$sans(L)$\> ::= $dot.op$ | $sans(L) \, ell \( A \)$
-
-  ]
-  ]],
+#figure([#grammar(
+  production($A, B, C$, $X$, $A ⊗ B$, $upright(bold(1))$,
+    $A + B$, $upright(bold(0))$),
+  production($Gamma$, $dot.op$, $Gamma, x : A$),
+  production($sans(L)$, $dot.op$, $sans(L), ell(A)$),
+)],
   caption: [
     Grammar for #lssa types, contexts, and
     label-contexts
@@ -113,7 +108,7 @@ Traditional presentations of SSA use a boolean type instead of sum
 types. Naturally, booleans can be encoded with sum types as
 $upright(bold(1)) + upright(bold(1))$. If-then-else is then a
 $sans("case")$ which ignores the unit payloads, so that
-$sans("if") #h(0em) e_1 #h(0em) { e_2 } #h(0em) sans("else") #h(0em) { e_3 } := sans("case") #h(0em) e_1 #h(0em) { iota_l #h(0em) \( \) : e_2 \, iota_r #h(0em) \( \) : e_3 }$.
+$sans("if") #h(0em) e_1 #h(0em) { e_2 } #h(0em) sans("else") #h(0em) { e_3 } := kw("case") med e_1 #h(0em) { iota_l #h(0em) \( \) : e_2 \, iota_r #h(0em) \( \) : e_3 }$.
 
 #figure([
   #align(center)[#box(stroke: 0.5pt, inset: 4pt)[#eff-typing($Gamma$, $epsilon$, $a$, $A$)]]
@@ -140,7 +135,7 @@ We now move on to #emph[regions], which can be typed as follows:
   otherwise executing $s$.
 
 - #emph[$sans("where")$-blocks] of the form
-  “$r #h(0em) sans("where") #h(0em) \( ell_i \( x_i \) : { t_i } \)_i$\",
+  “$r med kw("where") med \( ell_i \( x_i \) : { t_i } \)_i$\",
   which consist of a collection of mutually recursive regions
   $ell_i \( x_i \) : { t_i }$ and a #emph[terminator region] $r$ which
   may branch to one of $ell_i$ or an exit label.
@@ -387,10 +382,10 @@ for single-label substitutions.
 
 #figure([$ \( sigma \, ell \( x \) mapsto r \) \( ell \, a \) = \[ a \/ x \] r #h(2em) \( sigma \, kappa \( x \) mapsto r \) \( ell \, a \) = sigma \( ell \, a \) #h(2em) \( dot.op \) \( ell \, a \) = sans("br") #h(0em) ell #h(0em) a\
   \
-  \[ sigma \] \( sans("br") #h(0em) ell #h(0em) a \) = sigma \( ell \, a \) #h(2em) \[ sigma \] \( sans("let") #h(0em) x = a ; r \) = sans("let") #h(0em) x = a ; \[ sigma \] r\
-  \[ sigma \] \( sans("let") #h(0em) \( x \, y \) = e ; r \) = sans("let") #h(0em) \( x \, y \) = e ; \[ sigma \] r\
-  \[ sigma \] \( sans("case") #h(0em) e #h(0em) { iota_l #h(0em) x : r \, iota_r #h(0em) y : s } \) = sans("case") #h(0em) e #h(0em) { iota_l #h(0em) x : \[ sigma \] r \, iota_r #h(0em) y : \[ sigma \] s }\
-  \[ sigma \] \( r #h(0em) sans("where") #h(0em) \( ell_i \( x_i \) : { t_i } \, \)_i \) = \( \[ sigma \] r \) #h(0em) sans("where") #h(0em) \( ell_i \( x_i \) : { \[ sigma \] t_i } \, \)_i\
+  \[ sigma \] \( sans("br") #h(0em) ell #h(0em) a \) = sigma \( ell \, a \) #h(2em) \[ sigma \] \( kw("let") med x = a ; r \) = kw("let") med x = a ; \[ sigma \] r\
+  \[ sigma \] \( kw("let") med \( x \, y \) = e ; r \) = kw("let") med \( x \, y \) = e ; \[ sigma \] r\
+  \[ sigma \] \( kw("case") med e #h(0em) { iota_l #h(0em) x : r \, iota_r #h(0em) y : s } \) = kw("case") med e #h(0em) { iota_l #h(0em) x : \[ sigma \] r \, iota_r #h(0em) y : \[ sigma \] s }\
+  \[ sigma \] \( r med kw("where") med \( ell_i \( x_i \) : { t_i } \, \)_i \) = \( \[ sigma \] r \) med kw("where") med \( ell_i \( x_i \) : { \[ sigma \] t_i } \, \)_i\
   \
   \[ sigma \] \( dot.op \) = dot.op #h(2em) \[ sigma \] \( sigma' \, ell \( x \) mapsto r \) = \( \[ sigma \] sigma' \, ell \( x \) mapsto \[ sigma \] r \) $
 

@@ -56,20 +56,20 @@ and other effects. The division operation
 $sans(d i v) #h(0em) y #h(0em) z$ exhibits #emph[undefined behavior]
 (UB) in both C and LLVM if $z$ is zero, but otherwise has no
 side-effects. Therefore, the program
-$sans(l e t) #h(0em) x = sans(d i v) #h(0em) y #h(0em) z ; #h(0em) e$ is
+$kw("let") med x = sans(d i v) #h(0em) y #h(0em) z ; #h(0em) e$ is
 equivalent to $\[ sans(d i v) #h(0em) y #h(0em) z \/ x \] e$ if $z$ is
 known to be nonzero, but not otherwise. For example, if $z = 0$ and
 $e = \( \)$,
-$sans(l e t) #h(0em) x = sans(d i v) #h(0em) y #h(0em) 0 ; #h(0em) \( \)$
+$kw("let") med x = sans(d i v) #h(0em) y #h(0em) 0 ; #h(0em) \( \)$
 always exhibits UB, whereas
 $\[ sans(d i v) #h(0em) y #h(0em) 0 \/ x \] \( \) equiv \( \)$ simply
 does nothing! However, one direction of the rewrite -- turning
-$sans(l e t) #h(0em) x = sans(d i v) #h(0em) y #h(0em) z ; #h(0em) e$
+$kw("let") med x = sans(d i v) #h(0em) y #h(0em) z ; #h(0em) e$
 into $\[ sans(d i v) #h(0em) y #h(0em) z \/ x \] e$ -- is always a safe
 transformation, since:
 
 - If $z$ is zero, then
-  $sans(l e t) #h(0em) x = sans(d i v) #h(0em) y #h(0em) z ; #h(0em) e$
+  $kw("let") med x = sans(d i v) #h(0em) y #h(0em) z ; #h(0em) e$
   has UB, so we can rewrite it to anything we want!
 
 - Otherwise, $sans(d i v) #h(0em) y #h(0em) z$ is pure, so substitution
@@ -88,17 +88,17 @@ say UB is both an #emph[eliminable] and #emph[duplicable] effect. This
 is because eliminating UB reduces the set of possible behaviours, and
 duplicating occurences of UB does not increase the set of possible
 behaviours. We also have that
-$\( sans(d i v) #h(0em) y #h(0em) z \, sans(d i v) #h(0em) y #h(0em) z \) arrow.r.twohead sans(l e t) #h(0em) x = sans(d i v) #h(0em) y #h(0em) z ; #h(0em) \( x \, x \)$,
+$\( sans(d i v) #h(0em) y #h(0em) z \, sans(d i v) #h(0em) y #h(0em) z \) arrow.r.twohead kw("let") med x = sans(d i v) #h(0em) y #h(0em) z ; #h(0em) \( x \, x \)$,
 so UB is also #emph[fusable]. When an effect is both fusable and
 duplicable, we also call it #emph[relevant]. On the other hand, it is
 not a refinement to introduce UB, since
-$\( \) ↠̸ sans(l e t) #h(0em) x = sans(d i v) #h(0em) y #h(0em) z ; #h(0em) \( \)$.
+$\( \) ↠̸ kw("let") med x = sans(d i v) #h(0em) y #h(0em) z ; #h(0em) \( \)$.
 Hence we say it is not #emph[introducible]. We say an effect which is
 both #emph[eliminable] and #emph[introducible] is #emph[affine].
 
 We might also want to ask with respect to which effects UB is a
 #emph[left-mover], i.e., for which effects of $e$ we have
-$\( e \, sans(d i v) #h(0em) y #h(0em) z \) arrow.r.twohead sans(l e t) #h(0em) x = sans(d i v) #h(0em) y #h(0em) z ; #h(0em) \( e \, x \)$
+$\( e \, sans(d i v) #h(0em) y #h(0em) z \) arrow.r.twohead kw("let") med x = sans(d i v) #h(0em) y #h(0em) z ; #h(0em) \( e \, x \)$
 (with pairs evaluated left-to-right). With some thought, we can see this
 refinement holds only when execution is guaranteed to continue after
 evaluating $e$, so this rules out effects like nontermination or
@@ -197,56 +197,59 @@ scoping #emph[with respect to the dominator tree].
 
 This idea underlies the design of $lambda_(sans(S S A))$, what we call
 #emph[type-theoretic SSA], which has the grammar given in
-Figure~@refall:fig:ssa-syntax. Rather than give a grammar for basic-blocks and
+@refall:fig:ssa-syntax. Rather than give a grammar for basic-blocks and
 control-flow graphs, we instead give a grammar for #emph[regions]
-$r \, s \, t$, which are composed of a series of $sans(l e t)$-bindings
+$r \, s \, t$, which are composed of a series of $kw("let")$-bindings
 (each corresponding to an instruction $o$), followed by a subtree
 $kappa$, which is composed of a terminator $tau$ wrapped in
-$sans(w h e r e)$-blocks containing the region's dominated
+$kw("where")$-blocks containing the region's dominated
 subregions.#footnote[We distinguish recursive and non-recursive
-$sans(w h e r e)$-blocks for effect-system bookkeeping, but semantically
+$kw("where")$-blocks for effect-system bookkeeping, but semantically
 they are identical.]
 
 If we squint, we can see that this is just SSA with
-$sans(w h e r e)$-blocks as an annotation representing the dominator
-tree: basic blocks correspond to sequences of $sans(l e t)$-bindings
+$kw("where")$-blocks as an annotation representing the dominator
+tree: basic blocks correspond to sequences of $kw("let")$-bindings
 followed by a terminator. Indeed, it is straightforward to verify that
 any well-scoped SSA program can be converted to a $lambda_(sans(S S A))$
-program by simply adding in $sans(w h e r e)$-blocks corresponding to
+program by simply adding in $kw("where")$-blocks corresponding to
 the dominator tree; similarly, simply erasing the
-$sans(w h e r e)$-blocks from an $lambda_(sans(S S A))$ program yields a
+$kw("where")$-blocks from an $lambda_(sans(S S A))$ program yields a
 program in standard basic-blocks with arguments SSA; we see an example
-of this in Figure~@refall:fig:fact-lex. We can also show that any two programs
-which are equivalent up to the placement of $sans(w h e r e)$-blocks
+of this in @refall:fig:fact-lex. We can also show that any two programs
+which are equivalent up to the placement of $kw("where")$-blocks
 have equivalent semantics, therefore justifying $lambda_(sans(S S A))$
 as being simply SSA with additional annotations.
 
 #refinement-factorial-figure()
 
-#figure([#block[
-  \<$o$\> ::= $x$ | $f #h(0em) x$ | $\( \)$ | $\( x \, y \)$ |
-  $iota_l #h(0em) x$ | $iota_r #h(0em) x$ | $sans(a b o r t) #h(0em) x$
-
-  \<$r \, s \, t$\> ::= $kappa$ | $sans(l e t) #h(0em) x = o ; t$ |
-  $sans(l e t) #h(0em) \( x \, y \) = o ; t$
-
-  \<$kappa$\> ::= $tau$ |
-  $kappa #h(0em) sans(w h e r e)_(sans(n o n r e c)) #h(0em) L$ |
-  $kappa #h(0em) sans(w h e r e)_(sans(r e c)) #h(0em) L$
-
-  \<$tau$\> ::= $sans(b r) #h(0em) ell #h(0em) o$ |
-  $sans(c a s e) #h(0em) o #h(0em) { iota_l #h(0em) y : tau \, iota_r #h(0em) z : tau' }$
-
-  \<$L$\> ::= $dot.op$ | $L \, ell \( x \) : { t }$
-
-  ]],
+#figure([#grammar(
+  production($o$,
+    $x$, $f #h(0em) x$, $\( \)$, $\(x, y\)$,
+    $iota_l #h(0em) x$, $iota_r #h(0em) x$, $#kw("abort") med x$,
+  ),
+  production($r, s, t$,
+    $kappa$, $#kw("let") med x = o; t$,
+    $#kw("let") med \(x, y\) = o; t$,
+  ),
+  production($kappa$,
+    $tau$,
+    $kappa med #kw("where")_(#kw("nonrec")) med L$,
+    $kappa med #kw("where")_(#kw("rec")) med L$,
+  ),
+  production($tau$,
+    $#kw("br") med ell med o$,
+    $#kw("case") med o med {iota_l med y : tau, iota_r med z : tau'}$,
+  ),
+  production($L$, $dot.op$, $L, ell(x) : {t}$),
+)],
   caption: [
     Grammar for $lambda_(sans(S S A))$ programs.
   ]
 )
 <refall:fig:ssa-syntax>
 
-#figure([```c++
+#code-figure([```cpp
   struct BasicBlock {
         vector<refall:Instruction> instructions;             // unary/binary let-bindings
         Terminator terminator;                        // LHS of where-block
@@ -256,7 +259,7 @@ as being simply SSA with additional annotations.
 
   ],
   caption: [
-    Data encoded by the grammar in Figure @refall:fig:ssa-syntax
+    Data encoded by the grammar in @refall:fig:ssa-syntax
   ]
 )
 <refall:fig:ssa-data>
@@ -278,7 +281,7 @@ expression-oriented variant of SSA. Essentially, it is a simple
 first-order expression language with support for binding/sequencing,
 branching, and loops. $lambda_(sans(i t e r))$ looks very different from
 traditional presentations of SSA, but we later prove in
-Subsection~#todo[Cross-reference: `refall:ssec:interconversion`] that the two syntaxes are completely
+Subsection~#conditional-ref("refall:ssec:interconversion") that the two syntaxes are completely
 equivalent to one another. The main novelty of $lambda_(sans(i t e r))$
 is in its type system and equational theory. It has a rich substructural
 type and effect system, which enables us to give a complete inequational
@@ -290,7 +293,7 @@ syntactic characterization of refinement for SSA programs.
 <refall:syntax-and-typing-rules>
 As mentioned before, $lambda_(sans(i t e r))$ is a standard first-order
 expression language with branching and iteration: a functional analogue
-of #smallcaps[While]. Its grammar is in Figure~@refall:fig:expr-syntax, and is
+of #smallcaps[While]. Its grammar is in @refall:fig:expr-syntax, and is
 parametrized by a set of #emph[base types] $X in cal(X)$ and a set of
 #emph[instructions] $f in cal(I)$. To model multiple arguments and
 control flow, our grammar of types $A \, B \, C$ includes all
@@ -304,14 +307,14 @@ Mirroring this, expressions $a \, b \, c$ consist of
 - #emph[Applications] $f #h(0em) a$, consisting of instructions
   $f in cal(I)$ applied to an expression $a$
 
-- #emph[Let-bindings] $sans(l e t) #h(0em) x = a ; #h(0em) b$ and
+- #emph[Let-bindings] $kw("let") med x = a ; #h(0em) b$ and
   #emph[destructuring let-bindings]
-  $sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) b$. We write $a ; b$
-  as syntactic sugar for $sans(l e t) #h(0em) dot.op = a ; #h(0em) b$
+  $kw("let") med \( x \, y \) = a ; #h(0em) b$. We write $a ; b$
+  as syntactic sugar for $kw("let") med dot.op = a ; #h(0em) b$
   (i.e., a let binding where the bound variable is not used in $b$).
 
 - #emph[Case-expressions]
-  $sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b }$,
+  $kw("case") med e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b }$,
   representing branching control-flow
 
 - #emph[Iteration-expressions]
@@ -324,25 +327,20 @@ Mirroring this, expressions $a \, b \, c$ consist of
     evaluates to a value of type $B$, we return it, otherwise, we
     re-evaluate the loop with $x$ having the new value of type $A$
 
-#figure([#block[
-  \<$A \, B \, C$\> ::= $X$ | $A ⊗ B$ | $upright(bold(1))$ |
-  $A + B$ | $upright(bold(0))$
-
-  \<$a \, b \, c$\> ::= $x$ | $f #h(0em) a$ |
-  $sans(l e t) #h(0em) x = a ; #h(0em) b$ | $\( \)$ | $\( a \, b \)$ |
-  $sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) b$ $iota_l #h(0em) a$
-  | $iota_r #h(0em) b$ |
-  $sans(c a s e) #h(0em) a #h(0em) { iota_l #h(0em) x : b \, iota_r #h(0em) y : c }$
-  | $sans(a b o r t) #h(0em) a$ |
-  $sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b }$
-
-  \<$q$\> ::= $0$ | $1$ | $omega^(+)$ | $1^(?)$ | $omega$
-
-  \<$Gamma$\> ::= $dot.op$ | $Gamma \, x : A$
-
-  \<$upright(bold(q))$\> ::= $dot.op$ | $upright(bold(q)) \, q$
-
-  ]],
+#figure([#grammar(
+  production($A, B, C$,
+    $X$, $A ⊗ B$, $upright(bold(1))$, $A + B$, $upright(bold(0))$,
+  ),
+  production($a, b, c$,
+    $x$, $f #h(0em) a$, $#letx($x$, $a$, $b$)$, $\(\)$, $\(a, b\)$,
+    $#letx($(x, y)$, $a$, $b$)$, $iota_l med a$, $iota_r med b$,
+    $#casex($a$, $x$, $b$, $y$, $c$)$,
+    $#labort($a$)$, $#iterx($a$, $x$, $b$)$,
+  ),
+  production($q$, $0$, $1$, $omega^(+)$, $1^(?)$, $omega$),
+  production($Gamma$, $dot.op$, $Gamma, x : A$),
+  production($upright(bold(q))$, $dot.op$, $upright(bold(q)), q$),
+)],
   caption: [
     Syntax for $lambda_(sans(i t e r))$ types, expressions, quantities,
     and contexts.
@@ -351,7 +349,7 @@ Mirroring this, expressions $a \, b \, c$ consist of
 <refall:fig:expr-syntax>
 
 Our typing judgement is
-$Gamma^(upright(bold(q))) tack.r_epsilon.alt a : A$. This says that in
+$Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) a : A$. This says that in
 the context $Gamma$, the expression $a$ has type $A$ and #emph[effects]
 $epsilon.alt$, and uses $Gamma$'s variables according to the quantities
 in the #emph[quantity vector] $upright(bold(q))$.
@@ -553,7 +551,7 @@ associate:
 ]
 All the following definitions in this section will be with respect to an
 arbitrary $lambda_(sans(i t e r))$-signature $cal(S)$. We give the
-typing rules for $lambda_(sans(i t e r))$ in Figure~@refall:fig:expr-typing.
+typing rules for $lambda_(sans(i t e r))$ in @refall:fig:expr-typing.
 Our rules are syntax directed, with one rule for each production in our
 grammar. In particular,
 
@@ -563,7 +561,7 @@ grammar. In particular,
   all other (unused) variables are affine. Since accessing a variable is
   pure, we can give it an arbitrary effect $epsilon.alt$.
 
-- To type a let-binding $sans(l e t) #h(0em) x = a ; #h(0em) e$ in
+- To type a let-binding $kw("let") med x = a ; #h(0em) e$ in
   $Gamma^(upright(bold(q)))$ with let$""_1$ with effect $epsilon.alt$,
   we must:
 
@@ -599,16 +597,16 @@ grammar. In particular,
 #figure([#block[
 #rule-set(
   prooftree(rule(label: msc("var"), $Gamma^(upright(bold(q))) mapsto x : A^1$, $Gamma^(upright(bold(q))) tack.r epsilon.alt x : A$)),
-  prooftree(rule(label: msc("let1"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B$, $Gamma^(upright(bold(q))) tack.r sans(l e t) #h(0em) x = a ; #h(0em) b : B$)),
+  prooftree(rule(label: msc("let1"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B$, $Gamma^(upright(bold(q))) tack.r kw("let") med x = a ; #h(0em) b : B$)),
   prooftree(rule(label: msc("op"), $f : A arrow.r_epsilon.alt B$, $Gamma^(upright(bold(q))) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))) tack.r epsilon.alt f #h(0em) a : B$)),
   prooftree(rule(label: msc("inst"), $f in cal(I)$, $sans(s r c) \( f \) = A$, $sans(t r g) \( f \) = B$, $sans(e f f) \( f \) lt.eq epsilon.alt$, $f : A arrow.r_epsilon.alt B$)),
   prooftree(rule(label: msc("unit"), $Gamma^(upright(bold(q))) mapsto dot.op$, $Gamma^(upright(bold(q))) tack.r epsilon.alt \( \) : upright(bold(1))$)),
   prooftree(rule(label: msc("pair"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_l) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt b : B$, $Gamma^(upright(bold(q))) tack.r epsilon.alt \( a \, b \) : A ⊗ B$)),
-  prooftree(rule(label: msc("let2"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r a : A ⊗ B$, $Gamma^(upright(bold(q))_l) \, x : A \, y : B tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))) tack.r epsilon.alt sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) c : C$)),
+  prooftree(rule(label: msc("let2"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r a : A ⊗ B$, $Gamma^(upright(bold(q))_l) \, x : A \, y : B tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))) tack.r epsilon.alt kw("let") med \( x \, y \) = a ; #h(0em) c : C$)),
   prooftree(rule(label: msc("inl"), $Gamma^(upright(bold(q))) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))) tack.r epsilon.alt iota_l #h(0em) a : A + B$)),
   prooftree(rule(label: msc("inr"), $Gamma^(upright(bold(q))) tack.r epsilon.alt b : B$, $Gamma^(upright(bold(q))) tack.r epsilon.alt iota_r #h(0em) b : A + B$)),
   prooftree(rule(label: msc("abort"), $Gamma^(upright(bold(q))) tack.r epsilon.alt a : upright(bold(0))$, $Gamma^(upright(bold(q))) tack.r epsilon.alt sans(a b o r t) #h(0em) a : C$)),
-  prooftree(rule(label: msc("case"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt e : A + B$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt a : C$, $Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt b : C$, $Gamma^(upright(bold(q))) tack.r epsilon.alt sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } : C$)),
+  prooftree(rule(label: msc("case"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt e : A + B$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt a : C$, $Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt b : C$, $Gamma^(upright(bold(q))) tack.r epsilon.alt kw("case") med e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } : C$)),
   prooftree(rule(label: msc("iter"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $sans(q) \( Gamma^(upright(bold(q))_l) \) = omega$, $epsilon.alt in cal(E)^oo$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B + A$, $Gamma^(upright(bold(q))) tack.r epsilon.alt sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } : B$)),
 )
 
@@ -626,14 +624,14 @@ As a basic sanity check, we can verify that our calculus admits
 
 #block[
 If $Gamma'^(upright(bold(q))') mapsto Gamma^(upright(bold(q)))$ and
-$Gamma^(upright(bold(q))) tack.r_epsilon.alt a : A$ then
-$Gamma'^(upright(bold(q))') tack.r_epsilon.alt a : A$.
+$Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) a : A$ then
+$Gamma'^(upright(bold(q))') #refinement-eff-turnstile($epsilon.alt$) a : A$.
 
 ]
 We now define substitution for effectful terms. First, we define a
 judgement
-$Gamma^(upright(bold(q))) tack.r_epsilon.alt sigma gt.tri Delta^(upright(bold(q))')$
-for substitutions, with rules in Figure~@refall:fig:expr-subst. This may be
+$Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) sigma gt.tri Delta^(upright(bold(q))')$
+for substitutions, with rules in @refall:fig:expr-subst. This may be
 read as "$sigma$ takes the context $Gamma^(upright(bold(q)))$ to the
 context $Delta^(upright(bold(q))')$ with effect $epsilon.alt$." Our
 rules may be interpreted as follows:
@@ -680,9 +678,9 @@ $a$. We can now state substitution:
 
 #block[
 If
-$Gamma'^(upright(bold(q))') tack.r_epsilon.alt sigma gt.tri Gamma^(upright(bold(q)))$
-and $Gamma^(upright(bold(q))) tack.r_epsilon.alt a : A$ then
-$Gamma'^(upright(bold(q))') tack.r_epsilon.alt \[ sigma \] a : A$.
+$Gamma'^(upright(bold(q))') #refinement-eff-turnstile($epsilon.alt$) sigma gt.tri Gamma^(upright(bold(q)))$
+and $Gamma^(upright(bold(q))) #refinement-eff-turnstile($epsilon.alt$) a : A$ then
+$Gamma'^(upright(bold(q))') #refinement-eff-turnstile($epsilon.alt$) \[ sigma \] a : A$.
 
 ]
 == Refinement Theory
@@ -734,13 +732,13 @@ property~#link(<refall:item:includes-rewrites>)[1], by the following rules:
   prooftree(rule(label: msc("refl"), $Gamma^(upright(bold(q))) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))) tack.r cal(R) a arrow.r.twohead a : A$)),
   prooftree(rule(label: msc("trans"), $Gamma^(upright(bold(q))) tack.r cal(R) a arrow.r.twohead b : A$, $Gamma^(upright(bold(q))) tack.r cal(R) b arrow.r.twohead c : A$, $Gamma^(upright(bold(q))) tack.r cal(R) a arrow.r.twohead c : A$)),
 ) The other congruence rules (in the appendix in
-Figure~#todo[Cross-reference: `refall:fig:congruence-refinement`]) correspond one-to-one with our term
+Figure~#conditional-ref("refall:fig:congruence-refinement")) correspond one-to-one with our term
 formers to ensure property~#link(<refall:item:is-congruence>)[2].
 Property~#link(<refall:item:is-congruence>)[2] means that the induced equivalence $approx$
 is also a congruence.
 
 To satisfy property~#link(<refall:item:abstracts-syntax>)[3], we introduce the binding
-rules (Figure~@refall:fig:binding-rules), which are stated as equivalences.
+rules (@refall:fig:binding-rules), which are stated as equivalences.
 These rules express syntactic equivalences up to reassociation and
 let-floating. For instance, nested let-bindings are rearranged to a
 canonical form. We do not require binding rules for every
@@ -748,10 +746,10 @@ construct---rules for pairs and sums, for example, can be derived via
 $beta$-reduction.
 
 Property~#link(<refall:item:does-computation>)[4] is addressed via the reduction rules
-(Figure~@refall:fig:reduction-rules). Most of these are standard $beta$- and
+(@refall:fig:reduction-rules). Most of these are standard $beta$- and
 $eta$-equivalences. However, the rule let$""_1$-$beta^p$ is
 #emph[directional]: it expresses that
-$sans(l e t) #h(0em) x = a ; #h(0em) b$ refines $\[ x \/ a \] b$ when
+$kw("let") med x = a ; #h(0em) b$ refines $\[ x \/ a \] b$ when
 the effect $epsilon.alt$ of $a$ is a right-mover with respect to the
 effect $eta$ of $b$, and when $x$ is used in a way compatible with
 $epsilon.alt$ and the context. We also require that the context
@@ -761,7 +759,7 @@ with the usage of $x$ in $b$, as well as with the effect $epsilon.alt$
 $x$ must be used linearly in $b$ even if $b$ is pure). The reverse
 direction is permitted only under the dual (left-mover) condition. Thus,
 the usual $beta$-equation:
-$ Gamma^(upright(bold(q))) tack.r_(cal(R)) sans(l e t) #h(0em) x = a ; #h(0em) b approx \[ x \/ a \] b : B $
+$ Gamma^(upright(bold(q))) tack.r_(cal(R)) kw("let") med x = a ; #h(0em) b approx \[ x \/ a \] b : B $
 is derivable under sufficient purity assumptions, and in particular
 always holds when $epsilon.alt = tack.t$. The rule elim, at first
 glance, can be viewed as a special case of let$""_1$-$beta^p$ (combined
@@ -772,14 +770,14 @@ $a$.
 In particular, this means that the following more standard typing rule
 is #emph[derivable]:
 #rule-set(
-  prooftree(rule(label: msc("let1-beta"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_l) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_r) \, x : A^q tack.r eta b : B$, $epsilon.alt harpoons.rtlb eta$, $q lt.eq sans(q) \( Gamma^(upright(bold(q))_r) \) ∩ sans(q) \( epsilon.alt \)$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) x = a ; #h(0em) b approx \[ x \/ a \] b : B$)),
+  prooftree(rule(label: msc("let1-beta"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_l) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_r) \, x : A^q tack.r eta b : B$, $epsilon.alt harpoons.rtlb eta$, $q lt.eq sans(q) \( Gamma^(upright(bold(q))_r) \) ∩ sans(q) \( epsilon.alt \)$, $Gamma^(upright(bold(q))) tack.r cal(R) kw("let") med x = a ; #h(0em) b approx \[ x \/ a \] b : B$)),
 ) In particular, this obviously holds for pure expressions with
 $epsilon.alt = tack.t$ (modulo linearity of
 $Gamma^(upright(bold(q))_r)$), as we would normally expect in an
 effectful language.
 
 The last thing that remains is to treat iteration. Our rules for
-iteration, given in Figure~@refall:fig:iteration-rules, are based on the
+iteration, given in @refall:fig:iteration-rules, are based on the
 properties of a Conway iteration operator as given in
 #cite(<coinductive-resumption-levy-goncharov-19>, form: "prose"). In
 particular, we require our operator to satisfy the following properties:
@@ -793,7 +791,7 @@ $a$, then to $b \[ a \/ x \]$, and depending on the result of $b$,
 either exits with a value in the left branch or continues recursively
 with a value in the right branch. This unfolds the iteration into a case
 split
-$sans(l e t) #h(0em) x = a ; #h(0em) sans(c a s e) #h(0em) b #h(0em) { iota_l #h(0em) y : y \, iota_r #h(0em) z : sans(i t e r) #h(0em) z #h(0em) { iota_r #h(0em) x : b } }$
+$kw("let") med x = a ; #h(0em) kw("case") med b #h(0em) { iota_l #h(0em) y : y \, iota_r #h(0em) z : sans(i t e r) #h(0em) z #h(0em) { iota_r #h(0em) x : b } }$
 capturing precisely one unfolding of the loop. This gives rise to an
 inductive account of iteration semantics that meshes naturally with
 refinement.
@@ -818,7 +816,7 @@ via the rule unif$""^p$, allows us to effectively commute certain
 effectful operations with the infinite unrolling of a loop body. This is
 best explained in terms of control-flow graphs: the precondition of the
 rule is corresponds to the left-hand-side of the diagram in
-Figure~@refall:fig:unif-cfg, while the postcondition corresponds to the
+@refall:fig:unif-cfg, while the postcondition corresponds to the
 right-hand-side. If we unroll the loops on both sides "infinitely many
 times," to obtain an infinite tree, we see that unif$""^p$ just says
 that we can apply the rewrite on the left-hand-side "infinitely many
@@ -835,9 +833,9 @@ given iteration of the loop body we have, where
 $sans(p r i n t) : upright(bold(1))$ and
 $sans(e x p r) : upright(bold(1)) + upright(bold(1))$ commutative with
 printing (e.g., reading and writing from memory),
-$sans(p r i n t) ; sans(e x p r) approx sans(c a s e) #h(0em) sans(e x p r) #h(0em) { iota_l #h(0em) x : iota_l #h(0em) sans(p r i n t) \, iota_r #h(0em) y : iota_l #h(0em) sans(p r i n t) }$
+$sans(p r i n t) ; sans(e x p r) approx kw("case") med sans(e x p r) #h(0em) { iota_l #h(0em) x : iota_l #h(0em) sans(p r i n t) \, iota_r #h(0em) y : iota_l #h(0em) sans(p r i n t) }$
 but
-$ sans(i t e r) #h(0em) sans(p r i n t) #h(0em) { iota_r #h(0em) dot.op : sans(e x p r) } approx.not sans(i t e r) #h(0em) \( \) #h(0em) { iota_r #h(0em) dot.op : sans(c a s e) #h(0em) sans(e x p r) #h(0em) { iota_l #h(0em) x : iota_l #h(0em) sans(p r i n t) \, iota_r #h(0em) y : iota_l #h(0em) y } } $
+$ sans(i t e r) #h(0em) sans(p r i n t) #h(0em) { iota_r #h(0em) dot.op : sans(e x p r) } approx.not sans(i t e r) #h(0em) \( \) #h(0em) { iota_r #h(0em) dot.op : kw("case") med sans(e x p r) #h(0em) { iota_l #h(0em) x : iota_l #h(0em) sans(p r i n t) \, iota_r #h(0em) y : iota_l #h(0em) y } } $
 since the latter may delay the print-statement infinitely far into the
 future, and hence hang before printing. On the other hand, if we instead
 have commutative effects (e.g., if $s$ has nondeterminism and the loop
@@ -851,15 +849,15 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
 
 #figure([#block[
 #rule-set(
-  prooftree(rule(label: msc("let-op"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $f : A arrow.r_epsilon.alt B$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) y = f #h(0em) a ; #h(0em) c approx sans(l e t) #h(0em) x = a ; #h(0em) sans(l e t) #h(0em) y = f #h(0em) x ; #h(0em) c : C$)),
-  prooftree(rule(label: msc("let-let1"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_c + upright(bold(q))_r$, $Gamma tack.r upright(bold(q))_c = upright(bold(q))_l + upright(bold(q))_m$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_m) \, x : A tack.r epsilon.alt b : B$, $Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) y = \( sans(l e t) #h(0em) x = a ; #h(0em) b \) ; #h(0em) c approx sans(l e t) #h(0em) x = a ; #h(0em) sans(l e t) #h(0em) y = b ; #h(0em) c : C$)),
-  prooftree(rule(label: msc("let-let2"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_c + upright(bold(q))_r Gamma tack.r upright(bold(q))_c = upright(bold(q))_l + upright(bold(q))_m$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A ⊗ B$, $Gamma^(upright(bold(q))_m) \, x : A \, y : B tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))_l) \, z : C tack.r epsilon.alt d : D$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) z = \( sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) c \) ; #h(0em) d approx sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) sans(l e t) #h(0em) z = c ; #h(0em) d : D$)),
-  prooftree(rule(label: msc("let-case"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_c + upright(bold(q))_r Gamma tack.r upright(bold(q))_c = upright(bold(q))_l + upright(bold(q))_m$, $Gamma^(upright(bold(q))_m) tack.r cal(R) e : A + B$, $Gamma^(upright(bold(q))_l) \, x : A tack.r cal(R) a : C Gamma^(upright(bold(q))_l) \, y : B tack.r cal(R) b : C$, $Gamma^(upright(bold(q))_r) \, z : C tack.r cal(R) d : D$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) z = sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } ; #h(0em) d approx sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : sans(l e t) #h(0em) z = a ; #h(0em) d \, iota_r #h(0em) y : sans(l e t) #h(0em) z = b ; #h(0em) d } : D$)),
+  prooftree(rule(label: msc("let-op"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $f : A arrow.r_epsilon.alt B$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))) tack.r cal(R) kw("let") med y = f #h(0em) a ; #h(0em) c approx kw("let") med x = a ; #h(0em) kw("let") med y = f #h(0em) x ; #h(0em) c : C$)),
+  prooftree(rule(label: msc("let-let1"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_c + upright(bold(q))_r$, $Gamma tack.r upright(bold(q))_c = upright(bold(q))_l + upright(bold(q))_m$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_m) \, x : A tack.r epsilon.alt b : B$, $Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))) tack.r cal(R) kw("let") med y = \( kw("let") med x = a ; #h(0em) b \) ; #h(0em) c approx kw("let") med x = a ; #h(0em) kw("let") med y = b ; #h(0em) c : C$)),
+  prooftree(rule(label: msc("let-let2"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_c + upright(bold(q))_r Gamma tack.r upright(bold(q))_c = upright(bold(q))_l + upright(bold(q))_m$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A ⊗ B$, $Gamma^(upright(bold(q))_m) \, x : A \, y : B tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))_l) \, z : C tack.r epsilon.alt d : D$, $Gamma^(upright(bold(q))) tack.r cal(R) kw("let") med z = \( kw("let") med \( x \, y \) = a ; #h(0em) c \) ; #h(0em) d approx kw("let") med \( x \, y \) = a ; #h(0em) kw("let") med z = c ; #h(0em) d : D$)),
+  prooftree(rule(label: msc("let-case"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_c + upright(bold(q))_r Gamma tack.r upright(bold(q))_c = upright(bold(q))_l + upright(bold(q))_m$, $Gamma^(upright(bold(q))_m) tack.r cal(R) e : A + B$, $Gamma^(upright(bold(q))_l) \, x : A tack.r cal(R) a : C Gamma^(upright(bold(q))_l) \, y : B tack.r cal(R) b : C$, $Gamma^(upright(bold(q))_r) \, z : C tack.r cal(R) d : D$, $Gamma^(upright(bold(q))) tack.r cal(R) kw("let") med z = kw("case") med e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } ; #h(0em) d approx kw("case") med e #h(0em) { iota_l #h(0em) x : kw("let") med z = a ; #h(0em) d \, iota_r #h(0em) y : kw("let") med z = b ; #h(0em) d } : D$)),
 )
 #rule-set(
-  prooftree(rule(label: msc("let2-bind"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A ⊗ B$, $Gamma^(upright(bold(q))_l) \, x : A \, y : B tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) c approx sans(l e t) #h(0em) z = a ; #h(0em) sans(l e t) #h(0em) \( x \, y \) = z ; #h(0em) c : C$)),
-  prooftree(rule(label: msc("case-bind"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r cal(R) e : A + B$, $Gamma^(upright(bold(q))_l) \, x : A tack.r cal(R) a : C$, $Gamma^(upright(bold(q))_l) \, y : B tack.r cal(R) b : C$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } approx sans(l e t) #h(0em) z = e ; #h(0em) sans(c a s e) #h(0em) z #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } : C$)),
-  prooftree(rule(label: msc("iter-bind"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $sans(q) \( Gamma^(upright(bold(q))_l) \) = top$, $epsilon.alt in cal(E)^oo$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B + A$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } approx sans(l e t) #h(0em) y = a ; #h(0em) sans(i t e r) #h(0em) y #h(0em) { iota_r #h(0em) x : b } : B$)),
+  prooftree(rule(label: msc("let2-bind"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A ⊗ B$, $Gamma^(upright(bold(q))_l) \, x : A \, y : B tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))) tack.r cal(R) kw("let") med \( x \, y \) = a ; #h(0em) c approx kw("let") med z = a ; #h(0em) kw("let") med \( x \, y \) = z ; #h(0em) c : C$)),
+  prooftree(rule(label: msc("case-bind"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r cal(R) e : A + B$, $Gamma^(upright(bold(q))_l) \, x : A tack.r cal(R) a : C$, $Gamma^(upright(bold(q))_l) \, y : B tack.r cal(R) b : C$, $Gamma^(upright(bold(q))) tack.r cal(R) kw("case") med e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } approx kw("let") med z = e ; #h(0em) kw("case") med z #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } : C$)),
+  prooftree(rule(label: msc("iter-bind"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $sans(q) \( Gamma^(upright(bold(q))_l) \) = top$, $epsilon.alt in cal(E)^oo$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B + A$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } approx kw("let") med y = a ; #h(0em) sans(i t e r) #h(0em) y #h(0em) { iota_r #h(0em) x : b } : B$)),
 )
 
   ]],
@@ -871,15 +869,15 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
 
 #figure([#block[
 #rule-set(
-  prooftree(rule(label: msc("term"), $Gamma^(upright(bold(q))) tack.r epsilon.alt a : upright(bold(1))$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) x = a ; #h(0em) \( \) approx a : upright(bold(1))$)),
-  prooftree(rule(label: msc("elim"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))$, $Gamma^(upright(bold(q))_l) tack.r epsilon.alt a : upright(bold(1))$, $0 lt.eq sans(q)^p \( epsilon.alt \)$, $Gamma^(upright(bold(q))) tack.r eta b : B$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) x = a ; #h(0em) b arrow.r.twohead^p sans(l e t) #h(0em) x = \( \) ; #h(0em) b : B$)),
-  prooftree(rule(label: msc("init"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : upright(bold(0))$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b' : B$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) x = sans(a b o r t) #h(0em) a ; #h(0em) b approx sans(l e t) #h(0em) x = sans(a b o r t) #h(0em) a ; #h(0em) b' : B$)),
-  prooftree(rule(label: msc("let2-eta"), $Gamma^(upright(bold(q))) tack.r epsilon.alt a : A ⊗ B$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) \( x \, y \) = a ; #h(0em) \( x \, y \) approx a : A ⊗ B$)),
-  prooftree(rule(label: msc("let2-beta"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma tack.r upright(bold(q))_l = upright(bold(q))_a + upright(bold(q))_b$, $Gamma^(upright(bold(q))_a) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_b) tack.r epsilon.alt b : B$, $Gamma^(upright(bold(q))_r) \, x : A \, y : B tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) \( x \, y \) = \( a \, b \) ; #h(0em) c approx sans(l e t) #h(0em) x = a ; #h(0em) sans(l e t) #h(0em) y = b ; #h(0em) c : C$)),
-  prooftree(rule(label: msc("case-betal"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r cal(R) e : A$, $Gamma^(upright(bold(q))_l) \, x : A tack.r cal(R) a : C$, $Gamma^(upright(bold(q))_l) \, y : B tack.r cal(R) b : C$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(c a s e) #h(0em) iota_l #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } approx sans(l e t) #h(0em) x = e ; #h(0em) a : C$)),
-  prooftree(rule(label: msc("case-betar"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r cal(R) e : B$, $Gamma^(upright(bold(q))_l) \, x : A tack.r cal(R) a : C$, $Gamma^(upright(bold(q))_l) \, y : B tack.r cal(R) b : C$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(c a s e) #h(0em) iota_r #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } approx sans(l e t) #h(0em) y = e ; #h(0em) b : C$)),
-  prooftree(rule(label: msc("case-eta"), $Gamma^(upright(bold(q))) tack.r cal(R) e : A + B$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(c a s e) #h(0em) e #h(0em) { iota_l #h(0em) x : iota_l #h(0em) x \, iota_r #h(0em) y : iota_r #h(0em) y } approx e : A + B$)),
-  prooftree(rule(label: msc("let1-beta^p"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_l) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_r) \, x : A^q tack.r eta b : B$, $epsilon.alt harpoon.rt eta$, $q lt.eq sans(q) \( Gamma^(upright(bold(q))_r) \) ∩ sans(q)^p \( epsilon.alt \)$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) x = a ; #h(0em) b arrow.r.twohead^p \[ x \/ a \] b : B$)),
+  prooftree(rule(label: msc("term"), $Gamma^(upright(bold(q))) tack.r epsilon.alt a : upright(bold(1))$, $Gamma^(upright(bold(q))) tack.r cal(R) kw("let") med x = a ; #h(0em) \( \) approx a : upright(bold(1))$)),
+  prooftree(rule(label: msc("elim"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))$, $Gamma^(upright(bold(q))_l) tack.r epsilon.alt a : upright(bold(1))$, $0 lt.eq sans(q)^p \( epsilon.alt \)$, $Gamma^(upright(bold(q))) tack.r eta b : B$, $Gamma^(upright(bold(q))) tack.r cal(R) kw("let") med x = a ; #h(0em) b arrow.r.twohead^p kw("let") med x = \( \) ; #h(0em) b : B$)),
+  prooftree(rule(label: msc("init"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : upright(bold(0))$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b' : B$, $Gamma^(upright(bold(q))) tack.r cal(R) kw("let") med x = sans(a b o r t) #h(0em) a ; #h(0em) b approx kw("let") med x = sans(a b o r t) #h(0em) a ; #h(0em) b' : B$)),
+  prooftree(rule(label: msc("let2-eta"), $Gamma^(upright(bold(q))) tack.r epsilon.alt a : A ⊗ B$, $Gamma^(upright(bold(q))) tack.r cal(R) kw("let") med \( x \, y \) = a ; #h(0em) \( x \, y \) approx a : A ⊗ B$)),
+  prooftree(rule(label: msc("let2-beta"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma tack.r upright(bold(q))_l = upright(bold(q))_a + upright(bold(q))_b$, $Gamma^(upright(bold(q))_a) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_b) tack.r epsilon.alt b : B$, $Gamma^(upright(bold(q))_r) \, x : A \, y : B tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))) tack.r cal(R) kw("let") med \( x \, y \) = \( a \, b \) ; #h(0em) c approx kw("let") med x = a ; #h(0em) kw("let") med y = b ; #h(0em) c : C$)),
+  prooftree(rule(label: msc("case-betal"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r cal(R) e : A$, $Gamma^(upright(bold(q))_l) \, x : A tack.r cal(R) a : C$, $Gamma^(upright(bold(q))_l) \, y : B tack.r cal(R) b : C$, $Gamma^(upright(bold(q))) tack.r cal(R) kw("case") med iota_l #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } approx kw("let") med x = e ; #h(0em) a : C$)),
+  prooftree(rule(label: msc("case-betar"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_r) tack.r cal(R) e : B$, $Gamma^(upright(bold(q))_l) \, x : A tack.r cal(R) a : C$, $Gamma^(upright(bold(q))_l) \, y : B tack.r cal(R) b : C$, $Gamma^(upright(bold(q))) tack.r cal(R) kw("case") med iota_r #h(0em) e #h(0em) { iota_l #h(0em) x : a \, iota_r #h(0em) y : b } approx kw("let") med y = e ; #h(0em) b : C$)),
+  prooftree(rule(label: msc("case-eta"), $Gamma^(upright(bold(q))) tack.r cal(R) e : A + B$, $Gamma^(upright(bold(q))) tack.r cal(R) kw("case") med e #h(0em) { iota_l #h(0em) x : iota_l #h(0em) x \, iota_r #h(0em) y : iota_r #h(0em) y } approx e : A + B$)),
+  prooftree(rule(label: msc("let1-beta^p"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $Gamma^(upright(bold(q))_l) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_r) \, x : A^q tack.r eta b : B$, $epsilon.alt harpoon.rt eta$, $q lt.eq sans(q) \( Gamma^(upright(bold(q))_r) \) ∩ sans(q)^p \( epsilon.alt \)$, $Gamma^(upright(bold(q))) tack.r cal(R) kw("let") med x = a ; #h(0em) b arrow.r.twohead^p \[ x \/ a \] b : B$)),
 )
 
   ]],
@@ -891,12 +889,12 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
 
 #figure([#block[
 #rule-set(
-  prooftree(rule(label: msc("iter-beta"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $sans(q) \( Gamma^(upright(bold(q))_l) \) = top$, $epsilon.alt in cal(E)^oo$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B + A$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } approx sans(l e t) #h(0em) x = a ; #h(0em) sans(c a s e) #h(0em) b #h(0em) { iota_l #h(0em) y : y \, iota_r #h(0em) z : sans(i t e r) #h(0em) z #h(0em) { iota_r #h(0em) x : b } } : B$)),
-  prooftree(rule(label: msc("let-iter"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_c Gamma tack.r upright(bold(q))_c = upright(bold(q))_m + upright(bold(q))_r$, $sans(q) \( Gamma^(upright(bold(q))_l) \) = top sans(q) \( Gamma^(upright(bold(q))_m) \) = top$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_m) \, x : A tack.r epsilon.alt b : B + A$, $Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) y = sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } ; #h(0em) c approx sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : sans(c a s e) #h(0em) b #h(0em) { iota_l #h(0em) y : iota_l #h(0em) c \, iota_r #h(0em) z : iota_r #h(0em) z } } : C$)),
-  prooftree(rule(label: msc("codiag"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $sans(q) \( Gamma^(upright(bold(q))_l) \) = top$, $epsilon.alt in cal(E)^oo$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_l) \, y : A tack.r epsilon.alt b : \( B + A \) + A$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : sans(i t e r) #h(0em) x #h(0em) { iota_r #h(0em) y : b } } approx sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) y : sans(c a s e) #h(0em) b #h(0em) { iota_l #h(0em) x : x \, iota_r #h(0em) y : iota_r #h(0em) y } } : B$)),
+  prooftree(rule(label: msc("iter-beta"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $sans(q) \( Gamma^(upright(bold(q))_l) \) = top$, $epsilon.alt in cal(E)^oo$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_l) \, x : A tack.r epsilon.alt b : B + A$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } approx kw("let") med x = a ; #h(0em) kw("case") med b #h(0em) { iota_l #h(0em) y : y \, iota_r #h(0em) z : sans(i t e r) #h(0em) z #h(0em) { iota_r #h(0em) x : b } } : B$)),
+  prooftree(rule(label: msc("let-iter"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_c Gamma tack.r upright(bold(q))_c = upright(bold(q))_m + upright(bold(q))_r$, $sans(q) \( Gamma^(upright(bold(q))_l) \) = top sans(q) \( Gamma^(upright(bold(q))_m) \) = top$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_m) \, x : A tack.r epsilon.alt b : B + A$, $Gamma^(upright(bold(q))_l) \, y : B tack.r epsilon.alt c : C$, $Gamma^(upright(bold(q))) tack.r cal(R) kw("let") med y = sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b } ; #h(0em) c approx sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : kw("case") med b #h(0em) { iota_l #h(0em) y : iota_l #h(0em) c \, iota_r #h(0em) z : iota_r #h(0em) z } } : C$)),
+  prooftree(rule(label: msc("codiag"), $Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r$, $sans(q) \( Gamma^(upright(bold(q))_l) \) = top$, $epsilon.alt in cal(E)^oo$, $Gamma^(upright(bold(q))_r) tack.r epsilon.alt a : A$, $Gamma^(upright(bold(q))_l) \, y : A tack.r epsilon.alt b : \( B + A \) + A$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : sans(i t e r) #h(0em) x #h(0em) { iota_r #h(0em) y : b } } approx sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) y : kw("case") med b #h(0em) { iota_l #h(0em) x : x \, iota_r #h(0em) y : iota_r #h(0em) y } } : B$)),
 )
 #rule-set(
-  prooftree(rule(label: msc("unif^p"), $eta harpoon.rt epsilon.alt$, $Gamma^(upright(bold(q))_c) \, x : A tack.r cal(R) sans(l e t) #h(0em) y = s ; #h(0em) b arrow.r.twohead^p sans(c a s e) #h(0em) b' #h(0em) { iota_l #h(0em) z : iota_l #h(0em) c \, iota_r #h(0em) x : iota_r #h(0em) s } : C + S$, $Gamma^(upright(bold(q))) tack.r cal(R) sans(l e t) #h(0em) x = a ; #h(0em) sans(i t e r) #h(0em) s #h(0em) { iota_r #h(0em) y : b } arrow.r.twohead^p sans(l e t) #h(0em) z = sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b' } ; #h(0em) c : C$)),
+  prooftree(rule(label: msc("unif^p"), $eta harpoon.rt epsilon.alt$, $Gamma^(upright(bold(q))_c) \, x : A tack.r cal(R) kw("let") med y = s ; #h(0em) b arrow.r.twohead^p kw("case") med b' #h(0em) { iota_l #h(0em) z : iota_l #h(0em) c \, iota_r #h(0em) x : iota_r #h(0em) s } : C + S$, $Gamma^(upright(bold(q))) tack.r cal(R) kw("let") med x = a ; #h(0em) sans(i t e r) #h(0em) s #h(0em) { iota_r #h(0em) y : b } arrow.r.twohead^p kw("let") med z = sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b' } ; #h(0em) c : C$)),
 )
 
   ]],
@@ -909,9 +907,9 @@ $cal(R) subset.eq sans(T h) \( cal(R) \)$, making it a closure operator.
 #figure([],
   caption: [
     Control-flow graphs for the uniformity rule in
-    Figure~@refall:fig:iteration-rules
+    @refall:fig:iteration-rules
   ]
 )
 <refall:fig:unif-cfg>
 
-#hide(bibliography("/thesis/refs.bib", full: false))
+#standalone-bibliography()
