@@ -126,7 +126,11 @@ two definitions give a λ-seq type model whenever `V` happens to have the
 structure used to define them.
 
 This is stated separately because λ-seq's `TypeModel` is a *different*, leaner
-class than λ-iter's, not a specialization of it. -/
+class than λ-iter's, not a specialization of it.  The hypotheses on `V` here
+are inherited from `Free.obj`/`Free.subty`, i.e. from the *type universe*
+`Ty α` and its subtyping interface, not from anything λ-seq's terms do: λ-seq
+never builds or eliminates a sum, but `Ty α` still has `⊕` and `0`, and
+`Subty.empty` still has to denote a map out of the interpretation of `0`. -/
 @[reducible] noncomputable def freeTypeModel {α : Type u} {V : Type u₁} [Category.{v₁} V]
     [CartesianMonoidalCategory V] [Limits.HasFiniteCoproducts V] (base : α → V) :
     TypeModel (LambdaIter.Ty α) V where

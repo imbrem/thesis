@@ -31,7 +31,7 @@ corresponding `denote` actually consumes:
 
 | calculus | monadic frame | categorical frame |
 |---|---|---|
-| λ-seq | `[Monad m]` | `[FreydCategory J]` |
+| λ-seq | `[Monad m]` | `[FreydCategory J]` (plus coproducts on `V`, see below) |
 | λ-case | `[Monad m]` | `[DistributiveFreydCategory J]` |
 | λ-iter | `[Monad m] [Iterate m]` | `[StrongElgotFreydCategory J]` |
 
@@ -227,7 +227,14 @@ variable {V : Type u₁} {C : Type u₂} [Category.{v₁} V] [Category.{v₂} C]
   {ν : Type w} [DecidableEq ν]
 
 /-- **λ-seq over the empty signature denotes in every Freyd category.**  Plain
-`FreydCategory J`: no coproducts, no distributivity, no iteration. -/
+`FreydCategory J`: no distributivity, no Elgot structure, no iteration on `C`.
+
+`V` is still asked for finite coproducts, and that is a fact about the *type
+universe*, not about λ-seq.  λ-seq's terms never build or eliminate a sum, but
+its types are still those of `Ty α`, which contains `⊕` and `0`, and its
+`Subtyping` interface still demands coercions `0 ⟶ A`; interpreting those needs
+an initial object, and interpreting `⊕` needs binary coproducts.  A universe
+without those two formers would drop the assumption. -/
 noncomputable def denoteSeqFreyd (J : Functor V C) [FreydCategory J]
     [HasFiniteCoproducts V]
     {Γ : Ctx ν EmptyTy.{u}} {n : Nat}
