@@ -31,6 +31,8 @@ structure CfgReindexing {n : Nat} (R R' : Fin n → τ) (L : LCtx τ) where
   permutation : Equiv.Perm (Fin n)
   rename : Nat → Nat
   types : R' = R ∘ permutation
+  onLocal (i : Fin n) : rename i = (permutation.symm i).val
+  onExternal (i : Nat) : rename (n + i) = n + i
   labels : Ren (List.ofFn R ++ L) (List.ofFn R' ++ L) rename
 
 namespace CfgReindexing
@@ -66,6 +68,8 @@ def identity {n : Nat} (R : Fin n → τ) (L : LCtx τ) : CfgReindexing R R L wh
   permutation := Equiv.refl _
   rename := id
   types := rfl
+  onLocal := fun _ => rfl
+  onExternal := fun _ => rfl
   labels := Ren.id _
 
 @[simp] theorem apply_identity {n : Nat} (R : Fin n → τ) (L : LCtx τ)
