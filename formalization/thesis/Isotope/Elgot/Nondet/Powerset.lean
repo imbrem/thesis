@@ -422,7 +422,7 @@ theorem iter_eq_reflTransGen (f : A → Set (B ⊕ A)) (a : A) :
 /-! ### Examples -/
 
 /-- A body that immediately returns. -/
-@[simp] theorem iter_immediate (a : A) (b : B) :
+theorem iter_immediate (a : A) (b : B) :
     iter (fun _ : A ↦ ({Sum.inl b} : Set (B ⊕ A))) a = ({b} : Set B) := by
   apply Set.ext
   intro b'
@@ -436,7 +436,7 @@ theorem iter_eq_reflTransGen (f : A → Set (B ⊕ A)) (a : A) :
     exact .done rfl
 
 /-- A body that always recurses diverges, and divergence is denoted by the empty set. -/
-@[simp] theorem iter_forever (a : A) :
+theorem iter_forever (a : A) :
     iter (B := B) (fun a : A ↦ ({Sum.inr a} : Set (B ⊕ A))) a = (∅ : Set B) := by
   apply Set.ext
   intro b
@@ -448,7 +448,7 @@ theorem iter_eq_reflTransGen (f : A → Set (B ⊕ A)) (a : A) :
   | more _ _ ih => exact ih
 
 /-- Binary branching: a body returning two values returns both. -/
-@[simp] theorem iter_coin (b₀ b₁ : B) (a : A) :
+theorem iter_coin (b₀ b₁ : B) (a : A) :
     iter (fun _ : A ↦ ({Sum.inl b₀, Sum.inl b₁} : Set (B ⊕ A))) a = ({b₀, b₁} : Set B) := by
   apply Set.ext
   intro b
@@ -466,7 +466,7 @@ theorem iter_eq_reflTransGen (f : A → Set (B ⊕ A)) (a : A) :
     · exact .done (Or.inr rfl)
 
 /-- Divergence collapses: "return `b`, or loop forever" is denoted exactly as "return `b`". -/
-@[simp] theorem iter_diverge_or_return (a : A) (b : B) :
+theorem iter_diverge_or_return (a : A) (b : B) :
     iter (fun a : A ↦ ({Sum.inl b, Sum.inr a} : Set (B ⊕ A))) a = ({b} : Set B) := by
   apply Set.ext
   intro b'
@@ -499,7 +499,7 @@ theorem runs_countUp (n d : ℕ) : Runs countUp n (n + d) := by
       rwa [show n + 1 + d = n + (d + 1) by omega] at h
 
 /-- A finitely-branching loop with infinitely many results: `countUp` accumulates all of `ℕ`. -/
-@[simp] theorem iter_countUp : iter countUp 0 = (Set.univ : Set ℕ) := by
+theorem iter_countUp : iter countUp 0 = (Set.univ : Set ℕ) := by
   apply Set.eq_univ_of_forall
   intro k
   have := runs_countUp 0 k
