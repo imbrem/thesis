@@ -8,6 +8,7 @@ import Isotope.Elgot.Brookes
 import Isotope.Elgot.ITree
 import Isotope.Elgot.Kleisli
 import Isotope.Elgot.Nondet
+import Isotope.Elgot.Par
 import Isotope.Elgot.RA
 import Isotope.Elgot.TSO
 import Isotope.Elgot.Trace
