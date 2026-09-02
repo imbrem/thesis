@@ -9,6 +9,7 @@ import Isotope.LambdaIter.Named.Subst
 import Isotope.LambdaIter.Named.Alpha
 import Isotope.LambdaIter.Named.ToLocallyNameless
 import Isotope.LambdaIter.Named.ToLocallyNameless.Alpha
+import Isotope.LambdaIter.Named.ToLocallyNameless.Converse
 import Isotope.LambdaIter.Named.Equiv
 import Isotope.LambdaIter.Named.EquivStructural
 import Isotope.LambdaIter.Named.Examples
