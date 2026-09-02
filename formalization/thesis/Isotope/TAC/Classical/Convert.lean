@@ -132,6 +132,40 @@ def predecessors [DecidableEq Label] (cfg : CFG Var Op Label) (bid : BlockId Lab
     List (BlockId Label) :=
   .entry :: cfg.labels.map BlockId.named |>.filter fun src => bid ∈ cfg.successors src
 
+theorem mem_predecessors [DecidableEq Label] (source : CFG Var Op Label)
+    (src bid : BlockId Label) :
+    src ∈ predecessors source bid ↔
+      bid ∈ source.successors src ∧
+        (src = .entry ∨ ∃ label ∈ source.labels, src = .named label) := by
+  simp only [predecessors, List.mem_filter, List.mem_cons, List.mem_map]
+  constructor
+  · rintro ⟨hsrc, hsucc⟩
+    refine ⟨by simpa using hsucc, ?_⟩
+    rcases hsrc with rfl | ⟨label, hlabel, heq⟩
+    · exact .inl rfl
+    · exact .inr ⟨label, hlabel, heq.symm⟩
+  · rintro ⟨hsucc, rfl | ⟨label, hlabel, rfl⟩⟩
+    · exact ⟨.inl rfl, by simpa using hsucc⟩
+    · exact ⟨.inr ⟨label, hlabel, rfl⟩, by simpa using hsucc⟩
+
+theorem predecessors_nodup [DecidableEq Label] (source : CFG Var Op Label)
+    (bid : BlockId Label) (hlabels : source.uniqueLabels) :
+    (predecessors source bid).Nodup := by
+  have hbase : (.entry :: source.labels.map BlockId.named).Nodup := by
+    rw [List.nodup_cons]
+    refine ⟨by simp, ?_⟩
+    have hmap : ∀ xs : List Label, xs.Nodup → (xs.map BlockId.named).Nodup := by
+      intro xs hx
+      induction xs with
+      | nil => simp
+      | cons x xs ih =>
+          rw [List.nodup_cons] at hx
+          simp only [List.map_cons]
+          rw [List.nodup_cons]
+          exact ⟨by simpa using hx.1, ih hx.2⟩
+    exact hmap source.labels hlabels
+  exact hbase.sublist List.filter_sublist
+
 def blockAt [DecidableEq Label] (cfg : CFG Var Op Label) (bid : BlockId Label) :
     Option (Block Var Op Label) := cfg.lookup bid
 
