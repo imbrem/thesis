@@ -90,6 +90,206 @@ def eraseArguments (cfg : CFG Var Op Label) : Classical.CFG Var Op Label where
 
 end CFG
 
+/-! ## Whole-CFG normalization
+
+Classical phi syntax names a predecessor, whereas a BBA places the same value
+on an edge.  The translations below choose the textual order of the entry
+block followed by the named blocks as the canonical predecessor order.  A BBA
+is normalized precisely when every edge to a given target from a given source
+has the same, correctly-sized argument vector.  On the phi side this says that
+the entry has no phis and every named block contains exactly the corresponding
+canonical predecessor matrix.  The executable fixed-point predicates below
+also reject missing blocks, missing phi rows, and missing predecessor entries.
+-/
+
+section CFGConversion
+
+variable [DecidableEq Label]
+
+/-- Look up a named classical block. -/
+def findPhiBlock (cfg : Classical.CFG Var Op Label) (label : Label) :
+    Option (Classical.Block Var Op Label) :=
+  (cfg.blocks.find? fun block => block.1 = label).map Prod.snd
+
+/-- The value selected by one phi row for a particular predecessor. -/
+def findIncoming (predecessor : BlockId Label) (phi : Phi Var Label) :
+    Option (Value Var) :=
+  (phi.incoming.find? fun incoming => incoming.predecessor = predecessor).map
+    Incoming.value
+
+namespace Terminator
+
+/-- Put phi operands on every outgoing edge.  Failure exposes exactly the two
+ill-formed cases relevant here: an absent target or an absent predecessor row. -/
+def ofPhi (cfg : Classical.CFG Var Op Label) (source : BlockId Label) :
+    Classical.Terminator Var Op Label → Option (Terminator Var Op Label)
+  | .br target =>
+      (findPhiBlock cfg target).bind fun block =>
+        (block.phis.mapM fun phi => findIncoming source phi).map fun arguments =>
+          Terminator.br target arguments
+  | .ret value => pure (.ret value)
+  | .cond discr left right =>
+      return .cond discr (← ofPhi cfg source left) (← ofPhi cfg source right)
+
+@[simp] theorem eraseArguments_ofPhi {cfg : Classical.CFG Var Op Label}
+    {source : BlockId Label} {term : Classical.Terminator Var Op Label}
+    {result : Terminator Var Op Label} (h : ofPhi cfg source term = some result) :
+    result.eraseArguments = term := by
+  induction term generalizing result with
+  | br target =>
+      cases hblock : findPhiBlock cfg target with
+      | none => simp [ofPhi, hblock] at h
+      | some block =>
+        cases hargs : block.phis.mapM (fun phi => findIncoming source phi) with
+        | none => simp [ofPhi, hblock, hargs] at h
+        | some arguments =>
+          simp [ofPhi, hblock, hargs] at h
+          cases h
+          rfl
+  | ret value => simp [ofPhi] at h; cases h; rfl
+  | cond discr left right ihLeft ihRight =>
+      cases hleft : ofPhi cfg source left with
+      | none => simp [ofPhi, hleft] at h
+      | some left' =>
+        cases hright : ofPhi cfg source right with
+        | none => simp [ofPhi, hleft, hright] at h
+        | some right' =>
+          simp [ofPhi, hleft, hright] at h
+          cases h
+          simp [eraseArguments, ihLeft hleft, ihRight hright]
+
+end Terminator
+
+namespace CFG
+
+/-- Convert a classical phi CFG to a flat BBA, moving each phi operand to its
+source edge.  The distinguished entry cannot carry parameters. -/
+def ofPhi (cfg : Classical.CFG Var Op Label) : Option (CFG Var Op Label) := do
+  if cfg.entry.phis.isEmpty then
+    let entryTerm ← Terminator.ofPhi cfg .entry cfg.entry.terminator
+    let blocks ← cfg.blocks.mapM fun (label, block) => do
+      let term ← Terminator.ofPhi cfg (.named label) block.terminator
+      pure (label, {
+        parameters := block.phis.map Phi.dst
+        body := block.body
+        terminator := term
+      })
+    pure {
+      entry := { parameters := [], body := cfg.entry.body, terminator := entryTerm }
+      blocks := blocks
+    }
+  else none
+
+/-- All edge occurrences, decorated by their source block, in canonical
+entry-then-textual-block order. -/
+def sourcedEdges (cfg : CFG Var Op Label) :
+    List (BlockId Label × Label × List (Value Var)) :=
+  (cfg.entry.terminator.edges.map fun edge => (.entry, edge.1, edge.2)) ++
+    cfg.blocks.flatMap fun (source, block) =>
+      block.terminator.edges.map fun edge => (.named source, edge.1, edge.2)
+
+/-- Canonical incoming column `index` for a target.  Short edge vectors are
+omitted; the normalization predicate below therefore rejects them. -/
+def incomingColumn (cfg : CFG Var Op Label) (target : Label) (index : Nat) :
+    List (Incoming Var Label) :=
+  cfg.sourcedEdges.filterMap fun (source, destination, arguments) =>
+    if destination = target then
+      (arguments[index]?).map fun value => ⟨source, value⟩
+    else none
+
+/-- Move edge arguments into phi rows.  Textual source order fixes the order of
+every incoming list. -/
+def toPhi (cfg : CFG Var Op Label) : Classical.CFG Var Op Label where
+  entry := {
+    phis := []
+    body := cfg.entry.body
+    terminator := cfg.entry.terminator.eraseArguments
+  }
+  blocks := cfg.blocks.map fun (label, block) => (label, {
+    phis := block.parameters.mapIdx fun index parameter => {
+      dst := parameter
+      incoming := cfg.incomingColumn label index
+    }
+    body := block.body
+    terminator := block.terminator.eraseArguments
+  })
+
+/-- A normalized phi CFG is one on which moving operands to edges succeeds and
+canonicalizing them back is literally the identity.  Expanded, this requires
+an empty entry phi list, resolvable and coherent target definitions, one
+incoming value for each source/target occurrence and phi row, and canonical
+row/source order. -/
+def PhiNormalized (cfg : Classical.CFG Var Op Label) : Prop :=
+  ∃ bba, ofPhi cfg = some bba ∧ toPhi bba = cfg
+
+/-- A normalized BBA has rectangular edge vectors and is source-functional for
+each target; equivalently its canonical phis move back to the identical CFG. -/
+def BBANormalized (cfg : CFG Var Op Label) : Prop :=
+  ofPhi (toPhi cfg) = some cfg
+
+@[simp] theorem toPhi_entry_phis (cfg : CFG Var Op Label) :
+    (toPhi cfg).entry.phis = [] := rfl
+
+/-- Erase phi rows while retaining the classical control-flow skeleton. -/
+def erasePhis (cfg : Classical.CFG Var Op Label) : Classical.CFG Var Op Label :=
+  { cfg with
+      entry := { cfg.entry with phis := [] }
+      blocks := cfg.blocks.map fun (label, block) =>
+        (label, { block with phis := [] }) }
+
+/-- Both presentations erase to exactly the same control-flow graph. -/
+theorem erasePhis_toPhi (cfg : CFG Var Op Label) :
+    erasePhis (toPhi cfg) = cfg.eraseArguments := by
+  cases cfg with
+  | mk entry blocks =>
+    cases entry
+    simp [erasePhis, toPhi, eraseArguments]
+
+/-- The phi-to-BBA-to-phi round trip for any successful normalized
+translation. -/
+theorem toPhi_ofPhi {cfg : Classical.CFG Var Op Label}
+    (hcfg : PhiNormalized cfg) {bba : CFG Var Op Label}
+    (h : ofPhi cfg = some bba) : toPhi bba = cfg := by
+  rcases hcfg with ⟨canonical, hcanonical, hround⟩
+  have : canonical = bba := Option.some.inj (hcanonical.symm.trans h)
+  simpa [this] using hround
+
+/-- The BBA-to-phi-to-BBA round trip is the executable content of BBA
+normalization. -/
+theorem ofPhi_toPhi {cfg : CFG Var Op Label} (hcfg : BBANormalized cfg) :
+    ofPhi (toPhi cfg) = some cfg := hcfg
+
+/-- A successful normalized conversion preserves the erased CFG exactly. -/
+theorem erase_ofPhi {cfg : Classical.CFG Var Op Label}
+    (hcfg : PhiNormalized cfg) {bba : CFG Var Op Label}
+    (h : ofPhi cfg = some bba) : erasePhis cfg = bba.eraseArguments := by
+  rw [← toPhi_ofPhi hcfg h]
+  exact erasePhis_toPhi bba
+
+/-- Exact equivalence between the two normalized whole-CFG presentations. -/
+noncomputable def normalizedEquiv :
+    {cfg : Classical.CFG Var Op Label // PhiNormalized cfg} ≃
+      {cfg : CFG Var Op Label // BBANormalized cfg} where
+  toFun cfg := by
+    let bba := Classical.choose cfg.property
+    have hbba := (Classical.choose_spec cfg.property).1
+    have hround := (Classical.choose_spec cfg.property).2
+    exact ⟨bba, by rw [BBANormalized, hround]; exact hbba⟩
+  invFun cfg := ⟨toPhi cfg, ⟨cfg, cfg.property, rfl⟩⟩
+  left_inv cfg := by
+    apply Subtype.ext
+    exact (Classical.choose_spec cfg.property).2
+  right_inv cfg := by
+    apply Subtype.ext
+    let hx : PhiNormalized (toPhi cfg.val) :=
+      ⟨cfg.val, (show ofPhi (toPhi cfg.val) = some cfg.val from cfg.property), rfl⟩
+    have hchosen := (Classical.choose_spec hx).1
+    exact Option.some.inj (hchosen.symm.trans cfg.property)
+
+end CFG
+
+end CFGConversion
+
 /-- A normalized phi interface with `P` ordered predecessor occurrences and
 `A` ordered phi destinations.  `incoming a p` is phi-row-major. -/
 structure PhiTable (Var : Type u) (Label : Type w) (P A : Nat) where
