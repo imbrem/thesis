@@ -31,6 +31,29 @@ def labelType : LambdaSSA.LCtx τ → τ
   | [] => LambdaIter.empty
   | A :: L => LambdaIter.coprod A (labelType L)
 
+/-- Feedback state for compiling a CFG.  The left summand is the distinguished
+entry state; the right summand selects a local block and carries its argument. -/
+def cfgStateType (locals : LambdaSSA.LCtx τ) : τ :=
+  LambdaIter.coprod LambdaIter.unit (labelType locals)
+
+/-- Distinguished initial state of the simultaneous iteration. -/
+def cfgStart {n : Nat} : ITm Φ n := .inl .unit
+
+/-- Embed a local-label destination into the simultaneous iteration state. -/
+def cfgLocal {n : Nat} (target : ITm Φ n) : ITm Φ n := .inr target
+
+/-- Reassociate an appended label coproduct into either an external result or
+local feedback.  This is the syntactic counterpart of `labelAppendSplit` in
+the categorical region semantics. -/
+def routeAppend (locals externals : LambdaSSA.LCtx τ) :
+    ITm Φ n → ITm Φ n :=
+  match locals with
+  | [] => fun target => .inl target
+  | _ :: rest => fun target => .case target
+      (.inr (.inl (.bv 0)))
+      (.case (routeAppend rest externals (.bv 0))
+        (.inl (.bv 0)) (.inr (.inr (.bv 0))))
+
 /-- Inject the value of a selected label into the region result coproduct. -/
 def injectLabel {L : LambdaSSA.LCtx τ} {A : τ} (h : LambdaSSA.At L i A)
     (a : ITm Φ n) : ITm Φ n :=
