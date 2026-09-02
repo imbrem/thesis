@@ -45,6 +45,16 @@ noncomputable def finiteInject (R : Fin n → τ) (i : Fin n) :
   exact eqToHom (congrArg M.obj h.symm) ≫
     Limits.Sigma.ι (fun k : Fin (List.ofFn R).length => M.obj ((List.ofFn R).get k)) j
 
+/-- Materialize a finite-indexed label coproduct in the list representation. -/
+noncomputable def finiteLabelToObj (R : Fin n → τ) :
+    finiteLabelObj M R ⟶ labelObj M (List.ofFn R) :=
+  Limits.Sigma.desc fun i => finiteInject M R i
+
+@[reassoc (attr := simp)] theorem finiteLabelInject_finiteLabelToObj
+    (R : Fin n → τ) (i : Fin n) :
+    finiteLabelInject M R i ≫ finiteLabelToObj M R = finiteInject M R i := by
+  exact Limits.Sigma.ι_desc _ _
+
 structure FiniteCollective (Γ : VCtx τ) {n : Nat} (R : Fin n → τ) (X : V)
     (block : ∀ i, J.obj (ctxObj M (R i :: Γ)) ⟶ J.obj X)
     (f : J.obj (ctxObj M Γ ⊗ finiteLabelObj M R) ⟶ J.obj X) : Prop where
