@@ -11,6 +11,8 @@ import Isotope.Elgot.RA.Concrete
 import Isotope.Elgot.RA.Iteration
 import Isotope.Elgot.RA.Memory
 import Isotope.Elgot.RA.Categorical
+import Isotope.Elgot.RA.Generating
+import Isotope.Elgot.RA.Assoc
 import Isotope.Elgot.RA.Examples
 
 /-!

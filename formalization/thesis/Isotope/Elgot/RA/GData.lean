@@ -83,13 +83,13 @@ structure GData (R : RuleSet) (τ : PreTrace Loc Val A) (c' : Chro Loc Val) wher
   /-- The target chronicle. -/
   tgt : c'.toList = l.map h ++ m.map g
   /-- Any decomposition of the same shape is again a rewrite. -/
-  mk_step : ∀ (α ω : View Loc) (s : A) (d₁ d₂ : Chro Loc Val)
+  mk_step : ∀ {A' : Type u} (α ω : View Loc) (s : A') (d₁ d₂ : Chro Loc Val)
     (l' m' : List (Transition Loc Val)), (∀ T ∈ m', free T) →
     d₁.toList = l' ++ m'.map f → d₂.toList = l'.map h ++ m'.map g →
     Step R ⟨α, d₁, ω, s⟩ ⟨hv α, d₂, hv ω, s⟩
   /-- Any decomposition of the same shape takes traces to traces, given that
   the target's memories are well-formed. -/
-  mk_trace : ∀ (α ω : View Loc) (s : A) (d₁ d₂ : Chro Loc Val)
+  mk_trace : ∀ {A' : Type u} (α ω : View Loc) (s : A') (d₁ d₂ : Chro Loc Val)
     (l' m' : List (Transition Loc Val)), (∀ T ∈ m', free T) →
     d₁.toList = l' ++ m'.map f → d₂.toList = l'.map h ++ m'.map g →
     IsTrace ⟨α, d₁, ω, s⟩ → (∀ T ∈ d₂.toList, T.WF) → IsTrace ⟨hv α, d₂, hv ω, s⟩
