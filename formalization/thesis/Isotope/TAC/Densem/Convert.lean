@@ -363,4 +363,82 @@ theorem body_sim [DecidableEq ν] [DecidableEq κ]
                 ((Densem.Env.set target (Version.instr bid i 0 x) ax).set
                   (Version.instr bid i 1 y) ay) hxy hrest hsource
 
+/-- Scoped straight-line simulation: agreement is required only for a stable
+finite set containing all remaining operand and terminator uses. -/
+theorem body_sim_on [DecidableEq ν] [DecidableEq κ]
+    (M : Densem.Model φ) (needed : List ν) (bid : BlockId κ) (i : Nat)
+    (current : Isotope.TAC.Classical.Convert.Env ν κ)
+    (xs : List (Instr ν φ)) (t : Isotope.TAC.Classical.Terminator ν φ κ)
+    (source source' : Densem.Env M ν)
+    (target : Densem.Env M (Version ν κ)) (exit : Densem.Exit κ M.Val)
+    (hrel : EnvRelOn needed current source target)
+    (hfresh : FreshFor bid i current xs)
+    (hins : ∀ ins ∈ xs, ∀ x ∈ ins.uses, x ∈ needed)
+    (hterm : ∀ x ∈ t.uses, x ∈ needed)
+    (hsource : bodyDenote M xs source t = some (source', exit)) :
+    ∃ target',
+      bodyDenote M (body bid i current xs).1 target
+          (renameTerminator (body bid i current xs).2 t) = some (target', exit) ∧
+        EnvRelOn needed (body bid i current xs).2 source' target' := by
+  induction xs generalizing i current source target with
+  | nil =>
+      simp only [bodyDenote, body] at hsource ⊢
+      rw [terminator_sim_on M needed current source target hrel t hterm]
+      cases ht : terminatorDenote M source t with
+      | none => simp [ht] at hsource
+      | some e =>
+        simp only [ht, Option.map_some, Option.some.injEq, Prod.mk.injEq] at hsource
+        rcases hsource with ⟨rfl, rfl⟩
+        exact ⟨target, by simp [ht], hrel⟩
+  | cons instr rest ih =>
+      have htail : ∀ ins ∈ rest, ∀ x ∈ ins.uses, x ∈ needed := by
+        intro ins hi x hx
+        exact hins ins (List.mem_cons_of_mem instr hi) x hx
+      cases instr with
+      | assign x rhs =>
+          simp only [bodyDenote] at hsource
+          cases hv : operandDenote M source rhs with
+          | none => simp [hv] at hsource
+          | some a =>
+              simp only [hv, Option.bind_some] at hsource
+              rcases hfresh with ⟨hdst, hrest⟩
+              have hop := operand_sim_on M needed current source target hrel rhs
+                (fun y hy => hins (.assign x rhs) (by simp) y hy)
+              simp only [body, bodyDenote]
+              rw [hop, hv]
+              exact ih (i + 1) (update current x (Version.instr bid i 0 x))
+                (Densem.Env.set source x a)
+                (Densem.Env.set target (Version.instr bid i 0 x) a)
+                (envRelOn_update needed current source target hrel x _ a hdst)
+                hrest htail hsource
+      | assignPair x y rhs =>
+          simp only [bodyDenote] at hsource
+          cases hv : operandDenote M source rhs with
+          | none => simp [hv] at hsource
+          | some a =>
+            cases hp : M.split a with
+            | none => simp [hv, hp] at hsource
+            | some p =>
+              rcases p with ⟨ax, ay⟩
+              simp [hv, hp] at hsource
+              rcases hfresh with ⟨hdx, hdy, hrest⟩
+              have hop := operand_sim_on M needed current source target hrel rhs
+                (fun z hz => hins (.assignPair x y rhs) (by simp) z hz)
+              simp only [body, bodyDenote]
+              rw [hop, hv]
+              simp [hp]
+              have hx := envRelOn_update needed current source target hrel x
+                (Version.instr bid i 0 x) ax hdx
+              have hxy := envRelOn_update needed
+                (update current x (Version.instr bid i 0 x))
+                (Densem.Env.set source x ax)
+                (Densem.Env.set target (Version.instr bid i 0 x) ax)
+                hx y (Version.instr bid i 1 y) ay hdy
+              exact ih (i + 1)
+                (update (update current x (Version.instr bid i 0 x)) y
+                  (Version.instr bid i 1 y))
+                ((Densem.Env.set source x ax).set y ay)
+                ((Densem.Env.set target (Version.instr bid i 0 x) ax).set
+                  (Version.instr bid i 1 y) ay) hxy hrest htail hsource
+
 end Isotope.TAC.Densem.Convert
