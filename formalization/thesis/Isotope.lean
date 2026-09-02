@@ -12,6 +12,7 @@ import Isotope.Elgot.Transformer
 import Isotope.Elgot.WS
 import Isotope.LambdaIter
 import Isotope.LambdaSSA
+import Isotope.TAC
 import Isotope.LambdaCase
 import Isotope.LambdaSeq
 import Isotope.Pomset
