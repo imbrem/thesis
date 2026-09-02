@@ -6,7 +6,9 @@ import Isotope.Elgot.ITree.Structural
 Two corecursive constructions over the final coalgebra structure.
 
 * `translate φ` relabels every visible event along a signature morphism
-  `φ : ∀ R, E R → F R`, leaving the tree shape untouched.  It is computable.
+  `φ : ∀ R, E R → F R`, leaving the tree shape untouched.  It is computable, and
+  is a monad morphism (`translate_bind`) functorial in the signature
+  (`translate_id`, `translate_translate`).
 * `interp h` interprets an interaction tree into *any* monad with iteration by
   iterating a single head-exposing step, so a diverging tree is sent to the
   target's divergent element.  Deciding whether a tree has a visible head is a
@@ -28,34 +30,103 @@ variable {E : Type u → Type u} {A : Type (u + 1)}
 
 section Translate
 
-variable {F : Type u → Type u}
+variable {F G : Type u → Type u} {B : Type (u + 1)}
+
+/-- The coalgebra unfolded by `translate`: relabel the head event, keep the
+children. -/
+def translateStep (φ : ∀ R : Type u, E R → F R) (s : Tree E A) :
+    Part (Visible F A (Tree E A)) :=
+  (fun v => match v with
+    | Visible.ret a => Visible.ret a
+    | Visible.vis e k => Visible.vis (φ _ e) k) <$> s.destruct
 
 /-- Relabel every visible event along a signature morphism. -/
 def translate (φ : ∀ R : Type u, E R → F R) (t : Tree E A) : Tree F A :=
-  corec (fun s : Tree E A => (fun v => match v with
-    | Visible.ret a => Visible.ret a
-    | Visible.vis e k => Visible.vis (φ _ e) k) <$> s.destruct) t
+  corec (translateStep φ) t
+
+/-- Destructing a relabelled tree. -/
+@[simp] theorem Tree.destruct_translate (φ : ∀ R : Type u, E R → F R) (t : Tree E A) :
+    (translate φ t).destruct = (fun v => match v with
+      | Visible.ret a => Visible.ret a
+      | Visible.vis e k => Visible.vis (φ _ e) (fun r => translate φ (k r)))
+        <$> t.destruct := by
+  rw [translate, Tree.destruct_corec, translateStep]
+  simp only [Part.map_eq_map, Part.map_map]
+  refine congrArg (fun g => Part.map g t.destruct) (funext fun v => ?_)
+  cases v <;> rfl
 
 /-- Relabelling a return. -/
 @[simp] theorem translate_ret (φ : ∀ R : Type u, E R → F R) (a : A) :
     translate φ (ret a) = ret a := by
-  rw [← Tree.construct_destruct (translate φ (ret a)), translate, Tree.destruct_corec]
-  simp only [Tree.destruct_ret, Part.map_eq_map, Part.map_some]
-  rfl
+  rw [← Tree.construct_destruct (translate φ (ret a)), Tree.destruct_translate]
+  simp
 
 /-- Relabelling silent divergence. -/
 @[simp] theorem translate_diverge (φ : ∀ R : Type u, E R → F R) :
     translate φ (diverge : Tree E A) = diverge := by
-  rw [← Tree.construct_destruct (translate φ diverge), translate, Tree.destruct_corec]
+  rw [← Tree.construct_destruct (translate φ diverge), Tree.destruct_translate]
   simp
 
 /-- Relabelling a visible event. -/
 @[simp] theorem translate_vis (φ : ∀ R : Type u, E R → F R) {R : Type u}
     (e : E R) (k : R → Tree E A) :
     translate φ (vis e k) = vis (φ R e) (fun r => translate φ (k r)) := by
-  rw [← Tree.construct_destruct (translate φ (vis e k)), translate, Tree.destruct_corec]
-  simp only [Tree.destruct_vis, Part.map_eq_map, Part.map_some]
-  rfl
+  rw [← Tree.construct_destruct (translate φ (vis e k)), Tree.destruct_translate]
+  simp
+
+/-- Relabelling along the identity does nothing. -/
+@[simp] theorem translate_id (t : Tree E A) : translate (fun _ e => e) t = t := by
+  refine Tree.eq_of_bisim' (fun x y => x = translate (fun _ e => e) y) ?_ rfl
+  rintro x y rfl
+  rcases Tree.cases_three y with rfl | ⟨a, rfl⟩ | ⟨S, e, j, rfl⟩
+  · simp
+  · simp
+  · exact Or.inr (Or.inr ⟨S, e, fun r => translate (fun _ e => e) (j r), j,
+      by simp, by simp, fun s => rfl⟩)
+
+/-- Relabelling twice is relabelling once along the composite. -/
+theorem translate_translate (φ : ∀ R : Type u, E R → F R) (ψ : ∀ R : Type u, F R → G R)
+    (t : Tree E A) :
+    translate ψ (translate φ t) = translate (fun R e => ψ R (φ R e)) t := by
+  refine Tree.eq_of_bisim'
+    (fun x y => ∃ s : Tree E A, x = translate ψ (translate φ s)
+      ∧ y = translate (fun R e => ψ R (φ R e)) s) ?_ ⟨t, rfl, rfl⟩
+  rintro x y ⟨s, rfl, rfl⟩
+  rcases Tree.cases_three s with rfl | ⟨a, rfl⟩ | ⟨S, e, j, rfl⟩
+  · simp
+  · simp
+  · exact Or.inr (Or.inr ⟨S, ψ S (φ S e),
+      fun r => translate ψ (translate φ (j r)),
+      fun r => translate (fun R e => ψ R (φ R e)) (j r),
+      by simp, by simp, fun r => ⟨j r, rfl, rfl⟩⟩)
+
+/-- Relabelling commutes with sequencing: `translate φ` is a monad morphism. -/
+theorem translate_bind (φ : ∀ R : Type u, E R → F R) (t : Tree E A) (k : A → Tree E B) :
+    translate φ (t >>= k) = translate φ t >>= fun a => translate φ (k a) := by
+  refine Tree.eq_of_bisim'
+    (fun x y => x = y ∨ ∃ (s : Tree E A) (j : A → Tree E B),
+      x = translate φ (s >>= j) ∧ y = translate φ s >>= fun a => translate φ (j a))
+    ?_ (Or.inr ⟨t, k, rfl, rfl⟩)
+  rintro x y (rfl | ⟨s, j, rfl, rfl⟩)
+  · exact Tree.bisim'_refl
+      (fun x y => x = y ∨ ∃ (s : Tree E A) (j : A → Tree E B),
+      x = translate φ (s >>= j) ∧ y = translate φ s >>= fun a => translate φ (j a))
+      (fun _ => Or.inl rfl) x
+  · rcases Tree.cases_three s with rfl | ⟨a, rfl⟩ | ⟨S, e, i, rfl⟩
+    · rw [diverge_bind, translate_diverge, translate_diverge, diverge_bind]
+      exact Or.inl ⟨Tree.destruct_diverge, Tree.destruct_diverge⟩
+    · rw [show ((ret a : Tree E A) >>= j) = j a from pure_bind a j, translate_ret,
+        show ((ret a : Tree F A) >>= fun a => translate φ (j a)) = translate φ (j a) from
+          pure_bind a _]
+      exact Tree.bisim'_refl
+        (fun x y => x = y ∨ ∃ (s : Tree E A) (j : A → Tree E B),
+        x = translate φ (s >>= j) ∧ y = translate φ s >>= fun a => translate φ (j a))
+        (fun _ => Or.inl rfl) _
+    · rw [vis_bind, translate_vis, translate_vis, vis_bind]
+      exact Or.inr (Or.inr ⟨S, φ S e,
+        fun r => translate φ (i r >>= j),
+        fun r => translate φ (i r) >>= fun a => translate φ (j a),
+        by simp, by simp, fun r => Or.inr ⟨i r, j, rfl, rfl⟩⟩)
 
 end Translate
 
