@@ -77,6 +77,57 @@ def body [DecidableEq Var] (bid : BlockId Label) :
 def endEnv [DecidableEq Var] (bid : BlockId Label) (b : Block Var Op Label) : Env Var Label :=
   (body bid 0 (startEnv bid) b.body).2
 
+/-- The environment returned by a converted body contains either the incoming
+version or a destination actually defined by that converted body. -/
+theorem body_end_eq_or_mem [DecidableEq Var] (bid : BlockId Label)
+    (i : Nat) (ρ : Env Var Label) (xs : List (Instr Var Op)) (x : Var) :
+    (body bid i ρ xs).2 x = ρ x ∨
+      (body bid i ρ xs).2 x ∈ (body bid i ρ xs).1.flatMap Instr.defs := by
+  induction xs generalizing i ρ with
+  | nil => exact .inl rfl
+  | cons hd tl ih =>
+      cases hd with
+      | assign y rhs =>
+          let dst := Version.instr bid i 0 y
+          rcases ih (i + 1) (update ρ y dst) with h | h
+          · by_cases e : x = y
+            · subst x
+              apply Or.inr
+              simp only [body, List.flatMap_cons, List.mem_append]
+              apply Or.inl
+              simpa [Instr.defs, update, dst] using h
+            · exact .inl (by simpa [body, update, e] using h)
+          · exact .inr (by simp only [body, List.flatMap_cons, Instr.defs,
+              List.mem_append]; exact .inr h)
+      | assignPair y z rhs =>
+          let dy := Version.instr bid i 0 y
+          let dz := Version.instr bid i 1 z
+          let ρ' := update (update ρ y dy) z dz
+          rcases ih (i + 1) ρ' with h | h
+          · by_cases ez : x = z
+            · subst x
+              apply Or.inr
+              simp only [body, List.flatMap_cons, List.mem_append]
+              apply Or.inl
+              simp only [Instr.defs, List.mem_cons, List.mem_singleton]
+              exact Or.inr (by simpa [ρ', update, dz] using h)
+            · by_cases ey : x = y
+              · subst x
+                apply Or.inr
+                simp only [body, List.flatMap_cons, List.mem_append]
+                apply Or.inl
+                simp only [Instr.defs, List.mem_cons, List.mem_singleton]
+                exact Or.inl (by simpa [ρ', update, dy, ez] using h)
+              · exact .inl (by simpa [body, update, ρ', ez, ey] using h)
+          · exact .inr (by simp only [body, List.flatMap_cons, Instr.defs,
+              List.mem_append]; exact .inr h)
+
+theorem endEnv_start_or_def [DecidableEq Var] (bid : BlockId Label)
+    (b : Block Var Op Label) (x : Var) :
+    endEnv bid b x = startEnv bid x ∨
+      endEnv bid b x ∈ (body bid 0 (startEnv bid) b.body).1.flatMap Instr.defs :=
+  body_end_eq_or_mem bid 0 (startEnv bid) b.body x
+
 def predecessors [DecidableEq Label] (cfg : CFG Var Op Label) (bid : BlockId Label) :
     List (BlockId Label) :=
   .entry :: cfg.labels.map BlockId.named |>.filter fun src => bid ∈ cfg.successors src
@@ -105,6 +156,61 @@ def cfg [DecidableEq Var] [DecidableEq Label] (source : CFG Var Op Label)
     (vars : List Var) : CFG (Version Var Label) Op Label :=
   { entry := convertBlock source vars .entry source.entry
     blocks := source.blocks.map fun p => (p.1, convertBlock source vars (.named p.1) p.2) }
+
+@[simp] theorem renameTerminator_targets (ρ : Env Var Label)
+    (t : Terminator Var Op Label) : (renameTerminator ρ t).targets = t.targets := by
+  induction t with
+  | br => rfl
+  | ret => rfl
+  | cond o l r il ir => simp [renameTerminator, Terminator.targets, il, ir]
+
+private theorem lookup_map_blocks [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) (vars : List Var) (label : Label) :
+    ((source.blocks.map fun p =>
+      (p.1, convertBlock source vars (.named p.1) p.2)).lookup label) =
+      (source.blocks.lookup label).map (convertBlock source vars (.named label)) := by
+  induction source.blocks with
+  | nil => simp
+  | cons head tail ih =>
+      simp only [List.map_cons, List.lookup]
+      split
+      · rename_i h
+        have he : label = head.1 := LawfulBEq.eq_of_beq h
+        subst label
+        simp [h]
+      · rename_i h
+        simpa [h] using ih
+
+theorem lookup_cfg [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) (vars : List Var) (bid : BlockId Label) :
+    (cfg source vars).lookup bid =
+      (source.lookup bid).map (convertBlock source vars bid) := by
+  cases bid with
+  | entry => rfl
+  | named label => exact lookup_map_blocks source vars label
+
+theorem successors_cfg [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) (vars : List Var) (bid : BlockId Label) :
+    (cfg source vars).successors bid = source.successors bid := by
+  rw [CFG.successors, CFG.successors, lookup_cfg]
+  cases h : source.lookup bid with
+  | none => simp [h]
+  | some b => simp [h, convertBlock]
+
+theorem cfg_uniqueLabels [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) (vars : List Var) (h : source.uniqueLabels) :
+    (cfg source vars).uniqueLabels := by
+  simpa [CFG.uniqueLabels, CFG.labels, cfg, Function.comp_def] using h
+
+theorem cfg_targetsExist [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) (vars : List Var) (h : source.targetsExist) :
+    (cfg source vars).targetsExist := by
+  intro b target ht
+  rw [successors_cfg] at ht
+  rcases h b target ht with ⟨block, hb⟩
+  refine ⟨convertBlock source vars target block, ?_⟩
+  rw [lookup_cfg, hb]
+  rfl
 
 theorem renameValue_uses_source (ρ : Env Var Label)
     (hρ : ∀ x, (ρ x).source = x) (v : Value Var) :
@@ -377,6 +483,14 @@ private def dedup [DecidableEq α] : (xs : List α) → {ys : List α // ys.Nodu
       let tail := dedup xs
       if h : x ∈ tail.1 then tail else ⟨x :: tail.1, List.nodup_cons.mpr ⟨h, tail.2⟩⟩
 
+private theorem mem_dedup [DecidableEq α] (x : α) (xs : List α) :
+    x ∈ (dedup xs).1 ↔ x ∈ xs := by
+  induction xs generalizing x with
+  | nil => simp [dedup]
+  | cons y ys ih =>
+      simp only [dedup]
+      split <;> simp_all
+
 /-- The finite source-variable universe mentioned anywhere in the input CFG. -/
 def sourceVars [DecidableEq Var] (source : CFG Var Op Label) : List Var :=
   (dedup (blockSourceVars source.entry ++
@@ -386,6 +500,36 @@ theorem sourceVars_nodup [DecidableEq Var] (source : CFG Var Op Label) :
     (sourceVars source).Nodup :=
   (dedup (blockSourceVars source.entry ++
     source.blocks.flatMap fun p => blockSourceVars p.2)).2
+
+theorem mem_sourceVars [DecidableEq Var] (source : CFG Var Op Label) (x : Var) :
+    x ∈ sourceVars source ↔
+      x ∈ blockSourceVars source.entry ∨
+        ∃ p ∈ source.blocks, x ∈ blockSourceVars p.2 := by
+  rw [sourceVars, mem_dedup, List.mem_append, List.mem_flatMap]
+
+theorem instr_use_mem_blockSourceVars [DecidableEq Var]
+    (b : Block Var Op Label) {i : Instr Var Op} (hi : i ∈ b.body)
+    {x : Var} (hx : x ∈ i.uses) : x ∈ blockSourceVars b := by
+  unfold blockSourceVars instrSourceVars
+  apply List.mem_append_left
+  apply List.mem_append_right
+  exact List.mem_flatMap.mpr ⟨i, hi, List.mem_append_right _ hx⟩
+
+theorem terminator_use_mem_blockSourceVars (b : Block Var Op Label)
+    {x : Var} (hx : x ∈ b.terminator.uses) : x ∈ blockSourceVars b := by
+  exact List.mem_append_right _ hx
+
+theorem entry_use_mem_sourceVars [DecidableEq Var] (source : CFG Var Op Label)
+    {i : Instr Var Op} (hi : i ∈ source.entry.body) {x : Var} (hx : x ∈ i.uses) :
+    x ∈ sourceVars source :=
+  (mem_sourceVars source x).2 (.inl (instr_use_mem_blockSourceVars source.entry hi hx))
+
+theorem block_use_mem_sourceVars [DecidableEq Var] (source : CFG Var Op Label)
+    {label : Label} {b : Block Var Op Label} (hb : (label, b) ∈ source.blocks)
+    {i : Instr Var Op} (hi : i ∈ b.body) {x : Var} (hx : x ∈ i.uses) :
+    x ∈ sourceVars source :=
+  (mem_sourceVars source x).2 (.inr ⟨(label, b), hb,
+    instr_use_mem_blockSourceVars b hi hx⟩)
 
 /-- Canonical total-environment conversion using all variables mentioned by the source. -/
 def convert [DecidableEq Var] [DecidableEq Label] (source : CFG Var Op Label) :
