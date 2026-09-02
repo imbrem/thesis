@@ -60,10 +60,18 @@ inductive RegionDenotes (ε : Type r) [HasEff Φ ε] [Bot ε]
   | br (dt : Denotes ε ha fa) :
       RegionDenotes ε (.br h ha) (fun ρ => fa ρ >>= fun a =>
         pure (labelInject _ h a))
-  | case (de : Denotes ε he fe)
+  | case {Γ : VCtx τ} {L : LCtx τ} {A B : τ} {a : Tm Φ}
+      {l r : Region Φ}
+      {he : Tm.HasType Γ a (LambdaIter.coprod A B)}
+      {hl : Region.HasType (A :: Γ) l L}
+      {hr : Region.HasType (B :: Γ) r L}
+      {fe : Env Γ → m (TyDen (LambdaIter.coprod A B))}
+      {fl : Env (A :: Γ) → m (LabelDen L)}
+      {fr : Env (B :: Γ) → m (LabelDen L)}
+      (de : Denotes ε he fe)
       (dl : RegionDenotes ε hl fl) (dr : RegionDenotes ε hr fr) :
       RegionDenotes ε (.case he hl hr) (fun ρ => fe ρ >>= fun e =>
-        match TypeModel.coprodEquiv _ _ e with
+        match TypeModel.coprodEquiv A B e with
         | .inl a => fl (ρ, a)
         | .inr b => fr (ρ, b))
   | let₁ (da : Denotes ε ha fa) (db : RegionDenotes ε hb fb) :
