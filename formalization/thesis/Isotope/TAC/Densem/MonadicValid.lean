@@ -488,4 +488,44 @@ theorem denote_convert [Monad m] [LawfulMonad m]
         (externalEnv (M := M) (κ := κ) rho) = sourceDenoteOn M g rho := by
   rw [denote_convert_guarded M g rho, sourceDenoteGuarded_eq_on M g rho htotal]
 
+/-- Running a named source block only observes the finite source-variable
+interface, including in its resulting store. -/
+theorem sourceBlock_restrict [Monad m] [LawfulMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    (g : Isotope.TAC.Classical.CFG ν φ κ) (label : κ)
+    (b : Isotope.TAC.Classical.Block ν φ κ)
+    (hb : (label, b) ∈ g.blocks) (rho : MEnv M ν) :
+    (Isotope.TAC.Densem.Monadic.Block.denote M rho
+        (Isotope.TAC.Densem.Classical.block b) >>= fun result =>
+      pure (restrict M (sourceVars g) result.1, result.2)) =
+    (Isotope.TAC.Densem.Monadic.Block.denote M
+        (restrict M (sourceVars g) rho)
+        (Isotope.TAC.Densem.Classical.block b) >>= fun result =>
+      pure (restrict M (sourceVars g) result.1, result.2)) := by
+  let target : MEnv M (Version ν κ) := fun v => rho v.source
+  have hrel : EnvRelOn (M := M) (sourceVars g) (startEnv (.named label))
+      rho target := by
+    intro x hx
+    simp [target, startEnv]
+  have hrel' : EnvRelOn (M := M) (sourceVars g) (startEnv (.named label))
+      (restrict M (sourceVars g) rho) target := by
+    intro x hx
+    simp [target, restrict, hx, startEnv]
+  have core := body_denote_restrict_project M (sourceVars g) (.named label) 0
+    (startEnv (.named label)) b.body b.terminator rho target hrel
+    (Isotope.TAC.Densem.Convert.freshFor_startEnv (.named label) b.body)
+    (fun ins hi x hx => block_use_mem_sourceVars g hb hi hx)
+    (fun x hx => (mem_sourceVars g x).2
+      (.inr ⟨(label, b), hb, by
+        exact terminator_use_mem_blockSourceVars b hx⟩))
+  have core' := body_denote_restrict_project M (sourceVars g) (.named label) 0
+    (startEnv (.named label)) b.body b.terminator
+    (restrict M (sourceVars g) rho) target hrel'
+    (Isotope.TAC.Densem.Convert.freshFor_startEnv (.named label) b.body)
+    (fun ins hi x hx => block_use_mem_sourceVars g hb hi hx)
+    (fun x hx => (mem_sourceVars g x).2
+      (.inr ⟨(label, b), hb, by
+        exact terminator_use_mem_blockSourceVars b hx⟩))
+  exact core.symm.trans core'
+
 end Isotope.TAC.Densem.Convert.Monadic.Valid
