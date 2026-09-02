@@ -228,6 +228,35 @@ def den [DecidableEq Loc] [DecidableEq Val] : Com Loc Val → Comp Loc Val PUnit
   | .wh b C => star (test b.eval >>= fun _ ↦ den C) >>= fun _ ↦ test (BExp.neg b).eval
   | .await b C => atom fun μ ν ↦ b.eval μ = true ∧ obs (den C) μ ν
 
+section Equations
+
+variable [DecidableEq Loc] [DecidableEq Val]
+
+@[simp] theorem den_skip : den (Com.skip : Com Loc Val) = test fun _ ↦ true := by rw [den]
+
+@[simp] theorem den_assign (ℓ : Loc) (e : Exp Loc Val) :
+    den (Com.assign ℓ e) = atom fun μ ν ↦ ν = Function.update μ ℓ (e.eval μ) := by rw [den]
+
+@[simp] theorem den_seq (C₁ C₂ : Com Loc Val) :
+    den (Com.seq C₁ C₂) = (den C₁ >>= fun _ ↦ den C₂) := by rw [den]
+
+@[simp] theorem den_par (C₁ C₂ : Com Loc Val) :
+    den (Com.par C₁ C₂) = (fun _ ↦ PUnit.unit) <$> Brookes.par (den C₁) (den C₂) := by rw [den]
+
+@[simp] theorem den_ite (b : BExp Loc Val) (C₁ C₂ : Com Loc Val) :
+    den (Com.ite b C₁ C₂) =
+      union2 (test b.eval >>= fun _ ↦ den C₁) (test (BExp.neg b).eval >>= fun _ ↦ den C₂) := by
+  rw [den]
+
+@[simp] theorem den_wh (b : BExp Loc Val) (C : Com Loc Val) :
+    den (Com.wh b C) =
+      (star (test b.eval >>= fun _ ↦ den C) >>= fun _ ↦ test (BExp.neg b).eval) := by rw [den]
+
+@[simp] theorem den_await (b : BExp Loc Val) (C : Com Loc Val) :
+    den (Com.await b C) = atom fun μ ν ↦ b.eval μ = true ∧ obs (den C) μ ν := by rw [den]
+
+end Equations
+
 /-- **Brookes's observation** `M[C]` of a command. -/
 def Obs [DecidableEq Loc] [DecidableEq Val] (C : Com Loc Val)
     (μ ν : Store Loc Val) : Prop := obs (den C) μ ν
