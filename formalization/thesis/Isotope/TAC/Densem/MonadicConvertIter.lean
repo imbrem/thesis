@@ -100,6 +100,33 @@ def observeState [DecidableEq ν] [DecidableEq κ]
     MEnv M (Version ν κ) × BlockId κ × κ → GuardedState M ν κ
   | (target, pred, label) => (projectBoundary M source pred target, pred, label)
 
+/-- Globally defined source body used on the right of the Elgot-uniformity
+square.  It accepts precisely the boundary shapes on which canonical phis can
+run: all interface values must be present, and a nonempty phi interface also
+requires a genuine predecessor edge.  With an empty interface there are no
+phis, so the predecessor is deliberately ignored. -/
+def guardedSourceStep [Monad m] [DecidableEq ν] [DecidableEq κ]
+    (source : Isotope.TAC.Classical.CFG ν φ κ) :
+    GuardedState M ν κ → m (M.Val ⊕ GuardedState M ν κ)
+  | (ρ, pred, label) => match Isotope.TAC.Densem.Phi.lookup source label with
+      | none => M.fail
+      | some block =>
+          if _htotal : allPresent M (sourceVars source) ρ = true then
+            let run := do
+              let (ρ', exit) ← Isotope.TAC.Densem.Monadic.Block.denote M ρ
+                (Isotope.TAC.Densem.Classical.block block)
+              match exit with
+              | .return a => pure (.inl a)
+              | .branch next => pure (.inr
+                  (restrict M (sourceVars source) ρ', .named label, next))
+            match sourceVars source with
+            | [] => run
+            | _ :: _ => match source.lookup pred with
+                | none => M.fail
+                | some _ => if pred ∈ predecessors source (.named label) then run
+                  else M.fail
+          else M.fail
+
 private theorem restrict_idem [DecidableEq ν] (vars : List ν)
     (source : MEnv M ν) :
     restrict M vars (restrict M vars source) = restrict M vars source := by
