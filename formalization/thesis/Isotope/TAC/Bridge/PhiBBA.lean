@@ -229,6 +229,15 @@ def phiPredecessors (cfg : Classical.CFG Var Op Label) (target : Label) :
     cfg.blocks.flatMap fun (source, block) =>
       if target ∈ block.terminator.targets then [.named source] else []
 
+/-- Source/target occurrences in a classical CFG.  Their uniqueness is the
+missing condition needed because `phiPredecessors` records predecessors, not
+parallel edge occurrences from the same predecessor. -/
+def phiEdgeKeys (cfg : Classical.CFG Var Op Label) :
+    List (BlockId Label × Label) :=
+  (cfg.entry.terminator.targets.map fun target => (.entry, target)) ++
+    cfg.blocks.flatMap fun (source, block) =>
+      block.terminator.targets.map fun target => (.named source, target)
+
 /-- Every control-flow target denotes exactly one named block. -/
 def PhiTargetsDefined (cfg : Classical.CFG Var Op Label) : Prop :=
   ∀ target,
@@ -244,11 +253,12 @@ def PhiStructurallyNormalized (cfg : Classical.CFG Var Op Label) : Prop :=
   cfg.entry.phis = [] ∧
   (cfg.blocks.map Prod.fst).Nodup ∧
   PhiTargetsDefined cfg ∧
-  ∀ label block, (label, block) ∈ cfg.blocks →
+  (∀ label block, (label, block) ∈ cfg.blocks →
     (block.phis.map Phi.dst).Nodup ∧
     ∀ phi, phi ∈ block.phis →
       phi.incoming.map Incoming.predecessor = phiPredecessors cfg label ∧
-      (phi.incoming.map Incoming.predecessor).Nodup
+      (phi.incoming.map Incoming.predecessor).Nodup) ∧
+  (phiEdgeKeys cfg).Nodup
 
 /-- Target lookup in the BBA syntax, used only to state its structural arity
 condition. -/
@@ -267,6 +277,18 @@ def canonicalPhis (cfg : CFG Var Op Label) (label : Label)
     incoming := cfg.incomingColumn label index
   }
 
+/-- Canonical target lookup stated directly over the BBA block table. -/
+def findCanonicalPhiBlock (cfg : CFG Var Op Label) (target : Label) :
+    Option (Classical.Block Var Op Label) :=
+  ((cfg.blocks.map fun (label, block) => (label, ({
+      phis := canonicalPhis cfg label block
+      body := block.body
+      terminator := block.terminator.eraseArguments
+    } : Classical.Block Var Op Label))).find? fun pair => pair.1 = target).map Prod.snd
+
+@[simp] theorem findPhiBlock_toPhi (cfg : CFG Var Op Label) (target : Label) :
+    findPhiBlock (toPhi cfg) target = cfg.findCanonicalPhiBlock target := rfl
+
 /-- A direct matrix condition on a terminator: looking up the source row in
 each target's canonical columns yields exactly the argument vector written on
 that edge.  This is a local edge/header condition rather than a whole-CFG
@@ -275,7 +297,7 @@ def EdgeColumnsMatch (cfg : CFG Var Op Label) (source : BlockId Label) :
     Terminator Var Op Label → Prop
   | .br target arguments =>
       ∃ block,
-        findPhiBlock (toPhi cfg) target = some ({
+        findCanonicalPhiBlock cfg target = some ({
           phis := canonicalPhis cfg target block
           body := block.body
           terminator := block.terminator.eraseArguments
@@ -309,7 +331,7 @@ theorem PhiStructurallyNormalized.incoming_predecessors_nodup
     (hblock : (label, block) ∈ cfg.blocks) {phi : Phi Var Label}
     (hphi : phi ∈ block.phis) :
     (phi.incoming.map Incoming.predecessor).Nodup :=
-  (hcfg.2.2.2 label block hblock).2 phi hphi |>.2
+  (hcfg.2.2.2.1 label block hblock).2 phi hphi |>.2
 
 /-- Each structural phi row covers the canonical predecessor list exactly,
 and hence has precisely its cardinality. -/
@@ -319,7 +341,7 @@ theorem PhiStructurallyNormalized.incoming_length
     (hblock : (label, block) ∈ cfg.blocks) {phi : Phi Var Label}
     (hphi : phi ∈ block.phis) :
     phi.incoming.length = (phiPredecessors cfg label).length := by
-  have horder := (hcfg.2.2.2 label block hblock).2 phi hphi |>.1
+  have horder := (hcfg.2.2.2.1 label block hblock).2 phi hphi |>.1
   simpa using congrArg List.length horder
 
 /-- Structural BBA normalization gives the uniform target arity required by
@@ -346,6 +368,7 @@ theorem Terminator.ofPhi_toPhi_of_edgeColumnsMatch
   | br target arguments =>
       obtain ⟨block, hblock, hcolumns⟩ := h
       simp only [Terminator.eraseArguments, Terminator.ofPhi]
+      rw [findPhiBlock_toPhi]
       rw [hblock]
       simp only [Option.bind_some]
       rw [hcolumns]
