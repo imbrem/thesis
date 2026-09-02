@@ -83,15 +83,14 @@ instance wideDistributiveTensor : DistributiveTensor (WideSubcategory P) where
   left_isIso X Y Z := by
     refine ⟨⟨⟨wideLeftInvVal P X Y Z, wideLeftInvVal_mem P X Y Z⟩, ?_, ?_⟩⟩
     · apply Subtype.ext
-      show (DistributiveTensor.leftHom X Y Z).1 ≫ wideLeftInvVal P X Y Z = _
+      simp only [WideSubcategory.comp_def, WideSubcategory.id_def]
       rw [wideLeftHom_val, wideLeftInvVal]
       simp only [Category.assoc, DistributiveTensor.leftIso, asIso_inv]
       rw [← PremonoidalCategory.whiskerLeft_comp_assoc, Iso.hom_inv_id,
         PremonoidalCategory.whiskerLeft_id, Category.id_comp, IsIso.hom_inv_id_assoc,
         Iso.inv_hom_id]
-      rfl
     · apply Subtype.ext
-      show wideLeftInvVal P X Y Z ≫ (DistributiveTensor.leftHom X Y Z).1 = _
+      simp only [WideSubcategory.comp_def, WideSubcategory.id_def]
       rw [wideLeftHom_val, wideLeftInvVal]
       simp only [Category.assoc, DistributiveTensor.leftIso, asIso_inv]
       rw [Iso.hom_inv_id_assoc, IsIso.inv_hom_id_assoc,

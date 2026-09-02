@@ -266,7 +266,7 @@ theorem mem_associator_inv (A B D : C) : J.imageProperty (α_ A B D).inv := by
       J.map (α_ X Y Z).inv ≫
       eqToHom (by rw [obj_tensor (J := J), obj_tensor (J := J)] :
         J.obj ((X ⊗ Y) ⊗ Z) = (J.obj X ⊗ J.obj Y) ⊗ J.obj Z)) ?_ ?_
-  · rw [associator_hom_eq]; simp [← J.map_comp]
+  · rw [associator_hom_eq]; simp
   · exact mem_comp J (mem_eqToHom J _) (mem_comp J (J.imageProperty_map _) (mem_eqToHom J _))
 
 theorem mem_leftUnitor_hom (A : C) : J.imageProperty (λ_ A).hom := by
@@ -279,7 +279,7 @@ theorem mem_leftUnitor_inv (A : C) : J.imageProperty (λ_ A).inv := by
   refine mem_inv_of J _
     (J.map (λ_ X).inv ≫ eqToHom (by rw [obj_tensor (J := J), obj_unit (J := J)] :
         J.obj (𝟙_ V ⊗ X) = 𝟙_ C ⊗ J.obj X)) ?_ ?_
-  · rw [leftUnitor_hom_eq]; simp [← J.map_comp]
+  · rw [leftUnitor_hom_eq]; simp
   · exact mem_comp J (J.imageProperty_map _) (mem_eqToHom J _)
 
 theorem mem_rightUnitor_hom (A : C) : J.imageProperty (ρ_ A).hom := by
@@ -292,7 +292,7 @@ theorem mem_rightUnitor_inv (A : C) : J.imageProperty (ρ_ A).inv := by
   refine mem_inv_of J _
     (J.map (ρ_ X).inv ≫ eqToHom (by rw [obj_tensor (J := J), obj_unit (J := J)] :
         J.obj (X ⊗ 𝟙_ V) = J.obj X ⊗ 𝟙_ C)) ?_ ?_
-  · rw [rightUnitor_hom_eq]; simp [← J.map_comp]
+  · rw [rightUnitor_hom_eq]; simp
   · exact mem_comp J (J.imageProperty_map _) (mem_eqToHom J _)
 
 theorem mem_braiding_hom (A B : C) :
