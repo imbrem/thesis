@@ -488,6 +488,102 @@ theorem toGeneric_rename_bv {Γ : Ctx ν τ} {β : BoundCtx τ n}
   exact toGeneric_transport_type (r.typed i)
     (HasType.bv (Φ := Φ) (Γ := Γ) (β := β') (ι := r.toFun i))
 
+/-- Direct denotational naturality for exact renaming, after embedding into
+the proof-relevant generic semantics. -/
+theorem denote_exact_rename {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {β' : BoundCtx τ k} {t : Tm ν Φ n} {A : τ}
+    (h : HasType Φ Γ β t A) (r : TypedRenaming β β')
+    (γ : CtxDen Γ) (ρ : BoundDen β') :
+    denote (m := m) (ε := ε) (h.rename r).toGeneric γ ρ =
+      denote (m := m) (ε := ε) h.toGeneric γ
+        (BoundDen.pull ({ toFun := r.toFun, typed := r.typed } :
+          Isotope.LambdaIter.Subtyping.LocallyNameless.TypedRenaming β β') ρ) := by
+  induction h generalizing k β' with
+  | fv h =>
+      simp only [HasType.rename, HasType.toGeneric]
+      unfold denote
+      rfl
+  | @bv n β i =>
+      let rg : Isotope.LambdaIter.Subtyping.LocallyNameless.TypedRenaming β β' :=
+        { toFun := r.toFun, typed := r.typed }
+      let hg := Isotope.LambdaIter.Subtyping.LocallyNameless.HasType.bv
+        (Φ := Φ) (Γ := Γ) (β := β) (ι := i)
+      calc
+        _ = denote (m := m) (ε := ε) (hg.rename rg) γ ρ := by
+          apply congrArg (fun d => denote (m := m) (ε := ε) d γ ρ)
+          exact eq_of_heq (toGeneric_rename_bv i r)
+        _ = _ := Isotope.LambdaIter.Subtyping.Semantics.denote_rename
+          (m := m) (ε := ε) hg rg γ ρ
+  | op h ih =>
+      simp only [HasType.rename, HasType.toGeneric]
+      unfold denote
+      change (denote (m := m) (ε := ε) (h.rename r).toGeneric γ ρ >>= _) = _
+      rw [ih]
+  | let₁ ha hb iha ihb =>
+      simp only [HasType.rename, HasType.toGeneric]
+      unfold denote
+      change (denote (m := m) (ε := ε) (ha.rename r).toGeneric γ ρ >>= fun a =>
+        denote (m := m) (ε := ε) (hb.rename (r.up _)).toGeneric γ (ρ, a)) = _
+      rw [iha]
+      apply bind_congr
+      intro a
+      rw [ihb]
+      rfl
+  | unit =>
+      simp only [HasType.rename, HasType.toGeneric]
+      unfold denote
+      change (pure (TypeModel.unitEquiv.symm ()) : m _) = pure _
+      rfl
+  | pair ha hb iha ihb =>
+      simp only [HasType.rename, HasType.toGeneric]
+      unfold denote
+      change (denote (m := m) (ε := ε) (ha.rename r).toGeneric γ ρ >>= fun a =>
+        denote (m := m) (ε := ε) (hb.rename r).toGeneric γ ρ >>= fun b => pure _) = _
+      rw [iha, ihb]
+  | let₂ ha hc iha ihc =>
+      simp only [HasType.rename, HasType.toGeneric]
+      unfold denote
+      change (denote (m := m) (ε := ε) (ha.rename r).toGeneric γ ρ >>= fun ab =>
+        denote (m := m) (ε := ε) (hc.rename ((r.up _).up _)).toGeneric γ
+          ((ρ, (TypeModel.tensorEquiv _ _ ab).1),
+            (TypeModel.tensorEquiv _ _ ab).2)) = _
+      rw [iha]
+      apply bind_congr
+      intro ab
+      rw [ihc]
+      rfl
+  | inl h ih | inr h ih | abort h ih =>
+      simp only [HasType.rename, HasType.toGeneric]
+      unfold denote
+      change (denote (m := m) (ε := ε) (h.rename r).toGeneric γ ρ >>= _) = _
+      rw [ih]
+  | case he hl hr ihe ihl ihr =>
+      simp only [HasType.rename, HasType.toGeneric]
+      unfold denote
+      change (denote (m := m) (ε := ε) (he.rename r).toGeneric γ ρ >>= fun e =>
+        match TypeModel.coprodEquiv _ _ e with
+        | .inl a => denote (m := m) (ε := ε) (hl.rename (r.up _)).toGeneric γ (ρ, a)
+        | .inr b => denote (m := m) (ε := ε) (hr.rename (r.up _)).toGeneric γ (ρ, b)) = _
+      rw [ihe]
+      apply bind_congr
+      intro e
+      cases TypeModel.coprodEquiv _ _ e with
+      | inl a => simp only; rw [ihl]; rfl
+      | inr b => simp only; rw [ihr]; rfl
+  | iter ha hb iha ihb =>
+      simp only [HasType.rename, HasType.toGeneric]
+      unfold denote
+      change (denote (m := m) (ε := ε) (ha.rename r).toGeneric γ ρ >>= Elgot.iter fun a =>
+        denote (m := m) (ε := ε) (hb.rename (r.up _)).toGeneric γ (ρ, a) >>= fun s =>
+          pure (TypeModel.coprodEquiv _ _ s)) = _
+      rw [iha]
+      apply bind_congr
+      intro a
+      congr 1
+      funext x
+      rw [ihb]
+      rfl
+
 @[simp] theorem denote_elaborate_fv {Γ : Ctx ν τ} {β : BoundCtx τ n}
     {x : ν} {A : τ} (hx : Γ.lookup x = some A)
     (γ : CtxDen Γ) (ρ : BoundDen β) :
