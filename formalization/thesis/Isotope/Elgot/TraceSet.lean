@@ -4,6 +4,7 @@ import Isotope.Elgot.TraceSet.Laws
 import Isotope.Elgot.TraceSet.Nondeterminism
 import Isotope.Elgot.TraceSet.Compare
 import Isotope.Elgot.TraceSet.Examples
+import Isotope.Elgot.TraceSet.Categorical
 
 /-!
 # Nondeterministic trace sets as an Elgot monad
@@ -32,10 +33,13 @@ defines `FiniteTrace`.
 * The comparison with `FiniteTrace`: the deterministic model embeds as an
   injective monad morphism that also commutes with iteration
   (`Isotope.Elgot.TraceSet.Compare`).
-* Consequently the Kleisli category of `TraceSet E T` inherits the
-  `ElgotCategory` / `ElgotFreydCategory` structure of
-  `Isotope.CategoryTheory.Monad.Elgot` and the `LambdaIter` soundness theorems,
-  with no further work.
+* The Kleisli category of `TraceSet E T` is an `ElgotCategory`, an
+  `ElgotFreydCategory`, and a `StrongElgotFreydCategory`, by instance synthesis
+  from the generic construction in `Isotope.CategoryTheory.Monad.Elgot`
+  (`TraceSet.elgotCategory`, `TraceSet.elgotFreydCategory`,
+  `TraceSet.strongElgotFreydCategory`).  No `LambdaIter` denotational model is
+  shipped: that additionally needs a concrete `TypeModel` and
+  `InstructionModel`, and none exists anywhere in this repository yet.
 
 **Not proved, and not claimed.**
 
