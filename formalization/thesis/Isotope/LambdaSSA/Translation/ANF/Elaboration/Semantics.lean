@@ -23,6 +23,20 @@ variable {ε : Type r} [HasEff Φ ε] [Bot ε]
 variable {m : Type v → Type v} [Monad m] [LawfulMonad m]
 variable [Iterate m] [LawfulElgotMonad m] [InstructionModel Φ τ ε m]
 
+/-- Transport an exact LambdaIter typing derivation along equality of its raw
+term index. -/
+def transportHasType {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {t t' : Tm ν Φ n} {A : τ} (e : t = t')
+    (h : HasType Φ Γ β t A) : HasType Φ Γ β t' A := e ▸ h
+
+/-- Dependent transport changes only the index, not the proof-relevant
+contents of an exact typing derivation. -/
+theorem transportHasType_heq {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {t t' : Tm ν Φ n} {A : τ} (e : t = t')
+    (h : HasType Φ Γ β t A) : HEq (transportHasType e h) h := by
+  subst t'
+  rfl
+
 @[simp] theorem atomRename_toTm (ρ : Fin n → Fin k) (a : Atom ν Φ n) :
     (atomRename ρ a).toTm = a.toTm.rename ρ := by
   induction a <;> simp [atomRename, Atom.toTm, Tm.rename, *]
