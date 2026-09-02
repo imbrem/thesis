@@ -1,4 +1,4 @@
-import Isotope.LambdaIter.Semantics.Model
+import Isotope.LambdaIter.Subtyping.Semantics.Model
 
 /-!
 # A proof-irrelevant minimal subtyping experiment
@@ -60,7 +60,7 @@ theorem subty_unique {A B : MinimalTy α} (f g : Subty A B) : f = g :=
 
 end MinimalTy
 
-namespace Semantics
+namespace Subtyping.Semantics
 
 section Minimal
 
@@ -84,6 +84,6 @@ theorem minimal_coe_comp [LawfulTypeModel.{u, v} (MinimalTy α)]
 
 end Minimal
 
-end Semantics
+end Subtyping.Semantics
 
 end Isotope.LambdaIter

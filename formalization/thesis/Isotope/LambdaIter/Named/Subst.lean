@@ -1,8 +1,9 @@
-import Isotope.LambdaIter.Named.Structural
+import Isotope.LambdaIter.Named.Defs
 
 /-! # Renaming and capture-aware substitution -/
 
 namespace Isotope.LambdaIter.Named
+
 
 variable {Φ : Type*}
 

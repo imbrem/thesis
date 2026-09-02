@@ -1,5 +1,5 @@
 import Isotope.Elgot.ITree.Examples
-import Isotope.LambdaIter.Semantics.Agreement.Iteration
+import Isotope.LambdaIter.Subtyping.Semantics.Agreement.Iteration
 
 /-!
 # The Kleisli/Freyd structure carried by weak interaction trees
@@ -48,15 +48,15 @@ theorem kleisliElgotCategory : ElgotCategory (Kleisli (TM (Tree E))) := inferIns
 
 /-- The categorical contextual loop of lambda-iter agrees with tree iteration. -/
 theorem contextualLoop_of {R A B : Type (u + 1)}
-    (body : (Isotope.LambdaIter.Semantics.Categorical.typeJ (m := Tree E)).obj (R × A) ⟶
-      (Isotope.LambdaIter.Semantics.Categorical.typeJ (m := Tree E)).obj (B ⨿ A : Type (u + 1)))
+    (body : (Isotope.LambdaIter.Subtyping.Semantics.Categorical.typeJ (m := Tree E)).obj (R × A) ⟶
+      (Isotope.LambdaIter.Subtyping.Semantics.Categorical.typeJ (m := Tree E)).obj (B ⨿ A : Type (u + 1)))
     (r : R) (a : A) :
-    (Isotope.LambdaIter.Semantics.Categorical.contextualLoop
-        (Isotope.LambdaIter.Semantics.Categorical.typeJ (m := Tree E)) body).of (r, a) =
+    (Isotope.LambdaIter.Subtyping.Semantics.Categorical.contextualLoop
+        (Isotope.LambdaIter.Subtyping.Semantics.Categorical.typeJ (m := Tree E)) body).of (r, a) =
       Isotope.Elgot.iter (m := Tree E) (fun a =>
         Isotope.Elgot.kcomp (m := Tree E) body.of (fun s =>
           (pure ((Types.binaryCoproductIso B A).hom s) : Tree E (B ⊕ A))) (r, a)) a :=
-  Isotope.LambdaIter.Semantics.Categorical.contextualLoop_of (m := Tree E) body r a
+  Isotope.LambdaIter.Subtyping.Semantics.Categorical.contextualLoop_of (m := Tree E) body r a
 
 /-- The universe obstruction to a set-valued lambda-iter model over `Tree E`:
 event responses live in `Type u`, tree values in `Type (u+1)`, so a `vis`-built
