@@ -419,7 +419,7 @@ mutual
             (atomRename_exact ha r) (programRename_exact hb ru)
 
   /-- Forgetting ANF Instr typing commutes with typed renaming. -/
-  theorem instrRename_exact {Γ : Ctx ν τ} {β : BoundCtx τ n}
+theorem instrRename_exact {Γ : Ctx ν τ} {β : BoundCtx τ n}
       {β' : BoundCtx τ k} {i : Instr ν Φ n} {A : τ}
       (h : Instr.HasType Γ β i A) (r : TypedRenaming β β') :
       transportHasType (instrRename_toTm i r.toFun)
@@ -461,6 +461,13 @@ mutual
             (atomRename_exact ha r) (programRename_exact hb ru)
 end
 
+theorem denote_transportHasType {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {t t' : Tm ν Φ n} {A : τ} (e : t = t')
+    (h : HasType Φ Γ β t A) (γ : CtxDen Γ) (ρ : BoundDen β) :
+    denote (m := m) (ε := ε) (transportHasType e h).toGeneric γ ρ =
+      denote (m := m) (ε := ε) h.toGeneric γ ρ := by
+  cases e
+  rfl
 
 @[simp] theorem denote_elaborate_fv {Γ : Ctx ν τ} {β : BoundCtx τ n}
     {x : ν} {A : τ} (hx : Γ.lookup x = some A)
