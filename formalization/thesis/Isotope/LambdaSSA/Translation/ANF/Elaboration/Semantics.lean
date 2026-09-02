@@ -270,6 +270,20 @@ theorem atomRename_exact {Γ : Ctx ν τ} {β : BoundCtx τ n}
   | inr h ih => exact atomRename_exact_inr h r ih
   | abort h ih => exact atomRename_exact_abort h r ih
 
+/-- The Program renaming bridge for an administrative return. -/
+theorem programRename_exact_ret {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {β' : BoundCtx τ k} {a : Atom ν Φ n} {A : τ}
+    (h : Atom.HasType Γ β a A) (r : TypedRenaming β β') :
+    transportHasType (programRename_toTm (.ret a) r.toFun)
+        (programRename_hasType r (.ret h)).toLambdaIter =
+      (Program.HasType.toLambdaIter (.ret h)).rename r := by
+  calc
+    _ = transportHasType (atomRename_toTm r.toFun a)
+        (atomRename_hasType r h).toLambdaIter :=
+      transportHasType_proof_irrel _ _ _
+    _ = _ := atomRename_exact h r
+
+
 @[simp] theorem denote_elaborate_fv {Γ : Ctx ν τ} {β : BoundCtx τ n}
     {x : ν} {A : τ} (hx : Γ.lookup x = some A)
     (γ : CtxDen Γ) (ρ : BoundDen β) :
