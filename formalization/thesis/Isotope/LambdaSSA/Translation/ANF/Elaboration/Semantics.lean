@@ -584,6 +584,24 @@ theorem denote_exact_rename {Γ : Ctx ν τ} {β : BoundCtx τ n}
       rw [ihb]
       rfl
 
+/-- Semantic naturality of ANF program renaming. -/
+theorem denote_programRename {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {β' : BoundCtx τ k} {p : Program ν Φ n} {A : τ}
+    (h : Program.HasType Γ β p A) (r : TypedRenaming β β')
+    (γ : CtxDen Γ) (ρ : BoundDen β') :
+    denote (m := m) (ε := ε) (programRename_hasType r h).toLambdaIter.toGeneric γ ρ =
+      denote (m := m) (ε := ε) h.toLambdaIter.toGeneric γ
+        (BoundDen.pull ({ toFun := r.toFun, typed := r.typed } :
+          Isotope.LambdaIter.Subtyping.LocallyNameless.TypedRenaming β β') ρ) := by
+  let e := programRename_toTm p r.toFun
+  calc
+    _ = denote (m := m) (ε := ε)
+        (transportHasType e (programRename_hasType r h).toLambdaIter).toGeneric γ ρ :=
+      (denote_transportHasType e _ γ ρ).symm
+    _ = denote (m := m) (ε := ε) (h.toLambdaIter.rename r).toGeneric γ ρ := by
+      rw [programRename_exact]
+    _ = _ := denote_exact_rename h.toLambdaIter r γ ρ
+
 @[simp] theorem denote_elaborate_fv {Γ : Ctx ν τ} {β : BoundCtx τ n}
     {x : ν} {A : τ} (hx : Γ.lookup x = some A)
     (γ : CtxDen Γ) (ρ : BoundDen β) :
