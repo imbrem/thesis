@@ -45,7 +45,7 @@ def enter [DecidableEq ν] [DecidableEq κ] (M : Model φ) (ρ : Env M ν)
   cases h
   rfl
 
-private def lookup [DecidableEq κ] (g : C.CFG ν φ κ) (ℓ : κ) : Option (C.Block ν φ κ) :=
+def lookup [DecidableEq κ] (g : C.CFG ν φ κ) (ℓ : κ) : Option (C.Block ν φ κ) :=
   (g.blocks.find? fun p => p.1 = ℓ).map Prod.snd
 
 def continueFuel [DecidableEq ν] [DecidableEq κ] (M : Model φ) (g : C.CFG ν φ κ) :
