@@ -261,6 +261,21 @@ theorem envRel_update [DecidableEq ν] [DecidableEq κ]
   · simp only [update, Densem.Env.set, e, if_false, hfresh y e]
     exact h y
 
+theorem envRelOn_update [DecidableEq ν] [DecidableEq κ]
+    (needed : List ν) (current : Isotope.TAC.Classical.Convert.Env ν κ)
+    (source : Densem.Env M ν) (target : Densem.Env M (Version ν κ))
+    (h : EnvRelOn needed current source target) (x : ν)
+    (vx : Version ν κ) (a : M.Val)
+    (hfresh : ∀ y, y ≠ x → current y ≠ vx) :
+    EnvRelOn needed (update current x vx) (Densem.Env.set source x a)
+      (Densem.Env.set target vx a) := by
+  intro y hy
+  by_cases e : y = x
+  · subst y
+    simp [update, Densem.Env.set]
+  · simp only [update, Densem.Env.set, e, if_false, hfresh y e]
+    exact h y hy
+
 /-- The local freshness condition needed by the semantic simulation. It states
 exactly that each syntax-generated destination is absent from the reaching
 version environment before it is installed. -/
