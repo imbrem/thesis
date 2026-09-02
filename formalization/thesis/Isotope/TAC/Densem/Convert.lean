@@ -112,6 +112,39 @@ theorem assignments_convert [DecidableEq ν] [DecidableEq κ]
       rw [ih (fun y hy => hvalues y (by simp [hy]))]
       rfl
 
+theorem install_phi_absent [DecidableEq ν] [DecidableEq κ]
+    (vars : List ν) (label : κ) (values : ν → M.Val)
+    (target : Densem.Env M (Version ν κ)) (x : ν) (hx : x ∉ vars) :
+    Isotope.TAC.Densem.Phi.install target
+      (vars.map fun y => (Version.phi label y, values y)) (Version.phi label x) =
+        target (Version.phi label x) := by
+  induction vars generalizing target with
+  | nil => rfl
+  | cons y ys ih =>
+      simp only [List.mem_cons, not_or] at hx
+      simp only [List.map_cons, Isotope.TAC.Densem.Phi.install]
+      rw [ih (target := Densem.Env.set target (Version.phi label y) (values y)) hx.2]
+      simp [Densem.Env.set, hx.1]
+
+theorem install_phi_get [DecidableEq ν] [DecidableEq κ]
+    (vars : List ν) (hvars : vars.Nodup) (label : κ) (values : ν → M.Val)
+    (target : Densem.Env M (Version ν κ)) (x : ν) (hx : x ∈ vars) :
+    Isotope.TAC.Densem.Phi.install target
+      (vars.map fun y => (Version.phi label y, values y)) (Version.phi label x) =
+        some (values x) := by
+  induction vars generalizing target with
+  | nil => simp at hx
+  | cons y ys ih =>
+      rw [List.nodup_cons] at hvars
+      simp only [List.map_cons, Isotope.TAC.Densem.Phi.install]
+      rcases List.mem_cons.mp hx with heq | hx
+      · subst x
+        rw [install_phi_absent ys label values
+          (Densem.Env.set target (Version.phi label y) (values y)) y hvars.1]
+        simp [Densem.Env.set]
+      · exact ih hvars.2 (target :=
+          Densem.Env.set target (Version.phi label y) (values y)) hx
+
 end Small
 
 theorem value_sim (M : Densem.Model φ) (current : Isotope.TAC.Classical.Convert.Env ν κ)
