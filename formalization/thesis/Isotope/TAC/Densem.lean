@@ -6,6 +6,7 @@ import Isotope.TAC.Densem.Phi
 import Isotope.TAC.Densem.MonadicClassical
 import Isotope.TAC.Densem.MonadicConvert
 import Isotope.TAC.Densem.MonadicConvertCFG
+import Isotope.TAC.Densem.MonadicConvertIter
 import Isotope.TAC.Densem.Convert
 import Isotope.TAC.Densem.Fresh
 import Isotope.TAC.Densem.ConvertCFG

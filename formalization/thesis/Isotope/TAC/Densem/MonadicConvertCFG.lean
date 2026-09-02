@@ -16,6 +16,10 @@ variable (M : Isotope.TAC.Densem.Monadic.Model φ m)
 /-- Total source stores are the invariant carried by the CFG simulation. -/
 def Total (source : MEnv M ν) : Prop := ∀ x, ∃ a, source x = some a
 
+/-- Totality restricted to the finite interface actually mentioned by a CFG. -/
+def TotalOn (vars : List ν) (source : MEnv M ν) : Prop :=
+  ∀ x ∈ vars, ∃ a, source x = some a
+
 /-- The monadic analogue of the canonical external target store. -/
 def externalEnv (source : MEnv M ν) : MEnv M (Version ν κ)
   | .external x => source x
@@ -229,6 +233,55 @@ theorem enter_named_denote [Monad m] [LawfulMonad m]
         (Version.phi label x, values x))) hstart
     (Isotope.TAC.Densem.Convert.freshFor_startEnv
       (.named label) block.body)
+
+/-- Named-block commutation on the compiler's finite variable interface.
+Unlike `enter_named_denote`, this does not require that the finite syntax list
+exhaust the ambient variable type. -/
+theorem enter_named_denote_restrict [Monad m] [LawfulMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    (sourceCfg : Isotope.TAC.Classical.CFG ν φ κ)
+    (label : κ) (pred : BlockId κ)
+    (predBlock block : Isotope.TAC.Classical.Block ν φ κ)
+    (source : MEnv M ν) (target : MEnv M (Version ν κ))
+    (hblock : (label, block) ∈ sourceCfg.blocks)
+    (hpred : pred ∈ predecessors sourceCfg (.named label))
+    (hpredBlock : sourceCfg.lookup pred = some predBlock)
+    (htotal : TotalOn (M := M) (sourceVars sourceCfg) source)
+    (hrel : EnvRelOn (M := M) (sourceVars sourceCfg)
+      (endEnv pred predBlock) source target) :
+    (Isotope.TAC.Densem.Phi.Monadic.enter M target pred
+        (convertBlock sourceCfg (sourceVars sourceCfg) (.named label) block) >>=
+      fun result => pure
+        (restrict M (sourceVars sourceCfg)
+          (project (M := M) (endEnv (.named label) block) result.1), result.2)) =
+    (Isotope.TAC.Densem.Monadic.Block.denote M source
+        (Isotope.TAC.Densem.Classical.block block) >>= fun result =>
+      pure (restrict M (sourceVars sourceCfg) result.1, result.2)) := by
+  let values : ν → M.Val := fun x => if hx : x ∈ sourceVars sourceCfg then
+    Classical.choose (htotal x hx) else M.unit
+  have hvalue : ∀ x ∈ sourceVars sourceCfg, source x = some (values x) := by
+    intro x hx
+    simp only [values, dif_pos hx]
+    exact Classical.choose_spec (htotal x hx)
+  have ha := assignments_convert M sourceCfg (sourceVars sourceCfg) label pred
+    predBlock target values hpred hpredBlock
+      (fun x hx => by rw [hrel x hx, hvalue x hx])
+  have hstart := installed_phi_envRelOn M (sourceVars sourceCfg)
+    (sourceVars_nodup sourceCfg) label values target
+  unfold Isotope.TAC.Densem.Phi.Monadic.enter
+  simp only [convertBlock]
+  rw [ha]
+  simp only [pure_bind]
+  exact body_denote_restrict_project M (sourceVars sourceCfg) (.named label) 0
+    (startEnv (.named label)) block.body block.terminator source
+    (Isotope.TAC.Densem.Phi.Monadic.install target
+      ((sourceVars sourceCfg).map fun x => (Version.phi label x, values x)))
+    (fun x hx => by rw [hstart x hx, hvalue x hx])
+    (Isotope.TAC.Densem.Convert.freshFor_startEnv (.named label) block.body)
+    (fun ins hi x hx => block_use_mem_sourceVars sourceCfg hblock hi hx)
+    (fun x hx => (mem_sourceVars sourceCfg x).2
+      (.inr ⟨(label, block), hblock, by
+        simp [blockSourceVars, hx]⟩))
 
 /-- Entry-block conversion commutes monadically from the canonical external
 store, including effects and failure. -/
