@@ -6,6 +6,7 @@ import Isotope.LambdaIter.Models.Syntax
 import Isotope.LambdaIter.Models.SynCategory
 import Isotope.LambdaIter.Models.SynCoproduct
 import Isotope.LambdaIter.Models.SynIteration
+import Isotope.LambdaIter.Models.SynElgot
 import Isotope.LambdaIter.Models.Initial
 
 /-!
@@ -26,6 +27,7 @@ result type, one operation per term former, and two propositional obligations
 | `Models/SynCategory.lean` | the one-variable syntactic *category* (three category laws) |
 | `Models/SynCoproduct.lean` | binary coproducts in it, and iteration on hom-sets |
 | `Models/SynIteration.lean` | the fixpoint, naturality and codiagonal laws for it |
+| `Models/SynElgot.lean` | the same three laws in Mathlib's `⨿` vocabulary, and `ElgotCategory` modulo an initial object |
 | `Models/Initial.lean` | `Syn.uniqueHom`, `Syn.isInitial`, and equational completeness |
 
 ## Honest boundary
@@ -52,10 +54,13 @@ result type, one operation per term former, and two propositional obligations
   is proved to be a category with binary coproducts, and its iteration
   operator is proved well defined on classes and to satisfy the **fixpoint,
   naturality and codiagonal** laws — verbatim the three fields of
-  `CategoryTheory.ElgotCategory`.  That instance is nevertheless **not**
-  registered, because `HasFiniteCoproducts` needs an initial object; **and no
-  uniformity, strength, premonoidal, monoidal or distributive structure is
-  proved**.  The empty
+  `CategoryTheory.ElgotCategory`; `Models/SynElgot.lean` checks that
+  correspondence rather than asserting it, and proves
+  `ElgotCategory (SynCat S)` **under the hypothesis**
+  `HasFiniteCoproducts (SynCat S)`.  That instance is nevertheless **not**
+  registered, because the hypothesis is not known to hold: it needs an initial
+  object; **and no uniformity, strength, premonoidal, monoidal or distributive
+  structure is proved**.  The empty
   type is not shown to be initial (see `Models/SynCoproduct.lean` for why it
   probably is not derivable from the axioms as stated).  Issue #57's request
   for the syntactic Elgot model therefore remains open; what is closed is the

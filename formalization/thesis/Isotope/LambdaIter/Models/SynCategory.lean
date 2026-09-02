@@ -170,10 +170,15 @@ instance instCategory (S : Sig.{u}) : CategoryTheory.Category.{u, u} (SynCat S) 
   comp_id := comp_id'
   assoc := comp_assoc
 
-@[simp] theorem category_id (A : SynCat S) :
+/-- The categorical identity is the bound variable.  Deliberately **not** a
+`simp` lemma: rewriting `𝟙` and `≫` into `id'` and `comp` would take goals out
+of the vocabulary of Mathlib's category simp set. -/
+theorem category_id (A : SynCat S) :
     CategoryTheory.CategoryStruct.id A = id' A := rfl
 
-@[simp] theorem category_comp {A B C : SynCat S} (f : A ⟶ B) (g : B ⟶ C) :
+/-- Categorical composition is `let`-binding under a shifted binder.  Not a
+`simp` lemma, for the same reason as `category_id`. -/
+theorem category_comp {A B C : SynCat S} (f : A ⟶ B) (g : B ⟶ C) :
     CategoryTheory.CategoryStruct.comp f g = comp f g := rfl
 
 end SynCat
