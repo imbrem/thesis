@@ -30,9 +30,12 @@ further axiom.
 ## Honest boundary
 
 * These are coproducts in the *whole* (effectful) syntactic category, which is
-  what a distributive Freyd category asks of its computation category.
-  Nothing is claimed about a value/pure subcategory: `Pure` is nowhere proved
-  stable under `Eqv`, so the pure classes have no definition here.
+  what a distributive Freyd category asks of its computation category.  Raw
+  purity is *not* stable under `Eqv`, so "the representative is pure" is not a
+  predicate on classes; `Models/SynUniformity.lean` gives the notion that is
+  (`IsPureMor`: *some* representative is pure) and shows it is a wide
+  subcategory.  It is not shown to be cartesian or to be the value fragment of
+  a Freyd structure.
 * The **empty type is not shown to be initial**.  Uniqueness of a morphism
   `empty ⟶ C` would need `bv 0 ≈ abort (bv 0)` at type `empty`, and
   `StructuralAxiom.emptyInitial` fires only on a scrutinee of the literal form
@@ -42,12 +45,11 @@ further axiom.
   unavailable, which is what blocks registering an `ElgotCategory` instance in
   `Models/SynIteration.lean`.
 * `SynCat.iterate` is only *defined* here, together with well-definedness.
-  **No Elgot law is proved for it.**  Every such law (fixpoint, naturality,
-  codiagonal, uniformity) is phrased with copairing on one side and with
-  `let`/`case` on de Bruijn terms in `IterationAxiom` on the other, and
-  bridging the two also needs the premonoidal and distributive layers, which
-  this development does not build.  Issue #57's iteration half therefore
-  remains open; this file narrows it rather than closing it.
+  Its four equational laws are in `Models/SynIteration.lean` (fixpoint,
+  naturality, codiagonal) and `Models/SynUniformity.lean` (uniformity).
+  **Strength is not proved and cannot be stated here**, since it needs
+  premonoidal and distributive structure, which this development does not
+  build.  Issue #57's iteration half therefore remains open.
 * No monoidal or premonoidal structure (`tensor`, `unit`) is constructed.
 -/
 
@@ -345,6 +347,19 @@ instance hasBinaryCoproduct (A B : SynCat S) :
 instance hasBinaryCoproducts (S : Sig.{u}) :
     Limits.HasBinaryCoproducts (SynCat S) :=
   Limits.hasBinaryCoproducts_of_hasColimit_pair _
+
+/-- The action of the coproduct on morphisms: `Limits.coprod.map` in the
+hand-built vocabulary. -/
+def copMap {A B C D : SynCat S} (l : A ⟶ C) (r : B ⟶ D) : cop A B ⟶ cop C D :=
+  desc (l ≫ injl C D) (r ≫ injr C D)
+
+@[simp] theorem copMap_id_left {A B C : SynCat S} (r : B ⟶ C) :
+    copMap (𝟙 A) r = desc (injl A C) (r ≫ injr A C) := by
+  rw [copMap, Category.id_comp]
+
+@[simp] theorem copMap_id_right {A B C : SynCat S} (l : A ⟶ C) :
+    copMap l (𝟙 B) = desc (l ≫ injl C B) (injr C B) := by
+  rw [copMap, Category.id_comp]
 
 /-- Iteration on typable one-variable terms. -/
 def iterCarrier {A B : SynCat S}

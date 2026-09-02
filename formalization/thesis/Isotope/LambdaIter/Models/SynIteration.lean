@@ -3,9 +3,10 @@ import Isotope.LambdaIter.Models.SynCoproduct
 /-!
 # The Elgot laws for iteration in the syntactic category
 
-`SynCat.iterate` satisfies three of the four laws of an Elgot iteration
-operator, stated with the coproduct structure of `Models/SynCoproduct.lean`
-rather than with raw de Bruijn terms:
+`SynCat.iterate` satisfies three of the four equational laws of an Elgot
+iteration operator, stated with the coproduct structure of
+`Models/SynCoproduct.lean` rather than with raw de Bruijn terms.  The fourth,
+uniformity, is in `Models/SynUniformity.lean`.
 
 * **fixpoint**: `iterate f = f ≫ desc (𝟙 B) (iterate f)`, from
   `IterationAxiom.fixpoint`, the identity law, and `bindCase`;
@@ -40,18 +41,18 @@ backwards at the scrutinee `inl a` and then `caseBetaL` forwards.
   constructed here.  A presentation carrying "`let₁ a b ≈ let₁ a c` whenever
   `a : empty`" instead would remove the obstruction; changing the presentation
   is out of scope.
-* **Uniformity is not proved.**  `Eqv.uniformity` is a constructor with a
-  purity side condition on the transported map, and the categorical law
-  (`ElgotFreydCategory.uniformity`) quantifies over morphisms in the *value*
-  category.  The syntactic category has no value/pure subcategory in this
-  development, because `Pure` is nowhere proved stable under `Eqv`.
+* **Uniformity** is proved in `Models/SynUniformity.lean`, in the equational
+  form the syntactic axiom supplies and with respect to the wide subcategory
+  of pure morphisms defined there.  It is *not* stated as
+  `ElgotFreydCategory.uniformity`, which quantifies over morphisms of an
+  ambient value category `V` and a functor `J`.
 * **Strength is not proved**, and cannot even be stated: the syntactic
   category carries no premonoidal or distributive structure here.
 * Consequently the syntactic category is **not** shown to be a Freyd,
   distributive Freyd, or (strong) Elgot Freyd category, and issue #57 remains
   open.  What is established is: it is a category, it has binary coproducts,
   its iteration operator is well defined on classes, and that operator
-  satisfies fixpoint, naturality and codiagonal.
+  satisfies all four *equational* Elgot laws.
 -/
 namespace Isotope.LambdaIter
 
@@ -465,6 +466,12 @@ theorem iterate_codiagonal {A B : SynCat S} (f : A ⟶ cop (cop B A) A) :
       rw [Tm.underBinder_iter_underBinder]
       exact s1.trans s2
     exact Quotient.sound key
+
+/-- Naturality, phrased with the coproduct action on morphisms — the exact
+shape of `CategoryTheory.ElgotCategory.naturality`. -/
+theorem iterate_naturality' {A B C : SynCat S} (f : A ⟶ cop B A) (g : B ⟶ C) :
+    iterate f ≫ g = iterate (f ≫ copMap g (𝟙 A)) := by
+  rw [copMap_id_right, iterate_naturality]
 
 end Syn.SynCat
 

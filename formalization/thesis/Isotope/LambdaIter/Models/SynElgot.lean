@@ -28,7 +28,10 @@ instance on `SynCat` would be picked up by `ElgotCategory`-shaped searches
 that cannot be discharged.  The three theorems below say everything the
 instance would.
 
-Uniformity and strength are still absent: see `Models/SynIteration.lean`.
+Uniformity is proved in `Models/SynUniformity.lean`, but in the equational
+form the syntactic axiom supplies rather than as
+`ElgotFreydCategory.uniformity`, which needs a value category and a Freyd
+functor.  Strength is still absent: see `Models/SynIteration.lean`.
 -/
 
 namespace Isotope.LambdaIter

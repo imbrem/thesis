@@ -121,7 +121,8 @@ models or unique model morphism is defined").
 | The quotient is a model | `Models/Syntax.lean`: `Syn S : Alg S`, `Syn.denote_mk` | All twelve operations, iteration included, are `Quotient` lifts of the matching congruence rule of `Eqv`. `coh` and `sound` hold for structural reasons (proof irrelevance; `Quotient.sound`), not as theorems about lambda-iter. The theorem about lambda-iter is `Syn.denote_mk`. | checked |
 | The one-variable quotient is a category | `Models/SynCategory.lean`: `SynCat`, `instCategory`, `id'_comp`, `comp_id'`, `comp_assoc` | Category laws only, from `letEta`, `letBeta` at `Pure.bv`, and `bindLet`. No premonoidal, monoidal or distributive structure. | checked |
 | It has binary coproducts | `Models/SynCoproduct.lean`: `isColimitBinaryCofan`, `hasBinaryCoproducts`, `injl_desc`, `injr_desc`, `desc_uniq` | Coproducts in the whole (effectful) category. The **empty type is not shown to be initial**: `StructuralAxiom.emptyInitial` fires only on a scrutinee of the literal form `.abort a`, so it gives no route to `bv 0 ≈ abort (bv 0)`. Reported as a gap, not proved underivable. | checked |
-| Iteration is well defined on quotient morphisms and satisfies three Elgot laws | `Models/SynCoproduct.lean`: `iterate`; `Models/SynIteration.lean`: `iterate_fixpoint`, `iterate_naturality`, `iterate_codiagonal`; `Models/SynElgot.lean`: the same three in Mathlib's `⨿` vocabulary, and `elgotCategory_of_hasFiniteCoproducts` | Fixpoint, naturality and codiagonal — verbatim the three fields of `CategoryTheory.ElgotCategory`. **Uniformity and strength are not proved**, and the `ElgotCategory` instance is *not* registered: it needs `HasFiniteCoproducts`, hence the missing initial object. Issue #57 therefore remains open. | partial |
+| Iteration is well defined on quotient morphisms and satisfies the four equational Elgot laws | `Models/SynCoproduct.lean`: `iterate`, `copMap`; `Models/SynIteration.lean`: `iterate_fixpoint`, `iterate_naturality`, `iterate_codiagonal`; `Models/SynUniformity.lean`: `IsPureMor`, `iterate_uniformity`; `Models/SynElgot.lean`: the first three in Mathlib's `⨿` vocabulary, and `elgotCategory_of_hasFiniteCoproducts` | Fixpoint, naturality and codiagonal are verbatim the three fields of `CategoryTheory.ElgotCategory`. Uniformity is in the equational form the syntactic axiom supplies, transported along `IsPureMor` (a *wide subcategory* of pure morphisms — not shown cartesian, not shown to be the value fragment of a Freyd structure). **Strength is not proved and cannot be stated** here, and the `ElgotCategory` instance is *not* registered: it needs `HasFiniteCoproducts`, hence the missing initial object. Issue #57 therefore remains open. | partial |
+| Pure morphisms form a wide subcategory | `Models/SynUniformity.lean`: `IsPureMor`, `isPureMor_id`, `IsPureMor.comp` | Raw purity is **not** stable under `Eqv` (`emptyInitial` relates a pure term to an arbitrary one), so the predicate is "*some* representative is pure". Identity and composition only; nothing cartesian, premonoidal, or Freyd. | checked |
 | (a) For a fixed signature, the quotient is the initial model | `Models/Initial.lean`: `Syn.toHom`, `Syn.hom_eq_toHom`, `Syn.uniqueHom`, `Syn.isInitial` | Initiality **in `Alg S`**, the category of algebras of the presentation. | checked |
 | Equational completeness | `Models/Initial.lean`: `Syn.eqv_of_denote_eq`, `Syn.denote_eq_iff_eqv` | Completeness **with respect to algebras** in `Type u`. Not completeness against Freyd or Elgot models. | checked |
 | A signature morphism acts on typing and on the equational theory | `Metatheory/MapInstr.lean`: `Tm.mapInstr` and its commutations, `Pure.mapInstr`, the three axiom schemes; `Models/SigAction.lean`: `HasType.map`, `Eqv.map` | This is the action item 2 above records as missing. | checked |
@@ -139,9 +140,10 @@ In particular, soundness (`Subtyping/Semantics/Soundness.lean`, over a Freyd
 frame and about `TypedEquiv.Deriv`) and the completeness above (over `Alg` and
 about `Eqv`) do **not** quantify over the same model class, which is one of
 issue #57's acceptance criteria and is still open. Also still open from #57:
-uniformity, strength, packing/reflection, and the comparison with the
-lambda-case fragment; and no quotient, initiality or completeness statement is
-made for lambda-case or lambda-seq (issue #54).
+strength, packing/reflection, packaging the syntactic category as the lawful
+model interface used by soundness, and the comparison with the lambda-case
+fragment; and no quotient, initiality or completeness statement is made for
+lambda-case or lambda-seq (issue #54).
 
 ## Frozen baselines and build evidence
 

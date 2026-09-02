@@ -6,6 +6,7 @@ import Isotope.LambdaIter.Models.Syntax
 import Isotope.LambdaIter.Models.SynCategory
 import Isotope.LambdaIter.Models.SynCoproduct
 import Isotope.LambdaIter.Models.SynIteration
+import Isotope.LambdaIter.Models.SynUniformity
 import Isotope.LambdaIter.Models.SynElgot
 import Isotope.LambdaIter.Models.Initial
 import Isotope.LambdaIter.Models.HomOver
@@ -33,6 +34,7 @@ result type, one operation per term former, and two propositional obligations
 | `Models/SynCategory.lean` | the one-variable syntactic *category* (three category laws) |
 | `Models/SynCoproduct.lean` | binary coproducts in it, and iteration on hom-sets |
 | `Models/SynIteration.lean` | the fixpoint, naturality and codiagonal laws for it |
+| `Models/SynUniformity.lean` | pure morphisms as a wide subcategory, and the uniformity law |
 | `Models/SynElgot.lean` | those three laws in Mathlib's `⨿` vocabulary, and `ElgotCategory` modulo an initial object |
 | `Models/Initial.lean` | `Syn.uniqueHom`, `Syn.isInitial`, and equational completeness |
 | `Models/HomOver.lean` | maps of models over a signature morphism; identity and composition |
@@ -72,11 +74,12 @@ result type, one operation per term former, and two propositional obligations
   `HasFiniteCoproducts (SynCat S)`.  That instance is nevertheless **not**
   registered, because the hypothesis is not known to hold: it needs an initial
   object, and the empty type is not shown to be one (see
-  `Models/SynCoproduct.lean`).  **No uniformity, strength, premonoidal,
-  monoidal or distributive structure is proved.**  Issue #57's request for the
+  `Models/SynCoproduct.lean`).  **No strength, and no premonoidal, monoidal or
+  distributive structure, is proved**, so the syntactic category is not shown
+  to be a Freyd or Elgot Freyd category.  Issue #57's request for the
   syntactic Elgot model therefore remains open; what is closed is the
   quotient, the category and coproduct laws, well-definedness of iteration,
-  three of the four Elgot laws, the unique interpretation into every algebra,
+  the four equational Elgot laws, the unique interpretation into every algebra,
   and completeness with respect to algebras.
 * Reindexing is available at both levels: `Alg.Ops.reindex` on operations
   (`Models/Reindex.lean`) and `Alg.reindex` on algebras
