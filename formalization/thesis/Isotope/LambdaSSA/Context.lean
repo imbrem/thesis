@@ -29,6 +29,13 @@ theorem lift {Γ Δ : List τ} {ρ : Nat → Nat} (h : Ren Γ Δ ρ) (A : τ) :
   | zero => simpa [At, LambdaSSA.lift] using hi
   | succ i => simpa [At, LambdaSSA.lift] using h hi
 
+theorem liftN {Γ Δ : List τ} {ρ : Nat → Nat} (h : Ren Γ Δ ρ) (Ξ : List τ) :
+    Ren (Ξ ++ Γ) (Ξ ++ Δ) (LambdaSSA.liftN Ξ.length ρ) := by
+  induction Ξ with
+  | nil => simpa [LambdaSSA.liftN] using h
+  | cons A Ξ ih =>
+      simpa [LambdaSSA.liftN] using (ih.lift A)
+
 theorem wk (Γ : List τ) (A : τ) : Ren Γ (A :: Γ) Nat.succ := by
   intro i B h
   simpa [At] using h

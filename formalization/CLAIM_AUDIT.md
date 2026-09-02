@@ -20,6 +20,7 @@ the following deliberately narrow map:
 | Soundness of the locally nameless equational theory | `Semantics/Soundness.lean`, `sound`, `related_sound` | `sound` covers `LocallyNameless.Deriv` under its explicit lawful-model assumptions; `related_sound` transports the result through a relation respected by the model. It is not a completeness result. | checked |
 | Direct/categorical agreement | `Semantics/Agreement/Full.lean`, `categorical_denote_eq` | Agreement of the two denotations for the implemented locally nameless term language and the concrete categorical construction used there. It does not establish initiality or arbitrary-model completeness. | checked |
 | Generic categorical interfaces | `Semantics/Categorical.lean`, `TypeModel`, `InstructionModel`; `CategoryTheory/Monad/Kleisli.lean`, `toKleisliFreydCategory` | Interfaces and categorical infrastructure, including a Kleisli Freyd-category construction. No category of syntax models or initial object is declared. | partial |
+| SPARC TSO pomsets, monad, and operations (narrow) | `Isotope/Pomset/*.lean`, `Pom.instMonoid`, `Pom.par_assoc`/`par_comm`/`par_one`, `PrePom.ofList_deq_iff`, `Pom.mk_seq_ne_mk_par`; `Isotope/Elgot/WS.lean`, `WS.instLawfulMonad`, `WS.instLawfulElgotMonad`; `Isotope/Elgot/TSO/*.lean`, `Buf.toPom_inj`, `Buf.peek_nil`/`peek_append_self`/`peek_append_other`, `pflush_kcomp_pflush`, `pflush_ne_pure`, `pflush_kcomp_read`/`read_kcomp_pflush`/`pflush_kcomp_write`/`write_kcomp_pflush`/`pflush_kcomp_fence`/`fence_kcomp_pflush`, `not_drainable_pure`, `not_drainable_iter`; `Isotope/CategoryTheory/Ide.lean`, `Ide.id_eq`, `PTSO.id_eq` | Finite pomsets modulo the delta-quotient with the paper's concatenation monoid; a monoid-generic complete Elgot monad `WS S M`; the TSO alphabet, buffers as linear pomsets (injectively), the buffer lookup, `pflush`/`read`/`write`/`fence`, idempotence of `pflush`, the `pflush` sandwich equations, the paper's own negative result that `pflush ; id ; pflush != id`, and `PTSO = Ide(Set_TSO, pflush)` as a Mathlib `Category`. Infinite pomsets, `trim`, the stream action, divergence/`P+`, fork-join parallel composition of morphisms, the validity post-filter, and the `Ide` inheritance chain (coproducts, Elgot, premonoidal, distributive, Freyd) are **not** formalised. **This row does not discharge the "SPARC TSO forms a valid SSA model" row in the denotational-semantics table below, which stays `contradicted`.** | checked |
 | `lambda_SSA`, translations, refinement completeness, model equivalence | No matching active module/declaration found under `Isotope/` | These remain future formalization work; paper-reference repositories do not upgrade the active thesis claim. | missing |
 
 No active `sorry`, `admit`, axiom declaration, or `unsafe` declaration was
@@ -27,6 +28,13 @@ found by source search under `formalization/thesis/Isotope/`; commented sketches
 were excluded. This is not a kernel axiom audit. Before calling any row a
 verified thesis capstone, preserve a successful `lake build Isotope` result and
 `#print axioms` output for the exact declarations named above.
+
+For the SPARC TSO row specifically, `lake build Isotope` succeeds at
+`leanprover/lean4:v4.29.0-rc8` with Mathlib `v4.29.0-rc8`, and `#print axioms`
+on the declarations named in that row reports only `propext`,
+`Classical.choice`, and `Quot.sound` (`Classical.choice` enters solely through
+Mathlib's `Equiv`/`Fintype` API). The module docstring of
+`Isotope/Elgot/TSO.lean` carries the corresponding honest-boundary statement.
 
 ## Frozen baselines and build evidence
 
