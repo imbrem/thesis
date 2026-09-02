@@ -51,6 +51,12 @@ paper's own initial memory, so this is not a defect of the transcription:
 
 > `return_A r` contains traces with local messages; `return_C r` does not.
 
+`Ti` and `Ab` are exercised positively by `absorb_two_writes` at the end of this
+file, which carries out the paper's `ℓ ≔ w ; ℓ ≔ v ↠ ℓ ≔ v` step (journal p.37)
+on a concrete trace; without it, nothing here would distinguish a faithful
+transcription of those two rules from an over-constrained one, since their
+`own_empty` cases are vacuous.
+
 Consequently the paper's route to Proposition 7.8 must be the one it sketches
 for associativity — Deferral of Closure (Lemma 8.5, journal p.41), whose
 content at the bind seam is the `Ls ↔ Ti`, `Ex ↔ Ab`, `Cn ↔ Di` mirroring of
@@ -94,6 +100,19 @@ denotation.  This is what the paper's `G X ⊆ C X ⊆ A X` (p.41) amounts to. -
 theorem closure_le_closure (hR : R ⊆ R') (S : Set (PreTrace Loc Val A)) :
     closure R S ⊆ closure R' S := closure_mono_rules hR S
 
+/-- Closing under the smaller rule set first changes nothing.
+
+⚠ This is *not* the paper's **Retroactive Closure** (Lemma 8.7, journal p.41),
+which states `⟦M⟧_A = ⟦M⟧_C^𝔞` for a *program* `M`: there the outer closure is
+under `𝔞` **alone**, and the proof needs Rewrite Castling (Lemma 8.3) to move
+the `𝔤𝔠`-rewrites in front of the `𝔞`-rewrites.  Here the outer closure is again
+under the full `𝔤𝔠𝔞`, which makes the statement a triviality. -/
+theorem closure_closure_of_subset (hR : R ⊆ R') (S : Set (PreTrace Loc Val A)) :
+    closure R' (closure R S) = closure R' S :=
+  Set.Subset.antisymm
+    (closure_subset_of_closed (closure_closed R' S) (closure_le_closure hR S))
+    (closure_mono subset_closure)
+
 namespace Comp
 
 /-- Forgetting closure under the extra rules: `A X → C X → G X`. -/
@@ -127,6 +146,25 @@ theorem extend_le_iff (hR : R ⊆ R') (P : Comp R Loc Val A) (Q : Comp R' Loc Va
     extend R' P ≤ Q ↔ P ≤ restrict hR Q :=
   ⟨fun h ↦ Set.Subset.trans subset_closure h,
     fun h ↦ closure_subset_of_closed Q.closed h⟩
+
+theorem extend_mono {P Q : Comp R Loc Val A} (h : P ≤ Q) :
+    extend R' P ≤ extend R' Q := closure_mono h
+
+/-- The reflector preserves `return`: `(return_C r)𝔞 = return_A r`. -/
+theorem extend_pure (hR : R ⊆ R') (r : A) :
+    extend R' (Pure.pure r : Comp R Loc Val A) = (Pure.pure r : Comp R' Loc Val A) :=
+  ext (closure_closure_of_subset hR _)
+
+/-- The reflector is **lax** monoidal for `>>=`.  Equality here is exactly the
+paper's Deferral of Closure (Lemma 8.5, journal p.41) — `(P★ >>=_G f★)★ =
+(P >>=_G f)★` for `𝔠 ⊆ ★ ⊆ 𝔠𝔞` — which is not formalized, so only this
+inequality is available. -/
+theorem extend_bind_le (hR : R ⊆ R') (P : Comp R Loc Val A) (f : A → Comp R Loc Val B) :
+    extend R' (P >>= f) ≤ (extend R' P >>= fun a ↦ extend R' (f a)) := by
+  change closure R' (closure R (bindGen P.traces (fun a ↦ (f a).traces))) ⊆
+    closure R' (bindGen (closure R' P.traces) (fun a ↦ closure R' (f a).traces))
+  rw [closure_closure_of_subset hR]
+  exact closure_mono (bindGen_mono subset_closure (fun _ ↦ subset_closure))
 
 end Comp
 
@@ -487,5 +525,327 @@ theorem pure_gcTiAb_ssubset_pure_abstract (v₀ : Val) (t₀ : ℚ) (ℓ : Loc) 
     (closure_pureGen_own (subset_refl _) r (hsub (dilute_return_mem_pure v₀ t₀ ℓ r)))
 
 end Dilute
+
+/-! ## `Absorb` applied to two dovetailing writes
+
+The paper's own worked example for `Ab` (journal p.37): *"The transformation
+`ℓ ≔ w ; ℓ ≔ v ↠ ℓ ≔ v` is a concrete example where this rule is useful… Pick a
+timestamp `t` from the interior of `β.seg`, a trace `π ∈ ⟦ℓ≔w⟧` with local
+message that has the segment `(β.i, t]` and a trace `ϱ ∈ ⟦ℓ≔v⟧` with local
+message that has the segment `(t, β.t]`.  After binding … use mumble to combine
+the transitions, then absorb to replace these two messages with `β`."*
+
+We build the memory that results from that mumble — the initial memory with two
+dovetailing local writes at `ℓ` — and absorb them.  This is the first place in
+the development where a `𝔞`-rule other than `Di` is *applied*, so it is also the
+check that the side conditions we read into `ChroStep.absorb` are jointly
+satisfiable on a genuine trace.  **Original work**: the paper gives the example
+in prose and constructs no trace.
+-/
+
+section Absorb
+
+variable [DecidableEq Loc]
+
+/-- The upper of the two dovetailing writes at `ℓ`: `ℓ:v@(t₀+1, t₀+2]`.  The
+lower one is `storedMsg t₀ ℓ w = ℓ:w@(t₀, t₀+1]`. -/
+def absMsg (t₀ : ℚ) (ℓ : Loc) (v : Val) : Msg Loc Val :=
+  writeMsg ℓ v (t₀ + 1) (t₀ + 2) (fun _ ↦ t₀) (by linarith)
+
+@[simp] theorem absMsg_lc (t₀ : ℚ) (ℓ : Loc) (v : Val) :
+    (absMsg (Val := Val) t₀ ℓ v).lc = ℓ := rfl
+
+@[simp] theorem absMsg_vl (t₀ : ℚ) (ℓ : Loc) (v : Val) :
+    (absMsg (Loc := Loc) t₀ ℓ v).vl = v := rfl
+
+@[simp] theorem absMsg_i (t₀ : ℚ) (ℓ : Loc) (v : Val) :
+    (absMsg (Loc := Loc) t₀ ℓ v).i = t₀ + 1 := rfl
+
+@[simp] theorem absMsg_vw (t₀ : ℚ) (ℓ : Loc) (v : Val) :
+    (absMsg (Loc := Loc) t₀ ℓ v).vw = setView (fun _ ↦ t₀) ℓ (t₀ + 2) := rfl
+
+@[simp] theorem absMsg_t (t₀ : ℚ) (ℓ : Loc) (v : Val) :
+    (absMsg (Loc := Loc) t₀ ℓ v).t = t₀ + 2 := by simp [absMsg]
+
+/-- The two writes dovetail: `ℓ:w@(t₀,t₀+1] ⤙ ℓ:v@(t₀+1,t₀+2]`. -/
+theorem absMsg_dovetail (t₀ : ℚ) (ℓ : Loc) (w v : Val) :
+    Msg.Dovetail (storedMsg (Loc := Loc) t₀ ℓ w) (absMsg t₀ ℓ v) := by
+  refine ⟨rfl, by simp, ?_⟩
+  intro ℓ'
+  by_cases h : ℓ' = ℓ
+  · subst h; simp
+  · simp [setView_of_ne _ h]
+
+/-- The absorbed message `ε[i↦ν.i] = ℓ:v@(t₀, t₀+2]`, covering both segments. -/
+theorem absMsg_setI (t₀ : ℚ) (ℓ : Loc) (w v : Val) :
+    (absMsg t₀ ℓ v).setI (storedMsg (Loc := Loc) t₀ ℓ w).i (absMsg_dovetail t₀ ℓ w v).i_lt_t
+      = writeMsg ℓ v t₀ (t₀ + 2) (fun _ ↦ t₀) (by linarith) :=
+  Msg.ext_fields rfl rfl rfl rfl
+
+theorem writeMsg_not_mem_initialMem (v₀ v : Val) (t₀ q t : ℚ) (ℓ : Loc) (h : q < t)
+    (hq : t₀ - 1 < q) :
+    writeMsg ℓ v q t (fun _ ↦ t₀) h ∉ initialMem (Loc := Loc) v₀ t₀ := by
+  intro hmem
+  rw [mem_initialMem_iff] at hmem
+  have hi := congrArg Msg.i hmem
+  simp only [writeMsg_i, initialMsg_i] at hi
+  linarith
+
+/-- The initial view is below the view carried by a write over it. -/
+theorem initialView_le_writeMsg_vw (t₀ q t : ℚ) (ℓ : Loc) (v : Val) (h : q < t)
+    (ht : t₀ ≤ t) : (fun _ ↦ t₀ : View Loc) ≤ (writeMsg ℓ v q t (fun _ ↦ t₀) h).vw := by
+  rw [writeMsg_vw]; exact le_setView ht
+
+variable [Finite Loc] [Nonempty Loc]
+
+/-- The initial memory extended by a set `S` of writes at one location `ℓ`, each
+carrying the initial view advanced at `ℓ` to its own final timestamp, each
+starting at or above `t₀`, and pairwise non-overlapping, is well formed.  This
+generalizes `storedMem_wellFormed`, which is the case `S = {ℓ:v@(t₀,t₀+1]}`. -/
+theorem union_initialMem_wellFormed (v₀ : Val) (t₀ : ℚ) (ℓ : Loc)
+    (S : Memory Loc Val) (hfin : S.Finite)
+    (hlc : ∀ χ ∈ S, χ.lc = ℓ)
+    (hvw : ∀ χ ∈ S, χ.vw = setView (fun _ ↦ t₀) ℓ χ.t)
+    (hlo : ∀ χ ∈ S, t₀ ≤ χ.i)
+    (hsc : ∀ χ ∈ S, ∀ χ' ∈ S, (χ.seg ∩ χ'.seg).Nonempty → χ = χ') :
+    WellFormed (S ∪ initialMem (Loc := Loc) v₀ t₀) := by
+  have hinit := initialMem_wellFormed (Loc := Loc) v₀ t₀
+  have hlt : ∀ χ ∈ S, t₀ < χ.t := fun χ hχ ↦ lt_of_le_of_lt (hlo χ hχ) χ.i_lt_t
+  have hge : ∀ χ ∈ S, (fun _ ↦ t₀ : View Loc) ≤ χ.vw := by
+    intro χ hχ
+    rw [hvw χ hχ]
+    exact le_setView (le_of_lt (hlt χ hχ))
+  -- a message of `S` and one of the initial memory never share a location and a segment
+  have hsplit : ∀ χ ∈ S, ∀ ℓ' : Loc, (χ.seg ∩ (initialMsg (Val := Val) v₀ t₀ ℓ').seg).Nonempty →
+      False := by
+    rintro χ hχ ℓ' ⟨x, hx1, hx2⟩
+    simp only [Msg.seg, initialMsg_t, initialMsg_i, Set.mem_Ioc] at hx2
+    simp only [Msg.seg, Set.mem_Ioc] at hx1
+    have := hlo χ hχ
+    linarith [hx1.1, hx2.2]
+  refine ⟨hfin.union (Set.finite_range _), ?_, ⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
+  · exact ⟨_, Or.inr ⟨Classical.arbitrary Loc, rfl⟩⟩
+  · -- scattered
+    rintro χ (hχ | hχ) χ' (hχ' | hχ') hlceq hov
+    · exact hsc χ hχ χ' hχ' hov
+    · rw [mem_initialMem_iff] at hχ'
+      exact absurd (hχ' ▸ hov) (fun h ↦ hsplit χ hχ χ'.lc h)
+    · rw [mem_initialMem_iff] at hχ
+      refine absurd ?_ (fun h ↦ hsplit χ' hχ' χ.lc h)
+      obtain ⟨x, hx1, hx2⟩ := hov
+      exact ⟨x, hx2, hχ ▸ hx1⟩
+    · rw [mem_initialMem_iff] at hχ hχ'
+      rw [hχ, hχ', hlceq]
+  · -- connected
+    rintro χ hχ ℓ''
+    rcases hχ with hχ | hχ
+    · by_cases hl : ℓ'' = ℓ
+      · subst hl
+        refine ⟨χ, Or.inl hχ, hlc χ hχ, ?_⟩
+        change χ.vw χ.lc = χ.t
+        rw [hlc χ hχ, hvw χ hχ, setView_self]
+      · refine ⟨initialMsg v₀ t₀ ℓ'', Or.inr ⟨ℓ'', rfl⟩, rfl, ?_⟩
+        change χ.vw ℓ'' = t₀
+        rw [hvw χ hχ, setView_of_ne _ hl]
+    · rw [mem_initialMem_iff] at hχ
+      refine ⟨initialMsg v₀ t₀ ℓ'', Or.inr ⟨ℓ'', rfl⟩, rfl, ?_⟩
+      change χ.vw ℓ'' = t₀
+      rw [hχ]; rfl
+  · -- causally connected
+    rintro χ hχ ℓ''
+    rcases hχ with hχ | hχ
+    · by_cases hl : ℓ'' = ℓ
+      · subst hl
+        refine ⟨χ, Or.inl hχ, hlc χ hχ, ?_, le_refl _⟩
+        change χ.vw χ.lc = χ.t
+        rw [hlc χ hχ, hvw χ hχ, setView_self]
+      · refine ⟨initialMsg v₀ t₀ ℓ'', Or.inr ⟨ℓ'', rfl⟩, rfl, ?_, ?_⟩
+        · change χ.vw ℓ'' = t₀
+          rw [hvw χ hχ, setView_of_ne _ hl]
+        · exact hge χ hχ
+    · rw [mem_initialMem_iff] at hχ
+      refine ⟨initialMsg v₀ t₀ ℓ'', Or.inr ⟨ℓ'', rfl⟩, rfl, ?_, ?_⟩
+      · change χ.vw ℓ'' = t₀
+        rw [hχ]; rfl
+      · change (fun _ ↦ t₀ : View Loc) ≤ χ.vw
+        rw [hχ]; exact le_refl _
+  · -- cycles
+    rintro χ hχ hcyc
+    rcases hχ with hχ | hχ
+    · -- nothing points to a message of `S`, so it lies on no cycle
+      exfalso
+      obtain ⟨b, -, hbmem, -, hbne, hbpt⟩ := Relation.TransGen.tail'_iff.mp hcyc
+      rw [PointsTo, hlc χ hχ] at hbpt
+      rcases hbmem with hb | hb
+      · refine hbne (hsc b hb χ hχ ⟨χ.t, ?_, χ.t_mem_seg⟩)
+        rw [hvw b hb] at hbpt
+        simp only [setView_self] at hbpt
+        exact hbpt ▸ b.t_mem_seg
+      · rw [mem_initialMem_iff] at hb
+        rw [hb] at hbpt
+        simp only [initialMsg_vw] at hbpt
+        exact absurd hbpt.symm (ne_of_gt (hlt χ hχ))
+    · rw [mem_initialMem_iff] at hχ
+      refine ⟨Or.inr (by rw [hχ]; exact ⟨χ.lc, rfl⟩), ?_⟩
+      rintro χ' (hχ' | hχ') hlceq
+      · have : χ.t = t₀ := by rw [hχ]; rfl
+        rw [this]
+        exact le_of_lt (hlt χ' hχ')
+      · rw [mem_initialMem_iff] at hχ'
+        have h1 : χ.t = t₀ := by rw [hχ]; rfl
+        have h2 : χ'.t = t₀ := by rw [hχ']; rfl
+        rw [h1, h2]
+
+theorem absorbMem_wellFormed (v₀ w v : Val) (t₀ : ℚ) (ℓ : Loc) :
+    WellFormed (insert (storedMsg (Loc := Loc) t₀ ℓ w)
+      (insert (absMsg t₀ ℓ v) (initialMem v₀ t₀))) := by
+  have hset : insert (storedMsg (Loc := Loc) t₀ ℓ w)
+      (insert (absMsg t₀ ℓ v) (initialMem v₀ t₀))
+      = {storedMsg t₀ ℓ w, absMsg t₀ ℓ v} ∪ initialMem v₀ t₀ := by
+    rw [Set.insert_union, Set.singleton_union]
+  rw [hset]
+  refine union_initialMem_wellFormed v₀ t₀ ℓ _
+    ((Set.finite_singleton _).insert _) ?_ ?_ ?_ ?_
+  · rintro χ (rfl | rfl) <;> rfl
+  · rintro χ (rfl | rfl) <;> simp
+  · rintro χ (rfl | rfl) <;> simp
+  · rintro χ (rfl | rfl) χ' (rfl | rfl) ⟨x, hx1, hx2⟩ <;> try rfl
+    · simp only [Msg.seg, storedMsg_i, storedMsg_t, absMsg_i, absMsg_t,
+        Set.mem_Ioc] at hx1 hx2
+      linarith [hx1.2, hx2.1]
+    · simp only [Msg.seg, storedMsg_i, storedMsg_t, absMsg_i, absMsg_t,
+        Set.mem_Ioc] at hx1 hx2
+      linarith [hx1.1, hx2.2]
+
+theorem absorbedMem_wellFormed (v₀ v : Val) (t₀ : ℚ) (ℓ : Loc) :
+    WellFormed (insert (writeMsg ℓ v t₀ (t₀ + 2) (fun _ ↦ t₀) (by linarith))
+      (initialMem (Loc := Loc) v₀ t₀)) := by
+  have hset : insert (writeMsg ℓ v t₀ (t₀ + 2) (fun _ ↦ t₀) (by linarith))
+      (initialMem (Loc := Loc) v₀ t₀)
+      = {writeMsg ℓ v t₀ (t₀ + 2) (fun _ ↦ t₀) (by linarith)} ∪ initialMem v₀ t₀ := by
+    rw [Set.singleton_union]
+  rw [hset]
+  refine union_initialMem_wellFormed v₀ t₀ ℓ _ (Set.finite_singleton _) ?_ ?_ ?_ ?_
+  · rintro χ rfl; rfl
+  · rintro χ rfl; simp
+  · rintro χ rfl; simp
+  · rintro χ rfl χ' rfl -; rfl
+
+/-- **`Absorb` merges two dovetailing local writes into one.**  This is the
+step the paper's `ℓ ≔ w ; ℓ ≔ v ↠ ℓ ≔ v` example calls for (journal p.37): the
+source transition adds `ℓ:w@(t₀,t₀+1]` and `ℓ:v@(t₀+1,t₀+2]` to the initial
+memory, the target adds `ℓ:v@(t₀,t₀+2]` alone.  **Original work**: the paper
+constructs no trace. -/
+theorem absorb_two_writes (v₀ w v : Val) (t₀ : ℚ) (ℓ : Loc) (r : A) :
+    TStep gcaRules
+      (⟨fun _ ↦ t₀, Chro.single ⟨initialMem v₀ t₀,
+          insert (storedMsg t₀ ℓ w) (insert (absMsg t₀ ℓ v) (initialMem v₀ t₀))⟩,
+        setView (fun _ ↦ t₀) ℓ (t₀ + 2), r⟩ : PreTrace Loc Val A)
+      ⟨fun _ ↦ t₀, Chro.single ⟨initialMem v₀ t₀,
+          insert (writeMsg ℓ v t₀ (t₀ + 2) (fun _ ↦ t₀) (by linarith)) (initialMem v₀ t₀)⟩,
+        setView (fun _ ↦ t₀) ℓ (t₀ + 2), r⟩ := by
+  have hdt := absMsg_dovetail (Val := Val) t₀ ℓ w v
+  have hων : (storedMsg (Loc := Loc) t₀ ℓ w).vw ≤ setView (fun _ ↦ t₀) ℓ (t₀ + 2) := hdt.2.2
+  have hle : (fun _ ↦ t₀ : View Loc) ≤ setView (fun _ ↦ t₀) ℓ (t₀ + 2) :=
+    le_setView (by linarith)
+  have hclose : ∀ (S : Memory Loc Val) (χ : Msg Loc Val), χ ∈ S → χ.lc = ℓ →
+      χ.t = t₀ + 2 → χ.vw = setView (fun _ ↦ t₀) ℓ (t₀ + 2) →
+      initialMem (Loc := Loc) v₀ t₀ ⊆ S →
+      PointsDownInto (setView (fun _ ↦ t₀) ℓ (t₀ + 2)) S := by
+    intro S χ hχ hlc ht hvw hsub ℓ'
+    by_cases hl : ℓ' = ℓ
+    · subst hl
+      exact ⟨χ, hχ, hlc, by rw [PointsTo, hlc, setView_self, ht], by rw [hvw]⟩
+    · exact ⟨initialMsg v₀ t₀ ℓ', hsub ⟨ℓ', rfl⟩, rfl,
+        by rw [PointsTo, initialMsg_lc, initialMsg_t, setView_of_ne _ hl], hle⟩
+  refine ⟨Step.chro (by simp) (ChroStep.absorb _ _ [] [] (initialMem v₀ t₀)
+    (initialMem v₀ t₀) (storedMsg t₀ ℓ w) (absMsg t₀ ℓ v) hdt
+    (storedMsg_not_mem_initialMem v₀ t₀ ℓ w) (storedMsg_not_mem_initialMem v₀ t₀ ℓ w)
+    ?_ ?_ ?_ ?_ (by simp [listFree]) (by simp [listFree]) (by simp [listFree]) rfl ?_),
+    ?_⟩
+  · exact writeMsg_not_mem_initialMem v₀ v t₀ (t₀ + 1) (t₀ + 2) ℓ (by linarith) (by linarith)
+  · exact writeMsg_not_mem_initialMem v₀ v t₀ (t₀ + 1) (t₀ + 2) ℓ (by linarith) (by linarith)
+  · rw [absMsg_setI]
+    exact writeMsg_not_mem_initialMem v₀ v t₀ t₀ (t₀ + 2) ℓ (by linarith) (by linarith)
+  · rw [absMsg_setI]
+    exact writeMsg_not_mem_initialMem v₀ v t₀ t₀ (t₀ + 2) ℓ (by linarith) (by linarith)
+  · simp only [Chro.single_toList, List.nil_append, List.map_nil, List.cons.injEq,
+      and_true, Transition.mk.injEq, true_and]
+    rw [absMsg_setI]
+  · refine ⟨?_, pointsDownInto_initialMem v₀ t₀, hle, ?_, ?_⟩
+    · intro T hT
+      simp only [Chro.single_toList, List.mem_singleton] at hT
+      subst hT
+      exact ⟨initialMem_wellFormed v₀ t₀, absorbedMem_wellFormed v₀ v t₀ ℓ,
+        Set.subset_insert _ _⟩
+    · exact hclose _ (writeMsg ℓ v t₀ (t₀ + 2) (fun _ ↦ t₀) (by linarith))
+        (Set.mem_insert _ _) rfl (by simp) rfl (Set.subset_insert _ _)
+    · intro χ hχ
+      simp only [Chro.single_own, Transition.own, Set.mem_diff, Set.mem_insert_iff] at hχ
+      obtain ⟨hχ1 | hχ1, hχ2⟩ := hχ
+      · subst hχ1
+        exact ⟨initialView_le_writeMsg_vw t₀ t₀ (t₀ + 2) ℓ v (by linarith) (by linarith),
+          le_refl _, by simp⟩
+      · exact absurd hχ1 hχ2
+
+/-- The source of `absorb_two_writes` is a trace. -/
+theorem absorb_two_writes_src (v₀ w v : Val) (t₀ : ℚ) (ℓ : Loc) (r : A) :
+    IsTrace (⟨fun _ ↦ t₀, Chro.single ⟨initialMem v₀ t₀,
+        insert (storedMsg t₀ ℓ w) (insert (absMsg t₀ ℓ v) (initialMem v₀ t₀))⟩,
+      setView (fun _ ↦ t₀) ℓ (t₀ + 2), r⟩ : PreTrace Loc Val A) := by
+  have hdt := absMsg_dovetail (Val := Val) t₀ ℓ w v
+  have hle : (fun _ ↦ t₀ : View Loc) ≤ setView (fun _ ↦ t₀) ℓ (t₀ + 2) :=
+    le_setView (by linarith)
+  refine ⟨?_, pointsDownInto_initialMem v₀ t₀, hle, ?_, ?_⟩
+  · intro T hT
+    simp only [Chro.single_toList, List.mem_singleton] at hT
+    subst hT
+    exact ⟨initialMem_wellFormed v₀ t₀, absorbMem_wellFormed v₀ w v t₀ ℓ,
+      (Set.subset_insert _ _).trans (Set.subset_insert _ _)⟩
+  · intro ℓ'
+    by_cases hl : ℓ' = ℓ
+    · subst hl
+      exact ⟨absMsg t₀ ℓ' v, Set.mem_insert_of_mem _ (Set.mem_insert _ _), rfl,
+        by simp [PointsTo], le_refl _⟩
+    · exact ⟨initialMsg v₀ t₀ ℓ',
+        Set.mem_insert_of_mem _ (Set.mem_insert_of_mem _ ⟨ℓ', rfl⟩), rfl,
+        by simp [PointsTo, setView_of_ne _ hl], hle⟩
+  · intro χ hχ
+    simp only [Chro.single_own, Transition.own, Set.mem_diff, Set.mem_insert_iff] at hχ
+    obtain ⟨hχ1 | hχ1 | hχ1, hχ2⟩ := hχ
+    · subst hχ1
+      exact ⟨initialView_le_storedMsg_vw t₀ ℓ w, hdt.2.2, by simp⟩
+    · subst hχ1
+      exact ⟨initialView_le_writeMsg_vw t₀ (t₀ + 1) (t₀ + 2) ℓ v (by linarith) (by linarith),
+        le_refl _, by simp⟩
+    · exact absurd hχ1 hχ2
+
+/-- The `Absorb` step of `absorb_two_writes` is not a `𝔠`-rewriting: it changes
+the local messages, which `St`, `Mu`, `Fw`, `Rw` all preserve exactly
+(`Refines.own_eq`). -/
+theorem not_refines_cRules_absorb (v₀ w v : Val) (t₀ : ℚ) (ℓ : Loc) (r : A) :
+    ¬ Refines cRules
+      (⟨fun _ ↦ t₀, Chro.single ⟨initialMem v₀ t₀,
+          insert (storedMsg t₀ ℓ w) (insert (absMsg t₀ ℓ v) (initialMem v₀ t₀))⟩,
+        setView (fun _ ↦ t₀) ℓ (t₀ + 2), r⟩ : PreTrace Loc Val A)
+      ⟨fun _ ↦ t₀, Chro.single ⟨initialMem v₀ t₀,
+          insert (writeMsg ℓ v t₀ (t₀ + 2) (fun _ ↦ t₀) (by linarith)) (initialMem v₀ t₀)⟩,
+        setView (fun _ ↦ t₀) ℓ (t₀ + 2), r⟩ := by
+  intro h
+  have hown := h.own_eq (subset_refl _) (absorb_two_writes_src v₀ w v t₀ ℓ r)
+  simp only [Chro.single_own, Transition.own] at hown
+  have hmem : storedMsg (Loc := Loc) t₀ ℓ w ∈
+      insert (storedMsg t₀ ℓ w) (insert (absMsg t₀ ℓ v) (initialMem v₀ t₀)) \
+        initialMem v₀ t₀ :=
+    ⟨Set.mem_insert _ _, storedMsg_not_mem_initialMem v₀ t₀ ℓ w⟩
+  rw [hown] at hmem
+  simp only [Set.mem_diff, Set.mem_insert_iff] at hmem
+  obtain ⟨h1 | h1, -⟩ := hmem
+  · have := congrArg Msg.t h1
+    simp only [storedMsg_t, writeMsg_t] at this
+    linarith
+  · exact absurd h1 (storedMsg_not_mem_initialMem v₀ t₀ ℓ w)
+
+end Absorb
 
 end Isotope.Elgot.RA

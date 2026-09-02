@@ -175,6 +175,12 @@ Read this before citing anything here as "the paper's".
   hence `return_C r ⊊ return_A r`.  The paper asserts that the Concrete model is
   "insufficiently abstract" (p.26) but exhibits no separating trace anywhere;
   this is **original work**.
+* `absorb_two_writes` — a concrete `Absorb` rewrite merging the two dovetailing
+  local writes of the paper's `ℓ ≔ w ; ℓ ≔ v ↠ ℓ ≔ v` example (p.37) into one,
+  with `not_refines_cRules_absorb`.  Together with `dilute_return` this is what
+  keeps the `𝔞` constructors honest: their side conditions are jointly
+  satisfiable on genuine traces, which the vacuous `own_empty` cases for `Ti`
+  and `Ab` do not show.  **Original work**: the paper constructs no trace.
 * `View.pull_le_pull` — the paper's Lemma 7.6 (p.33).
 * `LawfulElgotMonad (Comp cRules Loc Val)` — fixpoint, naturality, codiagonal
   and pure uniformity for the union-of-unrollings iteration operator.  The
