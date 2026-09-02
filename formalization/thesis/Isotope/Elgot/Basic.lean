@@ -14,27 +14,27 @@ Kleisli arrows.
 
 namespace Isotope.Elgot
 
-universe u v
+universe u
 
 /-- An iteration operator on a monad. -/
-class Iterate (m : Type u → Type v) where
+class Iterate (m : Type u → Type u) where
   iter {A B : Type u} : (A → m (B ⊕ A)) → A → m B
 
 export Iterate (iter)
 
 /-- Kleisli composition, in diagrammatic order. -/
-def kcomp {m : Type u → Type v} [Monad m] {A B C : Type u}
+def kcomp {m : Type u → Type u} [Monad m] {A B C : Type u}
     (f : A → m B) (g : B → m C) : A → m C :=
   fun a ↦ f a >>= g
 
 infixr:55 " ≫ₖ " => kcomp
 
 /-- Embed an ordinary function as a pure Kleisli arrow. -/
-def liftPure {m : Type u → Type v} [Monad m] {A B : Type u} (f : A → B) : A → m B :=
+def liftPure {m : Type u → Type u} [Monad m] {A B : Type u} (f : A → B) : A → m B :=
   pure ∘ f
 
 /-- Act on the returned (left) summand of an iteration body. -/
-def mapReturn {m : Type u → Type v} [Monad m] {A B C : Type u}
+def mapReturn {m : Type u → Type u} [Monad m] {A B C : Type u}
     (f : A → m (B ⊕ A)) (g : B → m C) : A → m (C ⊕ A) :=
   fun a ↦ f a >>= Sum.elim (fun b ↦ g b >>= pure ∘ Sum.inl) (pure ∘ Sum.inr)
 
@@ -43,12 +43,12 @@ def flatten {A B : Type u} : (B ⊕ A) ⊕ A → B ⊕ A :=
   Sum.elim id Sum.inr
 
 /-- Apply `flatten` to the result of an effectful iteration body. -/
-def flattenBody {m : Type u → Type v} [Monad m] {A B : Type u}
+def flattenBody {m : Type u → Type u} [Monad m] {A B : Type u}
     (f : A → m ((B ⊕ A) ⊕ A)) : A → m (B ⊕ A) :=
   kcomp f (liftPure flatten)
 
 /-- The Conway/complete-Elgot equations, with pure uniformity. -/
-class LawfulElgotMonad (m : Type u → Type v) [Monad m] [LawfulMonad m] [Iterate m] : Prop where
+class LawfulElgotMonad (m : Type u → Type u) [Monad m] [LawfulMonad m] [Iterate m] : Prop where
   fixpoint {A B : Type u} (f : A → m (B ⊕ A)) :
     iter f = fun a ↦ f a >>= Sum.elim pure (iter f)
   naturality {A B C : Type u} (f : A → m (B ⊕ A)) (g : B → m C) :

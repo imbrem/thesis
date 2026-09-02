@@ -87,14 +87,6 @@ theorem Tree.eq_iff_observe {E : Type u → Type u} {A : Type (u + 1)}
     rfl
   · exact Tree.ext
 
-private theorem part_map_eq_some_iff {A B : Type (u + 1)} (f : A → B) (x : Part A) (b : B) :
-    b ∈ f <$> x ↔ ∃ a, a ∈ x ∧ f a = b := by
-  rw [Part.map_eq_map, Part.mem_map_iff]
-
-private theorem part_map_comp {A B C : Type (u + 1)} (f : A → B) (g : B → C) (x : Part A) :
-    g <$> (f <$> x) = (g ∘ f) <$> x := by
-  simp only [Part.map_eq_map, Part.map_map]
-
 /-- Return immediately. -/
 def ret {E : Type u → Type u} {A : Type (u + 1)} (a : A) : Tree E A where
   observe
@@ -126,6 +118,102 @@ def vis {E : Type u → Type u} {A : Type (u + 1)} {R : Type u}
       congr
       funext r
       exact (k r).coherent n
+
+/-- Depth-zero observations carry no information. -/
+theorem Approx.eq_zero {E : Type u → Type u} {A : Type (u + 1)} (x y : Approx E A 0) :
+    x = y := rfl
+
+/-- The observations of `ret`. -/
+theorem observe_ret {E : Type u → Type u} {A : Type (u + 1)} (a : A) (n : Nat) :
+    (ret (E := E) a).observe (n + 1) = Part.some (.ret a) := rfl
+
+/-- The observations of `diverge`: never a visible head. -/
+theorem observe_diverge {E : Type u → Type u} {A : Type (u + 1)} (n : Nat) :
+    (diverge (E := E) (A := A)).observe (n + 1) = Part.none := rfl
+
+/-- The observations of `vis`. -/
+theorem observe_vis {E : Type u → Type u} {A : Type (u + 1)} {R : Type u}
+    (e : E R) (k : R → Tree E A) (n : Nat) :
+    (vis e k).observe (n + 1) = Part.some (.vis e (fun r => (k r).observe n)) := rfl
+
+/-- A returned value is distinguishable from silent divergence. -/
+theorem ret_ne_diverge {E : Type u → Type u} {A : Type (u + 1)} (a : A) :
+    (ret (E := E) a) ≠ diverge := by
+  intro h
+  have := congrFun (congrArg Tree.observe h) 1
+  rw [observe_ret, observe_diverge] at this
+  exact (Part.notMem_none (Visible.ret a : Visible E A (Approx E A 0)))
+    (this ▸ Part.mem_some (Visible.ret a : Visible E A (Approx E A 0)))
+
+/-- A visible event is distinguishable from silent divergence. -/
+theorem vis_ne_diverge {E : Type u → Type u} {A : Type (u + 1)} {R : Type u}
+    (e : E R) (k : R → Tree E A) : vis e k ≠ diverge := by
+  intro h
+  have := congrFun (congrArg Tree.observe h) 1
+  rw [observe_vis, observe_diverge] at this
+  exact (Part.notMem_none _) (this ▸ Part.mem_some _)
+
+/-- A returned value is distinguishable from a visible event. -/
+theorem ret_ne_vis {E : Type u → Type u} {A : Type (u + 1)} {R : Type u}
+    (a : A) (e : E R) (k : R → Tree E A) : ret a ≠ vis e k := by
+  intro h
+  have := congrFun (congrArg Tree.observe h) 1
+  rw [observe_ret, observe_vis] at this
+  have h2 : (Part.some (Visible.ret a) : Part (Visible E A (Approx E A 0))) =
+      Part.some (Visible.vis e (fun r => (k r).observe 0)) := this
+  simp only [Part.some_inj] at h2
+  cases h2
+
+/-- Unfold a `Part ∘ Visible`-coalgebra into finite observations. -/
+def Approx.corec {E : Type u → Type u} {A X : Type (u + 1)}
+    (h : X → Part (Visible E A X)) : (n : Nat) → X → Approx E A n
+  | 0, _ => PUnit.unit
+  | n + 1, x => Visible.map (Approx.corec h n) <$> h x
+
+/-- Unfolding a coalgebra produces a coherent family of observations. -/
+theorem Approx.truncate_corec {E : Type u → Type u} {A X : Type (u + 1)}
+    (h : X → Part (Visible E A X)) (n : Nat) (x : X) :
+    truncate n (corec h (n + 1) x) = corec h n x := by
+  induction n generalizing x with
+  | zero => rfl
+  | succ n ih =>
+      simp only [truncate, corec, Part.map_eq_map, Part.map_map]
+      congr 1
+      funext node
+      rw [Function.comp_apply, Visible.map_comp]
+      congr 1
+      funext y
+      exact ih y
+
+/-- Guarded corecursion: the unique tree unfolding a `Part ∘ Visible`-coalgebra. -/
+def corec {E : Type u → Type u} {A X : Type (u + 1)}
+    (h : X → Part (Visible E A X)) (x : X) : Tree E A where
+  observe n := Approx.corec h n x
+  coherent n := Approx.truncate_corec h n x
+
+/-- One guarded unfolding step of `corec`. -/
+theorem observe_corec {E : Type u → Type u} {A X : Type (u + 1)}
+    (h : X → Part (Visible E A X)) (x : X) (n : Nat) :
+    (corec h x).observe (n + 1) =
+      Visible.map (fun y => (corec h y).observe n) <$> h x := rfl
+
+/-- `corec h` is the unique guarded unfolding of `h`; this is the coinduction
+principle for the extensional carrier. -/
+theorem corec_unique {E : Type u → Type u} {A X : Type (u + 1)}
+    (h : X → Part (Visible E A X)) (F : X → Tree E A)
+    (hF : ∀ (x : X) (n : Nat),
+      (F x).observe (n + 1) = Visible.map (fun y => (F y).observe n) <$> h x) :
+    F = corec h := by
+  funext x
+  apply Tree.ext
+  intro n
+  induction n generalizing x with
+  | zero => exact Approx.eq_zero _ _
+  | succ n ih =>
+      rw [hF x, observe_corec]
+      have hfun : (fun y => (F y).observe n) = (fun y => (corec h y).observe n) :=
+        funext (fun y => ih y)
+      rw [hfun]
 
 /-- A finite silent step is observationally irrelevant in the weak model. -/
 def tau {E : Type u → Type u} {A : Type (u + 1)} (t : Tree E A) : Tree E A := t

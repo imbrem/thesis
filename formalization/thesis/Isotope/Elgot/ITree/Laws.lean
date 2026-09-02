@@ -277,6 +277,25 @@ theorem truncate_flattenApprox {E : Type u → Type u} {A B : Type (u + 1)}
   funext s
   exact (ret (E := E) (Isotope.Elgot.flatten s)).coherent n
 
+/-- Unfold one visible layer of `flattenApprox`. -/
+theorem flattenApprox_succ {E : Type u → Type u} {A B : Type (u + 1)} (n : Nat)
+    (x : Approx E ((B ⊕ A) ⊕ A) (n + 1)) :
+    flattenApprox (n + 1) x = x >>= fun
+      | .ret s => Part.some (.ret (Isotope.Elgot.flatten s))
+      | .vis e next => Part.some (.vis e (fun r => flattenApprox n (next r))) := by
+  simp only [flattenApprox, bind]
+  apply congrArg (x >>= ·)
+  funext node
+  cases node with
+  | ret s => rfl
+  | vis e next =>
+      simp only [Part.some_inj, Visible.vis.injEq, heq_eq_eq, true_and]
+      congr 1
+      funext r
+      apply congrArg (bind n (next r))
+      funext s
+      exact (ret (E := E) (Isotope.Elgot.flatten s)).coherent n
+
 /-- A two-level residual machine. Its two recursive summands respectively
 represent recursion of the outer and inner iterations. -/
 noncomputable def doubleStep {E : Type u → Type u} {A B : Type (u + 1)}
@@ -291,6 +310,130 @@ noncomputable def doubleStep {E : Type u → Type u} {A B : Type (u + 1)}
     | .vis e next => Part.some (.inl (.inl (.vis e (fun r =>
         iter n (iter n (next r) (fun a => truncate n (f a)))
           (fun a => iter n (truncate n (f a)) (fun a => truncate n (f a)))))))
+
+/-- The outer half of the two-level residual machine, acting on a visible node
+already produced by the inner iteration. -/
+noncomputable def outerPost {E : Type u → Type u} {A B : Type (u + 1)} (n : Nat)
+    (f : A → Approx E ((B ⊕ A) ⊕ A) (n + 1)) :
+    Visible E (B ⊕ A) (Approx E (B ⊕ A) n) →
+      Part (Visible E B (Approx E B n) ⊕ Approx E ((B ⊕ A) ⊕ A) (n + 1))
+  | .ret (.inl b) => Part.some (.inl (.ret b))
+  | .ret (.inr a) => Part.some (.inr (f a))
+  | .vis e next => Part.some (.inl (.vis e (fun r =>
+      iter n (next r) (fun a => iter n (truncate n (f a)) (fun a => truncate n (f a))))))
+
+/-- `doubleStep` is exactly the inner residual machine followed by the outer one. -/
+theorem doubleStep_eq {E : Type u → Type u} {A B : Type (u + 1)} (n : Nat)
+    (f : A → Approx E ((B ⊕ A) ⊕ A) (n + 1)) :
+    doubleStep n f = Isotope.Elgot.mapReturn (iterStep n f) (outerPost n f) := by
+  funext x
+  simp only [doubleStep, Isotope.Elgot.mapReturn, iterStep, Part.bind_eq_bind,
+    Part.bind_assoc]
+  apply congrArg (Part.bind x)
+  funext node
+  cases node with
+  | ret s =>
+      cases s with
+      | inl t => cases t <;> simp [outerPost]
+      | inr a => simp [outerPost]
+  | vis e next => simp [outerPost]
+
+/-- Outer uniformity square: running the inner iteration first is a simulation
+of the residual outer machine. -/
+private theorem codiagonal_outer_square {E : Type u → Type u} {A B : Type (u + 1)}
+    (n : Nat) (f : A → Approx E ((B ⊕ A) ⊕ A) (n + 1)) :
+    kcomp (kcomp (Isotope.Elgot.iter (iterStep n f)) (outerPost n f))
+        (liftPure (Sum.map id (fun x => iter (n + 1) x f))) =
+      kcomp (liftPure (fun x => iter (n + 1) x f))
+        (iterStep n (fun a => iter (n + 1) (f a) f)) := by
+  funext x
+  simp only [kcomp, liftPure, Function.comp_apply, iter_succ, Part.pure_eq_some,
+    Part.bind_eq_bind, Part.bind_some, Part.bind_assoc, iterStep]
+  apply congrArg (Part.bind (Isotope.Elgot.iter (iterStep n f) x))
+  funext node
+  cases node with
+  | ret s =>
+      cases s with
+      | inl b => simp [outerPost]
+      | inr a => simp [outerPost]
+  | vis e next =>
+      simp only [outerPost, Part.bind_some, Function.comp_apply, Sum.map_inl, id_eq,
+        Part.pure_eq_some, Part.some_inj, Sum.inl.injEq, Visible.vis.injEq, heq_eq_eq,
+        true_and]
+      congr 1
+      funext r
+      congr 1
+      funext a
+      exact (truncate_iter n (f a) f).symm
+
+/-- Inner uniformity square: flattening the two residual summands is a simulation
+of the flattened two-level machine. -/
+private theorem codiagonal_inner_square {E : Type u → Type u} {A B : Type (u + 1)}
+    (n : Nat) (f : A → Approx E ((B ⊕ A) ⊕ A) (n + 1))
+    (ih : ∀ (y : Approx E ((B ⊕ A) ⊕ A) n) (F : A → Approx E ((B ⊕ A) ⊕ A) n),
+      iter n (iter n y F) (fun a => iter n (F a) F) =
+        iter n (flattenApprox n y) (fun a => flattenApprox n (F a))) :
+    kcomp (Isotope.Elgot.flattenBody (doubleStep n f))
+        (liftPure (Sum.map id (fun y => flattenApprox (A := A) (B := B) (n + 1) y))) =
+      kcomp (liftPure (fun y => flattenApprox (A := A) (B := B) (n + 1) y))
+        (iterStep n (fun a => flattenApprox (n + 1) (f a))) := by
+  funext x
+  simp only [kcomp, liftPure, Isotope.Elgot.flattenBody, Function.comp_apply, doubleStep,
+    Part.pure_eq_some, Part.bind_eq_bind, Part.bind_some, Part.bind_assoc]
+  rw [flattenApprox_succ]
+  simp only [iterStep, Part.bind_eq_bind, Part.bind_assoc]
+  apply congrArg (Part.bind x)
+  funext node
+  cases node with
+  | ret s =>
+      cases s with
+      | inl t => cases t <;> simp [Isotope.Elgot.flatten]
+      | inr a => simp [Isotope.Elgot.flatten]
+  | vis e next =>
+      simp only [Part.bind_some, Function.comp_apply, Isotope.Elgot.flatten, Sum.elim_inl,
+        Sum.map_inl, id_eq, Part.pure_eq_some, Part.some_inj, Sum.inl.injEq,
+        Visible.vis.injEq, heq_eq_eq, true_and]
+      congr 1
+      funext r
+      rw [ih (next r) (fun a => truncate n (f a))]
+      congr 1
+      funext a
+      exact (truncate_flattenApprox n (f a)).symm
+
+/-- The codiagonal (Conway nesting) law at every finite observation depth. -/
+theorem iter_codiagonal {E : Type u → Type u} {A B : Type (u + 1)}
+    (n : Nat) (x : Approx E ((B ⊕ A) ⊕ A) n) (f : A → Approx E ((B ⊕ A) ⊕ A) n) :
+    iter n (iter n x f) (fun a => iter n (f a) f) =
+      iter n (flattenApprox n x) (fun a => flattenApprox n (f a)) := by
+  induction n with
+  | zero => rfl
+  | succ n ih =>
+      have hD : Isotope.Elgot.iter (doubleStep n f) =
+          kcomp (Isotope.Elgot.iter (iterStep n f)) (outerPost n f) := by
+        rw [doubleStep_eq]
+        exact (LawfulElgotMonad.naturality (m := Part) (iterStep n f) (outerPost n f)).symm
+      have houter := LawfulElgotMonad.uniformity (m := Part)
+        (kcomp (Isotope.Elgot.iter (iterStep n f)) (outerPost n f))
+        (iterStep n (fun a => iter (n + 1) (f a) f))
+        (fun y => iter (n + 1) y f)
+        (codiagonal_outer_square n f)
+      have hinner := LawfulElgotMonad.uniformity (m := Part)
+        (Isotope.Elgot.flattenBody (doubleStep n f))
+        (iterStep n (fun a => flattenApprox (n + 1) (f a)))
+        (fun y => flattenApprox (A := A) (B := B) (n + 1) y)
+        (codiagonal_inner_square n f ih)
+      have hcod := LawfulElgotMonad.codiagonal (m := Part) (doubleStep n f)
+      have e1 : iter (n + 1) (iter (n + 1) x f) (fun a => iter (n + 1) (f a) f)
+          = Isotope.Elgot.iter
+              (kcomp (Isotope.Elgot.iter (iterStep n f)) (outerPost n f)) x := by
+        rw [congrFun houter x]
+        simp [kcomp, liftPure]
+      have e2 : Isotope.Elgot.iter (Isotope.Elgot.flattenBody (doubleStep n f)) x
+          = iter (n + 1) (flattenApprox (n + 1) x)
+              (fun a => flattenApprox (n + 1) (f a)) := by
+        rw [congrFun hinner x]
+        simp [kcomp, liftPure]
+      rw [e1, ← hD, congrFun hcod x, e2]
 
 end Approx
 
@@ -334,6 +477,19 @@ theorem iterate_naturality {E : Type u → Type u} {A B C : Type (u + 1)}
     | inr a => rfl
   simp_rw [hm]
 
+/-- The codiagonal law: a nested iteration equals the iteration of the flattened body. -/
+theorem iterate_codiagonal {E : Type u → Type u} {A B : Type (u + 1)}
+    (f : A → Tree E ((B ⊕ A) ⊕ A)) :
+    Isotope.Elgot.iter (Isotope.Elgot.iter f) =
+      Isotope.Elgot.iter (Isotope.Elgot.flattenBody f) := by
+  funext a
+  apply Tree.ext
+  intro n
+  have hb (a : A) : (Isotope.Elgot.flattenBody f a).observe n =
+      Approx.flattenApprox n ((f a).observe n) := rfl
+  simp only [observe_iter, hb]
+  exact Approx.iter_codiagonal n ((f a).observe n) (fun a => (f a).observe n)
+
 theorem iterate_uniformity {E : Type u → Type u} {A B C : Type (u + 1)}
     (f : A → Tree E (B ⊕ A)) (g : C → Tree E (B ⊕ C)) (h : A → C)
     (comm : kcomp f (liftPure (Sum.map id h)) = kcomp (liftPure h) g) :
@@ -360,5 +516,12 @@ theorem iterate_uniformity {E : Type u → Type u} {A B C : Type (u + 1)}
     have hc := congrFun comm a
     have ho := congrArg (fun t : Tree E (B ⊕ C) => t.observe n) hc
     simpa [kcomp, liftPure, Approx.mapState] using ho
+
+/-- Weak interaction trees form a complete Elgot monad. -/
+instance instLawfulElgotMonad (E : Type u → Type u) : LawfulElgotMonad (Tree E) where
+  fixpoint := iterate_fixpoint
+  naturality := iterate_naturality
+  codiagonal := iterate_codiagonal
+  uniformity := iterate_uniformity
 
 end Isotope.Elgot.ITree
