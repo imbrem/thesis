@@ -1,5 +1,6 @@
 import Isotope.LambdaSeq.Typing
 import Isotope.LambdaSSA.Translation.Frontend.Core
+import Isotope.LambdaSSA.Translation.Frontend.LambdaCase
 
 /-! # Lambda-seq frontends for lambda-SSA -/
 
@@ -27,5 +28,14 @@ def compile_hasType {β : Isotope.LambdaSeq.LocallyNameless.BoundCtx τ n}
   Core.compile_hasType h.embedIter
 
 end LocallyNameless
+
+namespace Named
+
+/-- Compile a closed named sequential term through its lambda-case embedding. -/
+def compile (t : Isotope.LambdaSeq.Named.Tm Empty Φ) : LambdaSSA.Region Φ :=
+  Isotope.LambdaSSA.Translation.Frontend.LambdaCase.Named.compile
+    (Isotope.LambdaSeq.Named.embedCase t)
+
+end Named
 
 end Isotope.LambdaSSA.Translation.Frontend.LambdaSeq
