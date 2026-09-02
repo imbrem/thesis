@@ -63,6 +63,66 @@ def runFuel [DecidableEq ν] [DecidableEq κ] (M : Model φ) (g : C.CFG ν φ κ
       let (ρ', e) ← enter M ρ .entry g.entry
       continueFuel M g fuel ρ' .entry e
 
+private theorem lookup_phiFree [DecidableEq κ] (g : C.CFG ν φ κ)
+    (h : Isotope.TAC.Densem.Classical.PhiFree g) (ℓ : κ) (b : C.Block ν φ κ)
+    (hb : lookup g ℓ = some b) : b.phis = [] := by
+  unfold lookup at hb
+  rw [Option.map_eq_some_iff] at hb
+  rcases hb with ⟨p, hp, rfl⟩
+  exact h.blocks p (List.mem_of_find?_eq_some hp)
+
+private theorem lookup_translate [DecidableEq κ] (g : C.CFG ν φ κ)
+    (h : Isotope.TAC.Densem.Classical.PhiFree g) (ℓ : κ) :
+    CFG.lookup (Isotope.TAC.Densem.Classical.cfg g h) ℓ =
+      (lookup g ℓ).map Isotope.TAC.Densem.Classical.block := by
+  unfold CFG.lookup Isotope.TAC.Densem.Classical.cfg lookup
+  induction g.blocks with
+  | nil => rfl
+  | cons p ps ih => simp only [List.map_cons, List.find?_cons]; split <;> simp_all
+
+theorem continueFuel_phiFree [DecidableEq ν] [DecidableEq κ]
+    (M : Model φ) (g : C.CFG ν φ κ) (h : Isotope.TAC.Densem.Classical.PhiFree g)
+    (fuel : Nat) (ρ : Env M ν) (pred : C.BlockId κ) (e : Exit κ M.Val) :
+    continueFuel M g fuel ρ pred e =
+      CFG.continueFuel M (Isotope.TAC.Densem.Classical.cfg g h) fuel ρ e := by
+  induction fuel generalizing ρ pred e with
+  | zero => cases e <;> rfl
+  | succ fuel ih =>
+      cases e with
+      | «return» a => rfl
+      | branch ℓ =>
+        simp only [continueFuel, CFG.continueFuel]
+        rw [lookup_translate]
+        cases hb : lookup g ℓ with
+        | none => rfl
+        | some b =>
+          dsimp
+          rw [enter_phiFree M ρ pred b (lookup_phiFree g h ℓ b hb)]
+          rw [Isotope.TAC.Densem.Classical.Executable.block_commute]
+          cases hp : Isotope.TAC.Densem.Classical.Executable.blockDenote M ρ b with
+          | none => rfl
+          | some p =>
+            cases p with
+            | mk ρ' e => simpa only [Option.bind_some] using ih ρ' (.named ℓ) e
+
+theorem runFuel_phiFree [DecidableEq ν] [DecidableEq κ]
+    (M : Model φ) (g : C.CFG ν φ κ) (h : Isotope.TAC.Densem.Classical.PhiFree g)
+    (fuel : Nat) (ρ : Env M ν) :
+    runFuel M g fuel ρ =
+      CFG.runFuel M (Isotope.TAC.Densem.Classical.cfg g h) fuel ρ := by
+  cases fuel with
+  | zero => rfl
+  | succ fuel =>
+      simp only [runFuel, CFG.runFuel, Isotope.TAC.Densem.Classical.cfg]
+      rw [enter_phiFree M ρ .entry g.entry h.entry]
+      rw [Isotope.TAC.Densem.Classical.Executable.block_commute]
+      cases hp : Isotope.TAC.Densem.Classical.Executable.blockDenote M ρ g.entry with
+      | none => rfl
+      | some p =>
+        cases p with
+        | mk ρ' e => simpa only [Option.bind_some] using
+            continueFuel_phiFree M g h fuel ρ' .entry e
+
 namespace Monadic
 
 def assignments [Monad m] [DecidableEq κ] (M : Isotope.TAC.Densem.Monadic.Model φ m)
