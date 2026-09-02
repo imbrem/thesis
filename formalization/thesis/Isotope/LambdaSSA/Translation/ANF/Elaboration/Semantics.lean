@@ -92,11 +92,16 @@ theorem heq_of_transportHasType_eq {Γ : Ctx ν τ} {β : BoundCtx τ n}
 @[simp] theorem transportHasType_let₂ {Γ : Ctx ν τ} {β : BoundCtx τ n}
     {a a' : Tm ν Φ n} {b b' : Tm ν Φ (n + 2)}
     (ea : a = a') (eb : b = b')
-    (ha : HasType Φ Γ β a (LambdaIter.prod A B))
+    (ha : HasType Φ Γ β a (LambdaIter.tensor A B))
     (hb : HasType Φ Γ (.snoc (.snoc β A) B) b C) :
     transportHasType (congrArg₂ Tm.let₂ ea eb) (.let₂ ha hb) =
       .let₂ (transportHasType ea ha) (transportHasType eb hb) := by
   cases ea; cases eb; rfl
+
+private theorem congrArg3 {α β γ δ : Sort*} (f : α → β → γ → δ)
+    {a a' : α} {b b' : β} {c c' : γ}
+    (ea : a = a') (eb : b = b') (ec : c = c') :
+    f a b c = f a' b' c' := by cases ea; cases eb; cases ec; rfl
 
 @[simp] theorem transportHasType_case {Γ : Ctx ν τ} {β : BoundCtx τ n}
     {e e' : Tm ν Φ n} {l l' r r' : Tm ν Φ (n + 1)}
@@ -428,7 +433,7 @@ mutual
         let el := programRename_toTm (programOfHasType hl) rl.toFun
         let er := programRename_toTm (programOfHasType hr) rr.toFun
         calc
-          _ = transportHasType (by cases ee; cases el; cases er; rfl)
+          _ = transportHasType (congrArg3 Tm.case ee el er)
               (.case (atomRename_hasType r he).toLambdaIter
                 (programRename_hasType rl hl).toLambdaIter
                 (programRename_hasType rr hr).toLambdaIter) :=
@@ -437,7 +442,7 @@ mutual
                 (transportHasType el (programRename_hasType rl hl).toLambdaIter)
                 (transportHasType er (programRename_hasType rr hr).toLambdaIter) :=
             transportHasType_case ee el er _ _ _
-          _ = _ := congrArg₃ Isotope.LambdaIter.LocallyNameless.HasType.case
+          _ = _ := congrArg3 Isotope.LambdaIter.LocallyNameless.HasType.case
             (atomRename_exact he r) (programRename_exact hl rl)
             (programRename_exact hr rr)
     | iter ha hb =>
