@@ -82,4 +82,36 @@ theorem abort_factors {R : V} {A : τ}
       (LambdaIter.Subtyping.Semantics.Categorical.abort J M (A := A) z) := by
   exact ⟨z, J.map (M.emptyIsInitial.to (M.obj A)), rfl⟩
 
+theorem extend_comp_map {R X Y : V} (f : J.obj R ⟶ J.obj X) (k : X ⟶ Y) :
+    extend J (f ≫ J.map k) =
+      extend J f ≫ J.map ((𝟙 R) ⊗ₘ k) := by
+  simp [extend, PremonoidalCategory.leftTensor, Category.assoc,
+    Functor.map_comp]
+
+theorem FactorsThroughEmpty.extend [TensorEmptyStrict M]
+    {R X : V} {f : J.obj R ⟶ J.obj X}
+    (hf : FactorsThroughEmpty J M f) :
+    FactorsThroughEmpty J M (extend J f) := by
+  let E := M.obj (LambdaIter.empty : τ)
+  let p : J.obj R ⟶ J.obj (R ⊗ E) := extend J hf.prefix
+  let q : J.obj (R ⊗ E) ⟶ J.obj E :=
+    (computationTensorEmptyIsInitial J M R).to _
+  let k : J.obj E ⟶ J.obj (R ⊗ X) :=
+    (computationEmptyIsInitial J M).to _
+  refine ⟨p ≫ q, k, ?_⟩
+  have hc : hf.continuation = J.map (M.emptyIsInitial.to X) :=
+    (computationEmptyIsInitial J M).hom_ext _ _
+  rw [← hf.factor, hc, extend_comp_map]
+  change p ≫ q ≫ k = p ≫ J.map ((𝟙 R) ⊗ₘ M.emptyIsInitial.to X)
+  rw [← Category.assoc]
+  congr 1
+  exact (computationTensorEmptyIsInitial J M R).hom_ext _ _
+
+theorem FactorsThroughEmpty.bind [TensorEmptyStrict M]
+    {R X Y : V} {f : J.obj R ⟶ J.obj X}
+    (hf : FactorsThroughEmpty J M f)
+    (g : J.obj (R ⊗ X) ⟶ J.obj Y) :
+    FactorsThroughEmpty J M (bind J f g) := by
+  exact (hf.extend (J := J) (M := M)).comp g
+
 end Isotope.LambdaSSA.Semantics.Categorical
