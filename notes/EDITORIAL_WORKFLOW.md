@@ -1,0 +1,47 @@
+# Editorial convergence workflow
+
+This workflow manages decisions and proof claims without generating thesis
+prose. The author remains responsible for every replacement paragraph.
+
+## Two queues
+
+- Put document-local work in a structured `#todo`: use `kind`, `owner`,
+  `audience`, `source`, `status`, `priority`, `target`, and `lean` only to the
+  extent useful. TODO metadata is queryable and may be hidden with
+  `visible: false`.
+- Put chapter-ordering decisions and cross-cutting formalization questions in
+  `notes/editorial-queue.json`. These notes never render in the thesis.
+
+Keep the taxonomy small. Prefer `question`, `suggestion`, `plan`,
+`error`, and `task`; ownership/audience handles who should respond. Resolve an
+item by changing its status to `decided` or `deferred`, recording the decision
+as a new field, and retaining the original question for history.
+
+Questions and suggestions do not need person-specific kinds. Record direction
+with the independent `source` and `audience` fields: for example, a question
+from an agent to the author is `(kind: "question", source: "agent", audience:
+"author")`; a suggestion from Neel is `(kind: "suggestion", source: "Neel",
+audience: "author")`; and an author request to a formalization agent reverses
+those endpoints. Use `kind: "plan"` with `status: "proposed"` for possible
+plans, and `kind: "error"` for known faults. This keeps author, agent, and Neel
+work reportable without multiplying nearly identical categories.
+
+## Short author loop
+
+1. Run `make queue`. Resolve one critical/high decision, or explicitly defer it.
+2. Choose a leaf Typst source and run:
+
+   ```sh
+   python3 scripts/thesis.py review --file thesis/path/to/section.typ
+   ```
+
+3. Answer the four prompts, edit the displayed source block, then run the
+   printed command for the next block. The tool displays existing source but
+   never proposes replacement prose.
+4. Build the leaf, then the chapter. At chapter boundaries run `make status`,
+   `make lint`, `make xrefs`, `make queue`, and `make thesis`.
+
+The queue's evidence check proves only that cited files/declaration names still
+exist. It does not inspect theorem types, assumptions, axioms, or whether a
+theorem matches nearby thesis prose. Those checks require source review plus a
+fresh Lean build and `#print axioms` transcript for selected capstones.

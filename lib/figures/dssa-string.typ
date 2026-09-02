@@ -19,10 +19,10 @@
 
 #let coproduct-cfg-diagram() = _canvas(d => {
   (d.text)((1, 4.2), $A$); (d.text)((2.2, 4.2), $B$)
-  (d.box)((1.6, 3.35), [subprogram 1], w: 1.65)
-  (d.box)((0.7, 2.25), [subprogram 2], w: 1.65)
-  (d.box)((2.75, 2.25), [subprogram 3], w: 1.65)
-  (d.box)((2.15, 1.15), [subprogram 4], w: 1.65)
+  (d.box)((1.6, 3.35), [#text(size: 8pt)[subprogram 1]], w: 1.9)
+  (d.box)((0.7, 2.25), [#text(size: 8pt)[subprogram 2]], w: 1.9)
+  (d.box)((2.75, 2.25), [#text(size: 8pt)[subprogram 3]], w: 1.9)
+  (d.box)((2.15, 1.15), [#text(size: 8pt)[subprogram 4]], w: 1.9)
   (d.dot)((3.2, 3.05)); (d.dot)((1.25, 0.35))
   (d.wire)((1, 4), (1.25, 3.58)); (d.wire)((2.2, 4), (1.95, 3.58))
   (d.wire)((1.2, 3.12), (0.7, 2.48)); (d.wire)((2, 3.12), (2.75, 2.48))

@@ -191,7 +191,7 @@ the symmetry for coproducts.
 Coproducts on their own, however, cannot interpret variables captured by
 the branches of a case-statement. For example, given $x : bb(Z)$,
 $y : bb(Z) + sans("str")$, consider the following expression:
-$ sans("case") #h(0em) y #h(0em) { iota_l #h(0em) y : sans("print") \( mono("\"add: \"") \, x + y \) \, iota_r #h(0em) y : sans("print") \( y \, x \) } $
+$ kw("case") med y #h(0em) { iota_l #h(0em) y : sans("print") \( mono("\"add: \"") \, x + y \) \, iota_r #h(0em) y : sans("print") \( y \, x \) } $
 While our input context corresponds to the object
 $bb(Z) ⊗ \( bb(Z) + sans("str") \)$, we need to somehow get
 to
@@ -292,7 +292,7 @@ condition to ensure that our iteration operator is compatible with our
 premonoidal structure. Specifically, we would like to be able to
 "thread" values through our loop bodies; i.e., the following two
 programs should be equivalent for #emph[pure] $c$:
-$ \( sans("iter") #h(0em) a #h(0em) { iota_r #h(0em) x : b } \, c \) approx sans("iter") #h(0em) \( a \, c \) #h(0em) { iota_r #h(0em) \( x \, y \) : sans("case") #h(0em) b #h(0em) { iota_l #h(0em) z : iota_l #h(0em) \( z \, y \) \, iota_r #h(0em) z : iota_r #h(0em) \( z \, y \) } } $
+$ \( sans("iter") #h(0em) a #h(0em) { iota_r #h(0em) x : b } \, c \) approx sans("iter") #h(0em) \( a \, c \) #h(0em) { iota_r #h(0em) \( x \, y \) : kw("case") med b #h(0em) { iota_l #h(0em) z : iota_l #h(0em) \( z \, y \) \, iota_r #h(0em) z : iota_r #h(0em) \( z \, y \) } } $
 This corresponds to requiring our Conway iteration operator to be
 #emph[strong], defined as follows:
 
@@ -335,9 +335,9 @@ allow proving substitution of effectful programs sound. Unfortunately,
 we don't have quite enough structure to allow substitution #emph[into]
 the body of a loop: while commutativity of $a$ and $b$ is enough to
 justify that
-$sans("let") #h(0em) x = a ; #h(0em) \( b \, x \) approx \( b \, a \)$
+$kw("let") med x = a ; #h(0em) \( b \, x \) approx \( b \, a \)$
 proving that
-$sans("let") #h(0em) x = a ; #h(0em) sans("iter") #h(0em) b #h(0em) { iota_r #h(0em) y : c } approx sans("iter") #h(0em) b #h(0em) { iota_r #h(0em) y : sans("let") #h(0em) x = a ; #h(0em) c }$
+$kw("let") med x = a ; #h(0em) sans("iter") #h(0em) b #h(0em) { iota_r #h(0em) y : c } approx sans("iter") #h(0em) b #h(0em) { iota_r #h(0em) y : kw("let") med x = a ; #h(0em) c }$
 for $x in.not sans("fv") \( b \)$ requires us to be able to move a
 morphism #emph[into] the body of a loop. To be able to do that
 effectively, we need to introduce the concept of a
@@ -477,8 +477,7 @@ of relevant type).
 
 #todo[Check the mechanically converted structural-semantics figure against source lines 2193--2242, and replace the Pandoc rendering with native Typst layout without changing its equations.]
 
-#figure([#block[
-  minipage=1.1,scale=0.9
+#figure([#fit-to-width([#block[
   $ #box(stroke: black, inset: 3pt, [$ ⟦ Gamma^(upright(bold(q))) mapsto Delta^(upright(bold(q))') ⟧ : cal(C)_tack.t \( ⟦ Gamma^(upright(bold(q))) ⟧ \, ⟦ Delta^(upright(bold(q))') ⟧ \) $])\
   ⟦ dot.op mapsto dot.op ⟧ = sans("id")_I #h(2em) ⟦ Gamma^(upright(bold(q))) \, x : A_epsilon.alt^q mapsto Delta^(upright(bold(q))') ⟧ = ⟦ Gamma^(upright(bold(q))) ⟧ ⊗ !_(A^q) ; lambda ; ⟦ Gamma^(upright(bold(q))) mapsto Delta^(upright(bold(q))') ⟧\
   ⟦ Gamma^(upright(bold(q))) \, x : A_epsilon.alt^q mapsto Delta^(upright(bold(q))') \, x : A_(epsilon.alt')^(q') ⟧ = ⟦ Gamma^(upright(bold(q))) mapsto Delta^(upright(bold(q))') ⟧ ⊗ cases(delim: "{", sans("id")_(⟦ A ⟧) & upright("if ") q \, q' ≠ 0, !_(A^q) & upright("otherwise"), ) $
@@ -487,7 +486,7 @@ of relevant type).
   ⟦ dot.op tack.r dot.op = dot.op + dot.op ⟧ = rho^(- 1)\
   ⟦ Gamma \, x : A tack.r \( upright(bold(q)) \, q \) = \( upright(bold(q))_l \, q_l \) + \( upright(bold(q))_r \, q_r \) ⟧ = ⟦ Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r ⟧ ⊗ (cases(delim: "{", lambda^(- 1) & upright("if ") q_l = 0 upright(" else"), rho^(- 1) & upright("if ") q_r = 0 upright(" else"), Delta_A & upright("otherwise"))) ; sigma^(sans("mid")) $
 
-  ]],
+  ]])],
   caption: [
     Denotational semantics for structural #liter
     judgements

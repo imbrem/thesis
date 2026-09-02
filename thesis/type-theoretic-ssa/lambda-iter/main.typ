@@ -235,6 +235,10 @@ In particular:
 
 == Metatheory  <syntactic-metatheory>
 
+#todo[Audit these metatheory statements against the active Lean formalization;
+repoint proof-status links once the preferred syntax and refinement variant is
+settled.]
+
 We can now begin to lay out some of the metatheoretic results that we'll need to develop
 an equational theory for #liter. Probably the most important of these is _weakening_,
 which says that, if we can type $a$ as $A$ in a given context, we can freely:
@@ -365,7 +369,7 @@ We may then state the _substitution lemma_ as follows
   #align(center, prooftree(adm-subst))
 ]
 
-There still remain two important gaps in our syntactic metatheory.
+There still remain two gaps in our syntactic metatheory.
 For one, it is easy to see that the typing rules in @fig-expr-typing
 don't depend on the _ordering_ of variables in a context $Γ$.
 In the same spirit, the rules also don't depend on variables having any

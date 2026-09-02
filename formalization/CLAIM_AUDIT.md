@@ -4,6 +4,30 @@ Audit date: 2026-08-27. This report audits declarations, not filenames. Line
 numbers refer to the checked-in paper sources. `ERRORS.md` corrections are part
 of the statements below.
 
+## Active thesis formalization boundary
+
+The frozen-repository tables below remain implementation archaeology. The
+active project at `formalization/thesis/` now contains a separate
+`Isotope.LambdaIter` development and must be audited independently before
+editing public mechanization claims. Source inspection at `5b3be1e` supports
+the following deliberately narrow map:
+
+| Thesis topic | Exact active evidence | Scope established by declaration inspection | Current class |
+|---|---|---|---|
+| Named and locally nameless `lambda_iter` syntax and typing | `Isotope/LambdaIter/Named/{Defs,Typing}.lean`; `LocallyNameless/{Syntax,Typing}.lean` | Syntax and typing judgments exist as separate variants. This is not an equivalence theorem between variants. | partial |
+| Locally nameless weakening and typed substitution | `LocallyNameless/Typing.lean`, `HasType.weaken`; `TypingSubst.lean`, `HasType.rename`, `HasType.bsubst`, `HasType.instantiate` | Typing-preserving renaming/substitution infrastructure for the locally nameless calculus. | checked |
+| Direct denotation and semantic substitution | `Semantics/Denotation.lean`, `denote`; `Semantics/Substitution.lean`, `denote_rename`, `denote_bsubst`, `denote_instantiate` | Denotation of locally nameless typed terms in the direct model and compatibility with the corresponding renaming, bound-substitution, and instantiation operations. | checked |
+| Soundness of the locally nameless equational theory | `Semantics/Soundness.lean`, `sound`, `related_sound` | `sound` covers `LocallyNameless.Deriv` under its explicit lawful-model assumptions; `related_sound` transports the result through a relation respected by the model. It is not a completeness result. | checked |
+| Direct/categorical agreement | `Semantics/Agreement/Full.lean`, `categorical_denote_eq` | Agreement of the two denotations for the implemented locally nameless term language and the concrete categorical construction used there. It does not establish initiality or arbitrary-model completeness. | checked |
+| Generic categorical interfaces | `Semantics/Categorical.lean`, `TypeModel`, `InstructionModel`; `CategoryTheory/Monad/Kleisli.lean`, `toKleisliFreydCategory` | Interfaces and categorical infrastructure, including a Kleisli Freyd-category construction. No category of syntax models or initial object is declared. | partial |
+| `lambda_SSA`, translations, refinement completeness, model equivalence | No matching active module/declaration found under `Isotope/` | These remain future formalization work; paper-reference repositories do not upgrade the active thesis claim. | missing |
+
+No active `sorry`, `admit`, axiom declaration, or `unsafe` declaration was
+found by source search under `formalization/thesis/Isotope/`; commented sketches
+were excluded. This is not a kernel axiom audit. Before calling any row a
+verified thesis capstone, preserve a successful `lake build Isotope` result and
+`#print axioms` output for the exact declarations named above.
+
 ## Frozen baselines and build evidence
 
 | Repository | Audited commit | Toolchain | Clean build / axiom evidence |

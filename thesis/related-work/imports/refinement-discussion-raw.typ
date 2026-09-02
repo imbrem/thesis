@@ -69,4 +69,4 @@ by integrating the idea of linearity of effects with an old idea of
 by whether they can commute to the left or right of another effect, we
 gain a very rich (in)equational theory very cheaply.
 
-#hide(bibliography("/thesis/refs.bib", full: false))
+#standalone-bibliography()
