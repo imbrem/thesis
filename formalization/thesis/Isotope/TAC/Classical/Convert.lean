@@ -212,4 +212,193 @@ theorem phi_destinations_source [DecidableEq Var] [DecidableEq Label]
   rw [List.map_map]
   simpa [Function.comp_def, Version.source]
 
+def Version.owner : Version Var Label → Option (BlockId Label)
+  | .external _ => none
+  | .phi l _ => some (.named l)
+  | .instr b _ _ _ => some b
+
+@[simp] theorem body_destination_owner (bid : BlockId Label) [DecidableEq Var]
+    (i : Nat) (ρ : Env Var Label) (xs : List (Instr Var Op))
+    {d : Version Var Label} (h : d ∈ (body bid i ρ xs).1.flatMap Instr.defs) :
+    d.owner = some bid := by
+  rcases body_destinations_instr bid i ρ xs d h with ⟨j, s, x, rfl⟩
+  rfl
+
+theorem phi_defs_nodup [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) {vars : List Var} (hvars : vars.Nodup)
+    (label : Label) : ((phis source vars label).map Phi.dst).Nodup := by
+  unfold phis
+  rw [List.map_map]
+  change (vars.map (Version.phi label)).Nodup
+  induction vars with
+  | nil => simp
+  | cons x xs ih =>
+      rw [List.nodup_cons] at hvars
+      simp only [List.map_cons, List.nodup_cons]
+      refine ⟨?_, ih hvars.2⟩
+      intro h
+      rcases List.mem_map.mp h with ⟨y, hy, eq⟩
+      exact hvars.1 ((Version.phi.inj eq).2 ▸ hy)
+
+theorem convertedBlock_defs_nodup [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) {vars : List Var} (hvars : vars.Nodup)
+    (bid : BlockId Label) (b : Block Var Op Label) :
+    (CFG.defs (convertBlock source vars bid b)).Nodup := by
+  cases bid with
+  | entry => simpa [convertBlock, CFG.defs, CFG.instrDefs] using
+      body_defs_nodup (.entry : BlockId Label) 0 (startEnv .entry) b.body
+  | named label =>
+      rw [show CFG.defs (convertBlock source vars (.named label) b) =
+        (phis source vars label).map Phi.dst ++
+          (body (.named label) 0 (startEnv (.named label)) b.body).1.flatMap Instr.defs by
+            rfl]
+      rw [List.nodup_append]
+      refine ⟨phi_defs_nodup source hvars label,
+        body_defs_nodup (.named label) 0 (startEnv (.named label)) b.body, ?_⟩
+      intro p hp d hd eq
+      unfold phis at hp
+      rw [List.mem_map] at hp
+      rcases hp with ⟨q, hq, rfl⟩
+      rcases List.mem_map.mp hq with ⟨x, _, rfl⟩
+      rcases body_destinations_instr (.named label) 0
+        (startEnv (.named label)) b.body d hd with ⟨j, s, y, ed⟩
+      cases ed
+      cases eq
+
+theorem external_not_convertedBlock_def [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) (vars : List Var) (bid : BlockId Label)
+    (b : Block Var Op Label) (x : Var) :
+    Version.external x ∉ CFG.defs (convertBlock source vars bid b) := by
+  cases bid with
+  | entry =>
+      intro h
+      have := body_destination_owner (.entry : BlockId Label) 0 (startEnv .entry) b.body h
+      contradiction
+  | named label =>
+      simp only [convertBlock, CFG.defs, CFG.instrDefs, List.mem_append,
+        List.mem_map]
+      intro h
+      rcases h with h | h
+      · rcases h with ⟨p, hp, eq⟩
+        unfold phis at hp
+        rcases List.mem_map.mp hp with ⟨q, hq, rfl⟩
+        cases eq
+      · have := body_destination_owner (.named label) 0 (startEnv (.named label)) b.body h
+        contradiction
+
+@[simp] theorem convertedBlock_def_owner [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) (vars : List Var) (bid : BlockId Label)
+    (b : Block Var Op Label) {d : Version Var Label}
+    (h : d ∈ CFG.defs (convertBlock source vars bid b)) : d.owner = some bid := by
+  cases bid with
+  | entry => exact body_destination_owner .entry 0 (startEnv .entry) b.body h
+  | named label =>
+      change d ∈ (phis source vars label).map Phi.dst ++
+        (body (.named label) 0 (startEnv (.named label)) b.body).1.flatMap Instr.defs at h
+      rcases List.mem_append.mp h with h | h
+      · unfold phis at h
+        rcases List.mem_map.mp h with ⟨p, hp, rfl⟩
+        rcases List.mem_map.mp hp with ⟨x, _, rfl⟩
+        rfl
+      · exact body_destination_owner (.named label) 0 (startEnv (.named label)) b.body h
+
+private def blockDefs [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) (vars : List Var)
+    (blocks : List (Label × Block Var Op Label)) : List (Version Var Label) :=
+  blocks.flatMap fun p => CFG.defs (convertBlock source vars (.named p.1) p.2)
+
+private theorem blockDefs_nodup [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) {vars : List Var} (hvars : vars.Nodup)
+    (blocks : List (Label × Block Var Op Label))
+    (hlabels : (blocks.map Prod.fst).Nodup) :
+    (blockDefs source vars blocks).Nodup := by
+  induction blocks with
+  | nil => simp [blockDefs]
+  | cons head tail ih =>
+      rw [List.map_cons, List.nodup_cons] at hlabels
+      rw [show blockDefs source vars (head :: tail) =
+        CFG.defs (convertBlock source vars (.named head.1) head.2) ++
+          blockDefs source vars tail by rfl, List.nodup_append]
+      refine ⟨convertedBlock_defs_nodup source hvars _ _, ih hlabels.2, ?_⟩
+      intro a ha b hb eq
+      have hoa := convertedBlock_def_owner source vars (.named head.1) head.2 ha
+      rcases List.mem_flatMap.mp hb with ⟨p, hp, hbp⟩
+      have hob := convertedBlock_def_owner source vars (.named p.1) p.2 hbp
+      subst b
+      rw [hoa] at hob
+      have hl : head.1 = p.1 := BlockId.named.inj (Option.some.inj hob)
+      exact hlabels.1 (List.mem_map.mpr ⟨p, hp, hl.symm⟩)
+
+/-- Site tagging makes the complete converted flat CFG globally single-assignment. -/
+theorem cfg_singleAssignment [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) {vars : List Var} (hvars : vars.Nodup)
+    (hlabels : source.uniqueLabels) : (cfg source vars).singleAssignment := by
+  unfold CFG.singleAssignment
+  rw [show CFG.allDefs (cfg source vars) =
+    CFG.defs (convertBlock source vars .entry source.entry) ++
+      blockDefs source vars source.blocks by
+        unfold cfg CFG.allDefs blockDefs
+        rw [List.flatMap_map], List.nodup_append]
+  refine ⟨convertedBlock_defs_nodup source hvars .entry source.entry,
+    blockDefs_nodup source hvars source.blocks hlabels, ?_⟩
+  intro a ha b hb eq
+  have hoa := convertedBlock_def_owner source vars .entry source.entry ha
+  rcases List.mem_flatMap.mp hb with ⟨p, hp, hbp⟩
+  have hob := convertedBlock_def_owner source vars (.named p.1) p.2 hbp
+  subst b
+  rw [hoa] at hob
+  cases Option.some.inj hob.symm
+
+theorem external_not_cfg_def [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) (vars : List Var) (x : Var) :
+    Version.external x ∉ CFG.allDefs (cfg source vars) := by
+  intro h
+  rw [show CFG.allDefs (cfg source vars) =
+    CFG.defs (convertBlock source vars .entry source.entry) ++
+      blockDefs source vars source.blocks by
+        unfold cfg CFG.allDefs blockDefs
+        rw [List.flatMap_map]] at h
+  rcases List.mem_append.mp h with h | h
+  · exact external_not_convertedBlock_def source vars .entry source.entry x h
+  · rcases List.mem_flatMap.mp h with ⟨p, hp, hd⟩
+    exact external_not_convertedBlock_def source vars (.named p.1) p.2 x hd
+
+def instrSourceVars (i : Instr Var Op) : List Var := i.defs ++ i.uses
+
+def phiSourceVars (p : Phi Var Label) : List Var :=
+  p.dst :: p.incoming.flatMap fun i => i.value.uses
+
+def blockSourceVars (b : Block Var Op Label) : List Var :=
+  b.phis.flatMap phiSourceVars ++ b.body.flatMap instrSourceVars ++ b.terminator.uses
+
+private def dedup [DecidableEq α] : (xs : List α) → {ys : List α // ys.Nodup}
+  | [] => ⟨[], by simp⟩
+  | x :: xs =>
+      let tail := dedup xs
+      if h : x ∈ tail.1 then tail else ⟨x :: tail.1, List.nodup_cons.mpr ⟨h, tail.2⟩⟩
+
+/-- The finite source-variable universe mentioned anywhere in the input CFG. -/
+def sourceVars [DecidableEq Var] (source : CFG Var Op Label) : List Var :=
+  (dedup (blockSourceVars source.entry ++
+    source.blocks.flatMap fun p => blockSourceVars p.2)).1
+
+theorem sourceVars_nodup [DecidableEq Var] (source : CFG Var Op Label) :
+    (sourceVars source).Nodup :=
+  (dedup (blockSourceVars source.entry ++
+    source.blocks.flatMap fun p => blockSourceVars p.2)).2
+
+/-- Canonical total-environment conversion using all variables mentioned by the source. -/
+def convert [DecidableEq Var] [DecidableEq Label] (source : CFG Var Op Label) :
+    CFG (Version Var Label) Op Label := cfg source (sourceVars source)
+
+theorem convert_singleAssignment [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) (hlabels : source.uniqueLabels) :
+    (convert source).singleAssignment :=
+  cfg_singleAssignment source (sourceVars_nodup source) hlabels
+
+theorem external_not_convert_def [DecidableEq Var] [DecidableEq Label]
+    (source : CFG Var Op Label) (x : Var) :
+    Version.external x ∉ CFG.allDefs (convert source) :=
+  external_not_cfg_def source (sourceVars source) x
+
 end Isotope.TAC.Classical.Convert
