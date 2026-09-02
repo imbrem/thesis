@@ -74,6 +74,18 @@ def insertUnderTop_hasType {β : BCtx τ n} {Y A : τ} {t : ITm Φ (n + 1)}
     · rfl
     · exact retainContext_get β retained j)
 
+/-- Eliminate a heterogeneous local-label coproduct and select its compiled
+block. `retained` records the case discriminants accumulated on the path. -/
+def dispatchLabels : (locals retained : List τ) →
+    (Fin locals.length → ITm Φ (n + 1)) →
+    ITm Φ (n + retained.length + 1)
+  | [], _, _ => .abort (.bv 0)
+  | head :: rest, retained, blocks =>
+      .case (.bv 0)
+        (insertUnderTop (retained.length + 1) (blocks 0))
+        (dispatchLabels rest (labelType (head :: rest) :: retained)
+          (fun i => blocks i.succ))
+
 /-- Reassociate an appended label coproduct into either an external result or
 local feedback.  This is the syntactic counterpart of `labelAppendSplit` in
 the categorical region semantics. -/
