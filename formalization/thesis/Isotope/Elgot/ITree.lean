@@ -105,10 +105,12 @@ iterating a head-exposing step, with `interp_ret` and `interp_vis`.
   handler type in `ITree/Handlers.lean`).  No `Semantics.TypeModel` /
   `Semantics.InstructionModel` instance is supplied: only the categorical
   Kleisli/Freyd bridge is instantiated.
-* `interp` is proved to compute on `ret` and `vis` only.  The monad-morphism
-  law `interp h (t >>= k) = interp h t >>= interp h ∘ k`, and the corresponding
-  `interp_iter`, are not proved here.  Likewise `translate` has its computation
-  lemmas but not yet `translate_bind` or `translate_translate`.
+* `interp` is proved to compute on `ret` and `vis` only (`interp_ret`,
+  `interp_vis`).  The monad-morphism law
+  `interp h (t >>= k) = interp h t >>= interp h ∘ k`, and the corresponding
+  `interp_iter`, are **not** proved here.  `translate`, by contrast, is complete:
+  `translate_bind` (monad morphism) and `translate_id` / `translate_translate`
+  (functoriality in the signature) are proved in `ITree/Handlers.lean`.
 * There is no `sorry`, `admit`, `unsafe`, or new `axiom` anywhere in this
   development, and no law is postulated.
 -/
