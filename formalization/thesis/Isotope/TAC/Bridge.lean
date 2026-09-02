@@ -4,6 +4,7 @@ import Isotope.TAC.Bridge.PhiBBA
 import Isotope.TAC.Bridge.NamedLN
 import Isotope.TAC.Bridge.Decompose
 import Isotope.TAC.Bridge.Lambda3Addr
+import Isotope.TAC.Bridge.Lambda3AddrNamedLN
 import Isotope.TAC.Bridge.DomFlat
 import Isotope.TAC.Bridge.TypedDomFlat
 import Isotope.TAC.Bridge.ActualDomBBA
