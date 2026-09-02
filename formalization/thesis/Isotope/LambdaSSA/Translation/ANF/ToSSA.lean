@@ -1,5 +1,6 @@
 import Isotope.LambdaSSA.Translation.ANF
 import Isotope.LambdaSSA.LocallyNameless.ToDeBruijn.Typing
+import Isotope.LambdaSSA.Structural
 
 /-! # CPS compilation of typed ANF to lambda-SSA -/
 
@@ -22,12 +23,20 @@ mutual
     | atom (a : Atom Empty Φ n) : SimpleInstr (.atom a)
     | case (e : Atom Empty Φ n) : SimpleProgram left → SimpleProgram right →
         SimpleInstr (.case e left right)
+    | iter (init : Atom Empty Φ n) : SimpleProgram body →
+        SimpleInstr (.iter init body)
 
   inductive SimpleProgram : Program Empty Φ n → Type _ where
     | ret (a : Atom Empty Φ n) : SimpleProgram (.ret a)
     | let₁ : SimpleInstr i → SimpleProgram body → SimpleProgram (.let₁ i body)
     | let₂ : SimpleProgram body → SimpleProgram (.let₂ a body)
 end
+
+def SimpleProgram.program {p : Program Empty Φ n} (_ : SimpleProgram p) := p
+
+def twoLabels (X Y : τ) : Fin 2 → τ
+  | ⟨0, _⟩ => X
+  | ⟨1, _⟩ => Y
 
 /-- Compile a straight-line ANF program in CPS, branching to `result` with
 its returned value. -/
@@ -38,6 +47,14 @@ def simpleProgram (result : Nat) : {p : Program Empty Φ n} →
   | _, .let₁ (.case e hl hr) hb =>
       .cfg (.case (atom e) (simpleProgram 0 hl) (simpleProgram 0 hr)) 1
         (fun _ => simpleProgram (result + 1) hb)
+  | _, .let₁ (.iter init loop) hb =>
+      .cfg (.br 0 (atom init)) 2 (fun i =>
+        Fin.cases (simpleProgram 1 loop)
+          (fun j => Fin.cases
+            (.case (.var 0)
+              ((simpleProgram (result + 2) hb).renameVars (LambdaSSA.lift Nat.succ))
+              (.br 0 (.var 0)))
+            (fun k => Fin.elim0 k) j) i)
   | _, .let₂ (a := a) hb => .let₂ (atom a) (simpleProgram result hb)
 
 variable {τ : Type u} [TypeFormers τ]
@@ -88,6 +105,39 @@ def simpleProgram_hasType {β : LambdaIter.LocallyNameless.BoundCtx τ n}
                   exact LambdaSSA.Region.HasType.case (atom_hasType he)
                       (simpleProgram_hasType hl hleft (result := 0) (by simp [LambdaSSA.At]))
                       (simpleProgram_hasType hr hright (result := 0) (by simp [LambdaSSA.At]))
+          | iter init loop =>
+              cases hInstr with
+              | iter hinit hloop =>
+                  have compileIter {X Y : τ}
+                      (hi : Atom.HasType (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ)
+                        β init X)
+                      (hl : Program.HasType (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ)
+                        (β.snoc X) loop.program (LambdaIter.coprod Y X))
+                      (hbody : Program.HasType (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ)
+                        (β.snoc Y) hb.program A) :
+                      LambdaSSA.Region.HasType (LocallyNameless.ToDeBruijn.context β)
+                        (simpleProgram result (SimpleProgram.let₁ (SimpleInstr.iter init loop) hb)) L := by
+                    refine LambdaSSA.Region.HasType.cfg
+                      (twoLabels X (LambdaIter.coprod Y X)) ?_ ?_
+                    · exact .br (by simp [LambdaSSA.At, twoLabels]) (atom_hasType hi)
+                    · intro i
+                      refine Fin.cases ?_ (fun j => ?_) i
+                      · simpa [twoLabels] using simpleProgram_hasType loop hl (result := 1)
+                          (by simp [LambdaSSA.At])
+                      · have hj : j = 0 := Subsingleton.elim _ _
+                        subst j
+                        simp only [twoLabels]
+                        apply LambdaSSA.Region.HasType.case (A := Y) (B := X)
+                          (.var (by simp [LambdaSSA.At]))
+                        · exact LambdaSSA.Region.HasType.renameVars
+                            ((LambdaSSA.Ren.wk
+                              (LocallyNameless.ToDeBruijn.context β) (LambdaIter.coprod Y X)).lift Y)
+                            (simpleProgram_hasType hb hbody (result := result + 2)
+                              (by simpa [LambdaSSA.At, Fin.cases] using hout))
+                        · exact LambdaSSA.Region.HasType.br (A := X)
+                            (by simp [LambdaSSA.At, twoLabels])
+                            (.var (by simp [LambdaSSA.At]))
+                  exact compileIter hinit hloop hBody
   | let₂ hb =>
       cases h with
       | let₂ ha hBody =>
