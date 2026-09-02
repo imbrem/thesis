@@ -1,3 +1,4 @@
+import Isotope.Elgot.RA.Bounds
 import Isotope.Elgot.RA.Pull
 import Isotope.Elgot.RA.Rewrite
 
@@ -360,6 +361,8 @@ theorem isTrace_chroStep {A : Type u} {x : Rule} (hx : x ∈ gRules)
   cases h with
   | stutter => exact absurd hx (by simp)
   | mumble => exact absurd hx (by simp)
+  | tighten => exact absurd hx (by simp)
+  | absorb => exact absurd hx (by simp)
   | loosen _ _ l m ν ε hle hfε hfν e₁ e₂ => exact isTrace_loosen hle hfε hfν e₁ e₂ hτ hwf
   | expel _ _ l m ν ε hdt hfs hfν hfε e₁ e₂ =>
       exact isTrace_expel hdt hfs hfν hfε e₁ e₂ hτ hwf

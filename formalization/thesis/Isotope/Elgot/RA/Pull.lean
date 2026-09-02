@@ -399,9 +399,6 @@ theorem own_sub_c_of_wf {c : Chro Loc Val} (hwf : ∀ T ∈ c.toList, T.WF) :
   rintro ν ⟨T, hT, hν⟩
   exact listC_sup c.toList c.chain_toList (fun S hS ↦ (hwf S hS).sub) T hT hν.1
 
-theorem IsTrace.o_sub_c {A : Type u} {τ : PreTrace Loc Val A} (hτ : IsTrace τ) :
-    τ.ch.o ⊆ τ.ch.c := hτ.opening_sub_c τ.ch.first_mem
-
 /-- Deleting a message from a two-message insertion. -/
 theorem Set.insert_insert_diff {ν ε : Msg Loc Val} {X : Memory Loc Val}
     (hne : ν ≠ ε) (hX : ε ∉ X) : insert ν (insert ε X) \ {ε} = insert ν X := by

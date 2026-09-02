@@ -19,8 +19,10 @@ with the consequence the paper draws from it (p.39):
 We formalize the half of Lemma 8.3 that this development can use: `x ∈ 𝔠` and
 `y ∈ 𝔤`, i.e. the twelve cases of Table 5 (p.62) numbered 1–18 — `St ⇄ y` and
 `Mu ⇄ y` (diagrams 1–12) and `Fw ⇄ y`, `Rw ⇄ y` (diagrams 13–18), for
-`y ∈ {Ls, Ex, Cn}`.  The `𝔞` half is out of scope, the group `𝔞` not being
-formalized.
+`y ∈ {Ls, Ex, Cn}`.  The `𝔞` half is out of scope: the group `𝔞` *is*
+formalized (`Isotope/Elgot/RA/Rewrite.lean`), but no castling case that mentions
+`Ti`, `Ab` or `Di` is proved here.  Every such case below is discharged from a
+rule-set hypothesis — `Rg ⊆ 𝔤`, `x ∈ 𝔠` — that excludes it.
 
 The paper's proof (Appendix F, pp.61–63) runs each case through Lemma F.1, its
 characterization of when the target of a rewrite is a trace.  We instead use
@@ -67,6 +69,10 @@ theorem Step.union_cases {R₁ R₂ : RuleSet} {τ π : PreTrace Loc Val A}
       rcases hx with hx | hx
       exacts [Or.inl (Step.condense hx l m ν ε hde hfν hfε h₁ h₂),
         Or.inr (Step.condense hx l m ν ε hde hfν hfε h₁ h₂)]
+  | dilute hx l m μ ρ ν ε hde hεμ hερ hνρ hfν hfε h₁ h₂ =>
+      rcases hx with hx | hx
+      exacts [Or.inl (Step.dilute hx l m μ ρ ν ε hde hεμ hερ hνρ hfν hfε h₁ h₂),
+        Or.inr (Step.dilute hx l m μ ρ ν ε hde hεμ hερ hνρ hfν hfε h₁ h₂)]
 
 theorem TStep.union_cases {R₁ R₂ : RuleSet} {τ π : PreTrace Loc Val A}
     (h : TStep (R₁ ∪ R₂) τ π) : TStep R₁ τ π ∨ TStep R₂ τ π :=
@@ -150,6 +156,7 @@ theorem castle_forward {Rc Rg : RuleSet} (hg : Rg ⊆ gRules) (hFw : Rule.Fw ∈
         isTrace_condense hde hfν hfε e₁ e₂ hτ₁ hτ₃.wf, Step.forward hFw ?_⟩
       exact condense_mono hde hfε e₁ e₂ hτ₃.wf hτ₁.closePts.toPointsInto
         hτ₂.closePts.toPointsInto hκω
+  | dilute hx => exact absurd (hg hx) (by simp)
 
 /-- Diagrams 14, 16, 18: `Rw ⇄ y` for `y ∈ 𝔤`. -/
 theorem castle_rewind {Rc Rg : RuleSet} (hg : Rg ⊆ gRules) (hRw : Rule.Rw ∈ Rc)
@@ -171,6 +178,7 @@ theorem castle_rewind {Rc Rg : RuleSet} (hg : Rg ⊆ gRules) (hRw : Rule.Rw ∈ 
       exact condense_mono hde hfε e₁ e₂ hτ₃.wf
         (hτ₂.openPts.toPointsInto.mono hτ₂.o_sub_c)
         (hτ₁.openPts.toPointsInto.mono hτ₁.o_sub_c) hακ
+  | dilute hx => exact absurd (hg hx) (by simp)
 
 /-! ## The cases involving `Stutter`
 
@@ -402,8 +410,8 @@ the twelve cases of Table 5 numbered 1–18.  A `𝔠`-rewrite followed by a
 `𝔤`-rewrite, both restricted to traces, is a `𝔤`-rewrite followed by a
 `𝔠`-rewrite.
 
-The `𝔞` half of Lemma 8.3 (`x ∈ 𝔞`, diagrams 19–66) is out of scope: the group
-`𝔞` is not formalized. -/
+The `𝔞` half of Lemma 8.3 (`x ∈ 𝔞`, diagrams 19–66) is out of scope: the `Ti`,
+`Ab` and `Di` cases below are excluded by `x ∈ 𝔠` and `Rg ⊆ 𝔤`, not proved. -/
 theorem castling : Castles.{u} cRules gRules Loc Val := by
   intro A τ₁ τ₂ τ₃ hτ₁ h₁ h₂
   obtain ⟨hstep₁, hτ₂⟩ := h₁
@@ -422,6 +430,8 @@ theorem castling : Castles.{u} cRules gRules Loc Val := by
           exact ⟨τ₂', Refines.single ⟨hs, ht⟩, hs', hτ₃⟩
       | loosen => exact absurd hx (by simp)
       | expel => exact absurd hx (by simp)
+      | tighten => exact absurd hx (by simp)
+      | absorb => exact absurd hx (by simp)
   | forward hx hκω =>
       obtain ⟨τ₂', hs, ht, hs'⟩ :=
         castle_forward (subset_refl gRules) hx hκω hτ₁ hτ₂ hstep₂ hτ₃
@@ -431,6 +441,7 @@ theorem castling : Castles.{u} cRules gRules Loc Val := by
         castle_rewind (subset_refl gRules) hx hακ hτ₁ hτ₂ hstep₂ hτ₃
       exact ⟨τ₂', Refines.single ⟨hs, ht⟩, hs', hτ₃⟩
   | condense hx => exact absurd hx (by simp)
+  | dilute hx => exact absurd hx (by simp)
 
 /-- The paper's rearrangement (journal p.39) at `𝔤𝔠`: every `𝔤𝔠`-rewrite
 sequence factors as `𝔤`-rewrites followed by `𝔠`-rewrites. -/

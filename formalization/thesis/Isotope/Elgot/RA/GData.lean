@@ -367,6 +367,8 @@ theorem exists_gData {R : RuleSet} (hR : R ⊆ gRules) {τ π : PreTrace Loc Val
       cases hcs with
       | stutter => exact absurd (hR hx) (by simp)
       | mumble => exact absurd (hR hx) (by simp)
+      | tighten => exact absurd (hR hx) (by simp)
+      | absorb => exact absurd (hR hx) (by simp)
       | loosen _ _ l m ν ε hle hfε hfν e₁ e₂ =>
           exact ⟨_, gDataLoosen hx hle hfε hfν e₁ e₂, rfl⟩
       | expel _ _ l m ν ε hdt hfs hfν hfε e₁ e₂ =>
@@ -375,5 +377,6 @@ theorem exists_gData {R : RuleSet} (hR : R ⊆ gRules) {τ π : PreTrace Loc Val
   | rewind hx _ => exact absurd (hR hx) (by simp)
   | condense hx l m ν ε hde hfν hfε e₁ e₂ =>
       exact ⟨_, gDataCondense hx hde hfν hfε e₁ e₂ hπ.wf, rfl⟩
+  | dilute hx _ _ _ _ _ _ _ _ _ _ _ _ _ _ => exact absurd (hR hx) (by simp)
 
 end Isotope.Elgot.RA

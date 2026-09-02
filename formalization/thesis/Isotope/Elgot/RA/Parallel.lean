@@ -330,6 +330,8 @@ theorem Step.mapRet (f : A → B) {τ π : PreTrace Loc Val A} (h : Step R τ π
   | rewind hx hα => exact Step.rewind hx hα
   | condense hx l m ν ε hde hfν hfε h₁ h₂ =>
       exact Step.condense hx l m ν ε hde hfν hfε h₁ h₂
+  | dilute hx l m μ ρ ν ε hde hεμ hερ hνρ hfν hfε h₁ h₂ =>
+      exact Step.dilute hx l m μ ρ ν ε hde hεμ hερ hνρ hfν hfε h₁ h₂
 
 /-- Trace-preserving rewrites survive relabelling. -/
 theorem TStep.mapRet (f : A → B) {τ π : PreTrace Loc Val A} (h : TStep R τ π) :

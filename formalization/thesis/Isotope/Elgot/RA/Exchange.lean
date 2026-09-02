@@ -122,7 +122,7 @@ theorem bindGen_bindGen_pureGen_subset (hcR : cRules ⊆ R) (hRg : R ⊆ gcRules
   have hτ' : IsTrace τ := hP _ hτ
   have hυ' : IsTrace υ := hQ _ hυ
   have hw' : IsTrace w := (pureGen_isTrace _).closure _ hwmem
-  have hown : w.ch.own = ∅ := closure_pureGen_own hRg _ hwmem
+  have hown : w.ch.own = ∅ := closure_pureGen_own (hRg.trans gcRules_subset_gcTiAbRules) _ hwmem
   have hret : w.ret = (τ.ret, υ.ret) := closure_pureGen_ret _ hwmem
   set ρ : PreTrace Loc Val (A × B) := (τ.seam υ h₁).mapRet (fun b ↦ (τ.ret, b)) with hρdef
   have hρ : IsTrace ρ := (hτ'.append hυ' hs' h₁).mapRet

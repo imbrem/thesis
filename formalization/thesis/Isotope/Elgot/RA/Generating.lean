@@ -54,6 +54,7 @@ theorem Step.ivw_eq_fvw {R : RuleSet} (hR : R ⊆ gRules) {τ π : PreTrace Loc 
   | forward hx _ => exact absurd (hR hx) (by simp)
   | rewind hx _ => exact absurd (hR hx) (by simp)
   | condense _ _ _ _ ε _ _ _ _ _ => exact congrArg (View.pull ε) hτ
+  | dilute hx => exact absurd (hR hx) (by simp)
 
 /-- **`return r` is `𝔤`-closed** — the first clause of Proposition 7.5.  A
 `𝔤`-rewrite maintains the number of transitions, the absence of local messages,
@@ -66,7 +67,7 @@ theorem pureGen_closed (r : A) : Closed gRules (pureGen (Loc := Loc) (Val := Val
     obtain ⟨κ, μ, -, -, rfl⟩ := hτ
     simp
   have hown : π.ch.own = ∅ :=
-    hstep.own_empty gRules_subset_gcRules (pureGen_own r hτ)
+    hstep.own_empty gRules_subset_gcTiAbRules (pureGen_own r hτ)
   have hret : π.ret = r := by rw [← hstep.ret_eq]; exact pureGen_ret r hτ
   have hviews : π.ivw = π.fvw := by
     refine hstep.ivw_eq_fvw (subset_refl _) ?_

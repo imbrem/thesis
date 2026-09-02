@@ -214,7 +214,9 @@ Read this before citing anything here as "the paper's".
 9. **Rewrite Castling is formalized only in the half that does not mention
    `𝔞`.**  Lemma 8.3 (p.39) covers `x ∈ 𝔞, y ∈ 𝔤𝔠` and `x ∈ 𝔠𝔞, y ∈ 𝔤`; what is
    proved here is `x ∈ 𝔠, y ∈ 𝔤`, i.e. diagrams 1–18 of Table 5 (p.62).  The
-   remaining 48 diagrams all involve `𝔞`, which is not formalized.
+   remaining 48 diagrams all involve `𝔞`; the `𝔞` rules are formalized, but
+   `castling` is stated at `Castles cRules gRules`, so every case that mentions
+   `Ti`, `Ab` or `Di` is discharged from that hypothesis rather than proved.
    **Deferral of Closure (Lemma 8.5) is formalized only at `★ = 𝔠`**
    (`bindGen_closure_left`/`right`), which is what the associativity proof
    needs; the paper states it for `𝔠 ⊆ ★ ⊆ 𝔠𝔞`.  **Retroactive Closure
