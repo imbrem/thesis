@@ -161,6 +161,20 @@ theorem programRename_toTm (p : Program ν Φ n) :
       simp only [instrRename, Instr.toTm, atomRename_toTm, ib, Syntax.rename_iter]
       congr 1
 
+@[simp] theorem instrRename_toTm (i : Instr ν Φ n) :
+    ∀ {k} (ρ : Fin n → Fin k), (instrRename ρ i).toTm = i.toTm.rename ρ := by
+  intro k ρ
+  cases i with
+  | atom a => exact atomRename_toTm ρ a
+  | case e l r =>
+      simp only [instrRename, Instr.toTm, atomRename_toTm, programRename_toTm,
+        Syntax.rename_case]
+      rfl
+  | iter a body =>
+      simp only [instrRename, Instr.toTm, atomRename_toTm, programRename_toTm,
+        Syntax.rename_iter]
+      rfl
+
 theorem atomRename_exact_op {Γ : Ctx ν τ} {β : BoundCtx τ n}
     {β' : BoundCtx τ k} {a : Atom ν Φ n}
     (ha : Atom.HasType Γ β a (instrSrc f)) (r : TypedRenaming β β')
