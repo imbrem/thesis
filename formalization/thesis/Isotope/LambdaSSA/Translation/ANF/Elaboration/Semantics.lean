@@ -37,6 +37,14 @@ theorem transportHasType_heq {Γ : Ctx ν τ} {β : BoundCtx τ n}
   subst t'
   rfl
 
+theorem transportHasType_proof_irrel {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {t t' : Tm ν Φ n} {A : τ} (e e' : t = t')
+    (h : HasType Φ Γ β t A) :
+    transportHasType e h = transportHasType e' h := by
+  have : e = e' := Subsingleton.elim _ _
+  subst e'
+  rfl
+
 @[simp] theorem transportHasType_op {Γ : Ctx ν τ} {β : BoundCtx τ n}
     {a a' : Tm ν Φ n} (e : a = a')
     (h : HasType Φ Γ β a (instrSrc f)) :
