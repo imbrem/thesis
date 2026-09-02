@@ -1,5 +1,6 @@
 import Isotope.LambdaSSA.Translation.ANF.Elaboration
 import Isotope.LambdaIter.Semantics.Categorical
+import Isotope.LambdaIter.Metatheory.Syntax
 import Isotope.LambdaIter.Subtyping.Semantics.Substitution
 
 /-! # Semantic preservation of administrative elaboration -/
@@ -21,6 +22,10 @@ variable {Φ : Type q} [HasTy Φ τ]
 variable {ε : Type r} [HasEff Φ ε] [Bot ε]
 variable {m : Type v → Type v} [Monad m] [LawfulMonad m]
 variable [Iterate m] [LawfulElgotMonad m] [InstructionModel Φ τ ε m]
+
+@[simp] theorem atomRename_toTm (ρ : Fin n → Fin k) (a : Atom ν Φ n) :
+    (atomRename ρ a).toTm = a.toTm.rename ρ := by
+  induction a <;> simp [atomRename, Atom.toTm, Tm.rename, *]
 
 @[simp] theorem denote_elaborate_fv {Γ : Ctx ν τ} {β : BoundCtx τ n}
     {x : ν} {A : τ} (hx : Γ.lookup x = some A)
