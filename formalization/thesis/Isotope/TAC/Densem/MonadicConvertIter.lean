@@ -162,6 +162,44 @@ theorem assignments_convert_badPred [Monad m]
     Isotope.TAC.Densem.Phi.Monadic.assignments]
   rw [incoming_eq_none_of_not_mem source (.named label) pred x hnot]
 
+/-- If the compiler interface is empty, converted named-block entry is
+independent of the predecessor: there are no phi assignments to inspect. -/
+theorem enter_named_denote_empty [Monad m] [LawfulMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    (sourceCfg : Isotope.TAC.Classical.CFG ν φ κ)
+    (label : κ) (pred : BlockId κ)
+    (block : Isotope.TAC.Classical.Block ν φ κ)
+    (source : MEnv M ν) (target : MEnv M (Version ν κ))
+    (hblock : (label, block) ∈ sourceCfg.blocks)
+    (hempty : sourceVars sourceCfg = []) :
+    (Isotope.TAC.Densem.Phi.Monadic.enter M target pred
+        (convertBlock sourceCfg (sourceVars sourceCfg) (.named label) block) >>=
+      fun result => pure
+        (restrict M (sourceVars sourceCfg)
+          (project (M := M) (endEnv (.named label) block) result.1), result.2)) =
+    (Isotope.TAC.Densem.Monadic.Block.denote M source
+        (Isotope.TAC.Densem.Classical.block block) >>= fun result =>
+      pure (restrict M (sourceVars sourceCfg) result.1, result.2)) := by
+  have hrel : EnvRelOn (M := M) (sourceVars sourceCfg)
+      (startEnv (.named label)) source target := by
+    intro x hx
+    rw [hempty] at hx
+    simp at hx
+  have core := body_denote_restrict_project M (sourceVars sourceCfg) (.named label) 0
+    (startEnv (.named label)) block.body block.terminator source target hrel
+    (Isotope.TAC.Densem.Convert.freshFor_startEnv (.named label) block.body)
+    (fun ins hi x hx => by
+      have hm := block_use_mem_sourceVars sourceCfg hblock hi hx
+      rw [hempty] at hm
+      simp at hm)
+  simpa [Isotope.TAC.Densem.Phi.Monadic.enter, convertBlock, hempty, phis,
+    endEnv, Isotope.TAC.Densem.Classical.block] using core
+    (fun x hx => by
+      have hm := (mem_sourceVars sourceCfg x).2
+        (.inr ⟨(label, block), hblock, by simp [blockSourceVars, hx]⟩)
+      rw [hempty] at hm
+      simp at hm)
+
 /-- Source loop state retaining predecessor control solely so that the
 globally guarded body can reject exactly the malformed boundaries rejected by
 converted phi installation. -/
