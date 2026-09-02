@@ -26,23 +26,25 @@ result type, one operation per term former, and two propositional obligations
 
 | file | content |
 |---|---|
-| `Models/Alg.lean` | `Alg.Ops`, `Alg.Ops.denote`, `Alg`, `Alg.Hom`, `Category (Alg S)`, `Alg.Hom.map_denote` |
+| `Models/Alg.lean` | `Alg.Ops`, `Alg`, `Alg.Hom`, `Category (Alg S)`, `Hom.map_denote` |
 | `Models/Limits.lean` | terminal model, binary products (with `IsLimit`), powers by a type |
 | `Models/Examples.lean` | constant models, and morphisms that are not identities |
 | `Models/Setoid.lean` | the setoid `Eqv` induces on typable terms, and its quotient |
-| `Models/Syntax.lean` | `Syn S : Alg S`, the quotiented syntax as a model, and `Syn.denote_mk` |
+| `Models/Syntax.lean` | `Syn S : Alg S`, the quotient as a model; `Syn.denote_mk` |
 | `Models/SynCategory.lean` | the one-variable syntactic *category* (three category laws) |
-| `Models/SynCoproduct.lean` | binary coproducts in it, and iteration on hom-sets |
-| `Models/SynIteration.lean` | the fixpoint, naturality and codiagonal laws for it |
-| `Models/SynUniformity.lean` | pure morphisms as a wide subcategory, and the uniformity law |
-| `Models/SynElgot.lean` | those three laws in Mathlib's `⨿` vocabulary, and `ElgotCategory` modulo an initial object |
-| `Models/Initial.lean` | `Syn.uniqueHom`, `Syn.isInitial`, and equational completeness |
-| `Models/HomOver.lean` | maps of models over a signature morphism; identity and composition |
-| `Models/Total.lean` | the total category of pairs `(signature, model)`, the fibre inclusion, and the Grothendieck initiality principle |
-| `Models/Reindex.lean` | reindexing of operations along a signature morphism, its universal property and its functoriality |
-| `Models/SigAction.lean` | `HasType.map` and `Eqv.map`: a signature morphism acts on typing and on the equational theory |
-| `Models/ReindexAlg.lean` | `Alg.reindex`, reindexing an *algebra*, via `Alg.Ops.reindex_denote` |
-| `Models/TotalInitial.lean` | `(Sig.empty, Syn Sig.empty)` is the initial object of the total category |
+| `Models/SynCoproduct.lean` | binary coproducts in it; iteration on hom-sets |
+| `Models/SynIteration.lean` | fixpoint, naturality and codiagonal for it |
+| `Models/SynUniformity.lean` | pure morphisms as a wide subcategory; uniformity |
+| `Models/SynElgot.lean` | those three in Mathlib's `⨿`; `ElgotCategory` modulo an initial object |
+| `Models/Initial.lean` | `Syn.uniqueHom`, `Syn.isInitial`, equational completeness |
+| `Models/HomOver.lean` | maps of models over a signature morphism; identity, composition |
+| `Models/Total.lean` | the total category of pairs `(signature, model)`, the fibre |
+| | inclusion, and the Grothendieck initiality principle |
+| `Models/Reindex.lean` | reindexing of operations along a signature morphism, with |
+| | its universal property and its functoriality |
+| `Models/SigAction.lean` | `HasType.map`, `Eqv.map`: the action on typing and on `Eqv` |
+| `Models/ReindexAlg.lean` | `Alg.reindex`, via `Alg.Ops.reindex_denote` |
+| `Models/TotalInitial.lean` | `(Sig.empty, Syn Sig.empty)` is initial in the total category |
 
 ## Honest boundary
 

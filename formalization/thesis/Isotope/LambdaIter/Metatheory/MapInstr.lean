@@ -175,6 +175,7 @@ theorem StructuralAxiom.mapInstr {φ : Φ → Ψ}
   | _, _, _, .caseEta _ => .caseEta _
   | _, _, _, .emptyInitial _ _ _ => .emptyInitial _ _ _
 
+omit [HasEff Φ ε] [HasEff Ψ ε'] in
 /-- Sequencing axioms transport along any relabelling. -/
 theorem SequencingAxiom.mapInstr (φ : Φ → Ψ) :
     ∀ {n : Nat} {a b : Tm ν Φ n}, SequencingAxiom pureEff a b →
@@ -198,6 +199,7 @@ theorem SequencingAxiom.mapInstr (φ : Φ → Ψ) :
       simpa using SequencingAxiom.bindCase (pureEff := pureEff')
         (Tm.mapInstr φ _) (Tm.mapInstr φ _) (Tm.mapInstr φ _)
 
+omit [HasEff Φ ε] [HasEff Ψ ε'] in
 /-- Iteration axioms transport along any relabelling. -/
 theorem IterationAxiom.mapInstr (φ : Φ → Ψ) :
     ∀ {n : Nat} {a b : Tm ν Φ n}, IterationAxiom pureEff a b →

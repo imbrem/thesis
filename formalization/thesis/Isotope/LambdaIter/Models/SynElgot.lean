@@ -120,7 +120,8 @@ theorem iterate'_codiagonal {A B : SynCat S} (f : A ⟶ (B ⨿ A) ⨿ A) :
 
 /-- The iteration operator, packaged as a `CategoryTheory.Iteration`
 structure.  A plain `def`, not an `instance`: see the module docstring. -/
-noncomputable def iterationStructure (S : Sig.{u}) : Iteration (SynCat S) where
+@[reducible] noncomputable def iterationStructure (S : Sig.{u}) :
+    Iteration (SynCat S) where
   iterate := iterate'
 
 /-- **The syntactic category is an Elgot category as soon as it has an initial
