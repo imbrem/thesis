@@ -155,12 +155,13 @@ theorem sbMem2_wellFormed (hxy : x ≠ y) :
       | rfl
       | (exact absurd hlc (by simpa using hxy))
       | (exact absurd hlc (by simpa using hxy.symm))
-  · rintro χ (rfl | rfl) χ' (rfl | rfl) hpt hpt' <;> simp only [storedMsg_lc,
-      storedMsg_t] at hpt hpt' <;> first | rfl | linarith
+  · rintro χ (rfl | rfl) χ' (rfl | rfl) hpt hpt' <;> simp only [storedMsg_t] at hpt hpt' <;>
+      first | rfl | linarith
 
 theorem sbMem1_wellFormed : WellFormed (sbMem1 (Loc := Loc) v₀ v₁ t₀ x) :=
   storedMem_wellFormed v₀ t₀ x v₁
 
+omit [DecidableEq Loc] in
 theorem sbMem0_wellFormed : WellFormed (sbMem0 (Loc := Loc) v₀ t₀) :=
   initialMem_wellFormed v₀ t₀
 
@@ -172,6 +173,7 @@ section Points
 
 variable {v₀ v₁ : Val} {t₀ : ℚ} {x y : Loc}
 
+omit [DecidableEq Loc] in
 theorem pointsDownInto_sbMem0 :
     PointsDownInto (fun _ ↦ t₀ : View Loc) (sbMem0 (Loc := Loc) v₀ t₀) :=
   pointsDownInto_initialMem v₀ t₀
@@ -300,6 +302,7 @@ theorem sbTransition_wf (hxy : x ≠ y) {T : Transition Loc Val}
   · exact ⟨sbMem2_wellFormed v₀ v₁ t₀ hxy, sbMem2_wellFormed v₀ v₁ t₀ hxy, subset_refl _⟩
   · exact ⟨sbMem0_wellFormed v₀ t₀, sbMem2_wellFormed v₀ v₁ t₀ hxy, sbMem0_subset_sbMem2⟩
 
+omit [Finite Loc] [Nonempty Loc] in
 /-- **The trace conditions, once and for all.**  Any chronicle running from the
 initial memory to the final one, with well-formed transitions and no local
 messages beyond the two writes, delimited by the initial view and by
@@ -319,10 +322,10 @@ theorem sbIsTrace {A : Type} (r : A) (hxy : x ≠ y) (ξ : Chro Loc Val)
     obtain ⟨hν2, hν0⟩ := hown hν
     rcases sbMem2_diff_sbMem0 hν2 hν0 with rfl | rfl
     · refine ⟨le_trans initView_le_sbView1 (le_refl _), le_sup_left, ?_⟩
-      simp only [storedMsg_lc, storedMsg_t]
+      simp only [storedMsg_t]
       linarith
     · refine ⟨le_trans initView_le_sbView2 (le_refl _), le_sup_right, ?_⟩
-      simp only [storedMsg_lc, storedMsg_t]
+      simp only [storedMsg_t]
       linarith
 
 end IsTraceSection
@@ -352,7 +355,7 @@ theorem sbStoreX_isTrace :
     obtain ⟨hν1 | hν1, hν2⟩ := hν
     · subst hν1
       refine ⟨initView_le_sbView1, le_refl _, ?_⟩
-      simp only [storedMsg_lc, storedMsg_t]
+      simp only [storedMsg_t]
       linarith
     · exact absurd hν1 hν2
 
@@ -383,7 +386,7 @@ theorem sbStoreY_isTrace (hxy : x ≠ y) :
     obtain ⟨hν1 | hν1, hν2⟩ := hν
     · subst hν1
       refine ⟨initView_le_sbView2, le_refl _, ?_⟩
-      simp only [storedMsg_lc, storedMsg_t]
+      simp only [storedMsg_t]
       linarith
     · exact absurd hν1 hν2
 
@@ -481,8 +484,7 @@ theorem sbChro4_isTrace (hxy : x ≠ y) :
     rcases hT with rfl | rfl | rfl | rfl <;> exact sbTransition_wf hxy (by tauto)
   · intro ν hν
     simp only [sbChro4, Chro.own_eq_listOwn, Chro.toList, listOwn_cons, listOwn_nil,
-      Transition.own, Set.union_empty, Set.mem_union, Set.mem_diff, Set.diff_self,
-      Set.mem_empty_iff_false, or_false] at hν
+      Transition.own, Set.union_empty, Set.mem_union, Set.mem_diff, Set.diff_self] at hν
     rcases hν with ⟨h1, h2⟩ | ⟨h1, h2⟩
     · exact ⟨sbMem1_subset_sbMem2 h1, h2⟩
     · exact ⟨h1, fun h ↦ h2 (sbMem0_subset_sbMem1 h)⟩
@@ -496,8 +498,7 @@ theorem sbChro3_isTrace (hxy : x ≠ y) :
     rcases hT with rfl | rfl | rfl <;> exact sbTransition_wf hxy (by tauto)
   · intro ν hν
     simp only [sbChro3, Chro.own_eq_listOwn, Chro.toList, listOwn_cons, listOwn_nil,
-      Transition.own, Set.union_empty, Set.mem_union, Set.diff_self,
-      Set.mem_empty_iff_false, or_false] at hν
+      Transition.own, Set.union_empty, Set.diff_self] at hν
     exact hν
 
 theorem sbChro2_isTrace (hxy : x ≠ y) :
@@ -509,8 +510,7 @@ theorem sbChro2_isTrace (hxy : x ≠ y) :
     rcases hT with rfl | rfl <;> exact sbTransition_wf hxy (by tauto)
   · intro ν hν
     simp only [sbChro2, Chro.own_eq_listOwn, Chro.toList, listOwn_cons, listOwn_nil,
-      Transition.own, Set.union_empty, Set.mem_union, Set.diff_self,
-      Set.mem_empty_iff_false, or_false] at hν
+      Transition.own, Set.union_empty, Set.diff_self] at hν
     exact hν
 
 theorem sbChro1_isTrace (hxy : x ≠ y) :
