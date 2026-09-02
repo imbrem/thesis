@@ -7,6 +7,9 @@ import Isotope.Elgot.RA.Castling
 import Isotope.Elgot.RA.Rewrite
 import Isotope.Elgot.RA.Closure
 import Isotope.Elgot.RA.Monad
+import Isotope.Elgot.RA.Bounds
+import Isotope.Elgot.RA.Parallel
+import Isotope.Elgot.RA.Exchange
 import Isotope.Elgot.RA.Concrete
 import Isotope.Elgot.RA.Iteration
 import Isotope.Elgot.RA.Memory
@@ -14,6 +17,7 @@ import Isotope.Elgot.RA.Categorical
 import Isotope.Elgot.RA.Generating
 import Isotope.Elgot.RA.Assoc
 import Isotope.Elgot.RA.Examples
+import Isotope.Elgot.RA.ParExamples
 
 /-!
 # A release/acquire trace monad
@@ -71,6 +75,15 @@ numbering in parentheses where it differs.
   is a monad (§7.4, p.34), following the paper's sketch in Example 8.6, p.41.
 * `Isotope/Elgot/RA/Pull.lean`, `GTrace.lean`, `GData.lean`: the supporting
   apparatus for the three results above.  Ours, except for Lemma 7.6.
+* `Isotope/Elgot/RA/Bounds.lean`: the delimiting views of a parallel
+  composition, `sup_μ U = ⊔U` (which is literally the pointwise join, since
+  `↠μ` is closed under `⊔`) and `inf_μ U = ⊔{κ | ⊓U ⊒ κ ↠ μ}`.  §7.2, p.29.
+* `Isotope/Elgot/RA/Parallel.lean`: parallel composition
+  `(|||ᵀ) : T X × T Y → T (X × Y)`, §7.1 p.27 (the operation) and §7.2 p.29
+  (the definition), with Proposition 7.4 for `|||`.
+* `Isotope/Elgot/RA/Exchange.lean`: Proposition E.1, *Generalized Sequencing*
+  (p.58; ESOP Proposition C.1), and the thread-inlining transformation
+  `M ∥ N ↠ ⟨M,N⟩` of Fig. 3 (p.12) and Table 3 (p.44).
 
 ## What is reconstructed, not transcribed
 
@@ -87,6 +100,27 @@ numbering in parentheses where it differs.
   literally (`ν.vw ≤ ε.vw`), not the equal-view variant drawn in Figs. 13–14.
   The paper says twice (pp.32, 33) that the two presentations give the same
   semantics but proves neither claim; neither do we.
+* **The chronicle shuffle `ξ₁ ∥ ξ₂`** is never defined in the paper beyond the
+  phrase "the set of all the interleavings of `ξ₁` and `ξ₂` that form
+  chronicles" (p.29).  `Isotope/Elgot/RA/Parallel.lean` reads it as a
+  position-wise shuffle of the two transition lists — transitions carried across
+  verbatim, neither merged nor rewritten — that is again a chronicle, and
+  records the three places in the paper the reading is forced by (Prop E.5's
+  worked computation, the Appendix A decomposition, and the `R`-model).  It is a
+  reading, not a quotation.
+* **`inf_μ U` is characterised, not constructed.**  `IsInfMem μ U κ` says that
+  `κ` is the greatest view pointing downwards into `μ` and below every element
+  of `U` — equivalently, that the `⊔` of the paper's formula is attained.  The
+  paper's existence argument (`↠μ` is finite and has a minimum `λℓ. min μ_ℓ.t`)
+  is **not** formalized, so `IsInfMem` is a hypothesis of `parGen`, never a
+  conclusion.  Two consequences are recorded in the honest boundary below.
+* **`inf_μ` outside its stated domain.**  §7.2 defines `inf_μ U` only for
+  `U ⊆ ↠μ`, but the definition of `|||` applies it at `U = {α₁,α₂}`, `μ = ξ.o`,
+  where `α₂ ↠ ξ.o` can fail: `ξ.o` is contained in each `ξᵢ.o`
+  (`ChroInterleave.o_sub_left`), and pointing downwards is monotone only
+  *upwards* in the memory.  The paper's own Appendix A proof (p.49) uses the
+  general reading, so `IsInfMem` imposes no relation between `U` and `μ`.  This
+  is a documented repair, not the paper's text.
 
 ## Honest boundary
 
@@ -174,6 +208,37 @@ Read this before citing anything here as "the paper's".
    that the target's memories are well-formed*.  The paper instead
    characterizes when the target is a trace, deriving well-formedness; every
    use here has it already.
+8. **Parallel composition is formalized, with two gaps.**  `∥∥∥`, the
+   chronicle shuffle, `sup_μ` and `inf_μ` are in
+   `Isotope/Elgot/RA/{Bounds,Parallel,Exchange}.lean`, uniformly in the rule
+   set.  Two things are missing.
+
+   (a) **`inf_μ` existence.**  `IsInfMem` is a characterisation, so `parGen`
+   quantifies over a witness.  The paper's existence proof needs `↠μ` finite
+   (hence `Finite Loc`) and its minimum, via Proposition 6.7(2); none of that is
+   formalized.  So `Comp.par` is not proved non-empty *in general* — though it
+   is proved to contain the whole sequential pairing (`Comp.seqPair_le_par`),
+   which is a witness whenever the two initial views agree.
+
+   (b) **Deferral of Closure for `|||`** (Lemma 8.5, journal p.41, proof
+   pp.48–49) is **not** proved, and cannot be with the present design: all four
+   of its `𝔠` cases replace one operand's initial view or one shuffle's opening
+   memory and then need `inf` at the *new* data, i.e. exactly the existence
+   theorem of (a).  This is the one place where characterising `inf_μ` instead
+   of constructing it actually costs a result.
+
+   Also **not** proved and **not** attempted: associativity of `|||`, the
+   converse half of the unit law (only `P ⊆ P ||| return r` is proved; see
+   `Isotope/Elgot/RA/Exchange.lean` for why the converse is hard), the
+   remaining symmetric-monoidal laws, Proposition 7.5, and every litmus test
+   (SB, MP, SB+F) — the paper states these only operationally and never carries
+   out the denotational calculation itself (p.42: "can be shown").  Half of
+   Proposition E.5 (Write-Read Deorder) is out of reach for a further reason:
+   its (WR) interleaving needs the `𝔞` rule `Ti`.
+9. **No Proposition 7.5, no Deferral of Closure at `𝔤`, no Rewrite Castling,
+   no Retroactive Closure**, and hence **no adequacy, no full abstraction, and
+   no correspondence with the operational semantics**.  Theorems 8.11–8.15 and
+   Table 3's program transformations are out of scope.
 
 ## What is proved
 
@@ -213,6 +278,35 @@ Read this before citing anything here as "the paper's".
   (`Refines.own_eq`, at `𝔠`), having no local messages
   (`Refines.own_empty`, at `𝔤𝔠`), and the number of transitions
   (`Refines.length_eq`, at `𝔤`).
+* **Parallel composition** (`Isotope/Elgot/RA/Parallel.lean`,
+  `Isotope/Elgot/RA/Exchange.lean`), uniformly in the rule set:
+  - `parGen_isTrace` — the paper's `∈ Trace (X₁ × X₂)` guard in the definition
+    of `|||` is redundant, exactly as `IsTrace.append` makes it redundant for
+    `>>=`.  Original.
+  - `Comp.par_mono` — the `|||` half of Proposition 7.4 (p.29).
+  - `ChroInterleave.own_union` and `ChroInterleave.own_disjoint` — parallel
+    composition splits the local messages, and the union is **disjoint**.
+    Original: the paper has no separation statement, no frame rule and no
+    footprints; disjointness is forced by chronicle adjacency alone rather than
+    imposed as a side condition.
+  - `Comp.par_swap` — **Symmetry** (Table 3, p.44), as an equality of trace
+    sets.  Original: the paper claims Symmetry and "all symmetric-monoidal laws"
+    (Fig. 3 caption, p.12) with no proposition, proof or sketch anywhere.
+  - `Comp.seqPair_le_par` — **thread inlining**, `M ∥ N ↠ ⟨M,N⟩` (Fig. 3 p.12,
+    Table 3 p.44), the paper's RA-vs-x86-TSO discriminator (p.45), claimed and
+    never proved.  Original.
+  - `bindGen_parGen_subset` and `Comp.bind_par_le_par_bind` — **Proposition
+    E.1**, *Generalized Sequencing* (p.58): the exchange law
+    `(P₁ ||| Q₁) >>= (λ⟨a,b⟩. F a ||| G b) ⊆ (P₁ >>= F) ||| (Q₁ >>= G)`.  The
+    generating-set form needs no closure and no hypothesis on the rule set,
+    which is stronger than the paper's proof.  Note that the paper's proof text
+    contradicts its own statement of the direction; see the module docstring.
+  - `Comp.mapRet_image_subset_par_pure` — `P ⊆ P ||| return r`, the reachable
+    half of the unit law.  Original.
+  - `par_pure_pure_nonempty` and `par_pure_pure_ne_bot`
+    (`Isotope/Elgot/RA/ParExamples.lean`) — a concrete trace of
+    `return a ||| return b`, so that `Comp.par` is demonstrably not vacuous
+    despite `inf_μ` being characterised rather than constructed.
 * Worked examples in `Isotope/Elgot/RA/Examples.lean`: `pure_ne_pure`,
   `bot_ne_pure`, `storedMem_wellFormed` (a well-formed memory with two messages
   at one location), `mem_store`, `store_ne_pure`, `store_ne_bot`, `load_stale`

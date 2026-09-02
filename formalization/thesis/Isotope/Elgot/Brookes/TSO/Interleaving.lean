@@ -1,4 +1,5 @@
 import Isotope.Elgot.Brookes.TSO.Monad
+import Isotope.Elgot.Interleave
 
 /-!
 # Interleaving, parallel composition, and interference-free executions
@@ -26,33 +27,15 @@ universe u v
 
 variable {E : Type u} {c : Rewriting E} {A B : Type u}
 
-/-- `Interleave t u w`: the trace `w` is a merge of `t` and `u` that preserves the
-order of each.  Steps of `u` sit in the gaps of `t`, where a Brookes trace already
-allows for environment interference, and vice versa. -/
-inductive Interleave : Trace E → Trace E → Trace E → Prop
-  | /-- Two finished threads interleave to nothing. -/
-    nil : Interleave [] [] []
-  | /-- The next global step is the left thread's. -/
-    left {e : E} {t u w : Trace E} : Interleave t u w → Interleave (e :: t) u (e :: w)
-  | /-- The next global step is the right thread's. -/
-    right {e : E} {t u w : Trace E} : Interleave t u w → Interleave t (e :: u) (e :: w)
+/-! ## Interleaving
 
-/-- Interleaving is symmetric. -/
-theorem Interleave.swap {t u w : Trace E} (h : Interleave t u w) : Interleave u t w := by
-  induction h with
-  | nil => exact .nil
-  | left _ ih => exact .right ih
-  | right _ ih => exact .left ih
+`Interleave` used to be defined here.  It is now
+`Isotope.Elgot.Interleave` of `Isotope/Elgot/Interleave.lean`, shared with the
+release/acquire development, and is visible unqualified inside this namespace;
+`export` below makes it visible under the `Brookes` prefix too, so that
+`Isotope.Elgot.Brookes.Interleave` still resolves. -/
 
-/-- A thread interleaved with an idle thread runs on its own. -/
-theorem Interleave.nil_right (t : Trace E) : Interleave t [] t := by
-  induction t with
-  | nil => exact .nil
-  | cons e t ih => exact .left ih
-
-/-- A thread interleaved with an idle thread runs on its own. -/
-theorem Interleave.nil_left (t : Trace E) : Interleave [] t t :=
-  (Interleave.nil_right t).swap
+export Isotope.Elgot (Interleave)
 
 /-- Parallel composition: run both computations, interleaving their traces, and
 return both results.  The closure is genuine: mumbling can merge a step of one
