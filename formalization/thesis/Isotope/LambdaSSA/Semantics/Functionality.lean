@@ -46,7 +46,8 @@ theorem HeterogeneousAgreement.eq_of_same_type
     (a : HeterogeneousAgreement J M hA hB f g) : f = g := by
   cases a with
   | equal hfg => exact hfg
-  | bottom hf hg hp => exact hf.eq_of_prefix hg hp
+  | bottom hf hg hp =>
+      exact FactorsThroughEmpty.eq_of_prefix (J := J) (M := M) hf hg hp
 
 theorem HeterogeneousAgreement.abort
     {Γ : VCtx τ} {a : Tm Φ} {A B : τ}
@@ -76,7 +77,8 @@ theorem DenotesAgreement.eq
     (a : DenotesAgreement J M (h := h) (f := f) (g := g)) : f = g := by
   cases a with
   | equal hfg => exact hfg
-  | bottom hf hg hp => exact hf.eq_of_prefix hg hp
+  | bottom hf hg hp =>
+      exact FactorsThroughEmpty.eq_of_prefix (J := J) (M := M) hf hg hp
 
 theorem HeterogeneousAgreement.toDenotesAgreement
     {Γ : VCtx τ} {t : Tm Φ} {A : τ} {h : Tm.HasType Γ t A}
