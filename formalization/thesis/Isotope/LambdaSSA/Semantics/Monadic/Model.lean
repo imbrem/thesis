@@ -11,7 +11,7 @@ universe u v
 /-- Values for a newest-first SSA context, represented in oldest-to-newest
 nested-pair order to match the categorical context object. -/
 def Env {τ : Type u} [TypeFormers τ] [Subtyping τ] [TypeModel.{u, v} τ] :
-    VCtx τ → Type (max u v)
+    VCtx τ → Type v
   | [] => PUnit
   | A :: Γ => Env Γ × TyDen A
 
