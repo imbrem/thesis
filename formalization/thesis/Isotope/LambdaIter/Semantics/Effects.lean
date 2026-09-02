@@ -1,4 +1,4 @@
-import Isotope.CategoryTheory.Freyd.Effectful
+import Isotope.CategoryTheory.Freyd.EffectfulElgot
 import Isotope.LambdaIter.Semantics.Categorical
 
 /-!
@@ -57,14 +57,6 @@ class EffectModel (E : Type u₅) [Preorder E] [OrderBot E]
   desc_mem {e : E} {A B D : C} {f : A ⟶ D} {g : B ⟶ D} :
     eff e f → eff e g → eff e (coprod.desc f g)
 
-/-- The effects which are closed under iteration: the paper's `E^∞`.  A loop built from
-`ε`-morphisms is again an `ε`-morphism exactly when `ε` is iterative. -/
-class IterativeEffects (E : Type u₅) [Preorder E] [OrderBot E]
-    (J : Functor V C) [StrongElgotFreydCategory J]
-    (eff : E → MorphismProperty C) [EffectLattice E eff] [EffectModel E J eff]
-    (iterative : E → Prop) : Prop where
-  iterate_mem {e : E} (he : iterative e) {X Y : C} {f : X ⟶ Y ⨿ X} :
-    eff e f → eff e (iterate f)
 
 namespace EffectModel
 
@@ -137,12 +129,12 @@ theorem retainLeft_mem {e : E} {R X Y : V} {f : J.obj X ⟶ J.obj Y} (hf : eff e
     (comp_mem (leftTensor_id_mem _ hf)
       (pure_mem (EffectModel.tensorIso_hom_mem (J := J) (eff := eff) R Y) e))
 
-theorem contextualLoop_mem {iterative : E → Prop} [IterativeEffects E J eff iterative]
+theorem contextualLoop_mem {iterative : E → Prop} [IterativeEffects E eff iterative]
     {e : E} (he : iterative e)
     {R A B : V} {body : J.obj (R ⊗ A) ⟶ J.obj (B ⨿ A)} (hb : eff e body) :
     eff e (contextualLoop J body) :=
   comp_mem
-    (IterativeEffects.iterate_mem (J := J) (eff := eff) he
+    (IterativeEffects.iterate_mem (eff := eff) he
       (comp_mem (map_mem_eff e _)
         (comp_mem (retainLeft_mem hb)
           (comp_mem (map_mem_eff e _) (splitMapCoprod_mem_eff e _ _)))))
@@ -173,7 +165,7 @@ instance topEffectModel :
   desc_mem _ _ := trivial
 
 instance topIterativeEffects :
-    IterativeEffects PUnit J (fun _ : PUnit => (⊤ : MorphismProperty C))
+    IterativeEffects PUnit (fun _ : PUnit => (⊤ : MorphismProperty C))
       (fun _ => True) where
   iterate_mem := by intros; trivial
 
@@ -202,7 +194,7 @@ variable {E : Type u₅} [Preorder E] [OrderBot E]
   {ν : Type u₄} [DecidableEq ν]
   {Φ : Type u₄} [HasTy Φ τ] [HasEff Φ E] [InstructionModel J M Φ]
   [EffectfulInstructionModel E J eff M Φ]
-  {iterative : E → Prop} [IterativeEffects E J eff iterative]
+  {iterative : E → Prop} [IterativeEffects E eff iterative]
 
 /-- **Effect soundness of the categorical semantics.**
 
@@ -271,5 +263,61 @@ theorem denote_mem_eff {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
 end Soundness
 
 end EffectModel
+
+/-! ### The third semantics
+
+Instantiating everything at the inclusion of the pure morphisms.  There is no separate value
+category: `V = C_⊥`, and the effect of a term is read off directly as membership in `C_ε`. -/
+
+section SubcategoryPresentation
+
+open CategoryTheory.EffectfulFreydCategory LocallyNameless
+
+variable {E : Type u₅} [Preorder E] [OrderBot E]
+  {C : Type u₂} [Category.{v₂} C] [PremonoidalCategory C] [SymmetricPremonoidalCategory C]
+  [HasFiniteCoproducts C] [DistributiveTensor C] [Iteration C] [ElgotCategory C]
+  [IsStrongIteration C]
+  (eff : E → MorphismProperty C)
+  [IsCentralSubcategory (eff ⊥)] [IsSemiCartesianSubcategory (eff ⊥)]
+  [IsCartesianSubcategory (eff ⊥)] [EffectfulFreydCategory E eff]
+  [IsCocartesianEffectLattice E eff] [IsDistributiveSubcategory (eff ⊥)]
+  [IsUniformIteration (eff ⊥)]
+
+theorem splitMapCoprod_inclusion_eq (A B : Value eff) :
+    splitMapCoprod (inclusion eff) A B = (wideCoprodIso (eff ⊥) A B).inv := by
+  show inv (coprodComparison (inclusion eff) A B) = _
+  refine IsIso.inv_eq_of_hom_inv_id ?_
+  rw [← wideCoprodIso_hom]
+  exact (wideCoprodIso (eff ⊥) A B).hom_inv_id
+
+/-- **The effect lattice of an Elgot effectful Freyd category is an effect model for its own
+pure inclusion.**  This is what makes the soundness theorem apply to the subcategory
+presentation. -/
+instance inclusionEffectModel : EffectModel E (inclusion eff) eff where
+  map_mem f := f.2
+  tensorIso_hom_mem _ _ := MorphismProperty.id_mem _ _
+  tensorIso_inv_mem _ _ := MorphismProperty.id_mem _ _
+  splitMapCoprod_mem A B := by
+    rw [splitMapCoprod_inclusion_eq]; exact wideCoprodIso_inv_mem (eff ⊥) A B
+  desc_mem hf hg := IsCocartesianSubcategory.desc_mem hf hg
+
+variable {τ : Type u₃} [TypeFormers τ] [Subtyping τ] (M : TypeModel τ (Value eff))
+  {ν : Type u₄} [DecidableEq ν]
+  {Φ : Type u₄} [HasTy Φ τ] [HasEff Φ E] [InstructionModel (inclusion eff) M Φ]
+  [EffectfulInstructionModel E (inclusion eff) eff M Φ]
+  {iterative : E → Prop} [IterativeEffects E eff iterative]
+
+/-- **Effect soundness for the subcategory presentation.**
+
+Interpreting λ-iter in an Elgot effectful Freyd category, whose value category is the
+subcategory `C_⊥ ⊆ C` of pure morphisms, a term whose instructions all have effect below `ε` and
+which iterates only at iterative effects denotes a morphism of `C_ε`. -/
+theorem denote_mem_eff_pure {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+    {t : Tm ν Φ n} {A : τ} {e : E}
+    (h : HasType Φ Γ β t A) (he : HasEffect iterative e t) :
+    eff e (denote (inclusion eff) M h) :=
+  denote_mem_eff (inclusion eff) M h he
+
+end SubcategoryPresentation
 
 end Isotope.LambdaIter.Semantics.Categorical
