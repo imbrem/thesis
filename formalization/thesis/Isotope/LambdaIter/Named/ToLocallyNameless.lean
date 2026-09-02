@@ -5,6 +5,7 @@ import Isotope.LambdaIter.LocallyNameless.Syntax
 
 namespace Isotope.LambdaIter.Named.ToLocallyNameless
 
+
 /-- The names of the binders currently in scope, newest first. `none` records
 an anonymous binder: it occupies an index but cannot resolve a named variable. -/
 inductive Scope (ν : Type u) : Nat → Type u where

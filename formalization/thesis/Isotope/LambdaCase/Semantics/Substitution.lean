@@ -10,12 +10,12 @@ open Isotope.LambdaCase.LocallyNameless
 universe u v w q r
 
 variable {τ : Type u} [LambdaIter.TypeFormers τ] [LambdaIter.Subtyping τ]
-  [LambdaIter.Semantics.TypeModel.{u, v} τ]
+  [LambdaIter.Subtyping.Semantics.TypeModel.{u, v} τ]
 variable {ν : Type w} [DecidableEq ν]
 variable {Φ : Type q} [LambdaIter.HasTy Φ τ]
 variable {ε : Type r} [LambdaIter.HasEff Φ ε] [Bot ε]
 variable {m : Type v → Type v} [Monad m] [LawfulMonad m]
-variable [LambdaIter.Semantics.InstructionModel Φ τ ε m]
+variable [LambdaIter.Subtyping.Semantics.InstructionModel Φ τ ε m]
 
 namespace BoundDen
 
@@ -26,7 +26,7 @@ def ofFun : {n : Nat} → (β : BoundCtx τ n) →
 
 @[simp] theorem get_ofFun {n : Nat} (β : BoundCtx τ n)
     (f : (i : Fin n) → TyDen (β.get i)) (i : Fin n) :
-    LambdaIter.Semantics.BoundDen.get (ofFun β f) i = f i := by
+    LambdaIter.Subtyping.Semantics.BoundDen.get (ofFun β f) i = f i := by
   induction β with
   | nil => exact Fin.elim0 i
   | snoc β A ih =>
@@ -35,12 +35,12 @@ def ofFun : {n : Nat} → (β : BoundCtx τ n) →
 
 def pull {n k : Nat} {β : BoundCtx τ n} {β' : BoundCtx τ k}
     (r : TypedRenaming β β') (ρ : BoundDen β') : BoundDen β :=
-  ofFun β fun i => r.typed i ▸ LambdaIter.Semantics.BoundDen.get ρ (r.toFun i)
+  ofFun β fun i => r.typed i ▸ LambdaIter.Subtyping.Semantics.BoundDen.get ρ (r.toFun i)
 
 @[simp] theorem get_pull {n k : Nat} {β : BoundCtx τ n} {β' : BoundCtx τ k}
     (r : TypedRenaming β β') (ρ : BoundDen β') (i : Fin n) :
-    LambdaIter.Semantics.BoundDen.get (pull r ρ) i =
-      r.typed i ▸ LambdaIter.Semantics.BoundDen.get ρ (r.toFun i) :=
+    LambdaIter.Subtyping.Semantics.BoundDen.get (pull r ρ) i =
+      r.typed i ▸ LambdaIter.Subtyping.Semantics.BoundDen.get ρ (r.toFun i) :=
   get_ofFun β _ i
 
 @[simp] theorem pull_up {n k : Nat} {β : BoundCtx τ n} {β' : BoundCtx τ k}
@@ -83,7 +83,7 @@ private theorem denote_bv_transport {Γ : Ctx ν τ} {n : Nat}
     {β : BoundCtx τ n} (i : Fin n) {A : τ} (e : β.get i = A)
     (γ : CtxDen Γ) (ρ : BoundDen β) :
     denote (m := m) (ε := ε) (e ▸ (HasType.bv (Φ := Φ) (Γ := Γ) (β := β) (i := i))) γ ρ =
-      (pure (e ▸ LambdaIter.Semantics.BoundDen.get ρ i) : m (TyDen A)) := by
+      (pure (e ▸ LambdaIter.Subtyping.Semantics.BoundDen.get ρ i) : m (TyDen A)) := by
   cases e
   simp [denote]
 
@@ -115,7 +115,7 @@ theorem denote_rename {Γ : Ctx ν τ} {n k : Nat}
       simp only [HasType.rename]; unfold denote
       rw [iha]
       apply bind_congr; intro ab
-      let p := LambdaIter.Semantics.TypeModel.tensorEquiv _ _ ab
+      let p := LambdaIter.Subtyping.Semantics.TypeModel.tensorEquiv _ _ ab
       calc
         _ = denote (m := m) (ε := ε) hb γ
             (BoundDen.pull ((r.up _).up _) ((ρ, p.1), p.2)) :=
@@ -128,7 +128,7 @@ theorem denote_rename {Γ : Ctx ν τ} {n k : Nat}
       simp only [HasType.rename]; unfold denote
       rw [ihe]
       apply bind_congr; intro e
-      cases LambdaIter.Semantics.TypeModel.coprodEquiv _ _ e with
+      cases LambdaIter.Subtyping.Semantics.TypeModel.coprodEquiv _ _ e with
       | inl a =>
           simp only
           calc
@@ -141,14 +141,13 @@ theorem denote_rename {Γ : Ctx ν τ} {n k : Nat}
             _ = denote (m := m) (ε := ε) hr γ (BoundDen.pull (r.up _) (ρ, b)) :=
               ihr (r.up _) (ρ, b)
             _ = _ := by rw [BoundDen.pull_up]
-  | sub h d ih => simp only [HasType.rename]; unfold denote; rw [ih]
 
 def SubstDen {Γ : Ctx ν τ} {n k : Nat}
     {β : BoundCtx τ n} {β' : BoundCtx τ k} {σ : Fin n → Tm ν Φ k}
     (s : TypedSubst (Γ := Γ) β β' σ) (γ : CtxDen Γ)
     (ρ' : BoundDen β') (ρ : BoundDen β) : Prop :=
   ∀ i, denote (m := m) (ε := ε) (s i) γ ρ' =
-    pure (LambdaIter.Semantics.BoundDen.get ρ i)
+    pure (LambdaIter.Subtyping.Semantics.BoundDen.get ρ i)
 
 theorem SubstDen.up {Γ : Ctx ν τ} {n k : Nat}
     {β : BoundCtx τ n} {β' : BoundCtx τ k} {σ : Fin n → Tm ν Φ k}
@@ -195,10 +194,10 @@ theorem denote_bsubst {Γ : Ctx ν τ} {n k : Nat}
       rw [iha s ρ' ρ hs]
       apply bind_congr; intro ab
       exact ihb (s := (s.up _).up _)
-        (ρ' := ((ρ', (LambdaIter.Semantics.TypeModel.tensorEquiv _ _ ab).1),
-          (LambdaIter.Semantics.TypeModel.tensorEquiv _ _ ab).2))
-        (ρ := ((ρ, (LambdaIter.Semantics.TypeModel.tensorEquiv _ _ ab).1),
-          (LambdaIter.Semantics.TypeModel.tensorEquiv _ _ ab).2))
+        (ρ' := ((ρ', (LambdaIter.Subtyping.Semantics.TypeModel.tensorEquiv _ _ ab).1),
+          (LambdaIter.Subtyping.Semantics.TypeModel.tensorEquiv _ _ ab).2))
+        (ρ := ((ρ, (LambdaIter.Subtyping.Semantics.TypeModel.tensorEquiv _ _ ab).1),
+          (LambdaIter.Subtyping.Semantics.TypeModel.tensorEquiv _ _ ab).2))
         ((hs.up _ _).up _ _)
   | inl h ih => simp only [HasType.bsubst]; unfold denote; rw [ih s ρ' ρ hs]
   | inr h ih => simp only [HasType.bsubst]; unfold denote; rw [ih s ρ' ρ hs]
@@ -207,10 +206,9 @@ theorem denote_bsubst {Γ : Ctx ν τ} {n k : Nat}
       simp only [HasType.bsubst]; unfold denote
       rw [ihe s ρ' ρ hs]
       apply bind_congr; intro e
-      cases LambdaIter.Semantics.TypeModel.coprodEquiv _ _ e with
+      cases LambdaIter.Subtyping.Semantics.TypeModel.coprodEquiv _ _ e with
       | inl a => exact ihl (s := s.up _) (ρ' := (ρ', a)) (ρ := (ρ, a)) (hs.up _ a)
       | inr b => exact ihr (s := s.up _) (ρ' := (ρ', b)) (ρ := (ρ, b)) (hs.up _ b)
-  | sub h d ih => simp only [HasType.bsubst]; unfold denote; rw [ih s ρ' ρ hs]
 
 theorem denote_instantiate {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
     {a : Tm ν Φ n} {b : Tm ν Φ (n + 1)} {A B : τ}
@@ -227,7 +225,8 @@ theorem denote_instantiate {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
   intro i
   refine Fin.cases hx (fun j => ?_) i
   change denote (m := m) (ε := ε) (HasType.bv (i := j)) γ ρ = _
-  rfl
+  unfold denote
+  congr 1
 
 @[simp] theorem denote_lift {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
     {t : Tm ν Φ n} {A X : τ} (h : HasType Φ Γ β t A)
@@ -254,7 +253,9 @@ theorem denote_instantiate {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
     denote (m := m) (ε := ε) (h.underTwoBinders (X := X)) γ (((ρ, x), y), z) =
       denote (m := m) (ε := ε) h γ ((ρ, y), z) := by
   unfold HasType.underTwoBinders
-  exact (denote_rename (m := m) (ε := ε) h _ γ _).trans
-    (by rw [BoundDen.pull_underTwoBinders])
+  let r := LambdaIter.LocallyNameless.TypedRenaming.underTwoBinders β X Y Z
+  have hr := denote_rename (m := m) (ε := ε) h r γ (((ρ, x), y), z)
+  rw [BoundDen.pull_underTwoBinders] at hr
+  exact hr
 
 end Isotope.LambdaCase.Semantics

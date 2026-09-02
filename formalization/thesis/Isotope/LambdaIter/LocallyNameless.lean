@@ -1,7 +1,7 @@
 import Isotope.LambdaIter.LocallyNameless.Syntax
 import Isotope.LambdaIter.LocallyNameless.Context
-import Isotope.LambdaIter.LocallyNameless.Typing
-import Isotope.LambdaIter.LocallyNameless.TypingSubst
-import Isotope.LambdaIter.LocallyNameless.Equiv
-import Isotope.LambdaIter.LocallyNameless.TypedEquiv
-import Isotope.LambdaIter.LocallyNameless.Examples
+import Isotope.LambdaIter.Typing
+import Isotope.LambdaIter.Equiv
+import Isotope.LambdaIter.Metatheory
+import Isotope.LambdaIter.Metatheory.Syntax
+import Isotope.LambdaIter.Metatheory.EquivSubst

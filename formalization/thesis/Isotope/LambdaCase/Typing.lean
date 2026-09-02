@@ -1,6 +1,5 @@
 import Isotope.LambdaCase.Syntax
-import Isotope.LambdaIter.LocallyNameless.Typing
-import Isotope.LambdaIter.Named.Typing
+import Isotope.LambdaIter.Typing
 
 /-! # Extrinsic typing for lambda-case -/
 
@@ -10,13 +9,14 @@ abbrev Ctx := LambdaIter.Ctx
 
 namespace Named
 
-variable [DecidableEq ν] [LambdaIter.TypeFormers τ] [LambdaIter.Subtyping τ]
+variable [DecidableEq ν] [LambdaIter.TypeFormers τ]
   [LambdaIter.HasTy Φ τ]
 
 /-- Extrinsic typing for named lambda-case. -/
 inductive HasType : Ctx ν τ → Tm ν Φ → τ → Prop where
   | var (h : LambdaIter.Ctx.lookup Γ x = some A) : HasType Γ (.var x) A
-  | op (hf : LambdaIter.Named.InstTy f A B) (ha : HasType Γ a A) : HasType Γ (.op f a) B
+  | op (ha : HasType Γ a (LambdaIter.instrSrc f)) :
+      HasType Γ (.op f a) (LambdaIter.instrTrg f)
   | let₁ (ha : HasType Γ a A) (hb : HasType (.snoc Γ x A) b B) :
       HasType Γ (.let₁ x a b) B
   | unit : HasType Γ .unit LambdaIter.TypeFormers.unit
@@ -32,13 +32,12 @@ inductive HasType : Ctx ν τ → Tm ν Φ → τ → Prop where
       (hl : HasType (.snoc Γ x A) l C) (hr : HasType (.snoc Γ y B) r C) :
       HasType Γ (.case e x l y r) C
   | abort (ha : HasType Γ a LambdaIter.TypeFormers.empty) : HasType Γ (.abort a) C
-  | sub (ha : HasType Γ a A) (d : LambdaIter.Subty A B) : HasType Γ a B
 
 /-- Named typing is preserved by the inclusion. -/
 def HasType.embed {Γ : Ctx ν τ} {t : Tm ν Φ} {A : τ} :
-    HasType Γ t A → LambdaIter.Named.HasType Γ (embed t) A
+    HasType Γ t A → LambdaIter.Named.HasType Φ Γ (embed t) A
   | .var h => .var h
-  | .op hf ha => .op hf ha.embed
+  | .op ha => .op ha.embed
   | .let₁ ha hb => .let₁ ha.embed hb.embed
   | .unit => .unit
   | .pair ha hb => .pair ha.embed hb.embed
@@ -47,7 +46,6 @@ def HasType.embed {Γ : Ctx ν τ} {t : Tm ν Φ} {A : τ} :
   | .inr hb => .inr hb.embed
   | .case he hl hr => .case he.embed hl.embed hr.embed
   | .abort ha => .abort ha.embed
-  | .sub ha d => .sub ha.embed d
 
 end Named
 
@@ -55,7 +53,7 @@ namespace LocallyNameless
 
 abbrev BoundCtx := LambdaIter.LocallyNameless.BoundCtx
 
-variable {τ : Type u} [LambdaIter.TypeFormers τ] [LambdaIter.Subtyping τ]
+variable {τ : Type u} [LambdaIter.TypeFormers τ]
 variable {ν : Type w} [DecidableEq ν]
 variable {Φ : Type q} [LambdaIter.HasTy Φ τ]
 
@@ -81,7 +79,6 @@ inductive HasType (Φ : Type q) [LambdaIter.HasTy Φ τ] (Γ : Ctx ν τ) :
       (hl : HasType Φ Γ (.snoc β A) l C) (hr : HasType Φ Γ (.snoc β B) r C) :
       HasType Φ Γ β (.case e l r) C
   | abort (ha : HasType Φ Γ β a LambdaIter.TypeFormers.empty) : HasType Φ Γ β (.abort a) C
-  | sub (ha : HasType Φ Γ β a A) (d : LambdaIter.Subty A B) : HasType Φ Γ β a B
 
 /-- Locally nameless typing is preserved by the inclusion. -/
 def HasType.embed {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
@@ -98,7 +95,6 @@ def HasType.embed {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
   | .inr hb => .inr hb.embed
   | .case he hl hr => .case he.embed hl.embed hr.embed
   | .abort ha => .abort ha.embed
-  | .sub ha d => .sub ha.embed d
 
 inductive Pure [LambdaIter.HasEff Φ ε] (pureEff : ε) : {n : Nat} → Tm ν Φ n → Prop where
   | fv : Pure pureEff (.fv x)
@@ -112,21 +108,6 @@ inductive Pure [LambdaIter.HasEff Φ ε] (pureEff : ε) : {n : Nat} → Tm ν Φ
   | inr : Pure pureEff a → Pure pureEff (.inr a)
   | case : Pure pureEff e → Pure pureEff l → Pure pureEff r → Pure pureEff (.case e l r)
   | abort : Pure pureEff a → Pure pureEff (.abort a)
-
-def Pure.embed {ε : Type r} [LambdaIter.HasEff Φ ε] {pureEff : ε} :
-    {n : Nat} → {t : Tm ν Φ n} →
-      Pure pureEff t → LambdaIter.LocallyNameless.Pure pureEff (Tm.embed t)
-  | _, _, .fv => .fv
-  | _, _, .bv => .bv
-  | _, _, .op hf ha => .op hf ha.embed
-  | _, _, .let₁ ha hb => .let₁ ha.embed hb.embed
-  | _, _, .unit => .unit
-  | _, _, .pair ha hb => .pair ha.embed hb.embed
-  | _, _, .let₂ ha hb => .let₂ ha.embed hb.embed
-  | _, _, .inl ha => .inl ha.embed
-  | _, _, .inr ha => .inr ha.embed
-  | _, _, .case he hl hr => .case he.embed hl.embed hr.embed
-  | _, _, .abort ha => .abort ha.embed
 
 end LocallyNameless
 end Isotope.LambdaCase

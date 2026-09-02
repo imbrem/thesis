@@ -1,11 +1,11 @@
 import Isotope.LambdaCase.Typing
-import Isotope.LambdaIter.LocallyNameless.TypingSubst
+import Isotope.LambdaIter.Metatheory
 
 /-! # Proof-relevant renaming and substitution for lambda-case -/
 
 namespace Isotope.LambdaCase.LocallyNameless
 
-variable {τ : Type u} [LambdaIter.TypeFormers τ] [LambdaIter.Subtyping τ]
+variable {τ : Type u} [LambdaIter.TypeFormers τ]
 variable {ν : Type w} [DecidableEq ν]
 variable {Φ : Type q} [LambdaIter.HasTy Φ τ]
 variable {Γ Γ' : Ctx ν τ}
@@ -31,7 +31,6 @@ def rename {n m : Nat} {β : BoundCtx τ n} {β' : BoundCtx τ m}
   | _, _, .case he hl hr =>
       .case (rename r he) (rename (r.up _) hl) (rename (r.up _) hr)
   | _, _, .abort h => .abort (rename r h)
-  | _, _, .sub h d => .sub (rename r h) d
 
 def lift {n : Nat} {β : BoundCtx τ n} {t : Tm ν Φ n} {A B : τ}
     (h : HasType Φ Γ β t A) :
@@ -47,34 +46,6 @@ def underTwoBinders {n : Nat} {β : BoundCtx τ n} {t : Tm ν Φ (n + 2)}
     {A X Y Z : τ} (h : HasType Φ Γ (.snoc (.snoc β Y) Z) t A) :
     HasType Φ Γ (.snoc (.snoc (.snoc β X) Y) Z) t.underTwoBinders A :=
   rename (LambdaIter.LocallyNameless.TypedRenaming.underTwoBinders β X Y Z) h
-
-private def weakenSame (wΓ : LambdaIter.LocallyNameless.FreeWk Γ' Γ) :
-    {n : Nat} → {β β' : BoundCtx τ n} → LambdaIter.LocallyNameless.BoundCtx.Wk β' β →
-    {t : Tm ν Φ n} → {A : τ} → HasType Φ Γ β t A → HasType Φ Γ' β' t A
-  | _, _, _, wβ, _, _, .fv h =>
-      let ⟨B, hB, hBA⟩ := wΓ.lookup _ _ h
-      .sub (.fv hB) hBA
-  | _, _, _, wβ, _, _, .bv => .sub .bv (wβ.at _)
-  | _, _, _, wβ, _, _, .op h => .op (weakenSame wΓ wβ h)
-  | _, _, _, wβ, _, _, .let₁ ha hb => .let₁ (weakenSame wΓ wβ ha)
-      (weakenSame wΓ (.snoc wβ (LambdaIter.Subty.refl _)) hb)
-  | _, _, _, _, _, _, .unit => .unit
-  | _, _, _, wβ, _, _, .pair ha hb => .pair (weakenSame wΓ wβ ha) (weakenSame wΓ wβ hb)
-  | _, _, _, wβ, _, _, .let₂ ha hb => .let₂ (weakenSame wΓ wβ ha)
-      (weakenSame wΓ (.snoc (.snoc wβ (LambdaIter.Subty.refl _)) (LambdaIter.Subty.refl _)) hb)
-  | _, _, _, wβ, _, _, .inl h => .inl (weakenSame wΓ wβ h)
-  | _, _, _, wβ, _, _, .inr h => .inr (weakenSame wΓ wβ h)
-  | _, _, _, wβ, _, _, .case he hl hr => .case (weakenSame wΓ wβ he)
-      (weakenSame wΓ (.snoc wβ (LambdaIter.Subty.refl _)) hl)
-      (weakenSame wΓ (.snoc wβ (LambdaIter.Subty.refl _)) hr)
-  | _, _, _, wβ, _, _, .abort h => .abort (weakenSame wΓ wβ h)
-  | _, _, _, wβ, _, _, .sub h d => .sub (weakenSame wΓ wβ h) d
-
-def weaken {n : Nat} {β β' : BoundCtx τ n} {t : Tm ν Φ n} {A B : τ}
-    (wΓ : LambdaIter.LocallyNameless.FreeWk Γ' Γ)
-    (wβ : LambdaIter.LocallyNameless.BoundCtx.Wk β' β)
-    (d : LambdaIter.Subty A B) : HasType Φ Γ β t A → HasType Φ Γ' β' t B :=
-  fun h => .sub (weakenSame wΓ wβ h) d
 
 end HasType
 
@@ -109,7 +80,6 @@ def bsubst {n m : Nat} {β : BoundCtx τ n} {β' : BoundCtx τ m}
   | _, _, .inr h => .inr (bsubst s h)
   | _, _, .case he hl hr => .case (bsubst s he) (bsubst (s.up _) hl) (bsubst (s.up _) hr)
   | _, _, .abort h => .abort (bsubst s h)
-  | _, _, .sub h d => .sub (bsubst s h) d
 
 def instantiate {n : Nat} {β : BoundCtx τ n} {A B : τ}
     {a : Tm ν Φ n} {b : Tm ν Φ (n + 1)}
