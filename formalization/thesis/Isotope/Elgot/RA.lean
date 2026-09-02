@@ -19,6 +19,7 @@ import Isotope.Elgot.RA.Assoc
 import Isotope.Elgot.RA.Examples
 import Isotope.Elgot.RA.ParExamples
 import Isotope.Elgot.RA.Abstract
+import Isotope.Elgot.RA.Opt
 
 /-!
 # A release/acquire trace monad
