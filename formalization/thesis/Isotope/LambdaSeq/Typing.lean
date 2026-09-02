@@ -92,7 +92,7 @@ namespace Named
 variable [DecidableEq ν] [LambdaIter.TypeFormers τ] [LambdaIter.Subtyping τ]
   [LambdaIter.HasTy Φ τ]
 
-inductive HasType : Ctx ν τ → LambdaSeq.Named.Tm ν Φ → τ → Prop where
+inductive HasType : Ctx ν τ → LambdaSeq.Named.Tm ν Φ → τ → Type _ where
   | var (h : LambdaIter.Ctx.lookup Γ x = some A) : HasType Γ (.var x) A
   | op (hf : LambdaIter.Named.InstTy f A B) (ha : HasType Γ a A) : HasType Γ (.op f a) B
   | let₁ (ha : HasType Γ a A) (hb : HasType (.snoc Γ x A) b B) :
