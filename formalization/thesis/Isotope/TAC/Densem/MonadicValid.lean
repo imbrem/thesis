@@ -604,4 +604,95 @@ theorem iter_source_restrict [Monad m] [LawfulMonad m]
   rw [hu]
   simp [Isotope.Elgot.kcomp, Isotope.Elgot.liftPure]
 
+/-- Ordinary direct TAC semantics, without boundary-store normalization. -/
+def sourceDenote [Monad m] [Isotope.Elgot.Iterate m]
+    [DecidableEq ν] [DecidableEq κ]
+    (g : Isotope.TAC.Classical.CFG ν φ κ) (rho : MEnv M ν) : m M.Val := do
+  let result ← Isotope.TAC.Densem.Monadic.Block.denote M rho
+    (Isotope.TAC.Densem.Classical.block g.entry)
+  match result.2 with
+  | .return a => pure a
+  | .branch label => Isotope.Elgot.iter (sourceStep M g) (result.1, label)
+
+theorem sourceDenote_eq_on [Monad m] [LawfulMonad m]
+    [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    [Isotope.TAC.Densem.Phi.Monadic.LawfulFailure M]
+    (g : Isotope.TAC.Classical.CFG ν φ κ) (rho : MEnv M ν) :
+    sourceDenote M g rho = sourceDenoteOn M g rho := by
+  unfold sourceDenote sourceDenoteOn
+  apply congrArg (fun continuation =>
+    Isotope.TAC.Densem.Monadic.Block.denote M rho
+      (Isotope.TAC.Densem.Classical.block g.entry) >>= continuation)
+  funext result
+  rcases result with ⟨store, exit⟩
+  cases exit
+  next label => exact iter_source_restrict M g (store, label)
+  next a => rfl
+
+theorem denote_convert_direct [Monad m] [LawfulMonad m]
+    [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    [Isotope.TAC.Densem.Phi.Monadic.LawfulFailure M]
+    (g : Isotope.TAC.Classical.CFG ν φ κ) (rho : MEnv M ν)
+    (htotal : TotalOn (M := M) (sourceVars g) rho) :
+    Isotope.TAC.Densem.Phi.Monadic.denote M
+        (Isotope.TAC.Classical.Convert.convert g)
+        (externalEnv (M := M) (κ := κ) rho) = sourceDenote M g rho := by
+  rw [denote_convert M g rho htotal, sourceDenote_eq_on M g rho]
+
+theorem sourceStep_phiFree [Monad m] [DecidableEq ν] [DecidableEq κ]
+    (g : Isotope.TAC.Classical.CFG ν φ κ)
+    (h : Isotope.TAC.Densem.Classical.PhiFree g) :
+    sourceStep M g = Isotope.TAC.Densem.Monadic.CFG.step M
+      (Isotope.TAC.Densem.Classical.cfg g h) := by
+  funext state
+  rcases state with ⟨rho, label⟩
+  simp only [sourceStep, Isotope.TAC.Densem.Monadic.CFG.step]
+  rw [Isotope.TAC.Densem.Phi.Monadic.lookup_translate g h label]
+  cases Isotope.TAC.Densem.Phi.lookup g label with
+  | none => rfl
+  | some b =>
+      simp only [Option.map_some]
+      apply congrArg (fun continuation =>
+        Isotope.TAC.Densem.Monadic.Block.denote M rho
+          (Isotope.TAC.Densem.Classical.block b) >>= continuation)
+      funext result
+      rcases result with ⟨store, exit⟩
+      cases exit <;> rfl
+
+theorem sourceDenote_phiFree [Monad m] [Isotope.Elgot.Iterate m]
+    [DecidableEq ν] [DecidableEq κ]
+    (g : Isotope.TAC.Classical.CFG ν φ κ)
+    (h : Isotope.TAC.Densem.Classical.PhiFree g) (rho : MEnv M ν) :
+    sourceDenote M g rho = Isotope.TAC.Densem.Monadic.CFG.denote M
+      (Isotope.TAC.Densem.Classical.cfg g h) rho := by
+  unfold sourceDenote Isotope.TAC.Densem.Monadic.CFG.denote
+  change (Isotope.TAC.Densem.Monadic.Block.denote M rho
+      (Isotope.TAC.Densem.Classical.block g.entry) >>= _) =
+    (Isotope.TAC.Densem.Monadic.Block.denote M rho
+      (Isotope.TAC.Densem.Classical.block g.entry) >>= _)
+  apply congrArg (fun continuation =>
+    Isotope.TAC.Densem.Monadic.Block.denote M rho
+      (Isotope.TAC.Densem.Classical.block g.entry) >>= continuation)
+  funext result
+  rcases result with ⟨store, exit⟩
+  cases exit
+  next label => rw [sourceStep_phiFree M g h]
+  next a => rfl
+
+theorem denote_convert_cfg [Monad m] [LawfulMonad m]
+    [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    [Isotope.TAC.Densem.Phi.Monadic.LawfulFailure M]
+    (g : Isotope.TAC.Classical.CFG ν φ κ)
+    (h : Isotope.TAC.Densem.Classical.PhiFree g) (rho : MEnv M ν)
+    (htotal : TotalOn (M := M) (sourceVars g) rho) :
+    Isotope.TAC.Densem.Phi.Monadic.denote M
+        (Isotope.TAC.Classical.Convert.convert g)
+        (externalEnv (M := M) (κ := κ) rho) =
+      Isotope.TAC.Densem.Monadic.CFG.denote M
+        (Isotope.TAC.Densem.Classical.cfg g h) rho := by
+  rw [denote_convert_direct M g rho htotal, sourceDenote_phiFree M g h rho]
+
 end Isotope.TAC.Densem.Convert.Monadic.Valid
