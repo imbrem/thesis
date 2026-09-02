@@ -188,4 +188,113 @@ theorem enter_named_sim [DecidableEq ν] [DecidableEq κ]
   rw [ha]
   exact htarget
 
+/-- An executable terminator can only branch to a label occurring in its
+syntax. -/
+theorem terminator_branch_mem (M : Densem.Model φ)
+    (source : Densem.Env M ν) (t : Isotope.TAC.Classical.Terminator ν φ κ)
+    (label : κ)
+    (h : terminatorDenote M source t = some (.branch label)) :
+    label ∈ t.targets := by
+  induction t with
+  | br target =>
+      simp only [terminatorDenote, Option.some.injEq,
+        Densem.Exit.branch.injEq] at h
+      subst target
+      simp [Isotope.TAC.Classical.Terminator.targets]
+  | ret value => simp [terminatorDenote] at h
+  | cond c left right ihl ihr =>
+      simp only [terminatorDenote] at h
+      cases hv : operandDenote M source c >>= M.viewBool with
+      | none => simp [hv] at h
+      | some b =>
+          simp only [hv, Option.bind_some] at h
+          cases b
+          · have hm := ihr h
+            simp [Isotope.TAC.Classical.Terminator.targets, hm]
+          · have hm := ihl h
+            simp [Isotope.TAC.Classical.Terminator.targets, hm]
+
+def ExitTargets (t : Isotope.TAC.Classical.Terminator ν φ κ) :
+    Densem.Exit κ α → Prop
+  | .return _ => True
+  | .branch label => label ∈ t.targets
+
+def ExitValid (b : Isotope.TAC.Classical.Block ν φ κ)
+    (exit : Densem.Exit κ α) : Prop := ExitTargets b.terminator exit
+
+theorem bodyDenote_exit_valid [DecidableEq ν]
+    (M : Densem.Model φ) (xs : List (Isotope.TAC.Classical.Instr ν φ))
+    (t : Isotope.TAC.Classical.Terminator ν φ κ)
+    (source source' : Densem.Env M ν) (exit : Densem.Exit κ M.Val)
+    (h : bodyDenote M xs source t = some (source', exit)) :
+    ExitTargets t exit := by
+  induction xs generalizing source with
+  | nil =>
+      simp only [bodyDenote] at h
+      cases ht : terminatorDenote M source t with
+      | none => simp [ht] at h
+      | some e =>
+          rw [ht] at h
+          have he : e = exit := by
+            simpa [ht] using congrArg Prod.snd (Option.some.inj h)
+          subst e
+          cases exit with
+          | «return» => trivial
+          | branch label => exact terminator_branch_mem M source t label ht
+  | cons ins rest ih =>
+      cases ins with
+      | assign x rhs =>
+          simp only [bodyDenote] at h
+          cases hv : operandDenote M source rhs with
+          | none => simp [hv] at h
+          | some a =>
+              simp only [hv, Option.bind_some] at h
+              exact ih (source := Densem.Env.set source x a) h
+      | assignPair x y rhs =>
+          simp only [bodyDenote] at h
+          cases hv : operandDenote M source rhs with
+          | none => simp [hv] at h
+          | some a =>
+              cases hs : M.split a with
+              | none => simp [hv, hs] at h
+              | some p =>
+                  rcases p with ⟨ax, ay⟩
+                  simp [hv, hs] at h
+                  exact ih
+                    (source := (Densem.Env.set source x ax).set y ay) h
+
+theorem body_exit_valid [DecidableEq ν]
+    (M : Densem.Model φ) (b : Isotope.TAC.Classical.Block ν φ κ)
+    (source source' : Densem.Env M ν) (exit : Densem.Exit κ M.Val)
+    (h : blockDenote M source b = some (source', exit)) : ExitValid b exit := by
+  exact bodyDenote_exit_valid M b.body b.terminator source source' exit h
+
+/-- Entry has no phis; lifting the source store into external SSA versions is
+enough to simulate it. -/
+theorem enter_entry_sim [DecidableEq ν] [DecidableEq κ]
+    (M : Densem.Model φ) (sourceCfg : Isotope.TAC.Classical.CFG ν φ κ)
+    (source source' : Densem.Env M ν) (exit : Densem.Exit κ M.Val)
+    (hsource : blockDenote M source sourceCfg.entry = some (source', exit)) :
+    ∃ target',
+      Phi.enter M (externalEnv (M := M) (κ := κ) source) .entry
+          (convert sourceCfg).entry = some (target', exit) ∧
+      EnvRelOn (sourceVars sourceCfg) (endEnv .entry sourceCfg.entry)
+        source' target' := by
+  have hrel := external_envRelOn (M := M) (κ := κ)
+    (sourceVars sourceCfg) source
+  rcases body_sim_on M (sourceVars sourceCfg) .entry 0 (startEnv .entry)
+      sourceCfg.entry.body sourceCfg.entry.terminator source source'
+      (externalEnv (M := M) (κ := κ) source) exit hrel
+      (freshFor_startEnv .entry sourceCfg.entry.body)
+      (by
+        intro ins hi x hx
+        exact entry_use_mem_sourceVars sourceCfg hi hx)
+      (by
+        intro x hx
+        exact (mem_sourceVars sourceCfg x).2
+          (.inl (terminator_use_mem_blockSourceVars sourceCfg.entry hx)))
+      hsource with ⟨target', htarget, hrel'⟩
+  refine ⟨target', ?_, hrel'⟩
+  simpa [Phi.enter, convert, convertBlock] using htarget
+
 end Isotope.TAC.Densem.Convert
