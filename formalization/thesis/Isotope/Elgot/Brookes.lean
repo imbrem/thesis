@@ -2,7 +2,9 @@ import Isotope.Elgot.Brookes.Basic
 import Isotope.Elgot.Brookes.Closure
 import Isotope.Elgot.Brookes.Monad
 import Isotope.Elgot.Brookes.Iteration
+import Isotope.Elgot.Brookes.Parallel
 import Isotope.Elgot.Brookes.SeqCst
+import Isotope.Elgot.Brookes.SeqCst.Parallel
 import Isotope.Elgot.Brookes.TSO
 import Isotope.Elgot.Brookes.Compare
 import Isotope.Elgot.Brookes.Examples

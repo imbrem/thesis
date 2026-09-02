@@ -1,5 +1,5 @@
 import Isotope.Elgot.Brookes.TSO.Monad
-import Isotope.Elgot.Interleave
+import Isotope.Elgot.Brookes.Parallel
 
 /-!
 # Interleaving, parallel composition, and interference-free executions
@@ -13,8 +13,9 @@ runs in which every gap between successive steps is closed, i.e. the runs of a
 closed system.
 
 Parallel composition is *not* part of the monad, and no `λ_iter` model obligation
-mentions it; it is here only because the store-buffering litmus test needs two
-threads to be observable at all.
+mentions it; it is used here only because the store-buffering litmus test needs
+two threads to be observable at all.  Its definition and laws now live in
+`Isotope/Elgot/Brookes/Parallel.lean`.
 
 `Seq.of_refines` is the fact that makes reasoning about `par` possible in spite
 of its closure operator: stuttering and mumbling can only ever *undo* into an
@@ -37,24 +38,11 @@ release/acquire development, and is visible unqualified inside this namespace;
 
 export Isotope.Elgot (Interleave)
 
-/-- Parallel composition: run both computations, interleaving their traces, and
-return both results.  The closure is genuine: mumbling can merge a step of one
-thread with a step of the other, and the result is no longer an interleaving. -/
-def par (x : Brookes c A) (y : Brookes c B) : Brookes c (A × B) :=
-  close c {p | ∃ t u, (t, p.2.1) ∈ x ∧ (u, p.2.2) ∈ y ∧ Interleave t u p.1}
-
-theorem mem_par {x : Brookes c A} {y : Brookes c B} {t u w : Trace E} {a : A} {b : B}
-    (ha : (t, a) ∈ x) (hb : (u, b) ∈ y) (h : Interleave t u w) : (w, (a, b)) ∈ par x y :=
-  ⟨w, ⟨t, u, ha, hb, h⟩, .refl⟩
-
-theorem mem_par_iff {x : Brookes c A} {y : Brookes c B} {w : Trace E} {a : A} {b : B} :
-    (w, (a, b)) ∈ par x y ↔
-      ∃ w₀ t u, (t, a) ∈ x ∧ (u, b) ∈ y ∧ Interleave t u w₀ ∧ c.Refines w₀ w := by
-  constructor
-  · rintro ⟨w₀, ⟨t, u, ha, hb, hi⟩, hr⟩
-    exact ⟨w₀, t, u, ha, hb, hi, hr⟩
-  · rintro ⟨w₀, t, u, ha, hb, hi, hr⟩
-    exact ⟨w₀, ⟨t, u, ha, hb, hi⟩, hr⟩
+/-! `par`, `mem_par` and `mem_par_iff` used to be defined here.  They are now
+`Isotope.Elgot.Brookes.par` of `Isotope/Elgot/Brookes/Parallel.lean`, unchanged
+and still generic in the rewriting system, so that the sequentially consistent
+development can use them without depending on this file; that module also proves
+their structural laws. -/
 
 namespace TSO
 
