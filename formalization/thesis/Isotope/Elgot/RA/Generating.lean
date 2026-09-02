@@ -29,6 +29,12 @@ concatenation splits, positionally, into a `𝔤`-rewrite of each factor, and th
 seam condition survives by Lemma 7.6.  The split is positional because all three
 `𝔤` rules preserve the number of transitions.  Since the paper gives no proof,
 **the proofs here are ours**.
+
+⚠ **Only the two clauses the monad laws need are proved.**  Proposition 7.5
+also asserts that `⟦store ℓ,v⟧` and `⟦rmw ℓ,Φ⟧` are `𝔤`-closed and that `|||`
+preserves `𝔤`-closedness; neither is proved here (`|||` is not formalized at
+all).  Consequently `Isotope/Elgot/RA/Memory.lean`'s constants are *not* known
+to satisfy `⟦−⟧_N = ⟦−⟧_G`.
 -/
 
 universe u

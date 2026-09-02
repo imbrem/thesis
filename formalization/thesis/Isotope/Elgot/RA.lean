@@ -189,7 +189,9 @@ Read this before citing anything here as "the paper's".
   `nonempty_elgotFreydCategory_concrete`).
 * `castling` — **Rewrite Castling** (Lemma 8.3) for `x ∈ 𝔠`, `y ∈ 𝔤`, with
   `Refines.sort_gc` and `closure_gcRules_eq`.
-* `pureGen_closed` and `bindGen_closed` — **Proposition 7.5**.
+* `pureGen_closed` and `bindGen_closed` — **Proposition 7.5**, in the two
+  clauses the monad laws need.  Its clauses for `⟦store⟧`, `⟦rmw⟧` and `|||`
+  are **not** proved.
 * `Concrete.pure_bind` and `Concrete.bind_pure` — both unit laws for `C`.  Proved uniformly for every `𝔠 ⊆ R ⊆ 𝔤𝔠` from a single
   invariant: a trace in the closure of `return r` has no local messages, so
   every one of its transitions is a stutter and its memories form a
