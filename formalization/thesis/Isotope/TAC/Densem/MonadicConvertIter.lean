@@ -127,6 +127,17 @@ def guardedSourceStep [Monad m] [DecidableEq ν] [DecidableEq κ]
                   else M.fail
           else M.fail
 
+/-- Observe the recursive predecessor as well as the finite source store. -/
+def observeGuardedResult [DecidableEq ν]
+    (vars : List ν) (label : κ)
+    (block : Isotope.TAC.Classical.Block ν φ κ) :
+    M.Val ⊕ (MEnv M (Version ν κ) × BlockId κ × κ) →
+      M.Val ⊕ GuardedState M ν κ :=
+  Sum.map id fun next =>
+    (restrict M vars
+      (project (M := M) (endEnv (.named label) block) next.1),
+      .named label, next.2.2)
+
 private theorem restrict_idem [DecidableEq ν] (vars : List ν)
     (source : MEnv M ν) :
     restrict M vars (restrict M vars source) = restrict M vars source := by
@@ -190,6 +201,62 @@ theorem step_denote_restrict [Monad m] [LawfulMonad m]
       funext result
       rcases result with ⟨rho, exit⟩
       cases exit <;> simp [finish, restrict_idem]
+
+/-- On every valid finite-total boundary, the converted body commutes with
+the globally guarded source body and retains the predecessor needed by the
+next phi installation. -/
+theorem step_denote_guarded_valid [Monad m] [LawfulMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    (sourceCfg : Isotope.TAC.Classical.CFG ν φ κ)
+    (label : κ) (pred : BlockId κ)
+    (predBlock block : Isotope.TAC.Classical.Block ν φ κ)
+    (source : MEnv M ν) (target : MEnv M (Version ν κ))
+    (hlookup : Isotope.TAC.Densem.Phi.lookup sourceCfg label = some block)
+    (hblock : (label, block) ∈ sourceCfg.blocks)
+    (hpred : pred ∈ predecessors sourceCfg (.named label))
+    (hpredBlock : sourceCfg.lookup pred = some predBlock)
+    (htotal : TotalOn (M := M) (sourceVars sourceCfg) source)
+    (hrel : EnvRelOn (M := M) (sourceVars sourceCfg)
+      (endEnv pred predBlock) source target) :
+    (Isotope.TAC.Densem.Phi.Monadic.step M
+        (Isotope.TAC.Classical.Convert.convert sourceCfg)
+        (target, pred, label) >>= fun result =>
+      pure (observeGuardedResult M (sourceVars sourceCfg) label block result)) =
+      guardedSourceStep M sourceCfg (source, pred, label) := by
+  let addPred : M.Val ⊕ (MEnv M ν × κ) →
+      M.Val ⊕ GuardedState M ν κ :=
+    Sum.map id fun next => (next.1, .named label, next.2)
+  have hs := step_denote_restrict M sourceCfg label pred predBlock block source target
+    hlookup hblock hpred hpredBlock htotal hrel
+  have hpresent : allPresent M (sourceVars sourceCfg) source = true :=
+    (allPresent_eq_true_iff M _ _).2 htotal
+  calc
+    _ = ((Isotope.TAC.Densem.Phi.Monadic.step M
+          (Isotope.TAC.Classical.Convert.convert sourceCfg)
+          (target, pred, label) >>= fun result =>
+        pure (observeResultOn M (sourceVars sourceCfg) label block result)) >>=
+        fun result => pure (addPred result)) := by
+          simp only [bind_assoc]
+          apply congrArg (fun k => Isotope.TAC.Densem.Phi.Monadic.step M
+            (Isotope.TAC.Classical.Convert.convert sourceCfg)
+            (target, pred, label) >>= k)
+          funext result
+          cases result <;> simp [observeResultOn, observeGuardedResult, addPred]
+    _ = sourceStepOn M sourceCfg (source, label) >>= fun result =>
+          pure (addPred result) := congrArg (fun z => z >>= fun result =>
+            pure (addPred result)) hs
+    _ = _ := by
+      simp only [sourceStepOn, hlookup, guardedSourceStep, hpresent,
+        hpredBlock]
+      cases hv : sourceVars sourceCfg <;> simp only [hv, hpred, if_pos]
+      all_goals
+        rw [dif_pos (by trivial)]
+        simp only [bind_assoc, pure_bind]
+        apply congrArg (fun k => Isotope.TAC.Densem.Monadic.Block.denote M source
+          (Isotope.TAC.Densem.Classical.block block) >>= k)
+        funext result
+        rcases result with ⟨rho, exit⟩
+        cases exit <;> simp [addPred]
 
 /-- Converted stepping is independent of the representative of a versioned
 store once both representatives agree with the same finite source-store
