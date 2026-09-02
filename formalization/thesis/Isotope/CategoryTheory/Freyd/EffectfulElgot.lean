@@ -29,11 +29,18 @@ class IsCocartesianEffectLattice (E : Type u₃) [Preorder E]
 
 attribute [instance] IsCocartesianEffectLattice.eff_cocartesian
 
-/-- The effects closed under iteration: the paper's `E^∞`. -/
-class IterativeEffects (E : Type u₃) [Preorder E] [Iteration C]
+/-- The effects closed under iteration: the paper's `E^∞`.
+
+As with case analysis, the law is stated for the composite the semantics forms — iterating a
+body that has been split into the chosen coproduct — rather than for `iterate` and
+`splitMapCoprod` separately, neither of which has a well-determined effect on its own. -/
+class IterativeEffects (E : Type u₃) [Preorder E] {V : Type u₁} [Category.{v₁} V]
+    [CartesianMonoidalCategory V] [SymmetricCategory V] [Limits.HasFiniteCoproducts V]
+    [Limits.HasFiniteCoproducts C] [DistributiveTensor V] [DistributivePremonoidalCategory C]
+    [Iteration C] (J : Functor V C) [DistributiveFreydCategory J]
     (eff : E → MorphismProperty C) (iterative : E → Prop) : Prop where
-  iterate_mem {e : E} (he : iterative e) {X Y : C} {f : X ⟶ Y ⨿ X} :
-    eff e f → eff e (iterate f)
+  iterate_mem {e : E} (he : iterative e) {A B : V} {f : J.obj A ⟶ J.obj (B ⨿ A)} :
+    eff e f → eff e (iterate (f ≫ inv (Limits.coprodComparison J B A)))
 
 namespace EffectfulFreydCategory
 

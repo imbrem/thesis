@@ -33,7 +33,7 @@ variable {V : Type u₁} {C : Type u₂}
   {ν : Type u₄} [DecidableEq ν]
   {Φ : Type u₄} [HasTy Φ τ] [HasEff Φ E] [InstructionModel J M Φ]
   [EffectfulInstructionModel E J eff M Φ]
-  {iterative : E → Prop} [CategoryTheory.IterativeEffects E eff iterative]
+  {iterative : E → Prop} [CategoryTheory.IterativeEffects E J eff iterative]
 
 /-- **Effect soundness for coercion-free λ-iter.** -/
 theorem denote_mem_eff {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}

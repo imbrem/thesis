@@ -53,18 +53,21 @@ class EffectModel (E : Type u₅) [Preorder E] [OrderBot E]
   tensorIso_inv_mem (X Y : V) :
     eff ⊥ (Functor.StrongPremonoidal.tensorIso (J := J) X Y).inv
 
-/-- The extra structure needed to interpret branching: splitting a mapped coproduct is pure,
-and case analysis stays inside an effect. -/
+/-- The extra structure needed to interpret branching: case analysis stays inside an effect.
+
+The law is stated for the *composite* `splitMapCoprod ≫ coprod.desc` that the semantics
+actually forms, and not for its two factors separately.  This is deliberate: `splitMapCoprod`
+lands in Mathlib's globally chosen coproduct, and a chosen colimit cocone is determined only up
+to twisting by an arbitrary automorphism of its apex — so neither factor has a well-determined
+effect, while their composite does. -/
 class DistributiveEffectModel (E : Type u₅) [Preorder E] [OrderBot E]
     [HasFiniteCoproducts V] [HasFiniteCoproducts C]
     [DistributiveTensor V] [DistributivePremonoidalCategory C]
     (J : Functor V C) [DistributiveFreydCategory J]
     (eff : E → MorphismProperty C) [EffectLattice E eff] [EffectModel E J eff] : Prop where
-  /-- Splitting a mapped coproduct is pure. -/
-  splitMapCoprod_mem (A B : V) : eff ⊥ (splitMapCoprod J A B)
   /-- Case analysis stays inside an effect. -/
-  desc_mem {e : E} {A B D : C} {f : A ⟶ D} {g : B ⟶ D} :
-    eff e f → eff e g → eff e (coprod.desc f g)
+  splitDesc_mem {e : E} {A B : V} {D : C} {l : J.obj A ⟶ D} {r : J.obj B ⟶ D} :
+    eff e l → eff e r → eff e (splitMapCoprod J A B ≫ coprod.desc l r)
 
 namespace EffectModel
 
@@ -128,9 +131,6 @@ variable [HasFiniteCoproducts V] [HasFiniteCoproducts C]
   {eff : E → MorphismProperty C} [EffectLattice E eff] [EffectModel E J eff]
   [DistributiveEffectModel E J eff]
 
-theorem splitMapCoprod_mem_eff (e : E) (A B : V) : eff e (splitMapCoprod J A B) :=
-  pure_mem (DistributiveEffectModel.splitMapCoprod_mem (J := J) (eff := eff) A B) e
-
 theorem caseWithContext_mem {e : E} {R A B D : V}
     {scrutinee : J.obj R ⟶ J.obj (A ⨿ B)}
     {left : J.obj (R ⊗ A) ⟶ J.obj D} {right : J.obj (R ⊗ B) ⟶ J.obj D}
@@ -138,7 +138,7 @@ theorem caseWithContext_mem {e : E} {R A B D : V}
     eff e (caseWithContext J scrutinee left right) :=
   bind_mem hs
     (comp_mem (map_mem_eff e _)
-      (comp_mem (splitMapCoprod_mem_eff e _ _) (DistributiveEffectModel.desc_mem (J := J) (eff := eff) hl hr)))
+      (DistributiveEffectModel.splitDesc_mem (J := J) (eff := eff) hl hr))
 
 theorem abort_mem {τ : Type u₃} [TypeFormers τ] [Subtyping τ] (M : TypeModel τ V)
     {e : E} {R : V} {A : τ} {c : J.obj R ⟶ J.obj (M.obj (TypeFormers.empty : τ))} (hc : eff e c) :
@@ -161,15 +161,14 @@ theorem retainLeft_mem {e : E} {R X Y : V} {f : J.obj X ⟶ J.obj Y} (hf : eff e
     (comp_mem (leftTensor_id_mem _ hf)
       (pure_mem (EffectModel.tensorIso_hom_mem (J := J) (eff := eff) R Y) e))
 
-theorem contextualLoop_mem {iterative : E → Prop} [IterativeEffects E eff iterative]
+theorem contextualLoop_mem {iterative : E → Prop} [IterativeEffects E J eff iterative]
     {e : E} (he : iterative e)
     {R A B : V} {body : J.obj (R ⊗ A) ⟶ J.obj (B ⨿ A)} (hb : eff e body) :
-    eff e (contextualLoop J body) :=
-  comp_mem
-    (IterativeEffects.iterate_mem (eff := eff) he
-      (comp_mem (map_mem_eff e _)
-        (comp_mem (retainLeft_mem hb)
-          (comp_mem (map_mem_eff e _) (splitMapCoprod_mem_eff e _ _)))))
+    eff e (contextualLoop J body) := by
+  rw [contextualLoop, ← Category.assoc, ← Category.assoc]
+  exact comp_mem
+    (IterativeEffects.iterate_mem (J := J) (eff := eff) he
+      (comp_mem (comp_mem (map_mem_eff e _) (retainLeft_mem hb)) (map_mem_eff e _)))
     (map_mem_eff e _)
 
 end Elgot
@@ -200,11 +199,10 @@ instance topEffectModel :
 
 instance topDistributiveEffectModel :
     DistributiveEffectModel PUnit J (fun _ : PUnit => (⊤ : MorphismProperty C)) where
-  splitMapCoprod_mem _ _ := trivial
-  desc_mem _ _ := trivial
+  splitDesc_mem _ _ := trivial
 
 instance topIterativeEffects :
-    IterativeEffects PUnit (fun _ : PUnit => (⊤ : MorphismProperty C))
+    IterativeEffects PUnit J (fun _ : PUnit => (⊤ : MorphismProperty C))
       (fun _ => True) where
   iterate_mem := by intros; trivial
 
@@ -239,7 +237,7 @@ variable {E : Type u₅} [Preorder E] [OrderBot E]
   {ν : Type u₄} [DecidableEq ν]
   {Φ : Type u₄} [HasTy Φ τ] [HasEff Φ E] [InstructionModel J M Φ]
   [EffectfulInstructionModel E J eff M Φ]
-  {iterative : E → Prop} [IterativeEffects E eff iterative]
+  {iterative : E → Prop} [IterativeEffects E J eff iterative]
 
 /-- **Effect soundness of the categorical semantics.**
 
@@ -344,15 +342,18 @@ instance inclusionEffectModel : EffectModel E (EffectfulFreydCategory.inclusion 
 
 instance inclusionDistributiveEffectModel :
     DistributiveEffectModel E (EffectfulFreydCategory.inclusion eff) eff where
-  splitMapCoprod_mem A B := by
-    rw [splitMapCoprod_inclusion_eq]; exact wideCoprodIso_inv_mem (eff ⊥) A B
-  desc_mem hf hg := IsCocartesianSubcategory.desc_mem hf hg
+  splitDesc_mem hl hr :=
+    EffectModel.comp_mem
+      (EffectModel.pure_mem
+        (by rw [splitMapCoprod_inclusion_eq]; exact wideCoprodIso_inv_mem (eff ⊥) _ _) _)
+      (IsCocartesianSubcategory.desc_mem hl hr)
 
 variable {τ : Type u₃} [TypeFormers τ] [Subtyping τ] (M : TypeModel τ (EffectfulFreydCategory.Value eff))
   {ν : Type u₄} [DecidableEq ν]
   {Φ : Type u₄} [HasTy Φ τ] [HasEff Φ E] [InstructionModel (EffectfulFreydCategory.inclusion eff) M Φ]
   [EffectfulInstructionModel E (EffectfulFreydCategory.inclusion eff) eff M Φ]
-  {iterative : E → Prop} [IterativeEffects E eff iterative]
+  {iterative : E → Prop}
+  [IterativeEffects E (EffectfulFreydCategory.inclusion eff) eff iterative]
 
 /-- **Effect soundness for the subcategory presentation.**
 

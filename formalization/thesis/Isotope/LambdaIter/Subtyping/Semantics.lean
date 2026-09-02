@@ -6,5 +6,8 @@ import Isotope.LambdaIter.Subtyping.Semantics.Substitution
 import Isotope.LambdaIter.Subtyping.Semantics.Soundness
 import Isotope.LambdaIter.Subtyping.Semantics.Categorical
 import Isotope.LambdaIter.Subtyping.Semantics.Effects
+import Isotope.LambdaIter.Subtyping.Semantics.TwoPoint
+import Isotope.LambdaIter.Subtyping.Semantics.KleisliModel
+import Isotope.LambdaIter.Subtyping.Semantics.Examples
 import Isotope.LambdaIter.Subtyping.Semantics.IterationDiagrams
 import Isotope.LambdaIter.Subtyping.Semantics.Agreement.Full

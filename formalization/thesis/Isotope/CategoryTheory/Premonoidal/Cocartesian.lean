@@ -14,6 +14,15 @@ The resulting coproducts of `WideSubcategory P` are the coproducts of `C`, but o
 canonical comparison isomorphism: Mathlib's `HasColimit` is a `Prop`, so the chosen colimit is
 not definitionally the cocone we supply.  `wideCoprodIso` names that comparison and the lemmas
 below let one compute with it.
+
+Note that `IsCocartesianSubcategory` asks for `P` to contain Mathlib's *globally chosen*
+coproduct injections.  That is a real constraint on the choice, not just on `P`: a chosen
+colimit cocone is determined only up to twisting by an automorphism of its apex, and such a
+twist need not be a `P`-morphism.  It therefore holds in categories whose coproducts are pinned
+down (for instance where every morphism is pure), but not in a Kleisli category presented
+through `HasColimit`.  Concrete models are consequently built through the functor presentation,
+in `Isotope.CategoryTheory.Monad.Effectful`; only the effect *laws* used by the semantics are
+stated twist-freely, as composites (see `DistributiveEffectModel`).
 -/
 
 universe v u
