@@ -3,6 +3,7 @@ import Isotope.CategoryTheory.Freyd
 import Isotope.CategoryTheory.Monad
 import Isotope.CategoryTheory.Premonoidal
 import Isotope.Elgot.Basic
+import Isotope.Elgot.RA
 import Isotope.LambdaIter
 import Isotope.LambdaSSA
 import Isotope.LambdaCase
