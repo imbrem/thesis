@@ -20,6 +20,7 @@ import Isotope.Elgot.RA.Examples
 import Isotope.Elgot.RA.ParExamples
 import Isotope.Elgot.RA.Abstract
 import Isotope.Elgot.RA.Mirror
+import Isotope.Elgot.RA.ACastling
 
 /-!
 # A release/acquire trace monad
