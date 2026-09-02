@@ -145,6 +145,18 @@ theorem install_phi_get [DecidableEq ν] [DecidableEq κ]
       · exact ih hvars.2 (target :=
           Densem.Env.set target (Version.phi label y) (values y)) hx
 
+theorem installed_phi_envRelOn [DecidableEq ν] [DecidableEq κ]
+    (vars : List ν) (hvars : vars.Nodup) (label : κ) (values : ν → M.Val)
+    (target : Densem.Env M (Version ν κ)) :
+    EnvRelOn vars (startEnv (.named label)) (fun x => some (values x))
+      (Isotope.TAC.Densem.Phi.install target
+        (vars.map fun x => (Version.phi label x, values x))) := by
+  intro x hx
+  change Isotope.TAC.Densem.Phi.install target
+    (vars.map fun y => (Version.phi label y, values y))
+      (Version.phi label x) = some (values x)
+  exact install_phi_get vars hvars label values target x hx
+
 end Small
 
 theorem value_sim (M : Densem.Model φ) (current : Isotope.TAC.Classical.Convert.Env ν κ)
