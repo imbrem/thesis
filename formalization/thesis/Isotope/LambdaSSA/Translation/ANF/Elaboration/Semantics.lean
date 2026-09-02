@@ -45,6 +45,13 @@ theorem transportHasType_proof_irrel {Γ : Ctx ν τ} {β : BoundCtx τ n}
   subst e'
   rfl
 
+theorem heq_of_transportHasType_eq {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {t t' : Tm ν Φ n} {A : τ} (e : t = t')
+    (h : HasType Φ Γ β t A) (h' : HasType Φ Γ β t' A)
+    (hh : transportHasType e h = h') : HEq h h' := by
+  subst t'
+  exact heq_of_eq hh
+
 @[simp] theorem transportHasType_op {Γ : Ctx ν τ} {β : BoundCtx τ n}
     {a a' : Tm ν Φ n} (e : a = a')
     (h : HasType Φ Γ β a (instrSrc f)) :
