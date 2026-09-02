@@ -17,6 +17,33 @@ def EnvRel (current : Isotope.TAC.Classical.Convert.Env ν κ) (source : Densem.
     (target : Densem.Env M (Version ν κ)) : Prop :=
   ∀ x, target (current x) = source x
 
+/-- Environment agreement restricted to variables relevant to the next
+program point. -/
+def EnvRelOn (needed : List ν) (current : Isotope.TAC.Classical.Convert.Env ν κ)
+    (source : Densem.Env M ν) (target : Densem.Env M (Version ν κ)) : Prop :=
+  ∀ x ∈ needed, target (current x) = source x
+
+def Coverage (vars : List ν) (source : Isotope.TAC.Classical.CFG ν φ κ) : Prop :=
+  (∀ x ∈ blockSourceVars source.entry, x ∈ vars) ∧
+    ∀ p ∈ source.blocks, ∀ x ∈ blockSourceVars p.2, x ∈ vars
+
+theorem sourceVars_coverage [DecidableEq ν]
+    (source : Isotope.TAC.Classical.CFG ν φ κ) :
+    Coverage (sourceVars source) source := by
+  constructor
+  · intro x hx
+    exact (mem_sourceVars source x).2 (.inl hx)
+  · intro p hp x hx
+    exact (mem_sourceVars source x).2 (.inr ⟨p, hp, hx⟩)
+
+theorem EnvRel.on
+    {current : Isotope.TAC.Classical.Convert.Env ν κ}
+    {source : Densem.Env M ν} {target : Densem.Env M (Version ν κ)}
+    (h : EnvRel current source target) (needed : List ν) :
+    EnvRelOn needed current source target := by
+  intro x _
+  exact h x
+
 theorem value_sim (M : Densem.Model φ) (current : Isotope.TAC.Classical.Convert.Env ν κ)
     (source : Densem.Env M ν) (target : Densem.Env M (Version ν κ))
     (h : EnvRel current source target) (a : Isotope.TAC.Classical.Value ν) :
