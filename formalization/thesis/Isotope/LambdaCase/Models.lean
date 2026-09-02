@@ -17,7 +17,8 @@ are exactly the parameters lambda-case's judgments take.
 
 | file | content |
 |---|---|
-| `Models/Alg.lean` | `Alg.Ops`, `Alg.Ops.denote`, `Alg`, `Alg.Hom`, `Category (Alg S)`, `Alg.Hom.map_denote` |
+| `Models/Alg.lean` | `Alg.Ops`, `Alg.Ops.denote`, `Alg`, `Alg.Hom`,
+  `Category (Alg S)`, `Alg.Hom.map_denote` |
 | `Models/Limits.lean` | terminal model, binary products (with `IsLimit`), powers by a type |
 | `Models/Examples.lean` | constant models, and morphisms that are not identities |
 | `Models/Setoid.lean` | the syntactic setoid: typable terms modulo `Equiv` |

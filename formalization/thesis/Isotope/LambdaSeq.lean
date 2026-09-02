@@ -4,3 +4,5 @@ import Isotope.LambdaSeq.Equiv
 import Isotope.LambdaSeq.Semantics
 import Isotope.LambdaSeq.Categorical
 import Isotope.LambdaSeq.Effects
+import Isotope.LambdaSeq.Metatheory
+import Isotope.LambdaSeq.Models
