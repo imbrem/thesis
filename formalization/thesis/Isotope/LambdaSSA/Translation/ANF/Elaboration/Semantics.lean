@@ -109,6 +109,24 @@ theorem programRename_toTm (p : Program ν Φ n) :
       simp only [instrRename, Instr.toTm, atomRename_toTm, ib, Syntax.rename_iter]
       congr 1
 
+theorem atomRename_exact_op {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {β' : BoundCtx τ k} {a : Atom ν Φ n}
+    (ha : Atom.HasType Γ β a (instrSrc f)) (r : TypedRenaming β β')
+    (ih : transportHasType (atomRename_toTm r.toFun a)
+      (atomRename_hasType r ha).toLambdaIter = ha.toLambdaIter.rename r) :
+    transportHasType (atomRename_toTm r.toFun (.op f a))
+        (atomRename_hasType r (.op ha)).toLambdaIter =
+      (Atom.HasType.toLambdaIter (.op ha)).rename r := by
+  let ea := atomRename_toTm r.toFun a
+  let eop := congrArg (Tm.op f) ea
+  calc
+    _ = transportHasType eop
+        (.op (atomRename_hasType r ha).toLambdaIter) :=
+      transportHasType_proof_irrel _ _ _
+    _ = .op (transportHasType ea (atomRename_hasType r ha).toLambdaIter) :=
+      transportHasType_op ea _
+    _ = _ := congrArg Isotope.LambdaIter.LocallyNameless.HasType.op ih
+
 @[simp] theorem denote_elaborate_fv {Γ : Ctx ν τ} {β : BoundCtx τ n}
     {x : ν} {A : τ} (hx : Γ.lookup x = some A)
     (γ : CtxDen Γ) (ρ : BoundDen β) :
