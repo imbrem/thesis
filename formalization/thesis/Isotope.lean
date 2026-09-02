@@ -4,6 +4,7 @@ import Isotope.CategoryTheory.Ide
 import Isotope.CategoryTheory.Monad
 import Isotope.CategoryTheory.Premonoidal
 import Isotope.Elgot.Basic
+import Isotope.Elgot.ITree
 import Isotope.Elgot.Kleisli
 import Isotope.Elgot.Nondet
 import Isotope.Elgot.TSO
