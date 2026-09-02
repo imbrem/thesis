@@ -11,6 +11,9 @@ import Isotope.LambdaIter.Models.Initial
 import Isotope.LambdaIter.Models.HomOver
 import Isotope.LambdaIter.Models.Total
 import Isotope.LambdaIter.Models.Reindex
+import Isotope.LambdaIter.Models.SigAction
+import Isotope.LambdaIter.Models.ReindexAlg
+import Isotope.LambdaIter.Models.TotalInitial
 
 /-!
 # Models of lambda-iter, and the category they form
@@ -35,6 +38,9 @@ result type, one operation per term former, and two propositional obligations
 | `Models/HomOver.lean` | maps of models over a signature morphism; identity and composition |
 | `Models/Total.lean` | the total category of pairs `(signature, model)`, the fibre inclusion, and the Grothendieck initiality principle |
 | `Models/Reindex.lean` | reindexing of operations along a signature morphism, its universal property and its functoriality |
+| `Models/SigAction.lean` | `HasType.map` and `Eqv.map`: a signature morphism acts on typing and on the equational theory |
+| `Models/ReindexAlg.lean` | `Alg.reindex`, reindexing an *algebra*, via `Alg.Ops.reindex_denote` |
+| `Models/TotalInitial.lean` | `(Sig.empty, Syn Sig.empty)` is the initial object of the total category |
 
 ## Honest boundary
 
@@ -72,10 +78,13 @@ result type, one operation per term former, and two propositional obligations
   quotient, the category and coproduct laws, well-definedness of iteration,
   three of the four Elgot laws, the unique interpretation into every algebra,
   and completeness with respect to algebras.
-* Reindexing along a signature morphism (`Models/Reindex.lean`) is built at the
-  level of `Alg.Ops`, the *operations* of a model, not of `Alg`.  Promoting it
-  to algebras needs the functorial action of a signature morphism on the
-  syntax and on `Eqv`; see `Models/Reindex.lean` for that boundary, and
-  `Total.isInitialOfFibrewise` / `Total.isInitialOfReindex` for the interface
-  an initial object of the total category would have to meet.
+* Reindexing is available at both levels: `Alg.Ops.reindex` on operations
+  (`Models/Reindex.lean`) and `Alg.reindex` on algebras
+  (`Models/ReindexAlg.lean`), the latter through the action of a signature
+  morphism on typing and on `Eqv` (`Models/SigAction.lean`).  With it, all
+  three initiality statements of the fibred picture hold: fibrewise
+  (`Syn.isInitial`), globally (`Total.synEmptyIsInitial`), and the fibre
+  description (`Total.fibreEquiv`, near-tautological by construction — see its
+  docstring).  All of them are statements about **algebras of the
+  presentation**, never about Freyd or Elgot categories.
 -/
