@@ -105,6 +105,11 @@ since they decide `Part.Dom`.
   `Tree.Rel Eq` is equality.
 * `ITree/Combinators.lean` adds `forever` and worked examples that only the
   head-level API makes expressible.
+* `ITree/Raw.lean` builds the tau-sensitive carrier `Raw E A`, the erasure
+  `erase` that strips silent steps, its section `emb`, the weak-bisimulation
+  relation `Weak` and the quotient `rawQuotientEquiv`.  This is the layer that
+  makes "`Tree` is the weak quotient" a theorem rather than a remark; see the
+  boundary below for exactly how much of it is by construction.
 
 ## Honest boundary
 
@@ -120,6 +125,20 @@ since they decide `Part.Dom`.
   relations.  `Raw` is a witness carrier for that statement, not a full
   tau-sensitive library: `eq_itree`, `euttge`, the `eqit` hierarchy, `burn`,
   and up-to-tau/paco infrastructure are deliberately absent.
+* Read that quotient theorem precisely.  `Weak` is *defined* as the kernel of
+  `erase`, so `rawQuotientEquiv` is true by construction once `erase` is
+  surjective; it is not an agreement theorem between an independently given
+  coinductive `eutt` and the erasure.  What is **not** by construction, and is
+  proved, is (i) that the kernel is strictly coarser than equality of raw trees,
+  so the quotient is proper — `weak_ne_eq` (`silent (ret a)` versus `ret a`) and
+  `weak_ne_eq_diverge` (`spin` versus `diverge`); (ii) that `erase` is
+  surjective, via the section `emb` and `erase_emb`; and (iii) that the monad
+  operations respect the equivalence — `erase_ret` and
+  `erase_bind : erase (x >>= k) = erase x >>= fun a => erase (k a)` make `erase`
+  a monad morphism, whence `weak_congr_bind`, alongside `weak_congr_rawVis` and
+  `weak_congr_silent`.  Iteration is the gap: `erase` is **not** proved to
+  commute with `Isotope.Elgot.iter`, so weak bisimulation of raw trees is not
+  known here to be a congruence for the loop.
 * `corec_unique` on its own does **not** give finality.  `corec_hyp_iff` shows
   its hypothesis is exactly the `construct`-fixpoint equation, i.e. that
   `(Tree E A, construct)` is a *corecursive algebra*; and
