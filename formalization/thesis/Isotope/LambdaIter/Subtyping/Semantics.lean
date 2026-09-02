@@ -1,9 +1,11 @@
 import Isotope.LambdaIter.Subtyping.Semantics.Model
 import Isotope.LambdaIter.Subtyping.Semantics.Instruction
 import Isotope.LambdaIter.Subtyping.Semantics.Denotation
+import Isotope.LambdaIter.Subtyping.Semantics.Named
 import Isotope.LambdaIter.Subtyping.Semantics.Purity
 import Isotope.LambdaIter.Subtyping.Semantics.Substitution
 import Isotope.LambdaIter.Subtyping.Semantics.Soundness
 import Isotope.LambdaIter.Subtyping.Semantics.Categorical
 import Isotope.LambdaIter.Subtyping.Semantics.IterationDiagrams
 import Isotope.LambdaIter.Subtyping.Semantics.Agreement.Full
+import Isotope.LambdaIter.Subtyping.Semantics.Models
