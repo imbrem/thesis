@@ -12,7 +12,9 @@ its associativity.
 
 ## What is instantiated
 
-`ParOp` and `ParMono` only.  This is deliberate, and the reasons are worth recording:
+`ParOp` and `ParMono` at every rule set; `ParExchange` and `ParInline` at `R = 𝔠`, where
+`Isotope/Elgot/RA/Exchange.lean` already proves them.  The rest is deliberately absent, and
+the reasons are worth recording:
 
 * **`ParSymm` is not instantiable**, although symmetry *is* proved: `Comp.par_swap` states it
   as an equality of trace sets under `PreTrace.mapRet Prod.swap`, not under the monad's
@@ -20,10 +22,15 @@ its associativity.
   hold; those are available at `𝔠 ⊆ R ⊆ 𝔤𝔠 ∪ {Ti, Ab}` and fail at `𝔤𝔠𝔞`
   (`Isotope/Elgot/RA/Abstract.lean`).  Restating symmetry through `<$>` would therefore be a
   *weaker* theorem than the one already proved, available at fewer rule sets.
-* **`ParAssoc`, `ParUnit`, `ParNat`, `ParExchange`, `ParInline` are not instantiable**:
-  associativity of `|||` is open (honest boundary item 8 of `Isotope/Elgot/RA.lean`), and the
-  remaining laws are stated in the paper only as the unproved claim of the Fig. 3 caption
-  (journal p.12) that `∥` obeys "all symmetric-monoidal laws".
+* **`ParAssoc`, `ParUnit` and `ParNat` are not instantiable**: associativity of `|||` is open
+  (honest boundary item 8 of `Isotope/Elgot/RA.lean`), only the *reachable half* of the unit
+  law is proved (`Comp.mapRet_image_subset_par_pure`, and in `mapRet` form again), and
+  naturality has not been looked at.  The paper states all of these only as the unproved
+  claim of the Fig. 3 caption (journal p.12) that `∥` obeys "all symmetric-monoidal laws".
+* **`ParExchange` and `ParInline` hold at `R = 𝔠` only**, because that is where
+  `Comp.bind_par_le_par_bind` (Proposition E.1, Generalized Sequencing, journal p.58) and
+  `Comp.seqPair_le_par` (thread inlining) are proved; both need `LawfulMonad`, which the
+  Concrete model has via `Isotope/Elgot/RA/Assoc.lean` but the Abstract model does not.
 
 ## Why the Brookes route to associativity does not transfer
 
@@ -137,5 +144,15 @@ theorem par_eq_RA (P : Comp R Loc Val A) (Q : Comp R Loc Val B) :
 /-- **Proposition 7.4** for `∥∥∥`, as an instance of the uniform interface. -/
 instance instParMonoRA : ParMono (Comp R Loc Val) where
   par_mono := Comp.par_mono
+
+/-- **Proposition E.1, Generalized Sequencing**, as the interchange law of the uniform
+interface.  Available at `R = 𝔠`, which is where `Isotope/Elgot/RA/Exchange.lean` proves it. -/
+instance instParExchangeRA : ParExchange (Comp cRules Loc Val) where
+  exchange P Q F G := Comp.bind_par_le_par_bind P Q F G
+
+/-- **Thread inlining** `M ∥ N ↠ ⟨M,N⟩`, as the inlining law of the uniform interface, again
+at `R = 𝔠`. -/
+instance instParInlineRA : ParInline (Comp cRules Loc Val) where
+  inline_le_par P Q := Comp.seqPair_le_par P Q
 
 end Isotope.Elgot.Par

@@ -4,3 +4,4 @@ import Isotope.Elgot.Par.Brookes
 import Isotope.Elgot.Par.RA
 import Isotope.Elgot.Par.Pomset
 import Isotope.Elgot.Par.Litmus
+import Isotope.Elgot.Par.Summary
