@@ -60,6 +60,18 @@ structure CollectiveDenotes (Γ : VCtx τ) {n : Nat} (R : Fin n → τ) (L : LCt
     J.map ((𝟙 (ctxObj M Γ)) ⊗ₘ labelInject M i.val (by
       simp [At, i.isLt])) ≫ f = block i
 
+/-- A one-block collective needs no nullary tensor-distributivity law. -/
+theorem collectiveDenotes_one (Γ : VCtx τ) (R : Fin 1 → τ) (L : LCtx τ)
+    (block : ∀ i, J.obj (ctxObj M (R i :: Γ)) ⟶
+      J.obj (labelObj M (List.ofFn R ++ L))) :
+    CollectiveDenotes J M Γ R L block
+      (J.map ((𝟙 (ctxObj M Γ)) ⊗ₘ (labelSingletonIso M (R 0)).hom) ≫ block 0) := by
+  constructor
+  intro i
+  fin_cases i
+  simp only [List.ofFn, List.get_cons_zero, labelInject]
+  simp
+
 /-- Structural denotation graph for the non-recursive region constructors.
 The absence of a `cfg` constructor is intentional: recursive CFG wiring is a
 separate Elgot construction, whereas these rules require only a distributive
