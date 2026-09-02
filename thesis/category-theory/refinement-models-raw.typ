@@ -191,7 +191,7 @@ the symmetry for coproducts.
 Coproducts on their own, however, cannot interpret variables captured by
 the branches of a case-statement. For example, given $x : bb(Z)$,
 $y : bb(Z) + sans("str")$, consider the following expression:
-$ sans("case") #h(0em) y #h(0em) { iota_l #h(0em) y : sans("print") \( mono("\"add: \"") \, x + y \) \, iota_r #h(0em) y : sans("print") \( y \, x \) } $
+$ kw("case") med y #h(0em) { iota_l #h(0em) y : sans("print") \( mono("\"add: \"") \, x + y \) \, iota_r #h(0em) y : sans("print") \( y \, x \) } $
 While our input context corresponds to the object
 $bb(Z) ⊗ \( bb(Z) + sans("str") \)$, we need to somehow get
 to
@@ -292,7 +292,7 @@ condition to ensure that our iteration operator is compatible with our
 premonoidal structure. Specifically, we would like to be able to
 "thread" values through our loop bodies; i.e., the following two
 programs should be equivalent for #emph[pure] $c$:
-$ \( sans("iter") #h(0em) a #h(0em) { iota_r #h(0em) x : b } \, c \) approx sans("iter") #h(0em) \( a \, c \) #h(0em) { iota_r #h(0em) \( x \, y \) : sans("case") #h(0em) b #h(0em) { iota_l #h(0em) z : iota_l #h(0em) \( z \, y \) \, iota_r #h(0em) z : iota_r #h(0em) \( z \, y \) } } $
+$ \( sans("iter") #h(0em) a #h(0em) { iota_r #h(0em) x : b } \, c \) approx sans("iter") #h(0em) \( a \, c \) #h(0em) { iota_r #h(0em) \( x \, y \) : kw("case") med b #h(0em) { iota_l #h(0em) z : iota_l #h(0em) \( z \, y \) \, iota_r #h(0em) z : iota_r #h(0em) \( z \, y \) } } $
 This corresponds to requiring our Conway iteration operator to be
 #emph[strong], defined as follows:
 
@@ -335,9 +335,9 @@ allow proving substitution of effectful programs sound. Unfortunately,
 we don't have quite enough structure to allow substitution #emph[into]
 the body of a loop: while commutativity of $a$ and $b$ is enough to
 justify that
-$sans("let") #h(0em) x = a ; #h(0em) \( b \, x \) approx \( b \, a \)$
+$kw("let") med x = a ; #h(0em) \( b \, x \) approx \( b \, a \)$
 proving that
-$sans("let") #h(0em) x = a ; #h(0em) sans("iter") #h(0em) b #h(0em) { iota_r #h(0em) y : c } approx sans("iter") #h(0em) b #h(0em) { iota_r #h(0em) y : sans("let") #h(0em) x = a ; #h(0em) c }$
+$kw("let") med x = a ; #h(0em) sans("iter") #h(0em) b #h(0em) { iota_r #h(0em) y : c } approx sans("iter") #h(0em) b #h(0em) { iota_r #h(0em) y : kw("let") med x = a ; #h(0em) c }$
 for $x in.not sans("fv") \( b \)$ requires us to be able to move a
 morphism #emph[into] the body of a loop. To be able to do that
 effectively, we need to introduce the concept of a

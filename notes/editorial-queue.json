@@ -1,18 +1,36 @@
 {
   "schema": 1,
-  "statuses": ["open", "decided", "blocked", "deferred"],
+  "statuses": ["proposed", "open", "decided", "blocked", "deferred"],
   "priorities": ["critical", "high", "normal", "low"],
   "items": [
     {
+      "id": "NEEL-001",
+      "kind": "plan",
+      "audience": "author",
+      "source": "Neel",
+      "status": "decided",
+      "priority": "high",
+      "target": "notes/neels-recs.typ",
+      "question": "Treat the current Neel's Recs / MVP Thesis material as a planning input rather than settled introduction text?",
+      "options": ["move to non-rendered notes and map items to chapters", "retain temporarily with an editorial boundary"],
+      "decision": "move to non-rendered notes and map items to chapters",
+      "lean": {
+        "status": "partial",
+        "evidence": ["formalization/thesis/Isotope/LambdaIter.lean"],
+        "missing": ["The proposed SSA translations, completeness results, and model equivalences are not all active Lean capstones"]
+      }
+    },
+    {
       "id": "ORDER-001",
-      "kind": "potential-plan",
+      "kind": "plan",
       "audience": "author",
       "source": "author-request-2026-09-01",
-      "status": "open",
+      "status": "decided",
       "priority": "high",
       "target": "thesis/main.typ",
       "question": "Use the proposed unrefined-first chapter spine as the working ordering?",
       "options": ["lambda_iter before lambda_SSA", "lambda_SSA before lambda_iter"],
+      "decision": "lambda_iter before lambda_SSA",
       "lean": {
         "status": "partial",
         "evidence": ["formalization/thesis/Isotope/LambdaIter.lean"],
@@ -39,7 +57,7 @@
     },
     {
       "id": "ORDER-003",
-      "kind": "potential-plan",
+      "kind": "plan",
       "audience": "author",
       "source": "author-request-2026-09-01",
       "status": "open",
@@ -88,7 +106,7 @@
     },
     {
       "id": "ORDER-006",
-      "kind": "potential-plan",
+      "kind": "plan",
       "audience": "author",
       "source": "author-request-2026-09-01",
       "status": "open",
@@ -116,9 +134,9 @@
     },
     {
       "id": "FORMAL-001",
-      "kind": "agent-question",
+      "kind": "question",
       "audience": "formalization-agent",
-      "source": "claim-audit",
+      "source": "editorial-agent/claim-audit",
       "status": "open",
       "priority": "critical",
       "target": "formalization/thesis/Isotope/LambdaIter",
@@ -138,7 +156,7 @@
       "kind": "error",
       "audience": "author",
       "source": "claim-audit",
-      "status": "open",
+      "status": "deferred",
       "priority": "critical",
       "target": "all mechanization claims in thesis prose",
       "question": "Does each mechanization claim name an exact declaration or explicitly say partial/paper-only?",

@@ -21,8 +21,9 @@
   caption: none,
   numbering: none,
   size: 8.5pt,
+  body-height: auto,
 ) = figure(
-  semi-math-program(body, size: size),
+  block(height: body-height, align(top, semi-math-program(body, size: size))),
   caption: caption,
   kind: "program-panel",
   supplement: [],
