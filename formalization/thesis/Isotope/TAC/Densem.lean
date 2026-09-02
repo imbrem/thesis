@@ -8,3 +8,5 @@ import Isotope.TAC.Densem.Fresh
 import Isotope.TAC.Densem.ConvertCFG
 import Isotope.TAC.Densem.Lookup
 import Isotope.TAC.Densem.ConvertRun
+import Isotope.TAC.Densem.ConvertReverse
+import Isotope.TAC.Densem.ConvertExact
