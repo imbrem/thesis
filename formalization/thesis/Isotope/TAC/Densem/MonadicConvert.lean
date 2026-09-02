@@ -34,6 +34,39 @@ def EnvRelOn (needed : List ν)
     (source : MEnv M ν) (target : MEnv M (Version ν κ)) : Prop :=
   ∀ x ∈ needed, target (current x) = source x
 
+/-- Read a versioned store through a reaching-version environment.  This is
+the observation map used below to state equality of effectful computations
+whose raw output stores have different variable types. -/
+def project (current : Isotope.TAC.Classical.Convert.Env ν κ)
+    (target : MEnv M (Version ν κ)) : MEnv M ν :=
+  fun x => target (current x)
+
+theorem EnvRel.project_eq
+    {current : Isotope.TAC.Classical.Convert.Env ν κ}
+    {source : MEnv M ν} {target : MEnv M (Version ν κ)}
+    (hrel : EnvRel (M := M) current source target) :
+    project (M := M) current target = source := by
+  funext x
+  exact hrel x
+
+theorem EnvRel.update [DecidableEq ν] [DecidableEq κ]
+    {current : Isotope.TAC.Classical.Convert.Env ν κ}
+    {source : MEnv M ν} {target : MEnv M (Version ν κ)}
+    (hrel : EnvRel (M := M) current source target)
+    (x : ν) (dst : Version ν κ) (a : M.Val)
+    (hfresh : ∀ y, y ≠ x → current y ≠ dst) :
+    EnvRel (M := M) (update current x dst)
+      (Isotope.TAC.Densem.Monadic.Env.set source x a)
+      (Isotope.TAC.Densem.Monadic.Env.set target dst a) := by
+  intro y
+  by_cases e : y = x
+  · subst y
+    simp [Isotope.TAC.Classical.Convert.update,
+      Isotope.TAC.Densem.Monadic.Env.set]
+  · simp only [Isotope.TAC.Classical.Convert.update,
+      Isotope.TAC.Densem.Monadic.Env.set, e, if_false, hfresh y e]
+    exact hrel y
+
 theorem value_denote [Monad m] [LawfulMonad m]
     (current : Isotope.TAC.Classical.Convert.Env ν κ)
     (source : MEnv M ν) (target : MEnv M (Version ν κ))
@@ -170,5 +203,104 @@ theorem terminator_denote_on [Monad m] [LawfulMonad m]
       · exact ihl (fun x hx => huses x (by
           simp only [Isotope.TAC.Classical.Terminator.uses, List.mem_append]
           exact .inl (.inr hx)))
+
+/-- Effectful straight-line conversion correctness.  Observing the target
+store through the compiler's final reaching-version environment gives exactly
+the source computation, including its primitive effects and failures.
+
+Unlike a merely successful-run simulation, this equality does not inspect the
+monad and therefore also covers divergence and failure.  No law for `M.fail`
+is needed locally: conversion neither introduces nor removes an abort. -/
+theorem body_denote_project {ν : Type} [Monad m] [LawfulMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    (bid : BlockId κ) (i : Nat)
+    (current : Isotope.TAC.Classical.Convert.Env ν κ)
+    (xs : List (Isotope.TAC.Classical.Instr ν φ))
+    (t : Isotope.TAC.Classical.Terminator ν φ κ)
+    (source : MEnv M ν) (target : MEnv M (Version ν κ))
+    (hrel : EnvRel (M := M) current source target)
+    (hfresh : Isotope.TAC.Densem.Convert.FreshFor bid i current xs) :
+    (Isotope.TAC.Densem.Monadic.Block.denote M target
+        (Isotope.TAC.Densem.Classical.instructions
+          (body bid i current xs).1
+          (Isotope.TAC.Densem.Classical.terminator
+            (renameTerminator (body bid i current xs).2 t))) >>= fun result =>
+      pure (project (M := M) (body bid i current xs).2 result.1, result.2)) =
+    Isotope.TAC.Densem.Monadic.Block.denote M source
+      (Isotope.TAC.Densem.Classical.instructions xs
+        (Isotope.TAC.Densem.Classical.terminator t)) := by
+  induction xs generalizing i current source target with
+  | nil =>
+      simp only [body, Isotope.TAC.Densem.Classical.instructions,
+        Isotope.TAC.Densem.Monadic.Block.denote]
+      rw [terminator_denote M current source target hrel]
+      rw [map_eq_pure_bind, map_eq_pure_bind, bind_assoc]
+      apply congrArg (fun q =>
+        Isotope.TAC.Densem.Monadic.Terminator.denote M source
+          (Isotope.TAC.Densem.Classical.terminator t) >>= q)
+      funext exit
+      simp only [pure_bind]
+      rw [hrel.project_eq]
+  | cons instr rest ih =>
+      cases instr with
+      | assign x rhs =>
+          rcases hfresh with ⟨hdst, hrest⟩
+          simp only [body, Isotope.TAC.Densem.Classical.instructions,
+            Isotope.TAC.Densem.Monadic.Block.denote]
+          rw [operand_denote M current source target hrel]
+          simp only [bind_assoc]
+          apply congrArg (fun q =>
+            Isotope.TAC.Densem.Monadic.Operand.denote M source
+              (Isotope.TAC.Densem.Classical.operand rhs) >>= q)
+          funext a
+          exact ih (i + 1) (update current x (Version.instr bid i 0 x))
+            (Isotope.TAC.Densem.Monadic.Env.set source x a)
+            (Isotope.TAC.Densem.Monadic.Env.set target
+              (Version.instr bid i 0 x) a)
+            (EnvRel.update M hrel x (Version.instr bid i 0 x) a hdst)
+            hrest
+      | assignPair x y rhs =>
+          rcases hfresh with ⟨hdx, hdy, hrest⟩
+          simp only [body, Isotope.TAC.Densem.Classical.instructions,
+            Isotope.TAC.Densem.Monadic.Block.denote]
+          rw [operand_denote M current source target hrel]
+          simp only [bind_assoc]
+          apply congrArg (fun q =>
+            Isotope.TAC.Densem.Monadic.Operand.denote M source
+              (Isotope.TAC.Densem.Classical.operand rhs) >>= q)
+          funext a
+          apply congrArg (fun q => M.split a >>= q)
+          funext p
+          rcases p with ⟨ax, ay⟩
+          have hx := EnvRel.update M hrel x (Version.instr bid i 0 x) ax hdx
+          have hxy := EnvRel.update M hx y (Version.instr bid i 1 y) ay hdy
+          exact ih (i + 1)
+            (update (update current x (Version.instr bid i 0 x)) y
+              (Version.instr bid i 1 y))
+            ((Isotope.TAC.Densem.Monadic.Env.set source x ax).set y ay)
+            ((Isotope.TAC.Densem.Monadic.Env.set target
+              (Version.instr bid i 0 x) ax).set
+                (Version.instr bid i 1 y) ay)
+            hxy hrest
+
+/-- Block-level form of `body_denote_project`, ready to be used after the
+simultaneous phi installation at a CFG edge.  The classical bridge erases the
+phi list here; its semantics is handled separately by `Phi.enter`. -/
+theorem convertBlock_denote_project {ν : Type} [Monad m] [LawfulMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    (cfg : Isotope.TAC.Classical.CFG ν φ κ) (vars : List ν)
+    (bid : BlockId κ) (b : Isotope.TAC.Classical.Block ν φ κ)
+    (source : MEnv M ν) (target : MEnv M (Version ν κ))
+    (hrel : EnvRel (M := M) (startEnv bid) source target)
+    (hfresh : Isotope.TAC.Densem.Convert.FreshFor bid 0 (startEnv bid) b.body) :
+    (Isotope.TAC.Densem.Monadic.Block.denote M target
+        (Isotope.TAC.Densem.Classical.block (convertBlock cfg vars bid b)) >>=
+      fun result => pure
+        (project (M := M) (endEnv bid b) result.1, result.2)) =
+    Isotope.TAC.Densem.Monadic.Block.denote M source
+      (Isotope.TAC.Densem.Classical.block b) := by
+  simpa [Isotope.TAC.Densem.Classical.block, convertBlock, endEnv] using
+    body_denote_project M bid 0 (startEnv bid) b.body b.terminator
+      source target hrel hfresh
 
 end Isotope.TAC.Densem.Convert.Monadic
