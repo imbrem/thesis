@@ -76,6 +76,13 @@ namespace Isotope.Elgot.RA
 
 variable {Loc Val : Type} {A B : Type u}
 
+/-- `{Ti, Ab}`: the two `𝔞` rules that act on the chronicle alone.  Ours, not
+the paper's; `Di` is excluded because it also pulls the delimiting views. -/
+def tiAbRules : RuleSet := {Rule.Ti, Rule.Ab}
+
+@[simp] theorem mem_tiAbRules {x : Rule} :
+    x ∈ tiAbRules ↔ x = Rule.Ti ∨ x = Rule.Ab := by simp [tiAbRules]
+
 /-! ## `Ls ↔ Ti` -/
 
 /-- **The `Ls ↔ Ti` mirroring** (journal p.41).  The left operand of a seam is
@@ -615,5 +622,76 @@ theorem seam_dilute {Ra Rg : RuleSet} (hDi : Rule.Di ∈ Ra) (hCn : Rule.Cn ∈ 
     mirror_dilute (Ra := Ra) (Rg := Rg) hCn hDi hde hεμ hερ hνρ hfνm hfεm hfνn hfεn
       (α := α) (α' := υ.ivw) (ω' := υ.fvw) (s := υ.ret) h₁ h₂ hυn hdl k₁ k₂
   exact ⟨d, k₁, hcn, hdi⟩
+
+/-! ## Deferral of Closure, one step, for `Ti` and `Ab`
+
+`Isotope/Elgot/RA/Monad.lean` proves the seam congruence `seam_left_step` under
+the hypothesis `R ⊆ 𝔠`, and notes that all three properties it uses fail for
+`𝔤`.  They fail for `𝔞` too, and worse: an `𝔞`-rewrite of the left operand need
+not be an `𝔞`-rewrite of the seam at all, because the seam's right half still
+carries the *old* message.  What the mirroring buys is precisely the repair the
+paper describes: rewrite the right operand by the mirror `𝔤` rule first.
+
+`seam_left_step_tiAb` is that statement for `Ti` and `Ab`.  Its one side
+condition, that the left operand's local messages do not already occur in the
+right operand, is a freshness assumption the paper never states — it writes
+`⊎` and leaves the disjointness implicit.
+
+⚠ The conclusion is a `Step`, not a `TStep`: it does **not** claim that the
+intermediate `τ₀ ⋈ υ₀` is a trace.  Establishing that is the well-formedness
+obligation described in the honest boundary of `Isotope/Elgot/RA/Abstract.lean`,
+and it is what would be needed to iterate this lemma over a rewrite *sequence*
+and so obtain Deferral of Closure itself. -/
+
+/-- The message introduced on the closing side of a transition of a chronicle
+is one of its local messages. -/
+theorem mem_own_of_cons {c : Chro Loc Val} {l m : List (Transition Loc Val)}
+    {T : Transition Loc Val} {ϑ : Msg Loc Val} (h : c.toList = l ++ T :: m)
+    (hin : ϑ ∈ T.closing) (hout : ϑ ∉ T.opening) : ϑ ∈ c.own := by
+  refine ⟨T, ?_, hin, hout⟩
+  rw [h]; simp
+
+/-- **Deferral of Closure at one `Ti` or `Ab` step, on the left operand.**
+A `Ti`- or `Ab`-rewrite of the left operand of a seam is mirrored by an `Ls`- or
+`Ex`-rewrite of the right operand, after which one rewrite by the *same* `𝔞`
+rule carries the whole seam.
+
+**Original work**: this is the formal content of the paper's prose at journal
+p.41, quoted in the header of this file. -/
+theorem seam_left_step_tiAb {τ₀ τ : PreTrace Loc Val A} {υ : PreTrace Loc Val B}
+    (hstep : Step tiAbRules τ₀ τ) (hυ : IsTrace υ)
+    (hfresh : ∀ ϑ ∈ τ₀.ch.own, ∀ T ∈ υ.ch.toList, ϑ ∉ T.opening ∧ ϑ ∉ T.closing)
+    (h : τ.ch.c ⊆ υ.ch.o) :
+    ∃ (υ₀ : PreTrace Loc Val B) (h₀ : τ₀.ch.c ⊆ υ₀.ch.o),
+      Step gRules υ υ₀ ∧ υ₀.ivw = υ.ivw ∧ υ₀.fvw = υ.fvw ∧ υ₀.ret = υ.ret ∧
+        Step tiAbRules (τ₀.seam υ₀ h₀) (τ.seam υ h) := by
+  have hmono : ∀ T ∈ υ.ch.toList, T.opening ⊆ T.closing := fun T hT ↦ (hυ.wf T hT).sub
+  cases hstep with
+  | forward hx _ => exact absurd hx (by simp [tiAbRules])
+  | rewind hx _ => exact absurd hx (by simp [tiAbRules])
+  | condense hx => exact absurd hx (by simp [tiAbRules])
+  | dilute hx => exact absurd hx (by simp [tiAbRules])
+  | chro hx hcs =>
+      cases hcs with
+      | stutter => exact absurd hx (by simp [tiAbRules])
+      | mumble => exact absurd hx (by simp [tiAbRules])
+      | loosen => exact absurd hx (by simp [tiAbRules])
+      | expel => exact absurd hx (by simp [tiAbRules])
+      | tighten c₁ c₂ l m μ ρ ν ε hle hνμ hνρ hεμ hερ hfν hfε e₁ e₂ =>
+          have hνown := mem_own_of_cons e₁ (Set.mem_insert ν ρ) hνμ
+          obtain ⟨d, k₁, hls, hti⟩ :=
+            seam_tighten (Ra := tiAbRules) (Rg := gRules) (by simp [tiAbRules])
+              (by simp) hle hνμ hνρ hεμ hερ hfν hfε e₁ e₂ hmono
+              (fun T hT ↦ hfresh ν hνown T hT) h
+          exact ⟨⟨υ.ivw, d, υ.fvw, υ.ret⟩, k₁, hls, rfl, rfl, rfl, hti⟩
+      | absorb c₁ c₂ l m μ ρ ν ε hdt hνμ hνρ hεμ hερ hsμ hsρ hfν hfε hfs e₁ e₂ =>
+          have hνown := mem_own_of_cons e₁ (Set.mem_insert ν (insert ε ρ)) hνμ
+          have hεown :=
+            mem_own_of_cons e₁ (Set.mem_insert_of_mem ν (Set.mem_insert ε ρ)) hεμ
+          obtain ⟨d, k₁, hex, hab⟩ :=
+            seam_absorb (Ra := tiAbRules) (Rg := gRules) (by simp [tiAbRules])
+              (by simp) hdt hνμ hνρ hεμ hερ hsμ hsρ hfν hfε hfs e₁ e₂ hmono
+              (fun T hT ↦ hfresh ν hνown T hT) (fun T hT ↦ hfresh ε hεown T hT) h
+          exact ⟨⟨υ.ivw, d, υ.fvw, υ.ret⟩, k₁, hex, rfl, rfl, rfl, hab⟩
 
 end Isotope.Elgot.RA

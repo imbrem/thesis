@@ -53,18 +53,13 @@ namespace Isotope.Elgot.RA
 
 variable {Loc Val : Type} {A : Type u}
 
-/-! ## Two auxiliary rule sets -/
+/-! ## An auxiliary rule set
 
-/-- `{Ti, Ab}`: the two `𝔞` rules that act on the chronicle alone.  Ours, not
-the paper's — `Di` is excluded because it also pulls the delimiting views. -/
-def tiAbRules : RuleSet := {Rule.Ti, Rule.Ab}
+(`tiAbRules` is defined in `Isotope/Elgot/RA/Mirror.lean`.) -/
 
 /-- `{Fw, Rw}`: the two `𝔠` rules that act on the delimiting views alone.
 Ours, not the paper's. -/
 def fwRwRules : RuleSet := {Rule.Fw, Rule.Rw}
-
-@[simp] theorem mem_tiAbRules {x : Rule} :
-    x ∈ tiAbRules ↔ x = Rule.Ti ∨ x = Rule.Ab := by simp [tiAbRules]
 
 @[simp] theorem mem_fwRwRules {x : Rule} :
     x ∈ fwRwRules ↔ x = Rule.Fw ∨ x = Rule.Rw := by simp [fwRwRules]
