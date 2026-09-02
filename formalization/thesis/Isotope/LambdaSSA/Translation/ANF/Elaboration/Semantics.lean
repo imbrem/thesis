@@ -283,6 +283,23 @@ theorem programRename_exact_ret {Γ : Ctx ν τ} {β : BoundCtx τ n}
       transportHasType_proof_irrel _ _ _
     _ = _ := atomRename_exact h r
 
+@[simp] theorem instrRename_toTm_atom (ρ : Fin n → Fin k) (a : Atom ν Φ n) :
+    (instrRename ρ (.atom a)).toTm = (Instr.atom a).toTm.rename ρ :=
+  atomRename_toTm ρ a
+
+/-- The Instr renaming bridge for atomic instructions. -/
+theorem instrRename_exact_atom {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {β' : BoundCtx τ k} {a : Atom ν Φ n} {A : τ}
+    (h : Atom.HasType Γ β a A) (r : TypedRenaming β β') :
+    transportHasType (instrRename_toTm_atom r.toFun a)
+        (instrRename_hasType r (.atom h)).toLambdaIter =
+      (Instr.HasType.toLambdaIter (.atom h)).rename r := by
+  calc
+    _ = transportHasType (atomRename_toTm r.toFun a)
+        (atomRename_hasType r h).toLambdaIter :=
+      transportHasType_proof_irrel _ _ _
+    _ = _ := atomRename_exact h r
+
 
 @[simp] theorem denote_elaborate_fv {Γ : Ctx ν τ} {β : BoundCtx τ n}
     {x : ν} {A : τ} (hx : Γ.lookup x = some A)
