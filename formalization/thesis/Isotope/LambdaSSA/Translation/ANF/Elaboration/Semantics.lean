@@ -81,6 +81,43 @@ theorem heq_of_transportHasType_eq {Γ : Ctx ν τ} {β : BoundCtx τ n}
     transportHasType (congrArg Tm.abort e) (.abort (C := A) h) =
       .abort (C := A) (transportHasType e h) := by cases e; rfl
 
+@[simp] theorem transportHasType_let₁ {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {a a' : Tm ν Φ n} {b b' : Tm ν Φ (n + 1)}
+    (ea : a = a') (eb : b = b')
+    (ha : HasType Φ Γ β a A) (hb : HasType Φ Γ (.snoc β A) b B) :
+    transportHasType (congrArg₂ Tm.let₁ ea eb) (.let₁ ha hb) =
+      .let₁ (transportHasType ea ha) (transportHasType eb hb) := by
+  cases ea; cases eb; rfl
+
+@[simp] theorem transportHasType_let₂ {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {a a' : Tm ν Φ n} {b b' : Tm ν Φ (n + 2)}
+    (ea : a = a') (eb : b = b')
+    (ha : HasType Φ Γ β a (LambdaIter.prod A B))
+    (hb : HasType Φ Γ (.snoc (.snoc β A) B) b C) :
+    transportHasType (congrArg₂ Tm.let₂ ea eb) (.let₂ ha hb) =
+      .let₂ (transportHasType ea ha) (transportHasType eb hb) := by
+  cases ea; cases eb; rfl
+
+@[simp] theorem transportHasType_case {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {e e' : Tm ν Φ n} {l l' r r' : Tm ν Φ (n + 1)}
+    (ee : e = e') (el : l = l') (er : r = r')
+    (he : HasType Φ Γ β e (LambdaIter.coprod A B))
+    (hl : HasType Φ Γ (.snoc β A) l C)
+    (hr : HasType Φ Γ (.snoc β B) r C) :
+    transportHasType (by cases ee; cases el; cases er; rfl) (.case he hl hr) =
+      .case (transportHasType ee he) (transportHasType el hl)
+        (transportHasType er hr) := by
+  cases ee; cases el; cases er; rfl
+
+@[simp] theorem transportHasType_iter {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {a a' : Tm ν Φ n} {b b' : Tm ν Φ (n + 1)}
+    (ea : a = a') (eb : b = b')
+    (ha : HasType Φ Γ β a A)
+    (hb : HasType Φ Γ (.snoc β A) b (LambdaIter.coprod B A)) :
+    transportHasType (congrArg₂ Tm.iter ea eb) (.iter ha hb) =
+      .iter (transportHasType ea ha) (transportHasType eb hb) := by
+  cases ea; cases eb; rfl
+
 theorem transportHasType_bv_typed {Γ : Ctx ν τ} {β : BoundCtx τ n}
     {β' : BoundCtx τ k} (r : TypedRenaming β β') (i : Fin n) :
     transportHasType rfl
