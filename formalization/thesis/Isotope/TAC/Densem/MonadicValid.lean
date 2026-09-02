@@ -345,4 +345,147 @@ theorem iter_guarded_eq_source [Monad m] [LawfulMonad m]
       Isotope.Elgot.iter (sourcePredStep M g) (State.forget M s) := by
   rw [← iter_forget_guarded M g s, iter_forget_source M g s]
 
+/-- Whole-CFG source semantics with stores normalized to the finite compiler
+interface at loop boundaries. -/
+def sourceDenoteOn [Monad m] [Isotope.Elgot.Iterate m]
+    [DecidableEq ν] [DecidableEq κ]
+    (g : Isotope.TAC.Classical.CFG ν φ κ) (rho : MEnv M ν) : m M.Val := do
+  let result ← Isotope.TAC.Densem.Monadic.Block.denote M rho
+    (Isotope.TAC.Densem.Classical.block g.entry)
+  match result.2 with
+  | .return a => pure a
+  | .branch label =>
+      Isotope.Elgot.iter (sourceStepOn M g)
+        (restrict M (sourceVars g) result.1, label)
+
+def sourceDenoteGuarded [Monad m] [Isotope.Elgot.Iterate m]
+    [DecidableEq ν] [DecidableEq κ]
+    (g : Isotope.TAC.Classical.CFG ν φ κ) (rho : MEnv M ν) : m M.Val := do
+  let result ← Isotope.TAC.Densem.Monadic.Block.denote M rho
+    (Isotope.TAC.Densem.Classical.block g.entry)
+  match result.2 with
+  | .return a => pure a
+  | .branch label =>
+      Isotope.Elgot.iter (guardedSourceStep M g)
+        (restrict M (sourceVars g) result.1, .entry, label)
+
+/-- Canonical TAC-to-SSA conversion preserves the complete-Elgot semantics up
+to the globally guarded source interpretation. -/
+theorem denote_convert_guarded [Monad m] [LawfulMonad m]
+    [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    [Isotope.TAC.Densem.Phi.Monadic.LawfulFailure M]
+    (g : Isotope.TAC.Classical.CFG ν φ κ) (rho : MEnv M ν) :
+    Isotope.TAC.Densem.Phi.Monadic.denote M
+        (Isotope.TAC.Classical.Convert.convert g)
+        (externalEnv (M := M) (κ := κ) rho) = sourceDenoteGuarded M g rho := by
+  unfold Isotope.TAC.Densem.Phi.Monadic.denote sourceDenoteGuarded
+  simp only [Isotope.TAC.Classical.Convert.convert]
+  let k : (MEnv M ν × Isotope.TAC.Densem.Exit κ M.Val) → m M.Val := fun result =>
+      match result.2 with
+      | .return a => pure a
+      | .branch label => Isotope.Elgot.iter (guardedSourceStep M g)
+          (restrict M (sourceVars g) result.1, .entry, label)
+  let enter := Isotope.TAC.Densem.Phi.Monadic.enter M
+    (externalEnv (M := M) (κ := κ) rho) .entry
+    (convertBlock g (sourceVars g) .entry g.entry)
+  calc
+    _ = enter >>= fun result => k
+        (project M (endEnv .entry g.entry) result.1, result.2) := by
+      apply congrArg (fun continuation => enter >>= continuation)
+      funext result
+      rcases result with ⟨target, exit⟩
+      cases exit
+      next label =>
+        simp only [Prod.snd, Prod.fst, k]
+        change Isotope.Elgot.iter
+            (Isotope.TAC.Densem.Phi.Monadic.step M
+              (Isotope.TAC.Classical.Convert.convert g))
+            (target, .entry, label) = _
+        rw [iter_guarded_global M g (target, .entry, label)]
+        simp [k, observeState, projectBoundary,
+          Isotope.TAC.Classical.CFG.lookup]
+      next a => rfl
+    _ = (enter >>= fun result => pure
+          (project M (endEnv .entry g.entry) result.1, result.2)) >>= k := by
+      rw [bind_assoc]
+      apply congrArg (fun continuation => enter >>= continuation)
+      funext result
+      simp
+    _ = _ := by
+      rw [enter_entry_denote M g rho]
+
+def entryState [DecidableEq ν] [DecidableEq κ]
+    (g : Isotope.TAC.Classical.CFG ν φ κ)
+    (store : Store M (sourceVars g))
+    (exit : CheckedExit M g.entry.terminator)
+    (label : κ) (he : exit.1 = .branch label) : State M g where
+  store := store.restrict
+  pred := .entry
+  label := label
+  edge := by
+    by_cases hempty : sourceVars g = []
+    · exact .inl hempty
+    · apply Or.inr
+      apply (mem_predecessors g .entry (.named label)).2
+      constructor
+      · unfold Isotope.TAC.Classical.CFG.successors
+        simp only [Isotope.TAC.Classical.CFG.lookup, Option.bind_some]
+        have ht := exit.2
+        rw [he] at ht
+        simpa using ht
+      · exact .inl rfl
+
+private def checkedFinish [Monad m]
+    [Isotope.Elgot.Iterate m] [DecidableEq ν] [DecidableEq κ]
+    (g : Isotope.TAC.Classical.CFG ν φ κ) :
+    Store M (sourceVars g) × CheckedExit M g.entry.terminator → m M.Val
+  | (store, exit) => match he : exit.1 with
+      | .return a => pure a
+      | .branch label => Isotope.Elgot.iter (step M g)
+          (entryState M g store exit label he)
+
+theorem sourceDenoteGuarded_eq_on [Monad m] [LawfulMonad m]
+    [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    [Isotope.TAC.Densem.Phi.Monadic.LawfulFailure M]
+    (g : Isotope.TAC.Classical.CFG ν φ κ) (rho : MEnv M ν)
+    (htotal : TotalOn (M := M) (sourceVars g) rho) :
+    sourceDenoteGuarded M g rho = sourceDenoteOn M g rho := by
+  let initial : Store M (sourceVars g) := ⟨rho, htotal⟩
+  have hb := block_forget M initial g.entry.body g.entry.terminator
+  unfold sourceDenoteGuarded sourceDenoteOn
+  rw [show Isotope.TAC.Densem.Classical.block g.entry =
+    Isotope.TAC.Densem.Classical.instructions g.entry.body
+      (Isotope.TAC.Densem.Classical.terminator g.entry.terminator) from rfl]
+  rw [← hb, bind_assoc, bind_assoc]
+  apply congrArg (fun continuation => block M initial g.entry.body
+    g.entry.terminator >>= continuation)
+  funext result
+  rcases result with ⟨store, exit⟩
+  simp only [pure_bind]
+  cases he : exit.1
+  next label =>
+      let state := entryState M g store exit label he
+      simp only
+      change Isotope.Elgot.iter (guardedSourceStep M g) (State.forget M state) = _
+      calc
+        _ = Isotope.Elgot.iter (sourcePredStep M g) (State.forget M state) :=
+          iter_guarded_eq_source M g state
+        _ = _ := iter_sourcePred M g (State.forget M state)
+  next a => rfl
+
+/-- Whole complete-Elgot correctness of canonical TAC-to-SSA conversion for
+stores defined on every source variable. -/
+theorem denote_convert [Monad m] [LawfulMonad m]
+    [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    [Isotope.TAC.Densem.Phi.Monadic.LawfulFailure M]
+    (g : Isotope.TAC.Classical.CFG ν φ κ) (rho : MEnv M ν)
+    (htotal : TotalOn (M := M) (sourceVars g) rho) :
+    Isotope.TAC.Densem.Phi.Monadic.denote M
+        (Isotope.TAC.Classical.Convert.convert g)
+        (externalEnv (M := M) (κ := κ) rho) = sourceDenoteOn M g rho := by
+  rw [denote_convert_guarded M g rho, sourceDenoteGuarded_eq_on M g rho htotal]
+
 end Isotope.TAC.Densem.Convert.Monadic.Valid
