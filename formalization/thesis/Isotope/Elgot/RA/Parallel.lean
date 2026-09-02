@@ -61,8 +61,9 @@ into the other's rely.
   unit `⟨⟩`" (Fig. 3 caption, p.12) with **no proposition, no proof and no proof
   sketch**; this is therefore original work, not a port.
 
-`Isotope/Elgot/RA/Inlining.lean` proves thread inlining.  What is *not* reached
-is recorded in the honest boundary of `Isotope/Elgot/RA.lean`.
+`Isotope/Elgot/RA/Exchange.lean` proves thread inlining and the exchange law.
+What is *not* reached is recorded in the honest boundary of
+`Isotope/Elgot/RA.lean`.
 -/
 
 universe u
