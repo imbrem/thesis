@@ -8,8 +8,11 @@ import Isotope.Elgot.ITree.Finality
 import Isotope.Elgot.ITree.Examples
 import Isotope.Elgot.ITree.Structural
 import Isotope.Elgot.ITree.Handlers
-import Isotope.Elgot.ITree.Freyd
 import Isotope.Elgot.ITree.Events
+import Isotope.Elgot.ITree.Refinement
+import Isotope.Elgot.ITree.Relation
+import Isotope.Elgot.ITree.Combinators
+import Isotope.Elgot.ITree.Freyd
 
 /-!
 # Weak interaction trees as a complete Elgot monad
@@ -55,11 +58,14 @@ final coalgebra of the *visible-commitment* functor `Part ∘ Visible E A`:
   namely `corec h`, with `Tree.destruct_corec` and `Tree.corec_unique_destruct`
   as its two halves;
 * Lambek's lemma is `Tree.corec_destruct : corec Tree.destruct = id`;
-* the computation lemmas are `destruct_ret`, `destruct_vis`,
-  `destruct_diverge`, `Tree.destruct_bind` (`ITree/Structural.lean`), together
-  with the trichotomy `Tree.cases_three` and `Tree.destruct_eq_none_iff`;
-* `Tree.eq_of_bisim` is the coinduction principle stated purely in terms of
-  `destruct`, so tree equalities can be proved without touching `observe`.
+* the computation lemmas are `destruct_ret`, `destruct_vis`, `destruct_diverge`,
+  together with the trichotomy `Tree.cases_three`, the inversions
+  `Tree.eq_ret_of_destruct` / `Tree.eq_vis_of_destruct`, and
+  `Tree.destruct_eq_none_iff`;
+* `Tree.eq_of_bisim` is coinduction stated in terms of `destruct`, and
+  `Tree.eq_of_bisim'` is its transport-free trichotomy form, which is what
+  downstream proofs use.  Tree equalities can now be proved without touching
+  `observe`.
 
 Two structural facts drive the proof, both consequences of weakness: silence is
 permanent (`Tree.dom_observe` — `Part.map` never changes `Dom`, so coherence
@@ -72,10 +78,32 @@ choice-free: `#print axioms Tree.destructEquiv` reports `[propext, Quot.sound]`.
 Only `Tree.cases_three` and the interpretation layer pull `Classical.choice`,
 since they decide `Part.Dom`.
 
-`ITree/Handlers.lean` puts the structure map to work: `translate` relabels
-events along a signature morphism (computable, with `translate_ret`/`_diverge`/
-`_vis`), and `interp` interprets a tree into an arbitrary `LawfulElgotMonad` by
-iterating a head-exposing step, with `interp_ret` and `interp_vis`.
+## The layers built on finality
+
+* `ITree/Structural.lean` restates the monad and iteration structure at the head
+  level: `Tree.destruct_bind`, `Tree.destruct_map` and `Tree.destruct_iterate`
+  (the Elgot fixpoint law in head form), plus the `map` computation lemmas.
+* `ITree/Handlers.lean` defines `translate φ`, which relabels events along a
+  signature morphism — computable, functorial (`translate_id`,
+  `translate_translate`) and a monad morphism (`translate_bind`) — and `interp`,
+  which interprets a tree into an arbitrary `LawfulElgotMonad` by iterating a
+  head-exposing step.  Proved for `interp`: `interp_ret`, `interp_vis`,
+  `interp_trigger`, `interp_diverge` (divergence goes to `divergent M`, the
+  target's own divergent element), `interp_map` and `interp_translate`.
+* `ITree/Events.lean` is the signature algebra: the coproduct `Sum1 E F` with
+  `Sum1.case1`, the `Subevent` class with its three instances, `send` for
+  raising a whole tree, and the `translate_case1_*` computation lemmas.  Without
+  this, handlers do not compose.
+* `ITree/Refinement.lean` develops divergence refinement `Refines`, the greatest
+  post-fixed point of `RefinesStep`: a partial order (`Tree.partialOrder`) with
+  `diverge` least, congruent for `vis`, `bind`, `map` and `translate`.
+  Antisymmetry is where finality earns its keep — it runs through
+  `Tree.eq_of_bisim'`.
+* `ITree/Relation.lean` generalises both `Bisim` and `Refines` to heterogeneous
+  lifting `Tree.Rel RA`, this carrier's `eutt`, with `Tree.rel_eq_iff` showing
+  `Tree.Rel Eq` is equality.
+* `ITree/Combinators.lean` adds `forever` and worked examples that only the
+  head-level API makes expressible.
 
 ## Honest boundary
 
@@ -85,7 +113,7 @@ iterating a head-exposing step, with `interp_ret` and `interp_vis`.
   tree library, not such a library itself.  That statement is a design fact
   argued in the docstrings, **not** an internal theorem: no tau-sensitive type
   of raw interaction trees is constructed here, so no quotient map from one is
-  proved.  This is now the only gap of that kind in the module.
+  proved.  This is the only remaining gap of that kind in the module.
 * `corec_unique` on its own does **not** give finality.  `corec_hyp_iff` shows
   its hypothesis is exactly the `construct`-fixpoint equation, i.e. that
   `(Tree E A, construct)` is a *corecursive algebra*; and
@@ -95,22 +123,34 @@ iterating a head-exposing step, with `interp_ret` and `interp_vis`.
   ω-continuity argument rather than a repackaging.
 * Coalgebra carriers in `Tree.existsUnique_coalgebraHom` are restricted to
   `Type (u + 1)`.  A coalgebra on a smaller type has to be transported through
-  `ULift` — the same universe tax already documented for the interpretation
-  layer below and in `ITree/Freyd.lean`.
+  `ULift` — the same universe tax as below.
 * Uniformity is proved only along *pure* maps `h : A → C`, as the
   `LawfulElgotMonad` class asks.  Uniformity along effectful Kleisli arrows is
   neither stated nor claimed.
+* Consequently the monad-morphism law for `interp`, namely
+  `interp h (t >>= k) = interp h t >>= interp h ∘ k`, is **not** proved, and not
+  for want of trying: interpreting `t >>= k` at a return head of `t` takes one
+  step where the composite takes two, so no *lock-step* simulation square
+  relates the two iterations, and pure uniformity is exactly a lock-step
+  principle.  Closing it needs dinaturality (equivalently a Bekić/pairing law),
+  which is not one of the four `LawfulElgotMonad` axioms and is not derived
+  anywhere in this repository.  `interp_map`, `interp_translate` and
+  `interp_diverge` are the cases where the square *is* lock-step, and those are
+  proved.  `interp_iter`, and `interp (fun _ e => trigger e) = id`, are likewise
+  open here.
+* `Refines` is proved to be a congruence for `vis`, `bind`, `map` and
+  `translate`, but **not** for `Isotope.Elgot.iter`: establishing one refinement
+  step for a loop can require unboundedly many unfoldings of the body, which the
+  one-step `RefinesStep` does not see.
 * Event responses live in `Type u` while tree values live in `Type (u+1)`, so
   every interpretation layer pays a `ULift` (see `ITree/Freyd.lean` and the
   handler type in `ITree/Handlers.lean`).  No `Semantics.TypeModel` /
   `Semantics.InstructionModel` instance is supplied: only the categorical
   Kleisli/Freyd bridge is instantiated.
-* `interp` is proved to compute on `ret` and `vis` only (`interp_ret`,
-  `interp_vis`).  The monad-morphism law
-  `interp h (t >>= k) = interp h t >>= interp h ∘ k`, and the corresponding
-  `interp_iter`, are **not** proved here.  `translate`, by contrast, is complete:
-  `translate_bind` (monad morphism) and `translate_id` / `translate_translate`
-  (functoriality in the signature) are proved in `ITree/Handlers.lean`.
+* The `Part ∘ Visible E A` endofunctor is not packaged as a
+  `CategoryTheory.Functor`, and finality is not restated as `IsTerminal` in its
+  category of coalgebras; `Tree.existsUnique_coalgebraHom` carries the
+  mathematical content in elementary form.
 * There is no `sorry`, `admit`, `unsafe`, or new `axiom` anywhere in this
   development, and no law is postulated.
 -/
