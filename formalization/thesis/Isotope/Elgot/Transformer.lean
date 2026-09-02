@@ -1,6 +1,7 @@
 import Isotope.Elgot.Transformer.Reader
 import Isotope.Elgot.Transformer.State
 import Isotope.Elgot.Transformer.Writer
+import Isotope.Elgot.Transformer.Writer.Divergence
 
 /-!
 # Elgot-preserving monad transformers
@@ -11,6 +12,8 @@ import Isotope.Elgot.Transformer.Writer
 * `Isotope.Elgot.Transformer.Writer` — `WriterT W m` for a monoid `W`, iterated by threading the
   accumulated output through the recursive argument, seeded at `1`.  Output produced by a
   nonterminating run is discarded along with the run.
+* `Isotope.Elgot.Transformer.Writer.Divergence` — three obstruction theorems showing that no
+  monoid can retain the output of a divergent loop, so the discard is forced.
 
 Both carry `Iterate` and `LawfulElgotMonad` instances derived from those of `m`.
 -/
