@@ -74,6 +74,10 @@ A scattered memory has at most one message per location per segment, so no
 message's timestamp can lie in the *interior* `ε.seg \ {ε.t}` of another's
 segment.  This is the "no message has a timestamp there" of journal p.34. -/
 
+/-- Scatteredness passes to subsets. -/
+theorem Scattered.mono {μ ρ : Memory Loc Val} (h : Scattered ρ) (hsub : μ ⊆ ρ) :
+    Scattered μ := fun ν hν ε hε hlc hi ↦ h ν (hsub hν) ε (hsub hε) hlc hi
+
 /-- In a scattered memory, a message's timestamp never lies in the interior of
 another message's segment. -/
 theorem Scattered.t_notMem_interior {μ : Memory Loc Val} (h : Scattered μ)
@@ -411,5 +415,24 @@ theorem Set.insert_insert_diff {ν ε : Msg Loc Val} {X : Memory Loc Val}
   · rintro (rfl | hx)
     · exact ⟨Or.inl rfl, hne⟩
     · exact ⟨Or.inr (Or.inr hx), fun hc ↦ hX (hc ▸ hx)⟩
+
+
+
+/-- Insertion is injective away from the inserted element. -/
+theorem Set.insert_cancel {α : Type*} {a : α} {X Y : Set α} (h : insert a X = insert a Y)
+    (hX : a ∉ X) (hY : a ∉ Y) : X = Y := by
+  ext x
+  constructor
+  · intro hx
+    rcases (h ▸ Set.mem_insert_of_mem a hx : x ∈ insert a Y) with rfl | hx'
+    exacts [absurd hx hX, hx']
+  · intro hx
+    rcases (h ▸ Set.mem_insert_of_mem a hx : x ∈ insert a X) with rfl | hx'
+    exacts [absurd hx hY, hx']
+
+/-- Re-inserting a deleted element. -/
+theorem Set.insert_diff_self {α : Type*} {a : α} {s : Set α} (h : a ∈ s) :
+    insert a (s \ {a}) = s := by
+  rw [Set.insert_diff_singleton, Set.insert_eq_self.mpr h]
 
 end Isotope.Elgot.RA
