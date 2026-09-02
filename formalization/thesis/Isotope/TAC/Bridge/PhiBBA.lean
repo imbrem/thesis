@@ -344,6 +344,179 @@ theorem PhiStructurallyNormalized.incoming_length
   have horder := (hcfg.2.2.2.1 label block hblock).2 phi hphi |>.1
   simpa using congrArg List.length horder
 
+theorem findIncoming_exists_of_predecessor_mem
+    (source : BlockId Label) (phi : Phi Var Label)
+    (hsource : source ∈ phi.incoming.map Incoming.predecessor) :
+    ∃ value, findIncoming source phi = some value := by
+  rcases List.mem_map.mp hsource with ⟨incoming, hin, heq⟩
+  unfold findIncoming
+  cases hfind : phi.incoming.find? (fun row => row.predecessor = source) with
+  | some row => exact ⟨row.value, by simp⟩
+  | none =>
+      have hfalse := (List.find?_eq_none.mp hfind) incoming hin
+      simp [heq] at hfalse
+
+theorem findPhiBlock_mem_of_eq_some {cfg : Classical.CFG Var Op Label}
+    {label : Label} {block : Classical.Block Var Op Label}
+    (h : findPhiBlock cfg label = some block) : (label, block) ∈ cfg.blocks := by
+  unfold findPhiBlock at h
+  cases hfind : cfg.blocks.find? (fun pair => pair.1 = label) with
+  | none => simp [hfind] at h
+  | some pair =>
+      have hmem := List.mem_of_find?_eq_some hfind
+      have hlabel := List.find?_some hfind
+      simp only [hfind, Option.map_some, Option.some.injEq] at h
+      rcases pair with ⟨foundLabel, foundBlock⟩
+      simp only at h
+      subst foundBlock
+      simp only at hlabel
+      have : foundLabel = label := by simpa using hlabel
+      subst foundLabel
+      exact hmem
+
+theorem PhiStructurallyNormalized.findPhiBlock_exists
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg)
+    {target : Label}
+    (htarget : target ∈ cfg.entry.terminator.targets ∨
+      ∃ source block, (source, block) ∈ cfg.blocks ∧
+        target ∈ block.terminator.targets) :
+    ∃ block, findPhiBlock cfg target = some block := by
+  obtain ⟨block, hmem, _⟩ := hcfg.2.2.1 target htarget
+  unfold findPhiBlock
+  cases hfind : cfg.blocks.find? (fun pair => pair.1 = target) with
+  | some pair => exact ⟨pair.2, by simp⟩
+  | none =>
+      have hfalse := (List.find?_eq_none.mp hfind) (target, block) hmem
+      simp at hfalse
+
+theorem Terminator.ofPhi_exists_of_structural
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg)
+    (source : BlockId Label) (term : Classical.Terminator Var Op Label)
+    (htarget : ∀ target, target ∈ term.targets →
+      target ∈ cfg.entry.terminator.targets ∨
+        ∃ label block, (label, block) ∈ cfg.blocks ∧
+          target ∈ block.terminator.targets)
+    (hsource : ∀ target, target ∈ term.targets →
+      source ∈ phiPredecessors cfg target) :
+    ∃ result, Terminator.ofPhi cfg source term = some result := by
+  induction term with
+  | br target =>
+      have htargetMem : target ∈ (Classical.Terminator.br target :
+          Classical.Terminator Var Op Label).targets := by
+        simp [Classical.Terminator.targets]
+      obtain ⟨block, hfind⟩ := hcfg.findPhiBlock_exists (htarget target htargetMem)
+      have hblock := findPhiBlock_mem_of_eq_some hfind
+      have hrows := (hcfg.2.2.2.1 target block hblock).2
+      have hmap : ∃ arguments,
+          block.phis.mapM (findIncoming source) = some arguments := by
+        have aux : ∀ phis : List (Phi Var Label),
+            (∀ phi, phi ∈ phis → phi ∈ block.phis) →
+            ∃ arguments, phis.mapM (findIncoming source) = some arguments := by
+          intro phis hsubset
+          induction phis with
+          | nil => exact ⟨[], rfl⟩
+          | cons phi phis ih =>
+              have hp := (hrows phi (hsubset phi List.mem_cons_self)).1
+              have hmem : source ∈ phi.incoming.map Incoming.predecessor := by
+                rw [hp]
+                exact hsource target htargetMem
+              obtain ⟨value, hvalue⟩ :=
+                findIncoming_exists_of_predecessor_mem source phi hmem
+              obtain ⟨values, hvalues⟩ := ih
+                (fun phi' hphi' => hsubset phi' (List.Mem.tail phi hphi'))
+              exact ⟨value :: values, by simp [hvalue, hvalues]⟩
+        exact aux block.phis (fun _ h => h)
+      obtain ⟨arguments, harguments⟩ := hmap
+      exact ⟨.br target arguments, by simp [Terminator.ofPhi, hfind, harguments]⟩
+  | ret value => exact ⟨.ret value, rfl⟩
+  | cond discr left right ihLeft ihRight =>
+      obtain ⟨left', hleft⟩ := ihLeft
+        (fun target ht => htarget target (by simp [Classical.Terminator.targets, ht]))
+        (fun target ht => hsource target (by simp [Classical.Terminator.targets, ht]))
+      obtain ⟨right', hright⟩ := ihRight
+        (fun target ht => htarget target (by simp [Classical.Terminator.targets, ht]))
+        (fun target ht => hsource target (by simp [Classical.Terminator.targets, ht]))
+      exact ⟨.cond discr left' right', by
+        simp [Terminator.ofPhi, hleft, hright]⟩
+
+theorem PhiStructurallyNormalized.entryTerm_exists
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg) :
+    ∃ result, Terminator.ofPhi cfg .entry cfg.entry.terminator = some result := by
+  apply Terminator.ofPhi_exists_of_structural hcfg
+  · intro target ht
+    exact Or.inl ht
+  · intro target ht
+    simp [phiPredecessors, ht]
+
+theorem PhiStructurallyNormalized.blockTerm_exists
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg)
+    {label : Label} {block : Classical.Block Var Op Label}
+    (hblock : (label, block) ∈ cfg.blocks) :
+    ∃ result, Terminator.ofPhi cfg (.named label) block.terminator = some result := by
+  apply Terminator.ofPhi_exists_of_structural hcfg
+  · intro target ht
+    exact Or.inr ⟨label, block, hblock, ht⟩
+  · intro target ht
+    simp only [phiPredecessors, List.mem_append]
+    apply Or.inr
+    apply List.mem_flatMap.mpr
+    exact ⟨(label, block), hblock, by simp [ht]⟩
+
+/-- Structural phi normalization is sufficient for conversion to produce a
+concrete BBA. -/
+theorem PhiStructurallyNormalized.ofPhi_exists
+    {cfg : Classical.CFG Var Op Label} (hcfg : PhiStructurallyNormalized cfg) :
+    ∃ bba, ofPhi cfg = some bba := by
+  obtain ⟨entryTerm, hentryTerm⟩ := hcfg.entryTerm_exists
+  have hblocks : ∃ blocks : List (Label × Block Var Op Label),
+      cfg.blocks.mapM (fun (label, block) => do
+        let term ← Terminator.ofPhi cfg (.named label) block.terminator
+        pure (label, {
+          parameters := block.phis.map Phi.dst
+          body := block.body
+          terminator := term
+        })) = some blocks := by
+    have aux : ∀ xs : List (Label × Classical.Block Var Op Label),
+        (∀ pair, pair ∈ xs → pair ∈ cfg.blocks) →
+        ∃ blocks : List (Label × Block Var Op Label), xs.mapM (fun (label, block) => do
+          let term ← Terminator.ofPhi cfg (.named label) block.terminator
+          pure (label, {
+            parameters := block.phis.map Phi.dst
+            body := block.body
+            terminator := term
+          })) = some blocks := by
+      intro xs hsubset
+      induction xs with
+      | nil => exact ⟨[], rfl⟩
+      | cons head tail ih =>
+          rcases head with ⟨label, block⟩
+          obtain ⟨term, hterm⟩ := hcfg.blockTerm_exists
+            (hsubset (label, block) List.mem_cons_self)
+          obtain ⟨blocks, hblocks⟩ := ih
+            (fun pair hp => hsubset pair (List.Mem.tail (label, block) hp))
+          exact ⟨(label, {
+            parameters := block.phis.map Phi.dst
+            body := block.body
+            terminator := term
+          }) :: blocks, by
+            simpa [List.mapM_cons, hterm] using congrArg
+              (fun result => result.bind fun blocks => some ((label, {
+                parameters := block.phis.map Phi.dst
+                body := block.body
+                terminator := term
+              }) :: blocks)) hblocks⟩
+    exact aux cfg.blocks (fun _ h => h)
+  obtain ⟨blocks, hblocks⟩ := hblocks
+  refine ⟨{
+    entry := { parameters := [], body := cfg.entry.body, terminator := entryTerm }
+    blocks := blocks
+  }, ?_⟩
+  unfold ofPhi
+  rw [show cfg.entry.phis.isEmpty = true by simp [hcfg.1]]
+  simp only [if_true, hentryTerm]
+  rw [hblocks]
+  rfl
+
 /-- Structural BBA normalization gives the uniform target arity required by
 the phi/BBA matrix transpose. -/
 theorem BBAStructurallyNormalized.edge_arity
