@@ -11,6 +11,7 @@ import Isotope.Elgot.Nondet
 import Isotope.Elgot.RA
 import Isotope.Elgot.TSO
 import Isotope.Elgot.Trace
+import Isotope.Elgot.TraceSet
 import Isotope.Elgot.Transformer
 import Isotope.Elgot.WS
 import Isotope.LambdaCase
