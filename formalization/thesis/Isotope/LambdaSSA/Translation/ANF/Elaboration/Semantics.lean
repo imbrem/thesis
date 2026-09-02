@@ -247,6 +247,29 @@ theorem atomRename_exact_abort {Γ : Ctx ν τ} {β : BoundCtx τ n}
       transportHasType_abort e _
     _ = _ := congrArg (Isotope.LambdaIter.LocallyNameless.HasType.abort (C := A)) ih
 
+/-- Forgetting ANF atom typing commutes with every typed bound renaming. -/
+theorem atomRename_exact {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {β' : BoundCtx τ k} {a : Atom ν Φ n} {A : τ}
+    (h : Atom.HasType Γ β a A) (r : TypedRenaming β β') :
+    transportHasType (atomRename_toTm r.toFun a)
+        (atomRename_hasType r h).toLambdaIter = h.toLambdaIter.rename r := by
+  induction h with
+  | fv h => exact transportHasType_proof_irrel _ rfl _
+  | bv =>
+      simp only [atomRename_hasType, Atom.HasType.toLambdaIter,
+        Isotope.LambdaIter.LocallyNameless.HasType.rename]
+      change ((r.typed _ ▸ (Atom.HasType.bv (Φ := Φ) (Γ := Γ)
+        (β := β') (i := r.toFun _))).toLambdaIter) =
+        (r.typed _ ▸ (HasType.bv (Φ := Φ) (Γ := Γ)
+          (β := β') (ι := r.toFun _)))
+      exact atom_toLambdaIter_transport_type _ _
+  | op h ih => exact atomRename_exact_op h r ih
+  | unit => exact transportHasType_proof_irrel _ rfl _
+  | pair ha hb iha ihb => exact atomRename_exact_pair ha hb r iha ihb
+  | inl h ih => exact atomRename_exact_inl h r ih
+  | inr h ih => exact atomRename_exact_inr h r ih
+  | abort h ih => exact atomRename_exact_abort h r ih
+
 @[simp] theorem denote_elaborate_fv {Γ : Ctx ν τ} {β : BoundCtx τ n}
     {x : ν} {A : τ} (hx : Γ.lookup x = some A)
     (γ : CtxDen Γ) (ρ : BoundDen β) :
