@@ -36,6 +36,76 @@ on the declarations named in that row reports only `propext`,
 Mathlib's `Equiv`/`Fintype` API). The module docstring of
 `Isotope/Elgot/TSO.lean` carries the corresponding honest-boundary statement.
 
+### The empty signature and its two model theorems
+
+`Isotope/LambdaIter/Signature/Empty.lean` makes the empty base-type set
+(`EmptyTy = Ty PEmpty`) and the empty instruction set (`EmptyInstr = PEmpty`)
+first-class, shared verbatim by `lambda_{iter, seq, case}`;
+`Subtyping/Semantics/Models/Empty.lean` proves that this signature has a model
+in every monad and in every Freyd category, and
+`Subtyping/Semantics/Models/CategoricalFree.lean` supplies the type model of
+`Ty alpha` in an arbitrary cartesian value category with finite coproducts
+(the previous categorical type model, `Categorical.ofTypeModel`, was hard-wired
+to `V = Type v`).
+
+| Claim | Exact evidence | Scope | Class |
+|---|---|---|---|
+| Empty base-type set and instruction set are first-class and shared by all three calculi | `LambdaIter/Signature/Empty.lean`: `EmptyBase`, `EmptyTy`, `EmptyInstr`, `EmptyEff`, `instHasTyEmpty`, `instHasEffEmpty`, `instSignatureEmpty`; `EmptyTy.instInfinite` | The universe is non-trivial (infinitely many types, no base types). `Models/Null.lean` is re-derived from it. | checked |
+| Free categorical type model in an arbitrary value category | `Models/CategoricalFree.lean`: `Categorical.Free.typeModel`, `Categorical.Free.lawfulTypeModel`; `LambdaSeq.Semantics.Categorical.freeTypeModel` | Lawful in every cartesian monoidal `V` with finite coproducts. Type formers are interpreted on the nose, so all six laws are near-trivial. | checked |
+| A model in every monad | `Models/Empty.lean`: `emptyTypeModel`, `emptyLawfulTypeModel`, `emptyInstructionModel`, and `EmptySignature.denote{Seq,Case,Iter}` | A total denotation exists for lambda-seq and lambda-case in every `[Monad m]`, and for lambda-iter in every `[Monad m] [Iterate m]`. The instruction half is vacuous (`PEmpty.elim`). | checked |
+| A model in every Freyd category | `Models/Empty.lean`: `Categorical.emptyTypeModel`, `Categorical.emptyLawfulTypeModel`, `Categorical.emptyInstructionModel`, and `EmptySignature.denote{Seq,Case,Iter,IterExact}Freyd` | lambda-seq needs plain `FreydCategory`; lambda-case needs `DistributiveFreydCategory` (a plain Freyd category does **not** suffice); lambda-iter needs `StrongElgotFreydCategory`. | checked |
+
+**Honest boundary for these four rows.** They are *interface* theorems. What is
+proved is that the empty signature supplies a `TypeModel` and an
+`InstructionModel`, hence a total `denote`, in every such frame. It is **not**
+proved that every monad or every Freyd category is a *lawful* model in the
+sense of validating the equational theory: that requires instances of
+`LocallyNameless.Categorical.TypingCoherent` and of the `LawfulModel`-style
+classes, and no such instance exists anywhere under `Isotope/` for these three
+calculi. The instruction half of both theorems is vacuous by construction; the
+genuine content of the categorical theorem is the type model. No soundness,
+adequacy, initiality, or completeness statement is added by this work, and the
+two gaps recorded elsewhere in this file — no category of models, no unique
+model morphism, no initial object — remain open.
+
+### Signatures, the total category, and reindexing
+
+`Isotope/LambdaIter/Signature/Category.lean` makes signatures and their strict
+morphisms a category; `Signature/Initial.lean`, `Models/HomOver.lean`,
+`Models/Total.lean` and `Models/Reindex.lean` build the fibred picture over it.
+
+| Claim | Exact evidence | Scope | Class |
+|---|---|---|---|
+| Signatures form a category | `Signature/Category.lean`: `Sig`, `Sig.Hom`, `Sig.instCategory` | Objects carry a type universe with its four formers, an instruction set with typing, an effect set with a pure effect. **No `Subtyping` component**; morphisms preserve the formers strictly. | checked |
+| The empty signature is the initial object of `Sig` | `Signature/Initial.lean`: `Sig.empty`, `Sig.fromEmpty`, `Sig.uniqueFromEmpty`, `Sig.isInitialEmpty` | Existence and uniqueness both proved; the three components are separated (`fromEmpty_ty_unique` is freeness of `Ty PEmpty`, `fromEmpty_instr_unique` is emptiness of `PEmpty`, `fromEmpty_eff_unique` needs `eff_pure` *and* `EmptyEff` being a singleton). `Sig.ofNull_not_isInitial` records that emptiness of the base and instruction sets alone does not suffice. | checked |
+| Pairs `(signature, model)` form a category | `Models/HomOver.lean`: `Alg.HomOver`, `HomOver.id`, `HomOver.comp`, `id_comp`, `comp_id`, `assoc`; `Models/Total.lean`: `Total`, `Total.Hom`, `Total.instCategory` | The Hom is defined directly, not as `Sigma g, X to g^* Y`; reindexing is only pseudofunctorial in the signature, so a Grothendieck construction over a strict functor is unavailable. | checked |
+| The fibre over a fixed signature is the category of its models | `Models/Total.lean`: `Alg.homOverIdEquiv`, `Total.incl`, `Total.inclFaithful`, `Total.fibreEquiv` | **Near-tautological by construction**: the fibre is *defined* as the morphisms whose signature component is the identity. Its Lean content is `BoundCtx.map_id` plus one transport cancellation, and its docstring says so. | checked |
+| The fibre inclusion is faithful but **not** full | `Models/Total.lean`: `Total.inclFaithful`, `Total.incl_not_full` | The non-fullness witness is explicit: the effect-collapsing endomorphism of `Sig.ofNull` acting on terminal models. This is the substantive statement neighbouring the tautological one. | checked |
+| Reindexing along a signature morphism, contravariantly | `Models/Reindex.lean`: `Alg.Ops.reindex`, `proj`, `reindexEquiv`, `reindexMap`, `reindexMap_id`, `reindexMap_comp`; `Total.homEquiv` | Universal property (cartesian lift) and functoriality both proved. **At the level of `Alg.Ops` only** — see the boundary below. | checked |
+| Initiality in the total category, conditionally | `Models/Total.lean`: `Total.isInitialOfFibrewise`; `Models/Reindex.lean`: `Total.isInitialOfReindex` | These are *reductions*, not initiality theorems: they say that an initial signature plus fibrewise uniqueness gives an initial object of `Total`. Their hypotheses are not discharged here. | interface-only |
+
+**Honest boundary for these rows.**
+
+1. **No object of `Total` is shown to be initial.** That needs a model whose
+   maps out are unique, i.e. the quotiented syntax, which is not constructed on
+   this branch. `Sig.uniqueFromEmpty` discharges the *signature* half of
+   `Total.isInitialOfReindex` at `Sig.empty`; the model half is open.
+2. **Reindexing is built for `Alg.Ops`, not for `Alg`.** An `Alg` additionally
+   carries `coh` and `sound`, and discharging those for a reindexed model needs
+   the functorial action of a signature morphism on the syntax and on the
+   equational theory (`Tm.map`, `HasType.map`, `Pure.map`, the four axiom
+   schemes, `Eqv.map`, and their commutation with `rename`, `bsubst` and
+   `instantiate`). That action is not built here. So there is **no** proved
+   functor `Alg T` to `Alg S`.
+3. A "model" throughout this directory means an algebra of the equational
+   presentation (`Alg`), whose `coh` and `sound` are *fields*. It does not mean
+   a Freyd or Elgot category, and nothing here shows that a monad or a Freyd
+   category gives such an algebra.
+4. Signature morphisms carry no subtyping component. This is a deliberate scope
+   decision recorded in `Signature/Category.lean`, not an oversight; it means
+   the request's "type universe with its type formers and subtyping" is
+   delivered without the subtyping half.
+
 ## Frozen baselines and build evidence
 
 | Repository | Audited commit | Toolchain | Clean build / axiom evidence |

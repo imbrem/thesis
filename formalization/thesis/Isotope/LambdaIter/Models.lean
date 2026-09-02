@@ -8,6 +8,9 @@ import Isotope.LambdaIter.Models.SynCoproduct
 import Isotope.LambdaIter.Models.SynIteration
 import Isotope.LambdaIter.Models.SynElgot
 import Isotope.LambdaIter.Models.Initial
+import Isotope.LambdaIter.Models.HomOver
+import Isotope.LambdaIter.Models.Total
+import Isotope.LambdaIter.Models.Reindex
 
 /-!
 # Models of lambda-iter, and the category they form
@@ -27,8 +30,11 @@ result type, one operation per term former, and two propositional obligations
 | `Models/SynCategory.lean` | the one-variable syntactic *category* (three category laws) |
 | `Models/SynCoproduct.lean` | binary coproducts in it, and iteration on hom-sets |
 | `Models/SynIteration.lean` | the fixpoint, naturality and codiagonal laws for it |
-| `Models/SynElgot.lean` | the same three laws in Mathlib's `⨿` vocabulary, and `ElgotCategory` modulo an initial object |
+| `Models/SynElgot.lean` | those three laws in Mathlib's `⨿` vocabulary, and `ElgotCategory` modulo an initial object |
 | `Models/Initial.lean` | `Syn.uniqueHom`, `Syn.isInitial`, and equational completeness |
+| `Models/HomOver.lean` | maps of models over a signature morphism; identity and composition |
+| `Models/Total.lean` | the total category of pairs `(signature, model)`, the fibre inclusion, and the Grothendieck initiality principle |
+| `Models/Reindex.lean` | reindexing of operations along a signature morphism, its universal property and its functoriality |
 
 ## Honest boundary
 
@@ -59,12 +65,17 @@ result type, one operation per term former, and two propositional obligations
   `ElgotCategory (SynCat S)` **under the hypothesis**
   `HasFiniteCoproducts (SynCat S)`.  That instance is nevertheless **not**
   registered, because the hypothesis is not known to hold: it needs an initial
-  object; **and no uniformity, strength, premonoidal, monoidal or distributive
-  structure is proved**.  The empty
-  type is not shown to be initial (see `Models/SynCoproduct.lean` for why it
-  probably is not derivable from the axioms as stated).  Issue #57's request
-  for the syntactic Elgot model therefore remains open; what is closed is the
+  object, and the empty type is not shown to be one (see
+  `Models/SynCoproduct.lean`).  **No uniformity, strength, premonoidal,
+  monoidal or distributive structure is proved.**  Issue #57's request for the
+  syntactic Elgot model therefore remains open; what is closed is the
   quotient, the category and coproduct laws, well-definedness of iteration,
-  the unique interpretation into every algebra, and completeness with respect
-  to algebras.
+  three of the four Elgot laws, the unique interpretation into every algebra,
+  and completeness with respect to algebras.
+* Reindexing along a signature morphism (`Models/Reindex.lean`) is built at the
+  level of `Alg.Ops`, the *operations* of a model, not of `Alg`.  Promoting it
+  to algebras needs the functorial action of a signature morphism on the
+  syntax and on `Eqv`; see `Models/Reindex.lean` for that boundary, and
+  `Total.isInitialOfFibrewise` / `Total.isInitialOfReindex` for the interface
+  an initial object of the total category would have to meet.
 -/
