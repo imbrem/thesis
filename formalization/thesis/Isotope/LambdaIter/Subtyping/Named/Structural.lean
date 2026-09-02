@@ -63,7 +63,7 @@ theorem lookup_snoc_eq {Γ Δ : Ctx ν τ}
   | none => exact heq x
   | some y => by_cases h : x = y <;> simp [Ctx.lookup, h, heq x]
 
-theorem HasType.strictWk {Γ Δ : Ctx ν τ} {a : Tm ν Φ} {A : τ}
+noncomputable def HasType.strictWk {Γ Δ : Ctx ν τ} {a : Tm ν Φ} {A : τ}
     (w : Ctx.StrictWk Γ Δ) (hw : LookupStrictWk w) (h : HasType Δ a A) :
     HasType Γ a A := by
   induction h generalizing Γ with
@@ -81,7 +81,7 @@ theorem HasType.strictWk {Γ Δ : Ctx ν τ} {a : Tm ν Φ} {A : τ}
   | iter _ _ iha ihb => exact .iter (iha w hw) (ihb _ (hw.snoc _ _))
   | sub _ hAB ih => exact .sub (ih w hw) hAB
 
-theorem HasType.wk {Γ Δ : Ctx ν τ} {a : Tm ν Φ} {A : τ}
+noncomputable def HasType.wk {Γ Δ : Ctx ν τ} {a : Tm ν Φ} {A : τ}
     (w : Ctx.Wk Γ Δ) (hw : LookupWk w) (h : HasType Δ a A) :
     HasType Γ a A := by
   induction h generalizing Γ with
@@ -104,11 +104,12 @@ theorem HasType.wk {Γ Δ : Ctx ν τ} {a : Tm ν Φ} {A : τ}
 /-- Proposition-valued corollary, when derivation identity is irrelevant. -/
 theorem HasType.strictWk_nonempty {Γ Δ : Ctx ν τ} {a : Tm ν Φ} {A : τ}
     (h : HasType Δ a A) (p : Nonempty (Σ w : Ctx.StrictWk Γ Δ, LookupStrictWk w)) :
-    HasType Γ a A := p.elim fun ⟨w, hw⟩ => h.strictWk w hw
+    Nonempty (HasType Γ a A) :=
+  p.elim fun ⟨w, hw⟩ => ⟨h.strictWk w hw⟩
 
 /-- Transport across an exact equality of visible lookups. This is the core
 fact used for checked shadow-only context edits. -/
-theorem HasType.lookupEq {Γ Δ : Ctx ν τ} {a : Tm ν Φ} {A : τ}
+noncomputable def HasType.lookupEq {Γ Δ : Ctx ν τ} {a : Tm ν Φ} {A : τ}
     (h : HasType Γ a A) (heq : ∀ x, Γ.lookup x = Δ.lookup x) :
     HasType Δ a A := by
   induction h generalizing Δ with
@@ -132,7 +133,7 @@ theorem HasType.lookupEq {Γ Δ : Ctx ν τ} {a : Tm ν Φ} {A : τ}
       exact .iter (iha heq) (ihb (lookup_snoc_eq heq _ _))
   | sub _ hAB ih => exact .sub (ih heq) hAB
 
-theorem HasType.shadowEdit {Γ Δ : Ctx ν τ} {a : Tm ν Φ} {A : τ}
+noncomputable def HasType.shadowEdit {Γ Δ : Ctx ν τ} {a : Tm ν Φ} {A : τ}
     (d : Ctx.ShadowEdit Γ Δ) (h : HasType Γ a A) : HasType Δ a A :=
   h.lookupEq (d.lookup_eq)
 
