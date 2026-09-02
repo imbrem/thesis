@@ -1,4 +1,4 @@
-import Isotope.LambdaSSA.Semantics.Label
+import Isotope.LambdaSSA.Semantics.Finite
 import Isotope.LambdaSSA.Semantics.Inversion
 
 /-! # Relational categorical semantics of lambda-SSA regions
@@ -121,5 +121,39 @@ class RegionTypingCoherent : Prop where
       {h : Region.HasType Γ r L}
       {f g : J.obj (ctxObj M Γ) ⟶ J.obj (labelObj M L)} :
       RegionDenotes J M h f → RegionDenotes J M h g → f = g
+
+/-- Every non-recursive region typing derivation, and a zero-block CFG, has a
+structural denotation.  The successor CFG case is isolated in
+`CollectiveDenotes`: it additionally requires distributing the carried context
+over a nonempty finite label coproduct. -/
+theorem regionDenotes_exists_nonrecursive
+    {Γ : VCtx τ} {r : Region Φ} {L : LCtx τ}
+    (h : Region.HasType Γ r L)
+    (cfgWitness : ∀ {n : Nat} {R : Fin (n + 1) → τ} {Γ : VCtx τ} {L : LCtx τ}
+      {entry : Region Φ} {blocks : Fin (n + 1) → Region Φ}
+      (he : Region.HasType Γ entry (List.ofFn R ++ L))
+      (hb : ∀ i, Region.HasType (R i :: Γ) (blocks i) (List.ofFn R ++ L)),
+      ∃ f, RegionDenotes J M (.cfg R he hb) f) :
+    ∃ f, RegionDenotes J M h f := by
+  induction h with
+  | br h ha => exact ⟨_, .br (denote_spec J M ha)⟩
+  | case he hl hr ihe ihl ihr =>
+      rcases ihe with ⟨fe, de⟩
+      rcases ihl with ⟨fl, dl⟩
+      rcases ihr with ⟨fr, dr⟩
+      exact ⟨_, .case (denote_spec J M he) dl dr⟩
+  | let₁ ha hb iha ihb =>
+      rcases ihb with ⟨fb, db⟩
+      exact ⟨_, .let₁ (denote_spec J M ha) db⟩
+  | let₂ ha hb iha ihb =>
+      rcases ihb with ⟨fb, db⟩
+      exact ⟨_, .let₂ (denote_spec J M ha) db⟩
+  | cfg R he hb ihe ihb =>
+      cases n with
+      | zero =>
+          have de := ihe cfgWitness
+          rcases de with ⟨fe, de⟩
+          exact ⟨fe, .cfgZero he hb de⟩
+      | succ n => exact cfgWitness he hb
 
 end Isotope.LambdaSSA.Semantics.Categorical
