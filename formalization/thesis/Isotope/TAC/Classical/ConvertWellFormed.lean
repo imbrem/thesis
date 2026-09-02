@@ -9,6 +9,17 @@ open Isotope.TAC.Classical
 universe u v w
 variable {Var : Type u} {Op : Type v} {Label : Type w}
 
+private theorem renameValue_uses_map (ρ : Env Var Label) (v : Value Var) :
+    (renameValue ρ v).uses = v.uses.map ρ := by
+  induction v with
+  | var => rfl
+  | unit => rfl
+  | pair l r il ir => simp [renameValue, Value.uses, il, ir]
+
+private theorem renameOperand_uses_map (ρ : Env Var Label) (o : Operand Var Op) :
+    (renameOperand ρ o).uses = o.uses.map ρ := by
+  cases o <;> simp [renameOperand, Operand.uses, renameValue_uses_map]
+
 private theorem update_restricted_invariant [DecidableEq Var]
     (vars : List Var) (ρ : Env Var Label) (base prior : List (Version Var Label))
     (y : Var) (dst : Version Var Label)
@@ -39,6 +50,49 @@ private theorem updatePair_restricted_invariant [DecidableEq Var]
       · exact .inl (by simpa [update, hxz, hxy] using h)
       · exact .inr (List.mem_cons_of_mem dy
           (List.mem_cons_of_mem dz (by simpa [update, hxz, hxy] using h)))
+
+private def PrefixScoped (base prior : List (Version Var Label)) :
+    List (Instr (Version Var Label) Op) → Prop
+  | [] => True
+  | hd :: tl =>
+      (∀ v ∈ hd.uses, v ∈ base ∨ v ∈ prior) ∧
+      PrefixScoped base (hd.defs ++ prior) tl
+
+private theorem body_prefixScoped [DecidableEq Var]
+    (vars : List Var) (bid : BlockId Label) (i : Nat) (ρ : Env Var Label)
+    (base prior : List (Version Var Label)) (xs : List (Instr Var Op))
+    (huses : ∀ ins ∈ xs, ∀ x ∈ ins.uses, x ∈ vars)
+    (hρ : ∀ x ∈ vars, ρ x ∈ base ∨ ρ x ∈ prior) :
+    PrefixScoped base prior (body bid i ρ xs).1 := by
+  induction xs generalizing i ρ prior with
+  | nil => trivial
+  | cons hd tl ih =>
+      have htail : ∀ ins ∈ tl, ∀ x ∈ ins.uses, x ∈ vars := by
+        intro ins hins x hx
+        exact huses ins (List.mem_cons_of_mem hd hins) x hx
+      cases hd with
+      | assign y rhs =>
+          let dst := Version.instr bid i 0 y
+          constructor
+          · intro v hv
+            change v ∈ (renameOperand ρ rhs).uses at hv
+            rw [renameOperand_uses_map] at hv
+            rcases List.mem_map.mp hv with ⟨x, hx, rfl⟩
+            exact hρ x (huses (.assign y rhs) (by simp) x hx)
+          · exact ih (i + 1) (update ρ y dst) (dst :: prior) htail
+              (update_restricted_invariant vars ρ base prior y dst hρ)
+      | assignPair y z rhs =>
+          let dy := Version.instr bid i 0 y
+          let dz := Version.instr bid i 1 z
+          constructor
+          · intro v hv
+            change v ∈ (renameOperand ρ rhs).uses at hv
+            rw [renameOperand_uses_map] at hv
+            rcases List.mem_map.mp hv with ⟨x, hx, rfl⟩
+            exact hρ x (huses (.assignPair y z rhs) (by simp) x hx)
+          · exact ih (i + 1) (update (update ρ y dy) z dz)
+              (dy :: dz :: prior) htail
+              (updatePair_restricted_invariant vars ρ base prior y z dy dz hρ)
 
 private theorem renameValue_uses_eq (ρ : Env Var Label) (v : Value Var) :
     (renameValue ρ v).uses = v.uses.map ρ := by
