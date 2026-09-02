@@ -23,15 +23,25 @@ Both halves are proved:
 
 ## Honest boundary
 
-What is **not** formalized, and must not be read into the statement:
+What is and is not formalized, and what must not be read into the statement:
 
-1. **No operational semantics.**  Brookes defines `T` and `M` operationally
-   (journal §3, §4, §6) and *proves* the compositional clauses (Proposition 6.2)
-   and `M[C] = {(s,s') | (s,s') ∈ T[C]}`.  Here the compositional clauses are
-   the **definition** of `den`, and `obs` is defined as the one-pair fragment of
-   `den`.  Proposition 6.2 — the bridge between the two — is not formalized.
-   Everything below is therefore a theorem about the denotational `T` and the
-   contextual preorder induced by the denotationally-defined observation.
+1. **The operational semantics is ours, not transcribed.**  Brookes defines `T`
+   and `M` operationally (journal §3, §4, §6) and *proves* the compositional
+   clauses (Proposition 6.2) and `M[C] = {(s,s') | (s,s') ∈ T[C]}`.  Here the
+   compositional clauses are the **definition** of `den`, and `obs` is defined
+   as the one-pair fragment of `den`; but Proposition 6.2 and adequacy are now
+   proved, in `Op/Prop62.lean`, against the small-step machine of
+   `Op/Basic.lean` (`Op.opDen_eq_den`, `Op.obs_iff_opObs`), and `fullAbstraction`
+   below is restated with both sides operational as
+   `Op.opFullAbstraction` / `Op.fullAbstraction_op`.  What is *not* formalized is
+   any correspondence between that machine and Brookes's own: his transition
+   system is over finite partial states with a `dom(s)` discipline and
+   syntactically restricted `await` bodies, while `Op.Red`/`Op.Reds` is the
+   natural total-state reading of it with `await` bodies left unrestricted.  So
+   `opDen_eq_den` shows the transcribed clauses are the transition trace
+   semantics of *a* small-step machine, not that the transcription matches the
+   paper; and for `await` it holds by construction, since `Op.Red.await`
+   stipulates atomicity for an arbitrary body (see point 6).
 2. **A restricted expression language.**  Constants and identifiers only, and
    boolean expressions are finite conjunctions of equations closed under
    negation.  This is the fragment Brookes's own gadgets `IS_s` need (journal
@@ -47,10 +57,13 @@ What is **not** formalized, and must not be read into the statement:
    his §9 fine-grained granularity and the fair infinite-trace extension are out
    of scope.
 6. **`await` bodies are unrestricted.**  Brookes restricts them syntactically to
-   sequences of assignments to make them atomic operationally.  Since there is
-   no operational semantics here, the clause is taken verbatim for an arbitrary
-   body; this makes the language *larger*, so both halves of full abstraction
-   still concern the same set of contexts.
+   sequences of assignments to make them atomic operationally.  Here the clause
+   is taken verbatim for an arbitrary body, and the machine of `Op/Basic.lean`
+   matches it by *stipulating* atomicity for an arbitrary body — including
+   bodies containing `par` and nested `await`, which Brookes's transition system
+   cannot execute atomically and which is exactly why he excludes them.  This
+   makes the language *larger*, so both halves of full abstraction still concern
+   the same set of contexts.
 
 Point 1 is the substantive one.  Everything else narrows or widens the language
 in a way that is stated where it happens.

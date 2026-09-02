@@ -23,12 +23,14 @@ T[await B then C]       = {(s,s') ∈ T[C] | (s,tt) ∈ B[B]}†
 ```
 
 Brookes takes these clauses to *characterise* the operationally defined `T`
-(that is his Proposition 6.2).  **We take them as the definition**: no
-operational semantics is formalized here, and Proposition 6.2 is therefore not
-formalized either.  Everything downstream — the observation, the contextual
-preorder, soundness and full abstraction — is about this denotational `T`, which
-is a faithful reading of §6–§7 but leaves that one bridge unformalized.  See the
-honest boundary in `Isotope/Elgot/Brookes/SeqCst/FullAbstraction.lean`.
+(that is his Proposition 6.2).  **We take them as the definition** here, and
+then *prove* they are the transition-trace semantics of a small-step machine:
+`Isotope/Elgot/Brookes/SeqCst/Op/Basic.lean` gives the machine and
+`Op/Prop62.lean` proves `opDen C = den C`, so Proposition 6.2 holds for that
+machine and full abstraction is available operationally
+(`Op.opFullAbstraction`).  The machine is *ours*, not transcribed from Brookes's
+§3; see the honest boundary in
+`Isotope/Elgot/Brookes/SeqCst/FullAbstraction.lean`.
 
 ## Deviations from the paper, and why
 
