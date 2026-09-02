@@ -405,4 +405,146 @@ theorem weak_silent_left {x y : Raw E A} (h : Weak x y) : Weak (silent x) y := b
   exact h
 
 
+
+/-! ## Erasure is a monad morphism -/
+
+/-- Sequencing pushes under a silent step. -/
+@[simp] theorem silent_bind {B : Type (u + 1)} (t : Raw E A) (k : A → Raw E B) :
+    silent t >>= k = silent (t >>= k) := vis_bind _ _ _
+
+/-- Sequencing pushes under a raw visible event. -/
+@[simp] theorem rawVis_bind {B : Type (u + 1)} {R : Type u} (e : E R) (c : R → Raw E A)
+    (k : A → Raw E B) : rawVis e c >>= k = rawVis e (fun r => c r >>= k) := vis_bind _ _ _
+
+/-- One step of `peel`, packaged with the shape of the tree that produced it. -/
+theorem stepRaw_cases (t : Raw E A) :
+    (stepRaw t = none ∧ t = diverge)
+    ∨ (∃ a : A, stepRaw t = some (Sum.inl (Visible.ret a)) ∧ t = ret a)
+    ∨ (∃ (R : Type u) (e : E R) (c : R → Raw E A),
+        stepRaw t = some (Sum.inl (Visible.vis e c)) ∧ t = rawVis e c)
+    ∨ (∃ t' : Raw E A, stepRaw t = some (Sum.inr t') ∧ t = silent t') := by
+  rcases Tree.cases_three t with rfl | ⟨a, rfl⟩ | ⟨R, ev, c, rfl⟩
+  · exact Or.inl ⟨stepRaw_diverge, rfl⟩
+  · exact Or.inr (Or.inl ⟨a, stepRaw_ret a, rfl⟩)
+  · cases ev with
+    | inl e => exact Or.inr (Or.inr (Or.inl ⟨R, e, c, stepRaw_rawVis e c, rfl⟩))
+    | inr te =>
+        cases te with
+        | tau =>
+            have hc : (vis (Sum1.inr TauEv.tau) c : Raw E A) = silent (c PUnit.unit) := by
+              refine congrArg (vis (tauEvent E)) (funext fun r => ?_)
+              cases r
+              rfl
+            exact Or.inr (Or.inr (Or.inr ⟨c PUnit.unit, by rw [hc]; exact stepRaw_silent _, hc⟩))
+
+/-- `peel` at budget one. -/
+theorem peel_one_of_inl {t : Raw E A} {v : Visible E A (Raw E A)}
+    (h : stepRaw t = some (Sum.inl v)) : peel 1 t = some v := peel_of_inl h 0
+
+/-- A tree with no head modulo silence has no head at any budget. -/
+theorem peel_eq_none_of_headPart {x : Raw E A} (h : headPart x = Part.none) (m : Nat) :
+    peel m x = none := by
+  cases hm : peel m x with
+  | none => rfl
+  | some v =>
+      exact absurd (mem_headPart.mpr ⟨m, hm⟩) (by rw [h]; exact Part.notMem_none v)
+
+/-- A tree that never commits still never commits after sequencing. -/
+theorem peel_bind_none {B : Type (u + 1)} :
+    ∀ (n : Nat) (x : Raw E A) (k : A → Raw E B),
+      (∀ m, peel m x = none) → peel n (x >>= k) = none := by
+  intro n
+  induction n with
+  | zero => intro x k _; rfl
+  | succ n ih =>
+      intro x k h
+      rcases stepRaw_cases x with ⟨hs, rfl⟩ | ⟨a, hs, rfl⟩ | ⟨R, e, c, hs, rfl⟩ | ⟨x', hs, rfl⟩
+      · rw [diverge_bind]
+        exact peel_of_none stepRaw_diverge n
+      · exact absurd (h 1) (by rw [peel_one_of_inl hs]; simp)
+      · exact absurd (h 1) (by rw [peel_one_of_inl hs]; simp)
+      · rw [silent_bind, peel_of_inr (stepRaw_silent _)]
+        exact ih x' k (fun m => by have hm := h (m + 1); rwa [peel_of_inr hs] at hm)
+
+/-- The head of a sequential composition, modulo silence: silent steps of the
+first component are silent steps of the composite, a return hands control to the
+continuation, and a visible event is emitted with the continuation pushed under
+it. -/
+theorem headPart_bind_of_peel {B : Type (u + 1)} :
+    ∀ (n : Nat) (x : Raw E A) (v : Visible E A (Raw E A)) (k : A → Raw E B),
+      peel n x = some v →
+      headPart (x >>= k) = (match v with
+        | .ret a => headPart (k a)
+        | .vis e c => Part.some (Visible.vis e (fun r => c r >>= k))) := by
+  intro n
+  induction n with
+  | zero => intro x v k h; simp at h
+  | succ n ih =>
+      intro x v k h
+      rcases stepRaw_cases x with ⟨hs, rfl⟩ | ⟨a, hs, rfl⟩ | ⟨R, e, c, hs, rfl⟩ | ⟨x', hs, rfl⟩
+      · rw [peel_of_none hs] at h; simp at h
+      · rw [peel_of_inl hs] at h
+        obtain rfl : v = Visible.ret a := (Option.some.inj h).symm
+        rw [show ((ret a : Raw E A) >>= k) = k a from pure_bind a k]
+      · rw [peel_of_inl hs] at h
+        obtain rfl : v = Visible.vis e c := (Option.some.inj h).symm
+        rw [rawVis_bind]
+        exact headPart_rawVis e (fun r => c r >>= k)
+      · rw [peel_of_inr hs] at h
+        rw [silent_bind, headPart_silent]
+        exact ih x' v k h
+
+/-- The candidate bisimulation for `erase_bind`: the diagonal together with the
+pairs (erasure of a composite, composite of erasures). -/
+private def BindRel (E : Type u → Type u) (A B : Type (u + 1)) (X Y : Tree E B) : Prop :=
+  X = Y ∨ ∃ (x : Raw E A) (k : A → Raw E B),
+    X = erase (x >>= k) ∧ Y = erase x >>= fun a => erase (k a)
+
+/-- **Erasure is a monad morphism.**  Together with `erase_ret` this says that
+stripping silent steps commutes with the whole monad structure. -/
+theorem erase_bind {B : Type (u + 1)} (x : Raw E A) (k : A → Raw E B) :
+    erase (x >>= k) = erase x >>= fun a => erase (k a) := by
+  refine Tree.eq_of_bisim' (BindRel E A B) ?_ (Or.inr ⟨x, k, rfl, rfl⟩)
+  rintro X Y (rfl | ⟨x, k, rfl, rfl⟩)
+  · exact Tree.bisim'_refl (BindRel E A B) (fun _ => Or.inl rfl) X
+  · rcases Part.eq_none_or_eq_some (headPart x) with hx | ⟨v, hx⟩
+    · refine Or.inl ⟨?_, ?_⟩
+      · rw [destruct_erase,
+          headPart_eq_none (fun n => peel_bind_none n x k (peel_eq_none_of_headPart hx))]
+        simp
+      · rw [Tree.destruct_bind, destruct_erase, hx]
+        simp
+    · obtain ⟨n, hn⟩ := mem_headPart.mp (Part.eq_some_iff.mp hx)
+      cases v with
+      | ret a =>
+          have hX : erase (x >>= k) = erase (k a) :=
+            erase_congr (headPart_bind_of_peel n x _ k hn)
+          have hex : erase x = ret a := by
+            rw [← Tree.construct_destruct (erase x), destruct_erase, hx]
+            simp
+          rw [hX, hex, show ((ret a : Tree E A) >>= fun a => erase (k a)) = erase (k a) from
+            pure_bind a _]
+          exact Tree.bisim'_refl (BindRel E A B) (fun _ => Or.inl rfl) _
+      | @vis R e c =>
+          have hX : erase (x >>= k) = vis e (fun r => erase (c r >>= k)) := by
+            rw [← Tree.construct_destruct (erase (x >>= k)), destruct_erase,
+              headPart_bind_of_peel n x _ k hn]
+            simp [Visible.map, Function.comp_def]
+          have hex : erase x = vis e (fun r => erase (c r)) := by
+            rw [← Tree.construct_destruct (erase x), destruct_erase, hx]
+            simp [Visible.map, Function.comp_def]
+          rw [hX, hex, vis_bind]
+          exact Or.inr (Or.inr ⟨R, e, (fun r => erase (c r >>= k)),
+            (fun r => erase (c r) >>= fun a => erase (k a)),
+            Tree.destruct_vis _ _, Tree.destruct_vis _ _,
+            fun r => Or.inr ⟨c r, k, rfl, rfl⟩⟩)
+
+/-- Sequencing is a congruence for weak bisimulation of raw trees. -/
+theorem weak_congr_bind {B : Type (u + 1)} {x y : Raw E A} (h : Weak x y)
+    {k l : A → Raw E B} (hk : ∀ a, Weak (k a) (l a)) : Weak (x >>= k) (y >>= l) := by
+  simp only [Weak, erase_bind]
+  rw [show erase x = erase y from h]
+  exact congrArg _ (funext fun a => hk a)
+
+
 end Isotope.Elgot.ITree
