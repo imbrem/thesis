@@ -1,5 +1,6 @@
 import Isotope.LambdaSSA.Structural
-import Isotope.LambdaSSA.Semantics.Collective
+import Isotope.LambdaSSA.Semantics.Region
+import Isotope.LambdaSSA.Semantics.Monadic.Region
 
 /-! # Typed simultaneous reindexing of a lambda-SSA CFG binder -/
 
@@ -144,4 +145,31 @@ theorem finiteLabelInject_perm {n : Nat} {R R' : Fin n → τ} {L : LCtx τ}
   apply Limits.Sigma.ι_comp_map'
 
 end Semantics.Categorical
+
+namespace Semantics.Monadic
+
+open LambdaIter.Subtyping.Semantics
+
+variable [LambdaIter.Subtyping τ] [TypeModel.{v, u} τ]
+
+private noncomputable abbrev permutationTypeModel :=
+  LambdaIter.Subtyping.Semantics.Categorical.ofTypeModel (τ := τ)
+
+/-- The concrete function on monadic label values induced by a typed label
+renaming. -/
+noncomputable def labelRen {L K : LCtx τ} {ρ : Nat → Nat}
+    (hρ : Ren L K ρ) : LabelDen L → LabelDen K :=
+  (Semantics.Categorical.labelRen permutationTypeModel hρ : LabelDen L → LabelDen K)
+
+theorem labelInject_labelRen {L K : LCtx τ} {ρ : Nat → Nat}
+    (hρ : Ren L K ρ) (i : Fin L.length)
+    (a : TyDen (L.get i)) :
+    labelRen hρ (Semantics.Categorical.labelInject permutationTypeModel i
+      (by simp [At]) a) =
+      Semantics.Categorical.labelInject permutationTypeModel (ρ i)
+        (hρ (by simp [At])) a := by
+  exact congrFun (Semantics.Categorical.labelInject_labelRen
+    permutationTypeModel hρ i) a
+
+end Semantics.Monadic
 end Isotope.LambdaSSA
