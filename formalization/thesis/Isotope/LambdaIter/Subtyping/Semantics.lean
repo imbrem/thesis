@@ -8,3 +8,4 @@ import Isotope.LambdaIter.Subtyping.Semantics.Soundness
 import Isotope.LambdaIter.Subtyping.Semantics.Categorical
 import Isotope.LambdaIter.Subtyping.Semantics.IterationDiagrams
 import Isotope.LambdaIter.Subtyping.Semantics.Agreement.Full
+import Isotope.LambdaIter.Subtyping.Semantics.Models
