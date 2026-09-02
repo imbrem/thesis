@@ -433,6 +433,36 @@ theorem closure_fwRw_aRules_eq {S : Set (PreTrace Loc Val A)} (hS : IsTraceSet S
    the target's memories are well formed rather than deriving it.  The same
    `Ex✓`/`Cn✓` gap blocks diagrams 45–60, and diagrams 19–42 need in addition
    the interaction of two message substitutions on overlapping suffixes.
+
+   For the record, here is **Lemma F.1** as printed (journal pp.61–62), since
+   nothing in this development transcribes it and it is the prerequisite for
+   the rest of Table 5.  "For `x ∈ 𝔤𝔠`, assume `τ` is a trace and `τ --x--> π`.
+   Then, using the notations of Table 2:
+
+   * if `x = Mu`, then `π ∈ Trace`;
+   * if `x = Ls`, then `π ∈ Trace` iff `Ls✓(ν, η)`: either `η` is empty, or
+     `ν ↠ (η ⊎ {ν}).o`;
+   * if `x = Ex`, then `π ∈ Trace` iff `Ex✓(ν, η)`: either `η` is empty, or
+     `ν ↠ (η ⊎ {ν}).o`;
+   * if `x = Cn`, then `π ∈ Trace` iff `Cn✓(ε, ξ)`: either `ξ` is empty,
+     `ε.i ∉ ξ.c.t`, or `ε.seg ∩ ⋃ ξ.c.seg = ∅`;
+   * if `x = St`, then `π ∈ Trace` iff `St✓(α, μ)`: `α ↠ μ ∈ Mem`;
+   * if `x = Fw`, then `π ∈ Trace` iff `Fw✓(ω, ξ)`: `ω ↠ ξ.c`;
+   * if `x = Rw`, then `π ∈ Trace` iff `Rw✓(α, ξ)`: `α ↠ ξ.o`."
+
+   ⚠ Three caveats.  (a) The `St` clause is glyph-damaged in every extraction
+   we could produce; `α ↠ μ ∈ Mem` is our reading of it, the other six are
+   legible.  (b) `Ti`, `Ab` and `Di` are **absent** from Lemma F.1 — it is
+   stated for `x ∈ 𝔤𝔠` only — so the paper states no trace-preservation
+   criterion at all for the three `𝔞` rules, even though they have real ones
+   (`Ti` raises a local message's view, which can violate `ν.vw ⊑ ω`; `Di` adds
+   a local message, which can violate `α ν.lc < ν.t` and scatteredness).
+   (c) `Cn✓`'s middle disjunct `ε.i ∉ ξ.c.t` is the paper's shorthand for "no
+   message of `ξ.c` has final timestamp `ε.i`", i.e. the `Condense` did not in
+   fact merge anything in the closing memory; `Isotope/Elgot/RA/Pull.lean`
+   proves the two consequences this development uses of it
+   (`Scattered.segFree_of_pull`, `Scattered.notMem_of_pull`) but not the
+   criterion.  Nothing quoted above is formalized.
 3. **What diagrams 61–66 need instead**, and why they go through: `Fw` and `Rw`
    change no memory at all, so every memory of the intermediate pre-trace is a
    memory of a pre-trace already known to be a trace.  No new well-formedness
