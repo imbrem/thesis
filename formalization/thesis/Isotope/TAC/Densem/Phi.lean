@@ -14,7 +14,8 @@ abbrev Block := Isotope.TAC.Classical.Block
 abbrev CFG := Isotope.TAC.Classical.CFG
 end C
 
-private def incoming [DecidableEq κ] (pred : C.BlockId κ)
+/-- Select the value supplied by the uniquely matching predecessor edge. -/
+def incoming [DecidableEq κ] (pred : C.BlockId κ)
     (xs : List (C.Incoming ν κ)) : Option (C.Value ν) :=
   (xs.find? fun x => x.predecessor = pred).map Isotope.TAC.Classical.Incoming.value
 
