@@ -1,4 +1,5 @@
 import Isotope.LambdaIter.NoSubtyping.Semantics.Categorical
+import Isotope.LambdaIter.Semantics.IterationDiagrams
 
 /-!
 # Soundness infrastructure for coercion-free lambda-iter
@@ -92,13 +93,25 @@ variable {V : Type u₁} {C : Type u₂}
   (M : Semantics.Categorical.TypeModel τ V)
   [Semantics.Categorical.InstructionModel J M Φ]
 
-/-- The still-open diagrammatic obligations, isolated from the now-generic
-proof that semantic equality is a congruence. `core` comprises the concrete
-structural, sequencing, and iteration schemes; `uniformity` exposes exactly
-the induction hypothesis for its commuting square. -/
+/-- The still-open *syntax-to-combinator* obligations, isolated from the
+generic proof that semantic equality is a congruence.  The bare fixpoint,
+naturality, codiagonal, pure-uniformity, and strength diagrams are not model
+axioms: they are derived in `Semantics.IterationDiagrams`.  `core` remains the
+claim that the concrete environment-threading interpretation reduces each raw
+syntax scheme to those categorical diagrams (together with the structural and
+sequencing laws).  `uniformity` likewise retains only that reduction step and
+exposes the sound commuting-square induction hypothesis. -/
 class LawfulModel : Prop where
-  core {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
-      {a b : Tm ν Φ n} {A : τ} (hax : CoreAxiom pureEff a b)
+  structural {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+      {a b : Tm ν Φ n} {A : τ} (hax : StructuralAxiom pureEff a b)
+      (ha : HasType Φ Γ β a A) (hb : HasType Φ Γ β b A) :
+    denote J M ha = denote J M hb
+  sequencing {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+      {a b : Tm ν Φ n} {A : τ} (hax : SequencingAxiom pureEff a b)
+      (ha : HasType Φ Γ β a A) (hb : HasType Φ Γ β b A) :
+    denote J M ha = denote J M hb
+  contextualIteration {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+      {a b : Tm ν Φ n} {A : τ} (hax : IterationAxiom pureEff a b)
       (ha : HasType Φ Γ β a A) (hb : HasType Φ Γ β b A) :
     denote J M ha = denote J M hb
   uniformity {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
@@ -247,8 +260,14 @@ theorem sound (e : Eqv (τ := τ) (ν := ν) (Φ := Φ) (ε := ε)
           rw [iha', ihb']
         _ = _ := TypingCoherent.denote_eq _ _
   | ax hax ha hb =>
-      exact (TypingCoherent.denote_eq _ ha).trans <|
-        (LawfulModel.core hax ha hb).trans (TypingCoherent.denote_eq hb _)
+      exact (TypingCoherent.denote_eq _ ha).trans <| match hax with
+        | .structural h =>
+            (LawfulModel.structural h ha hb).trans (TypingCoherent.denote_eq hb _)
+        | .sequencing h =>
+            (LawfulModel.sequencing h ha hb).trans (TypingCoherent.denote_eq hb _)
+        | .iteration h =>
+            (LawfulModel.contextualIteration h ha hb).trans
+              (TypingCoherent.denote_eq hb _)
   | uniformity ha hh hp hb hb' square ih =>
       exact (TypingCoherent.denote_eq _ (.iter ha hb)).trans <|
         (LawfulModel.uniformity ha hh hp hb hb' square ih).trans
