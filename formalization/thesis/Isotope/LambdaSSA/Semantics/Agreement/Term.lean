@@ -44,7 +44,7 @@ private theorem coprod_inv_inr_agrees (A B : τ) (b : TyDen B) :
   simp
 
 private theorem coprod_hom_agrees (A B : τ) (e : TyDen (LambdaIter.coprod A B)) :
-    (Types.binaryCoproductIso (TyDen A) (TyDen B)).hom
+    (Types.binaryCoproductIso ((M (τ := τ)).obj A) ((M (τ := τ)).obj B)).hom
       (((M (τ := τ)).coprodIso A B).hom e) =
         TypeModel.coprodEquiv A B e := by
   change (Types.binaryCoproductIso _ _).hom
@@ -185,13 +185,31 @@ theorem denotes_toCategorical {Γ : VCtx τ} {t : Tm Φ} {A : τ}
       intro e
       cases hcase : TypeModel.coprodEquiv _ _ e with
       | inl a =>
-          simp only [Isotope.Elgot.liftPure, pure_bind]
-          rw [coprod_hom_agrees, hcase]
-          exact hL a
+          simp only [Isotope.Elgot.liftPure, Function.comp_apply, pure_bind]
+          generalize hs : (Types.binaryCoproductIso _ _).hom
+            (((M (τ := τ)).coprodIso _ _).hom e) = s
+          cases s with
+          | inl x =>
+              have hx : x = a := Sum.inl.inj
+                (hs.symm.trans ((coprod_hom_agrees _ _ e).trans hcase))
+              subst x
+              simpa [envToCategorical] using hL a
+          | inr y =>
+              have contra := hs.symm.trans ((coprod_hom_agrees _ _ e).trans hcase)
+              cases contra
       | inr b =>
-          simp only [Isotope.Elgot.liftPure, pure_bind]
-          rw [coprod_hom_agrees, hcase]
-          exact hR b
+          simp only [Isotope.Elgot.liftPure, Function.comp_apply, pure_bind]
+          generalize hs : (Types.binaryCoproductIso _ _).hom
+            (((M (τ := τ)).coprodIso _ _).hom e) = s
+          cases s with
+          | inl x =>
+              have contra := hs.symm.trans ((coprod_hom_agrees _ _ e).trans hcase)
+              cases contra
+          | inr y =>
+              have hy : y = b := Sum.inr.inj
+                (hs.symm.trans ((coprod_hom_agrees _ _ e).trans hcase))
+              subst y
+              simpa [envToCategorical] using hR b
   | abort d ih =>
       rcases ih with ⟨F, dF, eF⟩
       refine ⟨_, .abort dF, ?_⟩
