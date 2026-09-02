@@ -138,6 +138,38 @@ theorem block_commute [DecidableEq ν] (M : Densem.Model φ) (ρ : Env M ν)
       cases i <;> simp [instructions, bodyDenote, Densem.Block.denote,
         operand_commute, ih]
 
+private def lookup [DecidableEq κ] (g : C.CFG ν φ κ) (ℓ : κ) :
+    Option (C.Block ν φ κ) :=
+  (g.blocks.find? fun p => p.1 = ℓ).map Prod.snd
+
+private theorem lookup_map [DecidableEq κ] (g : C.CFG ν φ κ) (h : PhiFree g)
+    (ℓ : κ) :
+    ((cfg g h).blocks.find? fun p => p.1 = ℓ).map Prod.snd =
+      (lookup g ℓ).map block := by
+  unfold cfg lookup
+  induction g.blocks with
+  | nil => rfl
+  | cons p ps ih =>
+      simp only [List.map_cons, List.find?_cons]
+      split <;> simp_all
+
+private def continueFuel [DecidableEq ν] [DecidableEq κ]
+    (M : Densem.Model φ) (g : C.CFG ν φ κ) :
+    Nat → Env M ν → Densem.Exit κ M.Val → Option M.Val
+  | _, _, .return a => some a
+  | 0, _, .branch _ => none
+  | fuel + 1, ρ, .branch ℓ => do
+      let b ← lookup g ℓ
+      let (ρ', exit) ← blockDenote M ρ b
+      continueFuel M g fuel ρ' exit
+
+def cfgRunFuel [DecidableEq ν] [DecidableEq κ] (M : Densem.Model φ)
+    (g : C.CFG ν φ κ) : Nat → Env M ν → Option M.Val
+  | 0, _ => none
+  | fuel + 1, ρ => do
+      let (ρ', exit) ← blockDenote M ρ g.entry
+      continueFuel M g fuel ρ' exit
+
 end Executable
 
 end Isotope.TAC.Densem.Classical
