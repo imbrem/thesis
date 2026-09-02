@@ -216,6 +216,37 @@ theorem terminator_sim (M : Densem.Model φ) (current : Isotope.TAC.Classical.Co
       simp [renameTerminator, terminatorDenote,
         operand_sim M current source target h, il, ir]
 
+theorem terminator_sim_on (M : Densem.Model φ)
+    (needed : List ν) (current : Isotope.TAC.Classical.Convert.Env ν κ)
+    (source : Densem.Env M ν) (target : Densem.Env M (Version ν κ))
+    (h : EnvRelOn needed current source target)
+    (t : Isotope.TAC.Classical.Terminator ν φ κ)
+    (huses : ∀ x ∈ t.uses, x ∈ needed) :
+    terminatorDenote M target (renameTerminator current t) =
+      terminatorDenote M source t := by
+  induction t with
+  | br => rfl
+  | ret v =>
+      simp only [renameTerminator, terminatorDenote]
+      rw [value_sim_on M needed current source target h v
+        (fun x hx => huses x (by simpa [Isotope.TAC.Classical.Terminator.uses] using hx))]
+  | cond c l r il ir =>
+      simp only [renameTerminator, terminatorDenote]
+      rw [operand_sim_on M needed current source target h c
+        (fun x hx => huses x (by
+          simp only [Isotope.TAC.Classical.Terminator.uses, List.mem_append]
+          exact .inl (.inl hx)))]
+      cases hb : operandDenote M source c >>= M.viewBool with
+      | none => rfl
+      | some b =>
+        cases b
+        · exact ir (fun x hx => huses x (by
+            simp only [Isotope.TAC.Classical.Terminator.uses, List.mem_append]
+            exact .inr hx))
+        · exact il (fun x hx => huses x (by
+            simp only [Isotope.TAC.Classical.Terminator.uses, List.mem_append]
+            exact .inl (.inr hx)))
+
 theorem envRel_update [DecidableEq ν] [DecidableEq κ]
     (current : Isotope.TAC.Classical.Convert.Env ν κ)
     (source : Densem.Env M ν) (target : Densem.Env M (Version ν κ))
