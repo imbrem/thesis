@@ -1,4 +1,5 @@
 import Isotope.LambdaSSA.Semantics.Model
+import Isotope.LambdaSSA.Semantics.Assumptions
 
 /-! # Distributive Freyd semantics of lambda-SSA terms -/
 
