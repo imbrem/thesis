@@ -207,10 +207,21 @@ Read this before citing anything here as "the paper's".
    **partially correct only**: a computation that always diverges denotes `∅`,
    and divergent observations are discarded.  It is not the paper's semantics
    for anything, because the paper has no loops.
-8. **No parallel composition.**  `∥∥∥`, the interleaving of chronicles, and
-   `sup_μ`/`inf_μ` are not formalized; nothing here is a model of the
-   *concurrent* fragment of λRA.  What is formalized is the sequential monad
-   and the memory-access constants.
+8. **Parallel composition is formalized, but not its full equational theory.**
+   `Comp.par` (the paper's `|||`, §7.1 p.27, §7.2 p.29), chronicle
+   interleaving, `sup_μ` and `inf_μ` are in `RA/{Bounds,Parallel,Exchange}.lean`,
+   with Proposition 7.4, Symmetry as an equality of trace sets, thread inlining
+   `M ∥ N ↠ ⟨M,N⟩`, and Proposition E.1 (Generalized Sequencing).  What is
+   **not** proved: associativity of `|||`, the converse half of its unit law,
+   the remaining symmetric-monoidal laws claimed in the Fig. 3 caption (p.12),
+   and Deferral of Closure for `|||` (Lemma 8.5, p.41) — the last is not
+   reachable with the present design, because `inf_μ` is *characterised*
+   (`IsInfMem`) rather than constructed, so its four `𝔠` cases cannot produce
+   the required witness.  Existence of `inf_μ` is likewise not formalized, so
+   `parGen` carries `IsInfMem` as a hypothesis and `Comp.par` is not proved
+   non-empty in general (`par_pure_pure_nonempty` covers the concrete case).
+   The interaction of `|||` with iteration is untouched, and no litmus test
+   (SB, MP, SB+F) is proved in either direction.
 9. **Rewrite Castling is formalized only in the half that does not mention
    `𝔞`.**  Lemma 8.3 (p.39) covers `x ∈ 𝔞, y ∈ 𝔤𝔠` and `x ∈ 𝔠𝔞, y ∈ 𝔤`; what is
    proved here is `x ∈ 𝔠, y ∈ 𝔤`, i.e. diagrams 1–18 of Table 5 (p.62).  The
