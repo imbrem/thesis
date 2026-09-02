@@ -66,6 +66,14 @@ theorem transportHasType_heq {Γ : Ctx ν τ} {β : BoundCtx τ n}
     transportHasType (congrArg Tm.abort e) (.abort (C := A) h) =
       .abort (C := A) (transportHasType e h) := by cases e; rfl
 
+theorem transportHasType_bv_typed {Γ : Ctx ν τ} {β : BoundCtx τ n}
+    {β' : BoundCtx τ k} (r : TypedRenaming β β') (i : Fin n) :
+    transportHasType rfl
+        ((r.typed i) ▸ (HasType.bv (Φ := Φ) (Γ := Γ) (β := β')
+          (ι := r.toFun i))) =
+      ((r.typed i) ▸ (HasType.bv (Φ := Φ) (Γ := Γ) (β := β')
+        (ι := r.toFun i))) := rfl
+
 @[simp] theorem atomRename_toTm (ρ : Fin n → Fin k) (a : Atom ν Φ n) :
     (atomRename ρ a).toTm = a.toTm.rename ρ := by
   induction a <;> simp [atomRename, Atom.toTm, Tm.rename, *]
