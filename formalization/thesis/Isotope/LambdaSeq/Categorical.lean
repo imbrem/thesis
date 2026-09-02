@@ -105,6 +105,51 @@ noncomputable def denote : {Γ : LambdaIter.Ctx ν τ} → {n : Nat} →
 end Denotation
 end Isotope.LambdaSeq.Semantics.Categorical
 
+namespace Isotope.LambdaSeq.Semantics.Categorical.Chosen
+
+open CategoryTheory CategoryTheory.Limits
+
+variable {V : Type u₁} {C : Type u₂}
+  [Category.{v₁} V] [Category.{v₂} C]
+  [CartesianMonoidalCategory V] [SymmetricCategory V]
+  [PremonoidalCategory C] [SymmetricPremonoidalCategory C]
+  [HasFiniteCoproducts V] [HasFiniteCoproducts C]
+  [DistributiveTensor V] [DistributivePremonoidalCategory C]
+  [Iteration C] [ElgotCategory C]
+  (J : Functor V C) [StrongElgotFreydCategory J]
+  {τ : Type u₃} [LambdaIter.TypeFormers τ] [LambdaIter.Subtyping τ]
+  (M : LambdaIter.Subtyping.Semantics.Categorical.TypeModel τ V)
+  {ν : Type u₄} [DecidableEq ν]
+  {Φ : Type*} [LambdaIter.HasTy Φ τ]
+  [LambdaIter.Subtyping.Semantics.Categorical.InstructionModel J M Φ]
+
+/-- Chosen categorical semantics for exact lambda-seq, using its canonical
+exact inclusion witness in lambda-iter. -/
+noncomputable def denote {Γ : LambdaIter.Ctx ν τ} {n : Nat}
+    {β : LambdaSeq.LocallyNameless.BoundCtx τ n}
+    {t : LambdaSeq.LocallyNameless.Tm ν Φ n} {A : τ}
+    (h : LambdaSeq.LocallyNameless.HasType Φ Γ β t A) :=
+  LambdaIter.LocallyNameless.Categorical.denote J M h.embedIter
+
+theorem denote_embedIter {Γ : LambdaIter.Ctx ν τ} {n : Nat}
+    {β : LambdaSeq.LocallyNameless.BoundCtx τ n}
+    {t : LambdaSeq.LocallyNameless.Tm ν Φ n} {A : τ}
+    (h : LambdaSeq.LocallyNameless.HasType Φ Γ β t A) :
+    LambdaIter.LocallyNameless.Categorical.denote J M h.embedIter = denote J M h := rfl
+
+theorem denote_independent
+    [LambdaIter.LocallyNameless.Categorical.TypingCoherent
+      (ν := ν) (Φ := Φ) J M]
+    {Γ : LambdaIter.Ctx ν τ} {n : Nat}
+    {β : LambdaSeq.LocallyNameless.BoundCtx τ n}
+    {t : LambdaSeq.LocallyNameless.Tm ν Φ n} {A : τ}
+    (h : LambdaSeq.LocallyNameless.HasType Φ Γ β t A)
+    (k : LambdaIter.LocallyNameless.HasType Φ Γ β t.embedIter A) :
+    LambdaIter.LocallyNameless.Categorical.denote J M k = denote J M h :=
+  LambdaIter.LocallyNameless.Categorical.TypingCoherent.denote_eq k h.embedIter
+
+end Isotope.LambdaSeq.Semantics.Categorical.Chosen
+
 namespace Isotope.LambdaSeq.Subtyping.Semantics.Categorical
 
 open CategoryTheory CategoryTheory.Category

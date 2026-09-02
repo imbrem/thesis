@@ -1,7 +1,10 @@
 import Isotope.LambdaIter.Named.ToLocallyNameless
 import Isotope.LambdaIter.Typing
+import Isotope.LambdaIter.Semantics.Categorical
 
 /-! # Exact typed named-to-locally-nameless translation -/
+
+universe v₁ v₂ u₁ u₂ v r
 
 namespace Isotope.LambdaSSA.Translation.Frontend.NamedToLocallyNameless
 
@@ -86,5 +89,88 @@ theorem translateHasTypeClosed {Γ : Ctx ν τ} {t : LambdaIter.Named.Tm ν Φ} 
     Nonempty (LambdaIter.LocallyNameless.HasType Φ Γ .nil
       (LambdaIter.Named.ToLocallyNameless.translateClosed t) A) :=
   translateHasType (Aligned.nil Γ) h
+
+/-- A stable API for the witness hidden by `translateHasTypeClosed`. -/
+noncomputable def chooseHasTypeClosed {Γ : Ctx ν τ}
+    {t : LambdaIter.Named.Tm ν Φ} {A : τ}
+    (h : LambdaIter.Named.HasType Φ Γ t A) :
+    LambdaIter.LocallyNameless.HasType Φ Γ .nil
+      (LambdaIter.Named.ToLocallyNameless.translateClosed t) A :=
+  Classical.choice (translateHasTypeClosed h)
+
+section Categorical
+
+open CategoryTheory CategoryTheory.Limits
+
+variable [Subtyping τ]
+
+variable {V : Type u₁} {C : Type u₂}
+  [Category.{v₁} V] [Category.{v₂} C]
+  [CartesianMonoidalCategory V] [SymmetricCategory V]
+  [PremonoidalCategory C] [SymmetricPremonoidalCategory C]
+  [HasFiniteCoproducts V] [HasFiniteCoproducts C]
+  [DistributiveTensor V] [DistributivePremonoidalCategory C]
+  [Iteration C] [ElgotCategory C]
+  (J : Functor V C) [StrongElgotFreydCategory J]
+  (M : LambdaIter.Subtyping.Semantics.Categorical.TypeModel τ V)
+  [LambdaIter.Subtyping.Semantics.Categorical.InstructionModel J M Φ]
+
+/-- Closed named exact terms are assigned the denotation of the chosen
+locally-nameless typing witness. -/
+noncomputable def denoteClosedChosen {Γ : Ctx ν τ}
+    {t : LambdaIter.Named.Tm ν Φ} {A : τ}
+    (h : LambdaIter.Named.HasType Φ Γ t A) :=
+  LambdaIter.LocallyNameless.Categorical.denote J M (chooseHasTypeClosed h)
+
+/-- Exact typing coherence makes the categorical denotation independent of
+which witness of the proposition-truncated translation is selected. -/
+theorem denoteClosedChosen_independent
+    [LambdaIter.LocallyNameless.Categorical.TypingCoherent
+      (ν := ν) (Φ := Φ) J M]
+    {Γ : Ctx ν τ} {t : LambdaIter.Named.Tm ν Φ} {A : τ}
+    (h : LambdaIter.Named.HasType Φ Γ t A)
+    (k : LambdaIter.LocallyNameless.HasType Φ Γ .nil
+      (LambdaIter.Named.ToLocallyNameless.translateClosed t) A) :
+    LambdaIter.LocallyNameless.Categorical.denote J M k =
+      denoteClosedChosen J M h :=
+  LambdaIter.LocallyNameless.Categorical.TypingCoherent.denote_eq
+    k (chooseHasTypeClosed h)
+
+end Categorical
+
+section Monadic
+
+variable [Subtyping τ]
+variable [Subtyping.Semantics.TypeModel.{u, v} τ]
+variable {ε : Type r} [HasEff Φ ε] [Bot ε]
+variable {m : Type v → Type v} [Monad m] [LawfulMonad m] [Isotope.Elgot.Iterate m]
+variable [Subtyping.Semantics.InstructionModel Φ τ ε m]
+
+/-- Monadic denotation of a closed named term through the canonical chosen
+exact locally-nameless typing witness. -/
+noncomputable def denoteClosedChosenMonadic {Γ : Ctx ν τ}
+    {t : LambdaIter.Named.Tm ν Φ} {A : τ}
+    (h : LambdaIter.Named.HasType Φ Γ t A)
+    (γ : Subtyping.Semantics.CtxDen Γ) : m (Subtyping.Semantics.TyDen A) :=
+  LambdaIter.Semantics.denote (ε := ε) (m := m) (chooseHasTypeClosed h)
+    γ PUnit.unit
+
+/-- The monadic named-to-locally-nameless square for any selected witness;
+exact typing coherence makes the result independent of that selection. -/
+theorem denoteClosedChosenMonadic_independent
+    [LambdaIter.Semantics.TypingCoherent (τ := τ) (ν := ν) (Φ := Φ)
+      (ε := ε) (m := m)]
+    {Γ : Ctx ν τ} {t : LambdaIter.Named.Tm ν Φ} {A : τ}
+    (h : LambdaIter.Named.HasType Φ Γ t A)
+    (k : LambdaIter.LocallyNameless.HasType Φ Γ .nil
+      (LambdaIter.Named.ToLocallyNameless.translateClosed t) A)
+    (γ : Subtyping.Semantics.CtxDen Γ) :
+    LambdaIter.Semantics.denote (ε := ε) (m := m) k γ PUnit.unit =
+      denoteClosedChosenMonadic (ε := ε) (m := m) h γ := by
+  have hk := LambdaIter.Semantics.TypingCoherent.denote_eq
+    (τ := τ) (ε := ε) (m := m) k (chooseHasTypeClosed h)
+  exact congrFun (congrFun hk γ) PUnit.unit
+
+end Monadic
 
 end Isotope.LambdaSSA.Translation.Frontend.NamedToLocallyNameless
