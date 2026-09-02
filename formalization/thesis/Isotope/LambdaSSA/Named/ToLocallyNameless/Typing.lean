@@ -125,6 +125,80 @@ theorem push [DecidableEq ν] (h : LookupAligned Γ ρ β Δ)
         | inl i => simpa [er] using h hx'
         | inr z => simpa [er] using h hx'
 
+theorem cast [DecidableEq ν] {n m : Nat} {ρ : Scope ν n}
+    {β : LocallyNameless.BoundCtx τ n} (h : LookupAligned Γ ρ β Δ)
+    (e : n = m) (β' : LocallyNameless.BoundCtx τ m)
+    (hβ : ∀ i, β'.get (Fin.cast e i) = β.get i) :
+    LookupAligned Γ (Scope.cast e ρ) β' Δ := by
+  intro x A hx
+  rw [Scope.resolve_cast]
+  cases er : ρ.resolve x with
+  | inl i =>
+      simp only [er, Sum.map_inl]
+      exact (hβ i).trans (by simpa [er] using h hx)
+  | inr y => simpa [er] using h hx
+
+theorem pushAll [DecidableEq ν] {arity k : Nat} {ρ : Scope ν k}
+    {β : LocallyNameless.BoundCtx τ k} (h : LookupAligned Γ ρ β Δ)
+    (labels : Fin arity → Named.Binder ν) (R : Fin arity → τ) :
+    LookupAligned Γ (Scope.pushAll labels ρ)
+      (LocallyNameless.extendLabelCtx β R)
+      (Named.extendLabels Δ arity labels R) := by
+  induction arity with
+  | zero =>
+      apply LookupAligned.cast h (Nat.zero_add _).symm
+      intro i
+      simp only [LocallyNameless.extendLabelCtx,
+        LambdaIter.LocallyNameless.BoundCtx.get_ofFin]
+      have hi : Fin.cast (Nat.zero_add _).symm i = Fin.natAdd 0 i := by
+        apply Fin.ext
+        simp
+      rw [hi, Fin.addCases_right]
+  | succ arity ih =>
+      let labels' : Fin arity → Named.Binder ν := fun i => labels i.succ
+      let R' : Fin arity → τ := fun i => R i.succ
+      have ht : LookupAligned Γ
+          (.push (labels 0) (Scope.pushAll labels' ρ))
+          (.snoc (LocallyNameless.extendLabelCtx β R') (R 0))
+          (.snoc (Named.extendLabels Δ arity labels' R') (labels 0) (R 0)) :=
+        LookupAligned.push (ih labels' R') (labels 0) (R 0)
+      let e : arity + k + 1 = arity + 1 + k := by omega
+      simp only [Scope.pushAll, Named.extendLabels, List.ofFn_succ]
+      dsimp only [labels', R'] at ht ⊢
+      apply LookupAligned.cast ht e
+      intro i
+      refine Fin.cases ?_ (fun j => ?_) i
+      · simp only [LocallyNameless.extendLabelCtx,
+          LambdaIter.LocallyNameless.BoundCtx.get_ofFin,
+          LambdaIter.LocallyNameless.BoundCtx.get]
+        have hzero : Fin.cast e (0 : Fin (arity + k + 1)) =
+            (0 : Fin (arity + 1 + k)) := by
+          apply Fin.ext
+          simp
+        rw [hzero]
+        have hzadd : (0 : Fin (arity + 1 + k)) =
+            Fin.castAdd k (0 : Fin (arity + 1)) := by
+          apply Fin.ext
+          simp
+        rw [hzadd, Fin.addCases_left]
+        rfl
+      · simp only [LocallyNameless.extendLabelCtx,
+          LambdaIter.LocallyNameless.BoundCtx.get_ofFin,
+          LambdaIter.LocallyNameless.BoundCtx.get]
+        simp only [Fin.cases_succ]
+        cases j using Fin.addCases with
+        | left q =>
+          have hq : Fin.cast e (Fin.castAdd k q).succ =
+              Fin.castAdd k q.succ := by apply Fin.ext; simp
+          rw [hq, Fin.addCases_left, Fin.addCases_left]
+        | right q =>
+          have hq : Fin.cast e (Fin.natAdd arity q).succ =
+              Fin.natAdd (arity + 1) q := by
+            apply Fin.ext
+            change arity + q.val + 1 = arity + 1 + q.val
+            omega
+          rw [hq, Fin.addCases_right, Fin.addCases_right]
+
 end LookupAligned
 
 noncomputable def translateTm_hasType [DecidableEq ν] [LambdaIter.TypeFormers τ]
