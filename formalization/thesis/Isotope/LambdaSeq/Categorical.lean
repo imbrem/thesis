@@ -104,3 +104,42 @@ noncomputable def denote : {Γ : LambdaIter.Ctx ν τ} → {n : Nat} →
 
 end Denotation
 end Isotope.LambdaSeq.Semantics.Categorical
+
+namespace Isotope.LambdaSeq.Subtyping.Semantics.Categorical
+
+open CategoryTheory CategoryTheory.Category
+open CategoryTheory.PremonoidalCategory
+
+open scoped MonoidalCategory
+
+section Denotation
+
+variable {V : Type u₁} {C : Type u₂}
+  [Category.{v₁} V] [Category.{v₂} C]
+  [CartesianMonoidalCategory V] [SymmetricCategory V]
+  [PremonoidalCategory C] [SymmetricPremonoidalCategory C]
+  (J : Functor V C) [FreydCategory J]
+  {τ : Type u₃} [LambdaIter.TypeFormers τ] [LambdaIter.Subtyping τ]
+  (M : Isotope.LambdaSeq.Semantics.Categorical.TypeModel τ V)
+  {ν : Type u₄} [DecidableEq ν]
+  {Φ : Type*} [LambdaIter.HasTy Φ τ]
+  [Isotope.LambdaSeq.Semantics.Categorical.InstructionModel J M Φ]
+
+/-- Categorical denotation of the proof-relevant coercive sequential judgment. -/
+noncomputable def denote : {Γ : LambdaIter.Ctx ν τ} → {n : Nat} →
+    {β : LambdaSeq.LocallyNameless.BoundCtx τ n} →
+    {t : LambdaSeq.LocallyNameless.Tm ν Φ n} → {A : τ} →
+    LambdaSeq.Subtyping.LocallyNameless.HasType Φ Γ β t A →
+      (J.obj (Isotope.LambdaSeq.Semantics.Categorical.envObj M Γ β) ⟶ J.obj (M.obj A))
+  | _, _, _, _, _, .fv h =>
+      J.map (Isotope.LambdaSeq.Semantics.Categorical.freeLookup M _ h)
+  | _, _, _, _, _, .bv => J.map (Isotope.LambdaSeq.Semantics.Categorical.boundVar M _)
+  | _, _, _, _, _, .op ha => denote ha ≫
+      Isotope.LambdaSeq.Semantics.Categorical.InstructionModel.denote _
+  | Γ, _, β, _, _, .let₁ ha hb =>
+      LambdaIter.Subtyping.Semantics.Categorical.bind J (denote ha) <|
+        J.map (Isotope.LambdaSeq.Semantics.Categorical.envSnocIso M Γ β _).hom ≫ denote hb
+  | _, _, _, _, _, .sub ha d => denote ha ≫ J.map (M.subty d)
+
+end Denotation
+end Isotope.LambdaSeq.Subtyping.Semantics.Categorical
