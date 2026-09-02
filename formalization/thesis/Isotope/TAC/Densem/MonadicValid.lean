@@ -167,4 +167,182 @@ def State.forget [DecidableEq ν] [DecidableEq κ]
     {g : Isotope.TAC.Classical.CFG ν φ κ} (s : State M g) :
     GuardedState M ν κ := (s.store.env, s.pred, s.label)
 
+def Store.restrict [DecidableEq ν] {vars : List ν} (s : Store M vars) :
+    Store M vars where
+  env := Isotope.TAC.Densem.Convert.Monadic.restrict M vars s.env
+  total := by
+    intro x hx
+    rcases s.total x hx with ⟨a, ha⟩
+    exact ⟨a, by simp [Isotope.TAC.Densem.Convert.Monadic.restrict, hx, ha]⟩
+
+def step [Monad m] [DecidableEq ν] [DecidableEq κ]
+    (g : Isotope.TAC.Classical.CFG ν φ κ) :
+    State M g → m (M.Val ⊕ State M g)
+  | s => match hs : Isotope.TAC.Densem.Phi.lookup g s.label with
+      | none => M.fail
+      | some b => do
+          let result ← block M s.store b.body b.terminator
+          match he : result.2.1 with
+          | .return a => pure (.inl a)
+          | .branch next =>
+              pure (.inr {
+                store := result.1.restrict
+                pred := .named s.label
+                label := next
+                edge := by
+                  by_cases hempty : sourceVars g = []
+                  · exact .inl hempty
+                  · apply Or.inr
+                    have hcfg : g.lookup (.named s.label) = some b := by
+                      rw [← Isotope.TAC.Densem.Lookup.phi_lookup_eq]
+                      exact hs
+                    have htarget : next ∈ b.terminator.targets := by
+                      have hv := result.2.2
+                      rw [he] at hv
+                      exact hv
+                    apply (mem_predecessors g (.named s.label) (.named next)).2
+                    constructor
+                    · unfold Isotope.TAC.Classical.CFG.successors
+                      rw [hcfg]
+                      simpa using htarget
+                    · apply Or.inr
+                      refine ⟨s.label, ?_, rfl⟩
+                      unfold Isotope.TAC.Classical.CFG.labels
+                      exact List.mem_map.mpr ⟨(s.label, b),
+                        Isotope.TAC.Densem.Convert.lookup_some_mem hs, rfl⟩ })
+
+theorem step_forget_source [Monad m] [LawfulMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    [Isotope.TAC.Densem.Phi.Monadic.LawfulFailure M]
+    (g : Isotope.TAC.Classical.CFG ν φ κ) (s : State M g) :
+    (step M g s >>= fun result => pure (Sum.map id (State.forget M) result)) =
+      sourcePredStep M g (State.forget M s) := by
+  simp only [step, sourcePredStep, State.forget, sourceStepOn]
+  split
+  next hs =>
+      simp only [hs]
+      exact (Isotope.TAC.Densem.Phi.Monadic.LawfulFailure.fail_bind _).trans
+        (Isotope.TAC.Densem.Phi.Monadic.LawfulFailure.fail_bind _).symm
+  next b hs =>
+      simp only [hs, bind_assoc]
+      have hb := block_forget M s.store b.body b.terminator
+      rw [show Isotope.TAC.Densem.Classical.block b =
+        Isotope.TAC.Densem.Classical.instructions b.body
+          (Isotope.TAC.Densem.Classical.terminator b.terminator) from rfl]
+      rw [← hb]
+      simp only [bind_assoc]
+      apply congrArg (fun k => block M s.store b.body b.terminator >>= k)
+      funext result
+      rcases result with ⟨store, exit⟩
+      rcases exit with ⟨exit, hexit⟩
+      cases exit <;> simp [Store.restrict, State.forget]
+
+private theorem sourcePredStep_some [Monad m] [LawfulMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    (g : Isotope.TAC.Classical.CFG ν φ κ)
+    (store : MEnv M ν) (pred : BlockId κ) (label : κ)
+    (b : Isotope.TAC.Classical.Block ν φ κ)
+    (hs : Isotope.TAC.Densem.Phi.lookup g label = some b) :
+    sourcePredStep M g (store, pred, label) = (do
+      let result ← Isotope.TAC.Densem.Monadic.Block.denote M store
+        (Isotope.TAC.Densem.Classical.block b)
+      match result.2 with
+      | .return a => pure (.inl a)
+      | .branch next => pure (.inr
+          (restrict M (sourceVars g) result.1, .named label, next))) := by
+  simp only [sourcePredStep, sourceStepOn, hs, bind_assoc]
+  apply congrArg (fun k => Isotope.TAC.Densem.Monadic.Block.denote M store
+    (Isotope.TAC.Densem.Classical.block b) >>= k)
+  funext result
+  rcases result with ⟨rho, exit⟩
+  cases exit <;> simp
+
+theorem step_forget_guarded [Monad m] [LawfulMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    [Isotope.TAC.Densem.Phi.Monadic.LawfulFailure M]
+    (g : Isotope.TAC.Classical.CFG ν φ κ) (s : State M g) :
+    (step M g s >>= fun result => pure (Sum.map id (State.forget M) result)) =
+      guardedSourceStep M g (State.forget M s) := by
+  rw [step_forget_source M g s]
+  rcases s with ⟨store, pred, label, hedge⟩
+  simp only [State.forget, guardedSourceStep]
+  split
+  next hs =>
+      simp only [sourcePredStep, sourceStepOn, hs]
+      exact (Isotope.TAC.Densem.Phi.Monadic.LawfulFailure.fail_bind
+        (M := M) (fun result : M.Val ⊕ (MEnv M ν × κ) =>
+          pure (Sum.map id (fun next =>
+            (next.1, BlockId.named label, next.2)) result)))
+  next b hs =>
+      have hpresent : allPresent M (sourceVars g) store.env = true :=
+        (allPresent_eq_true_iff M _ _).2 store.total
+      rw [sourcePredStep_some M g store.env pred label b hs]
+      rw [dif_pos hpresent]
+      rcases hedge with hempty | hp
+      · simp only [hempty, bind_assoc, pure_bind]
+        rfl
+      · by_cases hempty : sourceVars g = []
+        · simp only [hempty, bind_assoc, pure_bind]
+          rfl
+        · obtain ⟨x, xs, hvars⟩ := List.exists_cons_of_ne_nil hempty
+          simp only [hvars, hp, if_true, bind_assoc, pure_bind]
+          rfl
+
+theorem iter_forget_source [Monad m] [LawfulMonad m]
+    [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    [Isotope.TAC.Densem.Phi.Monadic.LawfulFailure M]
+    (g : Isotope.TAC.Classical.CFG ν φ κ) (s : State M g) :
+    Isotope.Elgot.iter (step M g) s =
+      Isotope.Elgot.iter (sourcePredStep M g) (State.forget M s) := by
+  let f := step M g
+  let target := sourcePredStep M g
+  have comm : Isotope.Elgot.kcomp f
+      (Isotope.Elgot.liftPure (Sum.map id (State.forget M))) =
+      Isotope.Elgot.kcomp (Isotope.Elgot.liftPure (State.forget M)) target := by
+    funext state
+    simp only [Isotope.Elgot.kcomp, Isotope.Elgot.liftPure,
+      Function.comp_apply, pure_bind]
+    exact step_forget_source M g state
+  have hu := Isotope.Elgot.LawfulElgotMonad.uniformity f target
+    (State.forget M) comm
+  change Isotope.Elgot.iter f s =
+    Isotope.Elgot.iter target (State.forget M s)
+  rw [hu]
+  simp [Isotope.Elgot.kcomp, Isotope.Elgot.liftPure]
+
+theorem iter_forget_guarded [Monad m] [LawfulMonad m]
+    [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    [Isotope.TAC.Densem.Phi.Monadic.LawfulFailure M]
+    (g : Isotope.TAC.Classical.CFG ν φ κ) (s : State M g) :
+    Isotope.Elgot.iter (step M g) s =
+      Isotope.Elgot.iter (guardedSourceStep M g) (State.forget M s) := by
+  let f := step M g
+  let target := guardedSourceStep M g
+  have comm : Isotope.Elgot.kcomp f
+      (Isotope.Elgot.liftPure (Sum.map id (State.forget M))) =
+      Isotope.Elgot.kcomp (Isotope.Elgot.liftPure (State.forget M)) target := by
+    funext state
+    simp only [Isotope.Elgot.kcomp, Isotope.Elgot.liftPure,
+      Function.comp_apply, pure_bind]
+    exact step_forget_guarded M g state
+  have hu := Isotope.Elgot.LawfulElgotMonad.uniformity f target
+    (State.forget M) comm
+  change Isotope.Elgot.iter f s =
+    Isotope.Elgot.iter target (State.forget M s)
+  rw [hu]
+  simp [Isotope.Elgot.kcomp, Isotope.Elgot.liftPure]
+
+/-- On proof-carrying reachable states, the executable guards are
+observationally irrelevant to complete-Elgot iteration. -/
+theorem iter_guarded_eq_source [Monad m] [LawfulMonad m]
+    [Isotope.Elgot.Iterate m] [Isotope.Elgot.LawfulElgotMonad m]
+    [DecidableEq ν] [DecidableEq κ]
+    [Isotope.TAC.Densem.Phi.Monadic.LawfulFailure M]
+    (g : Isotope.TAC.Classical.CFG ν φ κ) (s : State M g) :
+    Isotope.Elgot.iter (guardedSourceStep M g) (State.forget M s) =
+      Isotope.Elgot.iter (sourcePredStep M g) (State.forget M s) := by
+  rw [← iter_forget_guarded M g s, iter_forget_source M g s]
+
 end Isotope.TAC.Densem.Convert.Monadic.Valid
