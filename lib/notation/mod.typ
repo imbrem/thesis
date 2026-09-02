@@ -1,3 +1,4 @@
 // Re-exports all notation submodules.
 #import "/lib/notation/lambda-iter.typ": *
 #import "/lib/notation/ssa.typ": *
+#import "/lib/notation/lambda-iter-opsem.typ": *
