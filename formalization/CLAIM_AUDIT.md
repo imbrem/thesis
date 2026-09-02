@@ -36,6 +36,38 @@ on the declarations named in that row reports only `propext`,
 Mathlib's `Equiv`/`Fintype` API). The module docstring of
 `Isotope/Elgot/TSO.lean` carries the corresponding honest-boundary statement.
 
+### The empty signature and its two model theorems
+
+`Isotope/LambdaIter/Signature/Empty.lean` makes the empty base-type set
+(`EmptyTy = Ty PEmpty`) and the empty instruction set (`EmptyInstr = PEmpty`)
+first-class, shared verbatim by `lambda_{iter, seq, case}`;
+`Subtyping/Semantics/Models/Empty.lean` proves that this signature has a model
+in every monad and in every Freyd category, and
+`Subtyping/Semantics/Models/CategoricalFree.lean` supplies the type model of
+`Ty alpha` in an arbitrary cartesian value category with finite coproducts
+(the previous categorical type model, `Categorical.ofTypeModel`, was hard-wired
+to `V = Type v`).
+
+| Claim | Exact evidence | Scope | Class |
+|---|---|---|---|
+| Empty base-type set and instruction set are first-class and shared by all three calculi | `LambdaIter/Signature/Empty.lean`: `EmptyBase`, `EmptyTy`, `EmptyInstr`, `EmptyEff`, `instHasTyEmpty`, `instHasEffEmpty`, `instSignatureEmpty`; `EmptyTy.instInfinite` | The universe is non-trivial (infinitely many types, no base types). `Models/Null.lean` is re-derived from it. | checked |
+| Free categorical type model in an arbitrary value category | `Models/CategoricalFree.lean`: `Categorical.Free.typeModel`, `Categorical.Free.lawfulTypeModel`; `LambdaSeq.Semantics.Categorical.freeTypeModel` | Lawful in every cartesian monoidal `V` with finite coproducts. Type formers are interpreted on the nose, so all six laws are near-trivial. | checked |
+| A model in every monad | `Models/Empty.lean`: `emptyTypeModel`, `emptyLawfulTypeModel`, `emptyInstructionModel`, and `EmptySignature.denote{Seq,Case,Iter}` | A total denotation exists for lambda-seq and lambda-case in every `[Monad m]`, and for lambda-iter in every `[Monad m] [Iterate m]`. The instruction half is vacuous (`PEmpty.elim`). | checked |
+| A model in every Freyd category | `Models/Empty.lean`: `Categorical.emptyTypeModel`, `Categorical.emptyLawfulTypeModel`, `Categorical.emptyInstructionModel`, and `EmptySignature.denote{Seq,Case,Iter,IterExact}Freyd` | lambda-seq needs plain `FreydCategory`; lambda-case needs `DistributiveFreydCategory` (a plain Freyd category does **not** suffice); lambda-iter needs `StrongElgotFreydCategory`. | checked |
+
+**Honest boundary for these four rows.** They are *interface* theorems. What is
+proved is that the empty signature supplies a `TypeModel` and an
+`InstructionModel`, hence a total `denote`, in every such frame. It is **not**
+proved that every monad or every Freyd category is a *lawful* model in the
+sense of validating the equational theory: that requires instances of
+`LocallyNameless.Categorical.TypingCoherent` and of the `LawfulModel`-style
+classes, and no such instance exists anywhere under `Isotope/` for these three
+calculi. The instruction half of both theorems is vacuous by construction; the
+genuine content of the categorical theorem is the type model. No soundness,
+adequacy, initiality, or completeness statement is added by this work, and the
+two gaps recorded elsewhere in this file — no category of models, no unique
+model morphism, no initial object — remain open.
+
 ## Frozen baselines and build evidence
 
 | Repository | Audited commit | Toolchain | Clean build / axiom evidence |
