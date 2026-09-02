@@ -37,6 +37,7 @@ theorem programRename_toTm (p : Program ν Φ n) :
       intro k ρ
       simp only [programRename, Program.toTm, ii, ib, Syntax.rename_let₁]
       congr 1
+
   | let₂ a body ib =>
       intro k ρ
       simp only [programRename, Program.toTm, atomRename_toTm, ib, Syntax.rename_let₂]
