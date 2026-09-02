@@ -1,8 +1,12 @@
 import Isotope.LambdaIter.Subtyping.Named.Equiv
+import Isotope.LambdaIter.Subtyping.Named.Structural
 
 /-! # Weakening of the named equational judgment -/
 
 namespace Isotope.LambdaIter.Subtyping.Named
+
+open Isotope.LambdaIter
+open Isotope.LambdaIter.Named
 
 open Isotope.LambdaIter.Named
 

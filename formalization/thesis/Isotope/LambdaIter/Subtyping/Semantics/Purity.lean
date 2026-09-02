@@ -12,6 +12,9 @@ of an ordinary value through which the computation factors.
 namespace Isotope.LambdaIter.Subtyping.Semantics
 
 open Isotope.LambdaIter.LocallyNameless
+open Isotope.LambdaIter.Subtyping.LocallyNameless
+
+open Isotope.LambdaIter.LocallyNameless
 
 universe u v w q r
 

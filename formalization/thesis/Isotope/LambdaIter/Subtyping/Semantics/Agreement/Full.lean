@@ -2,6 +2,9 @@ import Isotope.LambdaIter.Subtyping.Semantics.Agreement.Combinators
 
 namespace Isotope.LambdaIter.Subtyping.Semantics
 
+open Isotope.LambdaIter.LocallyNameless
+open Isotope.LambdaIter.Subtyping.LocallyNameless
+
 open CategoryTheory CategoryTheory.Limits Isotope.Elgot
 open Isotope.LambdaIter.LocallyNameless
 

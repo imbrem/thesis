@@ -5,6 +5,9 @@ import Isotope.LambdaIter.Subtyping.LocallyNameless.TypedEquiv
 
 namespace Isotope.LambdaIter.Subtyping.Semantics
 
+open Isotope.LambdaIter.LocallyNameless
+open Isotope.LambdaIter.Subtyping.LocallyNameless
+
 open Isotope.Elgot
 open Isotope.LambdaIter.LocallyNameless
 

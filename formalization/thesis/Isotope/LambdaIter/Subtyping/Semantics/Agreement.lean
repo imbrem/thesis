@@ -14,6 +14,9 @@ universe u v w q r
 
 namespace Isotope.LambdaIter.Subtyping.Semantics
 
+open Isotope.LambdaIter.LocallyNameless
+open Isotope.LambdaIter.Subtyping.LocallyNameless
+
 open CategoryTheory CategoryTheory.Limits
 open Isotope.Elgot
 open Isotope.LambdaIter.LocallyNameless
@@ -81,16 +84,24 @@ noncomputable instance ofTypeModelLawful [Semantics.LawfulTypeModel.{u, v} τ] :
     simpa [ofTypeModel] using
       Semantics.LawfulTypeModel.coe_tensor f g p
   subty_coprod f g := by
-    apply (cancel_mono (Types.binaryCoproductIso _ _).hom).1
-    rw [Category.assoc, Category.assoc, types_coprodMap_comparison]
-    rw [ofTypeModel_coprodIso_hom_comparison]
-    rw [← Category.assoc, ofTypeModel_coprodIso_hom_comparison]
     funext s
-    change Semantics.TypeModel.coprodEquiv _ _
-        (Semantics.TypeModel.coe (Subty.coprod f g) s) =
-      Sum.map (Semantics.TypeModel.coe f) (Semantics.TypeModel.coe g)
-        (Semantics.TypeModel.coprodEquiv _ _ s)
-    exact Semantics.LawfulTypeModel.coe_coprod f g s
+    apply_fun (Types.binaryCoproductIso _ _).hom
+    · change (Semantics.TypeModel.coe (Subty.coprod f g) ≫
+          ((ofTypeModel (τ := τ)).coprodIso _ _).hom ≫
+          (Types.binaryCoproductIso _ _).hom) s =
+        (((ofTypeModel (τ := τ)).coprodIso _ _).hom ≫
+          coprod.map (Semantics.TypeModel.coe f) (Semantics.TypeModel.coe g) ≫
+          (Types.binaryCoproductIso _ _).hom) s
+      rw [ofTypeModel_coprodIso_hom_comparison]
+      rw [types_coprodMap_comparison]
+      rw [← Category.assoc, ofTypeModel_coprodIso_hom_comparison]
+      change Semantics.TypeModel.coprodEquiv _ _
+          (Semantics.TypeModel.coe (Subty.coprod f g) s) =
+        Sum.map (Semantics.TypeModel.coe f) (Semantics.TypeModel.coe g)
+          (Semantics.TypeModel.coprodEquiv _ _ s)
+      exact Semantics.LawfulTypeModel.coe_coprod f g s
+    · intro x y h
+      simpa using congrArg (Types.binaryCoproductIso _ _).inv h
   subty_empty A := by
     funext z
     simpa [ofTypeModel] using
