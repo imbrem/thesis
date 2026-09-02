@@ -31,8 +31,10 @@ Three carriers, iterated by reachability:
 * Worked examples: `iter_immediate`, `iter_forever`, `iter_coin`, `iter_diverge_or_return`,
   `iter_countUp` (a two-way-branching body whose result set is all of `ℕ`).
 * `FinSet.no_lax_fixpoint`, `FinSet.not_iterate_fixpoint`, `FinSet.not_lawfulElgotMonad`,
-  `FinSet.not_nonempty_lawfulElgotMonad`, and the `Finset` analogues in
-  `FinsetCounterexample`, all factored through the carrier-independent kernel
+  `FinSet.not_nonempty_lawfulElgotMonad`, together with `no_lax_fixpoint`,
+  `not_iterate_fixpoint` and `not_lawfulElgotMonad` for Mathlib's `Finset` in
+  `FinsetCounterexample` (that namespace deliberately stops there; the remaining two are
+  one-liners from what is present), all factored through the carrier-independent kernel
   `no_finite_lax_iteration`.  Positive companions `FinSet.instLawfulMonad` (and Mathlib's for
   `Finset`) are in place, so the failure is genuinely about iteration, not about the monad.
 * `CSet.instLawfulMonad`, `runs_countable` (countable branching is closed under reachability),
@@ -61,8 +63,12 @@ Three carriers, iterated by reachability:
 * *`Multiset` is not treated.*  The same kernel lemma would apply, but bag semantics is not a
   powerset model and is not part of the issue.
 
-**Axioms.**  Everything here uses only `propext`, `Classical.choice`, `Quot.sound`.  The `Set`
-development needs no choice at all; `CSet` inherits countable choice through
-`Set.countable_iUnion` / `Set.Countable.biUnion`, and the `Finset` counterexample uses
-`Classical.propDecidable` for Mathlib's classical `Monad Finset`.  No new axiom is declared.
+**Axioms.**  Everything here uses only `propext`, `Classical.choice`, `Quot.sound`, and no new
+axiom is declared.  The four *law proofs* for `Set` — `fixpoint`, `naturality`, `codiagonal`,
+`uniformity` — need only `propext` and `Quot.sound`; note however that the assembled instance
+`instLawfulElgotMonadSet` does report `Classical.choice`, which enters through its
+`[LawfulMonad Set]` argument, i.e. through Mathlib's `Set.instLawfulMonad`, not through anything
+here.  `CSet` inherits countable choice through `Set.countable_iUnion` / `Set.Countable.biUnion`,
+and the `Finset` counterexample uses `Classical.propDecidable` for Mathlib's classical
+`Monad Finset`.
 -/

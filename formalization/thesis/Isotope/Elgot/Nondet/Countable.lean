@@ -16,7 +16,8 @@ carrier map.
 i.e. they use countable choice; in Lean this is discharged by `Classical.choice`, which Mathlib
 uses pervasively.  No *new* axiom is introduced: `#print axioms` on the instances below reports
 exactly `propext`, `Classical.choice`, `Quot.sound`.  By contrast the `Set` development in
-`Isotope.Elgot.Nondet.Powerset` needs no choice at all.
+`Isotope.Elgot.Nondet.Powerset`'s law proofs need no choice (its assembled instance
+reports `Classical.choice` only through Mathlib's `Set.instLawfulMonad`).
 -/
 
 namespace Isotope.Elgot.Nondet
