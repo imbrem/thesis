@@ -58,41 +58,63 @@ def uniqueLabels (cfg : CFG Var Op Label) : Prop := cfg.labels.Nodup
 def singleAssignment [DecidableEq Var] (cfg : CFG Var Op Label) : Prop :=
   cfg.allDefs.Nodup
 
+def AvailableFromDominatingBlock [DecidableEq Var] (cfg : CFG Var Op Label)
+    (externals : List Var) (bid : BlockId Label) (x : Var) : Prop :=
+  x ∈ externals ∨ ∃ d db, cfg.lookup db = some d ∧ x ∈ defs d ∧
+    db ≠ bid ∧ cfg.Dominates db bid
+
 /-- Uses in an instruction may refer to dominating definitions or earlier
 definitions in the same straight-line body. -/
 def BodyUsesWellScoped [DecidableEq Var] (cfg : CFG Var Op Label)
-    (bid : BlockId Label) (block : Block Var Op Label) : Prop :=
+    (externals : List Var) (bid : BlockId Label) (block : Block Var Op Label) : Prop :=
   ∀ i (hi : i < block.body.length) x, x ∈ block.body[i].uses →
-    (∃ d db, cfg.lookup db = some d ∧ x ∈ defs d ∧ cfg.Dominates db bid) ∨
+    cfg.AvailableFromDominatingBlock externals bid x ∨
+    x ∈ block.phis.map Phi.dst ∨
     ∃ j, ∃ hj : j < i, x ∈ block.body[j].defs
+
+/-- A terminator is after every ordinary definition in its block. -/
+def TerminatorUsesWellScoped [DecidableEq Var] (cfg : CFG Var Op Label)
+    (externals : List Var) (bid : BlockId Label) (block : Block Var Op Label) : Prop :=
+  ∀ x ∈ block.terminator.uses,
+    cfg.AvailableFromDominatingBlock externals bid x ∨ x ∈ defs block
 
 /-- Phi incoming values are checked at the end of their named predecessor,
 the classical exceptional scoping rule. -/
 def PhisWellFormed [DecidableEq Var] (cfg : CFG Var Op Label)
-    (bid : BlockId Label) (block : Block Var Op Label) : Prop :=
+    (externals : List Var) (bid : BlockId Label) (block : Block Var Op Label) : Prop :=
   ∀ (phi : Phi Var Label), phi ∈ block.phis →
     (phi.incoming.map Incoming.predecessor).Nodup ∧
     (∀ (incoming : Incoming Var Label), incoming ∈ phi.incoming →
-      bid ∈ cfg.successors (.named incoming.predecessor) ∧
+      bid ∈ cfg.successors incoming.predecessor ∧
       ∀ x ∈ incoming.value.uses,
-        ∃ d db, cfg.lookup db = some d ∧ x ∈ defs d ∧
-          cfg.Dominates db (.named incoming.predecessor))
+        x ∈ externals ∨ ∃ d, cfg.lookup incoming.predecessor = some d ∧ x ∈ defs d ∨
+          ∃ d db, cfg.lookup db = some d ∧ x ∈ defs d ∧
+            db ≠ incoming.predecessor ∧ cfg.Dominates db incoming.predecessor)
 
 /-- Explicit classical SSA property: a flat, closed CFG; globally unique
 definitions; dominance-scoped ordinary uses; and predecessor-scoped phi uses. -/
-structure WellFormed [DecidableEq Var] (cfg : CFG Var Op Label) : Prop where
+structure WellFormed [DecidableEq Var] (externals : List Var)
+    (cfg : CFG Var Op Label) : Prop where
+  externalsNodup : externals.Nodup
+  externalsFresh : List.Disjoint externals cfg.allDefs
   uniqueLabels : cfg.uniqueLabels
   targetsExist : cfg.targetsExist
   singleAssignment : cfg.singleAssignment
-  entryBody : cfg.BodyUsesWellScoped .entry cfg.entry
-  entryPhis : cfg.PhisWellFormed .entry cfg.entry
+  entryBody : cfg.BodyUsesWellScoped externals .entry cfg.entry
+  entryTerminator : cfg.TerminatorUsesWellScoped externals .entry cfg.entry
+  entryPhis : cfg.PhisWellFormed externals .entry cfg.entry
   blockBody (label block) (h : cfg.lookup (.named label) = some block) :
-    cfg.BodyUsesWellScoped (.named label) block
+    cfg.BodyUsesWellScoped externals (.named label) block
+  blockTerminator (label block) (h : cfg.lookup (.named label) = some block) :
+    cfg.TerminatorUsesWellScoped externals (.named label) block
   blockPhis (label block) (h : cfg.lookup (.named label) = some block) :
-    cfg.PhisWellFormed (.named label) block
+    cfg.PhisWellFormed externals (.named label) block
 
 theorem WellFormed.defs_unique [DecidableEq Var] {cfg : CFG Var Op Label}
-    (h : cfg.WellFormed) : cfg.allDefs.Nodup := h.singleAssignment
+    {externals : List Var} (h : cfg.WellFormed externals) : cfg.allDefs.Nodup :=
+  h.singleAssignment
+
+example : Incoming Nat Nat := ⟨.entry, .var 0⟩
 
 end CFG
 

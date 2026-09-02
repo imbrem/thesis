@@ -36,9 +36,15 @@ inductive Terminator (Var : Type u) (Op : Type v) (Label : Type w) where
       (thenBranch elseBranch : Terminator Var Op Label)
 deriving DecidableEq, Repr
 
+/-- The distinguished entry or a named CFG block. -/
+inductive BlockId (Label : Type w) where
+  | entry
+  | named (label : Label)
+deriving DecidableEq, Repr
+
 /-- One incoming value of a classical phi-node, indexed by its predecessor. -/
 structure Incoming (Var : Type u) (Label : Type w) where
-  predecessor : Label
+  predecessor : BlockId Label
   value : Value Var
 deriving DecidableEq, Repr
 
@@ -59,11 +65,6 @@ deriving DecidableEq, Repr
 structure CFG (Var : Type u) (Op : Type v) (Label : Type w) where
   entry : Block Var Op Label
   blocks : List (Label × Block Var Op Label)
-deriving DecidableEq, Repr
-
-inductive BlockId (Label : Type w) where
-  | entry
-  | named (label : Label)
 deriving DecidableEq, Repr
 
 variable {Var : Type u} {Op : Type v} {Label : Type w}
