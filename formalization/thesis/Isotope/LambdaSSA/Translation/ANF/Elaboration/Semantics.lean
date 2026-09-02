@@ -67,6 +67,108 @@ end
 
 end Direct
 
+namespace Direct
+
+mutual
+  /-- The direct atom evaluator agrees with the generic LambdaIter semantics
+  of the forgotten exact typing derivation. -/
+  theorem denoteAtom_toLambdaIter {Γ : Ctx ν τ} {β : BoundCtx τ n}
+      {a : Atom ν Φ n} {A : τ} (h : Atom.HasType Γ β a A)
+      (γ : CtxDen Γ) (ρ : BoundDen β) :
+      denoteAtom (ε := ε) (m := m) h γ ρ =
+        denote (m := m) (ε := ε) h.toLambdaIter.toGeneric γ ρ := by
+    induction h with
+    | fv | bv | unit =>
+        unfold denoteAtom Atom.HasType.toLambdaIter
+        unfold Isotope.LambdaIter.LocallyNameless.HasType.toGeneric
+        unfold Isotope.LambdaIter.Subtyping.Semantics.denote
+        rfl
+    | op h ih => simp only [denoteAtom, Atom.HasType.toLambdaIter,
+        Isotope.LambdaIter.LocallyNameless.HasType.toGeneric,
+        Isotope.LambdaIter.Subtyping.Semantics.denote];
+        unfold Isotope.LambdaIter.LocallyNameless.HasType.toGeneric
+        unfold Isotope.LambdaIter.Subtyping.Semantics.denote
+        rw [ih]
+    | pair ha hb iha ihb =>
+        simp only [denoteAtom, Atom.HasType.toLambdaIter,
+          Isotope.LambdaIter.LocallyNameless.HasType.toGeneric,
+          Isotope.LambdaIter.Subtyping.Semantics.denote]
+        unfold Isotope.LambdaIter.LocallyNameless.HasType.toGeneric
+        unfold Isotope.LambdaIter.Subtyping.Semantics.denote
+        rw [iha, ihb]
+    | inl h ih | inr h ih | abort h ih =>
+        simp only [denoteAtom, Atom.HasType.toLambdaIter,
+          Isotope.LambdaIter.LocallyNameless.HasType.toGeneric,
+          Isotope.LambdaIter.Subtyping.Semantics.denote]
+        unfold Isotope.LambdaIter.LocallyNameless.HasType.toGeneric
+        unfold Isotope.LambdaIter.Subtyping.Semantics.denote
+        rw [ih]
+
+  /-- The direct program evaluator agrees with its forgotten LambdaIter term. -/
+  theorem denoteProgram_toLambdaIter {Γ : Ctx ν τ} {β : BoundCtx τ n}
+      {p : Program ν Φ n} {A : τ} (h : Program.HasType Γ β p A)
+      (γ : CtxDen Γ) (ρ : BoundDen β) :
+      denoteProgram (ε := ε) (m := m) h γ ρ =
+        denote (m := m) (ε := ε) h.toLambdaIter.toGeneric γ ρ := by
+    cases h with
+    | ret h => exact denoteAtom_toLambdaIter h γ ρ
+    | let₁ hi hb =>
+        simp only [denoteProgram, Program.HasType.toLambdaIter,
+          Isotope.LambdaIter.LocallyNameless.HasType.toGeneric,
+          Isotope.LambdaIter.Subtyping.Semantics.denote]
+        unfold Isotope.LambdaIter.LocallyNameless.HasType.toGeneric
+        unfold Isotope.LambdaIter.Subtyping.Semantics.denote
+        rw [denoteInstr_toLambdaIter hi]
+        apply bind_congr
+        intro a
+        rw [denoteProgram_toLambdaIter hb]
+    | let₂ ha hb =>
+        simp only [denoteProgram, Program.HasType.toLambdaIter,
+          Isotope.LambdaIter.LocallyNameless.HasType.toGeneric,
+          Isotope.LambdaIter.Subtyping.Semantics.denote]
+        unfold Isotope.LambdaIter.LocallyNameless.HasType.toGeneric
+        unfold Isotope.LambdaIter.Subtyping.Semantics.denote
+        rw [denoteAtom_toLambdaIter ha]
+        apply bind_congr
+        intro ab
+        rw [denoteProgram_toLambdaIter hb]
+
+  /-- The direct instruction evaluator agrees with its forgotten LambdaIter term. -/
+  theorem denoteInstr_toLambdaIter {Γ : Ctx ν τ} {β : BoundCtx τ n}
+      {i : Instr ν Φ n} {A : τ} (h : Instr.HasType Γ β i A)
+      (γ : CtxDen Γ) (ρ : BoundDen β) :
+      denoteInstr (ε := ε) (m := m) h γ ρ =
+        denote (m := m) (ε := ε) h.toLambdaIter.toGeneric γ ρ := by
+    cases h with
+    | atom h => exact denoteAtom_toLambdaIter h γ ρ
+    | case he hl hr =>
+        simp only [denoteInstr, Instr.HasType.toLambdaIter,
+          Isotope.LambdaIter.LocallyNameless.HasType.toGeneric,
+          Isotope.LambdaIter.Subtyping.Semantics.denote]
+        unfold Isotope.LambdaIter.LocallyNameless.HasType.toGeneric
+        unfold Isotope.LambdaIter.Subtyping.Semantics.denote
+        rw [denoteAtom_toLambdaIter he]
+        apply bind_congr
+        intro e
+        cases TypeModel.coprodEquiv _ _ e with
+        | inl a => rw [denoteProgram_toLambdaIter hl]
+        | inr b => rw [denoteProgram_toLambdaIter hr]
+    | iter ha hb =>
+        simp only [denoteInstr, Instr.HasType.toLambdaIter,
+          Isotope.LambdaIter.LocallyNameless.HasType.toGeneric,
+          Isotope.LambdaIter.Subtyping.Semantics.denote]
+        unfold Isotope.LambdaIter.LocallyNameless.HasType.toGeneric
+        unfold Isotope.LambdaIter.Subtyping.Semantics.denote
+        rw [denoteAtom_toLambdaIter ha]
+        apply bind_congr
+        intro a
+        congr 1
+        funext x
+        rw [denoteProgram_toLambdaIter hb]
+end
+
+end Direct
+
 /-- Transport an exact LambdaIter typing derivation along equality of its raw
 term index. -/
 def transportHasType {Γ : Ctx ν τ} {β : BoundCtx τ n}
