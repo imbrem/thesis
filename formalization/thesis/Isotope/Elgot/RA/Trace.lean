@@ -236,6 +236,128 @@ theorem append_assoc (ξ η ζ : Chro Loc Val) (h₁ : ξ.c ⊆ η.o) (h₂ : η
 
 end Chro
 
+/-!
+## Constructing chronicles from lists, and the two memory maps
+
+`Chro.ofList` is the inverse of `Chro.toList`; the `𝔤` rewrite rules of
+`Isotope/Elgot/RA/Rewrite.lean` are stated as equations between `toList`s, and
+the inductive arguments of `Isotope/Elgot/RA/Monad.lean` peel transitions off
+one end, so both directions are needed.
+
+`Transition.insertMsg` is the paper's `⊎ {ε}` on a single transition and
+`Transition.pull` its `[↑ε]`; see `Isotope/Elgot/RA/Rewrite.lean` for the
+reconstruction of the paper's chronicle-level notation `η ⊎ {ε}`.
+-/
+
+/-- A chronicle from a non-empty adjacent list of transitions. -/
+def Chro.ofList : (l : List (Transition Loc Val)) → l ≠ [] → List.IsChain Adj l →
+    Chro Loc Val
+  | T :: r, _, h => ⟨T, r, h⟩
+
+@[simp] theorem Chro.ofList_toList (l : List (Transition Loc Val)) (h : l ≠ [])
+    (hc : List.IsChain Adj l) : (Chro.ofList l h hc).toList = l := by
+  cases l with
+  | nil => exact absurd rfl h
+  | cons T r => rfl
+
+theorem listC_append_of_ne_nil (l r : List (Transition Loc Val)) (h : r ≠ []) :
+    listC (l ++ r) = listC r := by
+  cases r with
+  | nil => exact absurd rfl h
+  | cons S r => exact listC_append l S r
+
+theorem listO_append_of_ne_nil (l r : List (Transition Loc Val)) (h : l ≠ []) :
+    listO (l ++ r) = listO l := by
+  cases l with
+  | nil => exact absurd rfl h
+  | cons T l => rfl
+
+theorem listOwn_eq_empty_iff {l : List (Transition Loc Val)} :
+    listOwn l = ∅ ↔ ∀ T ∈ l, T.closing ⊆ T.opening := by
+  constructor
+  · intro h T hT ν hν
+    by_contra hc
+    have : ν ∈ listOwn l := ⟨T, hT, hν, hc⟩
+    rw [h] at this
+    exact this
+  · intro h
+    ext ν
+    simp only [listOwn, Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false]
+    rintro ⟨T, hT, hν, hc⟩
+    exact hc (h T hT hν)
+
+/-- A transition with `μ = ρ` is literally a stutter transition `⟨μ,μ⟩`. -/
+theorem Transition.stutter_eq {T : Transition Loc Val} (h : T.opening = T.closing) :
+    T = ⟨T.opening, T.opening⟩ := by cases T; cases h; rfl
+
+/-- `T ⊎ {ε}`: add `ε` to both memories of a transition. -/
+def Transition.insertMsg (ε : Msg Loc Val) (T : Transition Loc Val) : Transition Loc Val :=
+  ⟨insert ε T.opening, insert ε T.closing⟩
+
+@[simp] theorem Transition.insertMsg_opening (ε : Msg Loc Val) (T : Transition Loc Val) :
+    (T.insertMsg ε).opening = insert ε T.opening := rfl
+
+@[simp] theorem Transition.insertMsg_closing (ε : Msg Loc Val) (T : Transition Loc Val) :
+    (T.insertMsg ε).closing = insert ε T.closing := rfl
+
+theorem Transition.insertMsg_adj {ε : Msg Loc Val} {S T : Transition Loc Val}
+    (h : Adj S T) : Adj (S.insertMsg ε) (T.insertMsg ε) :=
+  Set.insert_subset_insert h
+
+/-- `T[↑ε]`: pull both memories of a transition along `ε`. -/
+noncomputable def Transition.pull (ε : Msg Loc Val) (T : Transition Loc Val) :
+    Transition Loc Val :=
+  ⟨Memory.pull ε T.opening, Memory.pull ε T.closing⟩
+
+@[simp] theorem Transition.pull_opening (ε : Msg Loc Val) (T : Transition Loc Val) :
+    (T.pull ε).opening = Memory.pull ε T.opening := rfl
+
+@[simp] theorem Transition.pull_closing (ε : Msg Loc Val) (T : Transition Loc Val) :
+    (T.pull ε).closing = Memory.pull ε T.closing := rfl
+
+theorem Transition.pull_adj {ε : Msg Loc Val} {S T : Transition Loc Val}
+    (h : Adj S T) : Adj (S.pull ε) (T.pull ε) := Memory.pull_mono h
+
+
+/-- In an adjacent list `T :: l` with `l` non-empty, `T`'s closing memory is
+contained in `l`'s opening memory. -/
+theorem adj_listO {T : Transition Loc Val} {l : List (Transition Loc Val)}
+    (h : List.IsChain Adj (T :: l)) (hne : l ≠ []) : T.closing ⊆ listO l := by
+  cases l with
+  | nil => exact absurd rfl hne
+  | cons S r => exact (List.isChain_cons_cons.mp h).1
+
+/-- In a chronicle all of whose transitions are *stutters* (`μ = ρ`), the
+memories form a `⊆`-chain, so the opening memory is contained in the closing
+one. -/
+theorem listO_sub_listC : ∀ (l : List (Transition Loc Val)), List.IsChain Adj l →
+    (∀ T ∈ l, T.opening = T.closing) → listO l ⊆ listC l
+  | [], _, _ => by simp [listO, listC]
+  | [T], _, hst => by rw [listO_cons, listC_singleton, hst T (by simp)]
+  | T :: S :: r, hc, hst => by
+      have ih := listO_sub_listC (S :: r) (List.isChain_cons_cons.mp hc).2
+        (fun U hU ↦ hst U (by simp [hU]))
+      rw [listO_cons, listC_cons_cons]
+      refine subset_trans ?_ ih
+      rw [hst T (by simp)]
+      exact (List.isChain_cons_cons.mp hc).1
+
+/-- …and every memory of such a chronicle contains the opening one. -/
+theorem listO_sub_of_mem : ∀ (l : List (Transition Loc Val)), List.IsChain Adj l →
+    (∀ T ∈ l, T.opening = T.closing) → ∀ T ∈ l, listO l ⊆ T.opening
+  | [], _, _, _, hT => absurd hT (by simp)
+  | S :: r, hc, hst, T, hT => by
+      rcases List.mem_cons.mp hT with rfl | hT
+      · rw [listO_cons]
+      · have hne : r ≠ [] := by rintro rfl; simp at hT
+        have ih := listO_sub_of_mem r (List.isChain_cons.mp hc).2
+          (fun U hU ↦ hst U (by simp [hU])) T hT
+        rw [listO_cons]
+        refine subset_trans ?_ ih
+        rw [hst S (by simp)]
+        exact adj_listO hc hne
+
+
 /-- An `X`-pre-trace `α ξ ω ◁ r`. -/
 structure PreTrace (Loc Val : Type) (A : Type u) where
   /-- The initial view `α`. -/

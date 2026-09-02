@@ -32,42 +32,42 @@ namespace Isotope.Elgot.RA
 
 open Isotope.Elgot
 
-variable {Loc Val : Type} {A B C : Type u}
+variable {Loc Val : Type} {R : RuleSet} {A B C : Type u}
 
 namespace Comp
 
 /-- The `i`-th unrolling: `f₀ := λ _. ⊥` and `f_{i+1} := f ; [id, f_i]`. -/
-def approx (f : A → Comp Loc Val (B ⊕ A)) : ℕ → A → Comp Loc Val B
+def approx (f : A → Comp R Loc Val (B ⊕ A)) : ℕ → A → Comp R Loc Val B
   | 0, _ => ⊥
   | n + 1, a => f a >>= Sum.elim pure (approx f n)
 
-@[simp] theorem approx_zero (f : A → Comp Loc Val (B ⊕ A)) (a : A) :
+@[simp] theorem approx_zero (f : A → Comp R Loc Val (B ⊕ A)) (a : A) :
     approx f 0 a = ⊥ := rfl
 
-@[simp] theorem approx_succ (f : A → Comp Loc Val (B ⊕ A)) (n : ℕ) (a : A) :
+@[simp] theorem approx_succ (f : A → Comp R Loc Val (B ⊕ A)) (n : ℕ) (a : A) :
     approx f (n + 1) a = f a >>= Sum.elim pure (approx f n) := rfl
 
 /-- `f† := ⋃ᵢ fᵢ`. -/
-def iterate (f : A → Comp Loc Val (B ⊕ A)) (a : A) : Comp Loc Val B :=
+def iterate (f : A → Comp R Loc Val (B ⊕ A)) (a : A) : Comp R Loc Val B :=
   iUnion (fun n : ℕ ↦ approx f n a)
 
-instance : Iterate (Comp Loc Val) where
+instance : Iterate (Comp R Loc Val) where
   iter := iterate
 
-theorem iter_eq (f : A → Comp Loc Val (B ⊕ A)) : iter f = iterate f := rfl
+theorem iter_eq (f : A → Comp R Loc Val (B ⊕ A)) : iter f = iterate f := rfl
 
-theorem approx_le_iterate (f : A → Comp Loc Val (B ⊕ A)) (n : ℕ) (a : A) :
+theorem approx_le_iterate (f : A → Comp R Loc Val (B ⊕ A)) (n : ℕ) (a : A) :
     approx f n a ≤ iterate f a := le_iUnion (fun n : ℕ ↦ approx f n a) n
 
-theorem iterate_le {f : A → Comp Loc Val (B ⊕ A)} {a : A} {P : Comp Loc Val B}
+theorem iterate_le {f : A → Comp R Loc Val (B ⊕ A)} {a : A} {P : Comp R Loc Val B}
     (h : ∀ n, approx f n a ≤ P) : iterate f a ≤ P := iUnion_le h
 
 /-! ## Fixpoint -/
 
-theorem fixpoint (f : A → Comp Loc Val (B ⊕ A)) :
+theorem fixpoint (f : A → Comp R Loc Val (B ⊕ A)) :
     iter f = fun a ↦ f a >>= Sum.elim pure (iter f) := by
   funext a
-  have h1 : (Sum.elim pure (iterate f) : B ⊕ A → Comp Loc Val B)
+  have h1 : (Sum.elim pure (iterate f) : B ⊕ A → Comp R Loc Val B)
       = fun s ↦ iUnion (fun n : ℕ ↦ Sum.elim pure (approx f n) s) := by
     funext s
     cases s with
@@ -82,12 +82,20 @@ theorem fixpoint (f : A → Comp Loc Val (B ⊕ A)) :
     | succ n => exact le_iUnion (fun n : ℕ ↦ f a >>= Sum.elim pure (approx f n)) n
   · exact iUnion_le (fun n ↦ approx_le_iterate f (n + 1) a)
 
-theorem fixpoint_apply (f : A → Comp Loc Val (B ⊕ A)) (a : A) :
+theorem fixpoint_apply (f : A → Comp R Loc Val (B ⊕ A)) (a : A) :
     iterate f a = f a >>= Sum.elim pure (iterate f) := congrFun (fixpoint f) a
+
+section Lawful
+
+-- The remaining Elgot laws are proved in the Kleisli calculus, so they need the
+-- monad laws; at present those are available at `R ⊆ 𝔠` only.
+variable [lawful : LawfulMonad (Comp R Loc Val : Type u → Type u)]
+
+include lawful
 
 /-! ## Naturality -/
 
-theorem approx_bind (f : A → Comp Loc Val (B ⊕ A)) (g : B → Comp Loc Val C) :
+theorem approx_bind (f : A → Comp R Loc Val (B ⊕ A)) (g : B → Comp R Loc Val C) :
     ∀ (n : ℕ) (a : A), approx f n a >>= g = approx (mapReturn f g) n a
   | 0, a => by simp [bot_bind]
   | n + 1, a => by
@@ -104,7 +112,7 @@ theorem approx_bind (f : A → Comp Loc Val (B ⊕ A)) (g : B → Comp Loc Val C
           simp only [Sum.elim_inr, Function.comp_apply, pure_bind]
           exact approx_bind f g n a'
 
-theorem naturality (f : A → Comp Loc Val (B ⊕ A)) (g : B → Comp Loc Val C) :
+theorem naturality (f : A → Comp R Loc Val (B ⊕ A)) (g : B → Comp R Loc Val C) :
     kcomp (iter f) g = iter (mapReturn f g) := by
   funext a
   change iterate f a >>= g = iterate (mapReturn f g) a
@@ -113,12 +121,12 @@ theorem naturality (f : A → Comp Loc Val (B ⊕ A)) (g : B → Comp Loc Val C)
 
 /-! ## Pure uniformity -/
 
-theorem approx_uniform (f : A → Comp Loc Val (B ⊕ A)) (g : C → Comp Loc Val (B ⊕ C))
+theorem approx_uniform (f : A → Comp R Loc Val (B ⊕ A)) (g : C → Comp R Loc Val (B ⊕ C))
     (h : A → C) (comm : kcomp f (liftPure (Sum.map id h)) = kcomp (liftPure h) g) :
     ∀ (n : ℕ) (a : A), approx f n a = approx g n (h a)
   | 0, _ => rfl
   | n + 1, a => by
-      have hc : (f a >>= fun s ↦ (pure (Sum.map id h s) : Comp Loc Val (B ⊕ C))) = g (h a) := by
+      have hc : (f a >>= fun s ↦ (pure (Sum.map id h s) : Comp R Loc Val (B ⊕ C))) = g (h a) := by
         have hcomm := congrFun comm a
         simp only [kcomp, liftPure, Function.comp_def, pure_bind] at hcomm
         exact hcomm
@@ -132,7 +140,7 @@ theorem approx_uniform (f : A → Comp Loc Val (B ⊕ A)) (g : C → Comp Loc Va
           simp only [Sum.elim_inr, Sum.map_inr, pure_bind]
           exact approx_uniform f g h comm n a'
 
-theorem uniformity (f : A → Comp Loc Val (B ⊕ A)) (g : C → Comp Loc Val (B ⊕ C))
+theorem uniformity (f : A → Comp R Loc Val (B ⊕ A)) (g : C → Comp R Loc Val (B ⊕ C))
     (h : A → C) (comm : kcomp f (liftPure (Sum.map id h)) = kcomp (liftPure h) g) :
     iter f = kcomp (liftPure h) (iter g) := by
   funext a
@@ -146,7 +154,7 @@ The argument is the thesis appendix's: `gᵢ ≤ (f†)†` by induction on `i`,
 `(f†)ᵢ ≤ g†` by two nested inductions, where `g = flattenBody f`. -/
 
 /-- Unfolding `f†` once inside `f`. -/
-theorem flatten_step (f : A → Comp Loc Val ((B ⊕ A) ⊕ A)) (a : A) :
+theorem flatten_step (f : A → Comp R Loc Val ((B ⊕ A) ⊕ A)) (a : A) :
     (f a >>= fun t ↦ Sum.elim pure (iterate (iterate f)) (flatten t))
       = iterate (iterate f) a := by
   rw [fixpoint_apply (iterate f) a, fixpoint_apply f a, bind_assoc]
@@ -158,7 +166,7 @@ theorem flatten_step (f : A → Comp Loc Val ((B ⊕ A) ⊕ A)) (a : A) :
       simp only [flatten, Sum.elim_inr]
       exact fixpoint_apply (iterate f) a'
 
-theorem approx_flattenBody_le (f : A → Comp Loc Val ((B ⊕ A) ⊕ A)) :
+theorem approx_flattenBody_le (f : A → Comp R Loc Val ((B ⊕ A) ⊕ A)) :
     ∀ (n : ℕ) (a : A), approx (flattenBody f) n a ≤ iterate (iterate f) a
   | 0, _ => bot_le
   | n + 1, a => by
@@ -177,7 +185,7 @@ theorem approx_flattenBody_le (f : A → Comp Loc Val ((B ⊕ A) ⊕ A)) :
 /-- The key induction for the other inclusion: any finite unrolling of `f`,
 followed by `(flattenBody f)†` on the recursive summand, is below
 `(flattenBody f)†`. -/
-theorem approx_bind_iterate_flattenBody_le (f : A → Comp Loc Val ((B ⊕ A) ⊕ A)) :
+theorem approx_bind_iterate_flattenBody_le (f : A → Comp R Loc Val ((B ⊕ A) ⊕ A)) :
     ∀ (n : ℕ) (a : A),
       (approx f n a >>= Sum.elim pure (iterate (flattenBody f))) ≤ iterate (flattenBody f) a
   | 0, _ => by rw [approx_zero, bot_bind]; exact bot_le
@@ -201,7 +209,7 @@ theorem approx_bind_iterate_flattenBody_le (f : A → Comp Loc Val ((B ⊕ A) �
 
 /-- If one unfolding of `H` followed by `G` stays below `G`, then `G` bounds
 every finite unrolling of `H`. -/
-theorem approx_le_of_bind_le {H : A → Comp Loc Val (B ⊕ A)} {G : A → Comp Loc Val B}
+theorem approx_le_of_bind_le {H : A → Comp R Loc Val (B ⊕ A)} {G : A → Comp R Loc Val B}
     (h : ∀ a, H a >>= Sum.elim pure G ≤ G a) : ∀ (n : ℕ) (a : A), approx H n a ≤ G a
   | 0, _ => bot_le
   | n + 1, a => by
@@ -210,7 +218,7 @@ theorem approx_le_of_bind_le {H : A → Comp Loc Val (B ⊕ A)} {G : A → Comp 
       | inl b => exact le_refl _
       | inr a' => exact approx_le_of_bind_le h n a'
 
-theorem codiagonal (f : A → Comp Loc Val ((B ⊕ A) ⊕ A)) :
+theorem codiagonal (f : A → Comp R Loc Val ((B ⊕ A) ⊕ A)) :
     iter (iter f) = iter (flattenBody f) := by
   funext a
   change iterate (iterate f) a = iterate (flattenBody f) a
@@ -221,11 +229,13 @@ theorem codiagonal (f : A → Comp Loc Val ((B ⊕ A) ⊕ A)) :
       rw [iterate, iUnion_bind]
       exact iUnion_le (fun m ↦ approx_bind_iterate_flattenBody_le f m a')) n a
 
-instance : LawfulElgotMonad (Comp Loc Val : Type u → Type u) where
+instance : LawfulElgotMonad (Comp R Loc Val : Type u → Type u) where
   fixpoint f := fixpoint f
   naturality f g := naturality f g
   codiagonal f := codiagonal f
   uniformity f g h comm := uniformity f g h comm
+
+end Lawful
 
 end Comp
 

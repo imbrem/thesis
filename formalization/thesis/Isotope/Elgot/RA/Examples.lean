@@ -28,32 +28,32 @@ variable {Loc Val : Type} {A B : Type u}
 /-! ## `return` -/
 
 theorem mem_pure_ret {r : A} {τ : PreTrace Loc Val A}
-    (h : τ ∈ (pure r : Comp Loc Val A).traces) : τ.ret = r := by
+    (h : τ ∈ (pure r : Comp cRules Loc Val A).traces) : τ.ret = r := by
   obtain ⟨τ₀, ⟨κ, μ, -, -, rfl⟩, hr⟩ := h
   exact hr.ret_eq.symm
 
 theorem mem_pure_own {r : A} {τ : PreTrace Loc Val A}
-    (h : τ ∈ (pure r : Comp Loc Val A).traces) : τ.ch.own = ∅ := by
+    (h : τ ∈ (pure r : Comp cRules Loc Val A).traces) : τ.ch.own = ∅ := by
   obtain ⟨τ₀, hτ₀, hr⟩ := h
   obtain ⟨κ, μ, hwf, hpd, rfl⟩ := hτ₀
-  rw [← hr.own_eq (pureGen_isTrace r _ ⟨κ, μ, hwf, hpd, rfl⟩)]
+  rw [← hr.own_eq (subset_refl _) (pureGen_isTrace r _ ⟨κ, μ, hwf, hpd, rfl⟩)]
   simp [Transition.own]
 
 /-- `return r` is non-empty: it contains the trace built from the paper's
 initial memory. -/
 theorem pure_nonempty [Finite Loc] [Nonempty Loc] (v₀ : Val) (t₀ : ℚ) (r : A) :
     (⟨(fun _ ↦ t₀ : View Loc), Chro.single ⟨initialMem v₀ t₀, initialMem v₀ t₀⟩,
-      (fun _ ↦ t₀), r⟩ : PreTrace Loc Val A) ∈ (pure r : Comp Loc Val A).traces :=
+      (fun _ ↦ t₀), r⟩ : PreTrace Loc Val A) ∈ (pure r : Comp cRules Loc Val A).traces :=
   subset_closure ⟨_, _, initialMem_wellFormed v₀ t₀, pointsDownInto_initialMem v₀ t₀, rfl⟩
 
 theorem pure_ne_pure [Finite Loc] [Nonempty Loc] (v₀ : Val) (t₀ : ℚ) {r s : A}
-    (h : r ≠ s) : (pure r : Comp Loc Val A) ≠ pure s := by
+    (h : r ≠ s) : (pure r : Comp cRules Loc Val A) ≠ pure s := by
   intro hrs
   exact h (((mem_pure_ret (pure_nonempty v₀ t₀ r)).symm.trans
     (mem_pure_ret (hrs ▸ pure_nonempty (Loc := Loc) v₀ t₀ r))))
 
 theorem bot_ne_pure [Finite Loc] [Nonempty Loc] (v₀ : Val) (t₀ : ℚ) (r : A) :
-    (⊥ : Comp Loc Val A) ≠ pure r := by
+    (⊥ : Comp cRules Loc Val A) ≠ pure r := by
   intro h
   have := pure_nonempty (Loc := Loc) (Val := Val) v₀ t₀ r
   rw [← h] at this
@@ -129,14 +129,14 @@ theorem storedMem_wellFormed (v₀ : Val) (t₀ : ℚ) (ℓ : Loc) (v : Val) :
       · rfl
       · rw [mem_initialMem_iff] at hρ
         rw [hρ] at hx2
-        simp only [Msg.seg, initialMsg_t, initialMsg_i, Set.mem_Ico] at hx2
-        simp only [Msg.seg, storedMsg_t, storedMsg_i, Set.mem_Ico] at hx1
+        simp only [Msg.seg, initialMsg_t, initialMsg_i, Set.mem_Ioc] at hx2
+        simp only [Msg.seg, storedMsg_t, storedMsg_i, Set.mem_Ioc] at hx1
         linarith [hx1.1, hx2.2]
     · rcases hρ with rfl | hρ
       · rw [mem_initialMem_iff] at hν
         rw [hν] at hx1
-        simp only [Msg.seg, initialMsg_t, initialMsg_i, Set.mem_Ico] at hx1
-        simp only [Msg.seg, storedMsg_t, storedMsg_i, Set.mem_Ico] at hx2
+        simp only [Msg.seg, initialMsg_t, initialMsg_i, Set.mem_Ioc] at hx1
+        simp only [Msg.seg, storedMsg_t, storedMsg_i, Set.mem_Ioc] at hx2
         linarith [hx2.1, hx1.2]
       · exact hinit.scattered ν hν ρ hρ hlc ⟨x, hx1, hx2⟩
   · -- connected
@@ -189,7 +189,7 @@ theorem storedMem_wellFormed (v₀ : Val) (t₀ : ℚ) (ℓ : Loc) (v : Val) :
 theorem mem_store (v₀ : Val) (t₀ : ℚ) (ℓ : Loc) (v : Val) :
     (⟨(fun _ ↦ t₀ : View Loc), Chro.single ⟨initialMem v₀ t₀, storedMem v₀ t₀ ℓ v⟩,
       setView (fun _ ↦ t₀) ℓ (t₀ + 1), ()⟩ : PreTrace Loc Val Unit)
-      ∈ (store ℓ v : Comp Loc Val Unit).traces := by
+      ∈ (store ℓ v : Comp cRules Loc Val Unit).traces := by
   refine subset_closure ⟨(fun _ ↦ t₀), initialMem v₀ t₀, t₀, t₀ + 1, by linarith, rfl, ?_⟩
   have hstored : WellFormed (storedMem (Loc := Loc) v₀ t₀ ℓ v) := storedMem_wellFormed v₀ t₀ ℓ v
   have hle : (fun _ ↦ t₀ : View Loc) ≤ setView (fun _ ↦ t₀) ℓ (t₀ + 1) :=
@@ -214,7 +214,7 @@ theorem mem_store (v₀ : Val) (t₀ : ℚ) (ℓ : Loc) (v : Val) :
     · exact absurd hν1 hν2
 
 theorem store_ne_pure (v₀ : Val) (t₀ : ℚ) (ℓ : Loc) (v : Val) :
-    (store ℓ v : Comp Loc Val Unit) ≠ pure () := by
+    (store ℓ v : Comp cRules Loc Val Unit) ≠ pure () := by
   intro h
   have hmem := mem_store v₀ t₀ ℓ v
   rw [h] at hmem
@@ -226,7 +226,7 @@ theorem store_ne_pure (v₀ : Val) (t₀ : ℚ) (ℓ : Loc) (v : Val) :
   exact absurd hcontra (by simp)
 
 theorem store_ne_bot (v₀ : Val) (t₀ : ℚ) (ℓ : Loc) (v : Val) :
-    (store ℓ v : Comp Loc Val Unit) ≠ ⊥ := by
+    (store ℓ v : Comp cRules Loc Val Unit) ≠ ⊥ := by
   intro h
   have hmem := mem_store v₀ t₀ ℓ v
   rw [h] at hmem
@@ -241,7 +241,7 @@ observe the latest write, only the one its initial view points at. -/
 
 theorem load_stale (v₀ : Val) (t₀ : ℚ) (ℓ : Loc) (v : Val) :
     ∃ τ : PreTrace Loc Val Val,
-      τ ∈ (load ℓ : Comp Loc Val Val).traces ∧ τ.ret = v₀ ∧
+      τ ∈ (load ℓ : Comp cRules Loc Val Val).traces ∧ τ.ret = v₀ ∧
       ∃ ν ∈ τ.ch.c, ν.lc = ℓ ∧ ν.vl = v ∧ t₀ < ν.t := by
   have hwf : WellFormed (storedMem (Loc := Loc) v₀ t₀ ℓ v) := storedMem_wellFormed v₀ t₀ ℓ v
   have hpd : PointsDownInto (fun _ ↦ t₀ : View Loc) (storedMem (Loc := Loc) v₀ t₀ ℓ v) :=
@@ -267,9 +267,9 @@ end Store
 Divergence is discarded: an always-diverging loop denotes `∅`. -/
 
 theorem iter_diverge (a : A) :
-    iter (fun _ : A ↦ (pure (Sum.inr a) : Comp Loc Val (B ⊕ A))) a = ⊥ := by
+    iter (fun _ : A ↦ (pure (Sum.inr a) : Comp cRules Loc Val (B ⊕ A))) a = ⊥ := by
   have h : ∀ n : ℕ,
-      Comp.approx (fun _ : A ↦ (pure (Sum.inr a) : Comp Loc Val (B ⊕ A))) n a = ⊥ := by
+      Comp.approx (fun _ : A ↦ (pure (Sum.inr a) : Comp cRules Loc Val (B ⊕ A))) n a = ⊥ := by
     intro n
     induction n with
     | zero => rfl
@@ -277,9 +277,9 @@ theorem iter_diverge (a : A) :
   exact le_antisymm (Comp.iterate_le (fun n ↦ (h n).le)) bot_le
 
 theorem iter_exit (g : A → B) (a : A) :
-    iter (fun x : A ↦ (pure (Sum.inl (g x)) : Comp Loc Val (B ⊕ A))) a = pure (g a) := by
+    iter (fun x : A ↦ (pure (Sum.inl (g x)) : Comp cRules Loc Val (B ⊕ A))) a = pure (g a) := by
   have h : ∀ n : ℕ,
-      Comp.approx (fun x : A ↦ (pure (Sum.inl (g x)) : Comp Loc Val (B ⊕ A))) (n + 1) a
+      Comp.approx (fun x : A ↦ (pure (Sum.inl (g x)) : Comp cRules Loc Val (B ⊕ A))) (n + 1) a
         = pure (g a) := by
     intro n; rw [Comp.approx_succ, pure_bind]; rfl
   refine le_antisymm (Comp.iterate_le (fun n ↦ ?_)) ?_
@@ -292,10 +292,11 @@ theorem iter_exit (g : A → B) (a : A) :
 observations are thrown away, so nothing of the writes survives. -/
 theorem iter_store_diverge [DecidableEq Loc] (ℓ : Loc) (v : Val) :
     iter (fun _ : Unit ↦
-        (store ℓ v >>= fun _ ↦ pure (Sum.inr ()) : Comp Loc Val (Unit ⊕ Unit))) () = ⊥ := by
+        (store ℓ v >>= fun _ ↦ pure (Sum.inr ()) : Comp cRules Loc Val (Unit ⊕ Unit))) () = ⊥ := by
   have h : ∀ n : ℕ,
       Comp.approx (fun _ : Unit ↦
-        (store ℓ v >>= fun _ ↦ pure (Sum.inr ()) : Comp Loc Val (Unit ⊕ Unit))) n () = ⊥ := by
+        (store ℓ v >>= fun _ ↦ pure (Sum.inr ()) :
+          Comp cRules Loc Val (Unit ⊕ Unit))) n () = ⊥ := by
     intro n
     induction n with
     | zero => rfl
