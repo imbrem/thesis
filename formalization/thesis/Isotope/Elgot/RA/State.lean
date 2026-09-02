@@ -1,6 +1,7 @@
 import Mathlib.Data.Rat.Defs
 import Mathlib.Algebra.Order.Field.Rat
 import Mathlib.Order.Basic
+import Mathlib.Data.Set.Finite.Basic
 import Mathlib.Data.Set.Finite.Range
 import Mathlib.Logic.Relation
 
@@ -159,6 +160,18 @@ def initialMsg (v : Val) (t : ℚ) (ℓ : Loc) : Msg Loc Val where
   vw := fun _ ↦ t
   lt := by simp
 
+@[simp] theorem initialMsg_lc (v : Val) (t : ℚ) (ℓ : Loc) :
+    (initialMsg (Val := Val) v t ℓ).lc = ℓ := rfl
+
+@[simp] theorem initialMsg_vl (v : Val) (t : ℚ) (ℓ : Loc) :
+    (initialMsg (Val := Val) v t ℓ).vl = v := rfl
+
+@[simp] theorem initialMsg_i (v : Val) (t : ℚ) (ℓ : Loc) :
+    (initialMsg (Val := Val) v t ℓ).i = t - 1 := rfl
+
+@[simp] theorem initialMsg_vw (v : Val) (t : ℚ) (ℓ : Loc) :
+    (initialMsg (Val := Val) v t ℓ).vw = fun _ ↦ t := rfl
+
 @[simp] theorem initialMsg_t (v : Val) (t : ℚ) (ℓ : Loc) :
     (initialMsg (Val := Val) v t ℓ).t = t := rfl
 
@@ -171,6 +184,11 @@ def initialMem (v : Val) (t : ℚ) : Memory Loc Val := Set.range (initialMsg v t
   constructor
   · rintro ⟨ℓ, rfl⟩; rfl
   · intro h; exact ⟨ν.lc, h.symm⟩
+
+/-- The all-`t` view points downwards into the initial memory. -/
+theorem pointsDownInto_initialMem (v : Val) (t : ℚ) :
+    PointsDownInto (fun _ ↦ t : View Loc) (initialMem v t) :=
+  fun ℓ ↦ ⟨initialMsg v t ℓ, ⟨ℓ, rfl⟩, rfl, rfl, le_refl _⟩
 
 theorem initialMem_wellFormed [Finite Loc] [Nonempty Loc] (v : Val) (t : ℚ) :
     WellFormed (initialMem (Loc := Loc) v t) where

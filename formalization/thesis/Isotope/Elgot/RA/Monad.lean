@@ -427,6 +427,16 @@ theorem iUnion_const {ι : Sort*} [Nonempty ι] (P : Comp Loc Val A) :
 theorem bot_bind (f : A → Comp Loc Val B) : (⊥ : Comp Loc Val A) >>= f = ⊥ := by
   apply ext; simp
 
+theorem bind_bot (P : Comp Loc Val A) : (P >>= fun _ ↦ (⊥ : Comp Loc Val B)) = ⊥ := by
+  apply ext
+  rw [traces_bind]
+  have h : bindGen P.traces (fun _ ↦ (⊥ : Comp Loc Val B).traces) = ∅ := by
+    ext π
+    simp only [traces_bot, Set.mem_empty_iff_false, iff_false]
+    rintro ⟨τ, υ, h, -, hυ, -⟩
+    exact absurd hυ (by simp)
+  rw [h, closure_empty, traces_bot]
+
 theorem bind_mono {P Q : Comp Loc Val A} {f g : A → Comp Loc Val B} (h : P ≤ Q)
     (hfg : ∀ a, f a ≤ g a) : P >>= f ≤ Q >>= g := by
   rw [le_def, traces_bind, traces_bind]

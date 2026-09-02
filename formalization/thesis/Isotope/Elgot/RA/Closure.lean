@@ -100,4 +100,51 @@ theorem Refines.ret_eq {τ π : PreTrace Loc Val A} (h : Refines τ π) : τ.ret
   | refl => rfl
   | tail _ hstep ih => exact ih.trans hstep.1.ret_eq
 
+/-! ## The local messages are a rewriting invariant
+
+Every `𝔠`-rewrite preserves `ξ.own` exactly.  `Stutter` inserts a transition
+`⟨μ,μ⟩`, whose contribution is `μ \ μ = ∅`; `Mumble` replaces `⟨μ,ρ⟩⟨ρ,θ⟩` by
+`⟨μ,θ⟩`, and `(ρ \ μ) ∪ (θ \ ρ) = θ \ μ` whenever `μ ⊆ ρ ⊆ θ`, which holds
+because the transitions of a trace are well-formed.  This is the separation
+invariant that lets us tell computations apart. -/
+
+theorem ChroStep.own_eq {c₁ c₂ : Chro Loc Val} (h : ChroStep c₁ c₂)
+    (hwf : ∀ T ∈ c₁.toList, T.WF) : c₁.own = c₂.own := by
+  cases h with
+  | stutter l r μ h₁ h₂ =>
+      simp only [Chro.own_eq_listOwn, h₁, h₂, listOwn_append, listOwn_cons,
+        Transition.own, Set.diff_self, Set.empty_union]
+  | mumble l r μ ρ θ h₁ h₂ =>
+      have hμρ : μ ⊆ ρ := (hwf ⟨μ, ρ⟩ (by rw [h₁]; simp)).sub
+      have hρθ : ρ ⊆ θ := (hwf ⟨ρ, θ⟩ (by rw [h₁]; simp)).sub
+      simp only [Chro.own_eq_listOwn, h₁, h₂, listOwn_append, listOwn_cons,
+        Transition.own]
+      congr 1
+      rw [← Set.union_assoc]
+      congr 1
+      ext ν
+      simp only [Set.mem_union, Set.mem_diff]
+      constructor
+      · rintro (⟨hν, hn⟩ | ⟨hν, hn⟩)
+        · exact ⟨hρθ hν, hn⟩
+        · exact ⟨hν, fun hc ↦ hn (hμρ hc)⟩
+      · rintro ⟨hν, hn⟩
+        by_cases hr : ν ∈ ρ
+        · exact Or.inl ⟨hr, hn⟩
+        · exact Or.inr ⟨hν, hr⟩
+
+theorem Step.own_eq {τ π : PreTrace Loc Val A} (h : Step τ π) (hτ : IsTrace τ) :
+    τ.ch.own = π.ch.own := by
+  cases h with
+  | chro hc => exact hc.own_eq hτ.wf
+  | forward _ => rfl
+  | rewind _ => rfl
+
+theorem Refines.own_eq {τ π : PreTrace Loc Val A} (h : Refines τ π) (hτ : IsTrace τ) :
+    τ.ch.own = π.ch.own := by
+  induction h with
+  | refl => rfl
+  | @tail b c hab hbc ih =>
+      exact ih.trans (hbc.1.own_eq (Refines.isTrace hab hτ))
+
 end Isotope.Elgot.RA

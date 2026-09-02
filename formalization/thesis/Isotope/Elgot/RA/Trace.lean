@@ -102,6 +102,22 @@ theorem chain'_listC_sub : ∀ (l : List (Transition Loc Val)) (S : Transition L
       have := chain'_listC_sub (U :: l) S r (List.isChain_cons_cons.mp hc).2 (by simp)
       simpa using this
 
+/-- The local messages of a list of transitions. -/
+def listOwn (l : List (Transition Loc Val)) : Memory Loc Val := {ν | ∃ T ∈ l, ν ∈ T.own}
+
+@[simp] theorem listOwn_nil : listOwn ([] : List (Transition Loc Val)) = ∅ := by
+  ext ν; simp [listOwn]
+
+@[simp] theorem listOwn_cons (T : Transition Loc Val) (l : List (Transition Loc Val)) :
+    listOwn (T :: l) = T.own ∪ listOwn l := by
+  ext ν; simp [listOwn, or_and_right, exists_or]
+
+theorem listOwn_append (l r : List (Transition Loc Val)) :
+    listOwn (l ++ r) = listOwn l ∪ listOwn r := by
+  induction l with
+  | nil => simp
+  | cons T l ih => simp [ih, Set.union_assoc]
+
 /-- A chronicle: a non-empty sequence of adjacent transitions. -/
 structure Chro (Loc Val : Type) where
   /-- The first transition. -/
@@ -127,8 +143,9 @@ def o (ξ : Chro Loc Val) : Memory Loc Val := listO ξ.toList
 def c (ξ : Chro Loc Val) : Memory Loc Val := listC ξ.toList
 
 /-- The local messages `ξ.own := ⋃ᵢ (ρᵢ \ μᵢ)`. -/
-def own (ξ : Chro Loc Val) : Memory Loc Val :=
-  {ν | ∃ T ∈ ξ.toList, ν ∈ T.own}
+def own (ξ : Chro Loc Val) : Memory Loc Val := listOwn ξ.toList
+
+theorem own_eq_listOwn (ξ : Chro Loc Val) : ξ.own = listOwn ξ.toList := rfl
 
 @[ext] theorem ext {ξ η : Chro Loc Val} (hf : ξ.first = η.first)
     (hr : ξ.rest = η.rest) : ξ = η := by
@@ -152,7 +169,7 @@ def single (T : Transition Loc Val) : Chro Loc Val where
 @[simp] theorem single_c (T : Transition Loc Val) : (single T).c = T.closing := rfl
 
 @[simp] theorem single_own (T : Transition Loc Val) : (single T).own = T.own := by
-  ext ν; simp [own]
+  simp [own]
 
 end Chro
 
@@ -209,15 +226,7 @@ def append (ξ η : Chro Loc Val) (h : ξ.c ⊆ η.o) : Chro Loc Val where
 
 @[simp] theorem append_own (ξ η : Chro Loc Val) (h : ξ.c ⊆ η.o) :
     (ξ.append η h).own = ξ.own ∪ η.own := by
-  ext ν
-  simp only [own, append_toList, List.mem_append, Set.mem_setOf_eq, Set.mem_union]
-  constructor
-  · rintro ⟨T, hT | hT, hν⟩
-    · exact Or.inl ⟨T, hT, hν⟩
-    · exact Or.inr ⟨T, hT, hν⟩
-  · rintro (⟨T, hT, hν⟩ | ⟨T, hT, hν⟩)
-    · exact ⟨T, Or.inl hT, hν⟩
-    · exact ⟨T, Or.inr hT, hν⟩
+  simp only [own, append_toList, listOwn_append]
 
 theorem append_assoc (ξ η ζ : Chro Loc Val) (h₁ : ξ.c ⊆ η.o) (h₂ : η.c ⊆ ζ.o) :
     (ξ.append η h₁).append ζ (by simpa using h₂)

@@ -4,6 +4,9 @@ import Isotope.Elgot.RA.Rewrite
 import Isotope.Elgot.RA.Closure
 import Isotope.Elgot.RA.Monad
 import Isotope.Elgot.RA.Iteration
+import Isotope.Elgot.RA.Memory
+import Isotope.Elgot.RA.Categorical
+import Isotope.Elgot.RA.Examples
 
 /-!
 # A release/acquire trace monad
@@ -90,6 +93,14 @@ Read this before citing anything here as "the paper's".
 * `LawfulElgotMonad (Comp Loc Val)` — fixpoint, naturality, codiagonal and pure
   uniformity for the union-of-unrollings iteration operator.
 * Consequently, by `Isotope/CategoryTheory/Monad/Elgot.lean`, the Kleisli
-  category of `Comp Loc Val` is an `ElgotCategory` and an `ElgotFreydCategory`;
-  see `Isotope/Elgot/RA/Categorical.lean`.
+  category of `Comp Loc Val` is an `ElgotCategory` and an `ElgotFreydCategory`
+  (`nonempty_elgotCategory`, `nonempty_elgotFreydCategory`).
+* Two rewriting invariants that separate computations: the returned value
+  (`Refines.ret_eq`) and the local messages `ξ.own` (`Refines.own_eq`).
+* Worked examples in `Isotope/Elgot/RA/Examples.lean`: `pure_ne_pure`,
+  `bot_ne_pure`, `storedMem_wellFormed` (a well-formed memory with two messages
+  at one location), `mem_store`, `store_ne_pure`, `store_ne_bot`, `load_stale`
+  (a load returning a value that a strictly later write at the same location
+  has already superseded), and the loop examples `iter_diverge`, `iter_exit`,
+  `iter_store_diverge`.
 -/
