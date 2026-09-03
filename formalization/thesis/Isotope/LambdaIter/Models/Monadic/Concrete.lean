@@ -17,7 +17,7 @@ sets, and there are no instructions to denote.  So **every** complete Elgot
 monad in the repository gives an algebra of the lambda-iter presentation, by
 one uniform construction `freeAlg`.
 
-This file instantiates it at nine monads and connects four of them by
+This file instantiates it at ten monads and connects four of them by
 morphisms.
 
 ## Why the morphisms are definitionally typed
@@ -92,7 +92,7 @@ def freeAlg : Alg.{0, 0} Sig.empty.{0} := Alg.ofModel (freeModel m)
 
 end
 
-/-! ### The nine instances -/
+/-! ### The ten instances -/
 
 /-- Partiality: deterministic, divergence-sensitive. -/
 noncomputable def partAlg : Alg.{0, 0} Sig.empty.{0} := freeAlg Part
@@ -124,6 +124,10 @@ def wsAlg (St W : Type) [Monoid W] : Alg.{0, 0} Sig.empty.{0} := freeAlg (WS St 
 /-- A transformer stack: state over partiality. -/
 noncomputable def stateAlg (St : Type) : Alg.{0, 0} Sig.empty.{0} :=
   freeAlg (StateT St Part)
+
+/-- A transformer stack: writer over partiality. -/
+noncomputable def writerAlg (W : Type) [Monoid W] : Alg.{0, 0} Sig.empty.{0} :=
+  freeAlg (WriterT W Part)
 
 /-- A transformer stack: reader over a base monad. -/
 def readerAlg (R : Type) (m : Type → Type) [Monad m] [LawfulMonad m] [Iterate m]

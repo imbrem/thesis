@@ -19,13 +19,16 @@ classes, is what makes a category of models and a statement of initiality
 possible at all.  The price, stated plainly:
 
 * **A model in this sense is an algebra of the presentation, not a Freyd or
-  Elgot category.**  Nothing here proves that any monad or any Freyd category
-  gives such an algebra; that would require discharging `coh` and `sound` in
-  the model, which is exactly the work those two missing instances represent.
-* The only algebras constructed in this development are the ones in
-  `Isotope/LambdaIter/Models/Limits.lean` (a terminal algebra and binary
-  products of algebras).  Whether an algebra with interesting semantic content
-  exists is left open here.
+  Elgot category.**  Nothing here proves that a Freyd category gives such an
+  algebra; that would require discharging `coh` and `sound` in the category,
+  which is exactly the work those two missing instances represent.
+* Every lawful Elgot *monad* with an interpretation of the signature does give
+  one: `Models/Monadic/Alg.lean`'s `Alg.ofModel`.  It is instantiated at ten
+  concrete monads in `Models/Monadic/Concrete.lean`, so the class of algebras
+  is not exhausted by the formal constructions of `Models/Limits.lean` (a
+  terminal algebra and binary products) -- it contains partiality, the
+  powerset, interaction-free trace models, Brookes-style transition traces and
+  the release/acquire model, together with morphisms between them.
 
 ## Fixed syntax parameters
 
