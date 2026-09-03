@@ -3,4 +3,5 @@ import Isotope.LambdaIter.Subtyping.LocallyNameless.TypingSubst
 import Isotope.LambdaIter.Subtyping.LocallyNameless.Equiv
 import Isotope.LambdaIter.Subtyping.LocallyNameless.TypedEquiv
 import Isotope.LambdaIter.Subtyping.LocallyNameless.Refinement
+import Isotope.LambdaIter.Subtyping.LocallyNameless.RefinementOrder
 import Isotope.LambdaIter.Subtyping.LocallyNameless.Examples
