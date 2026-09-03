@@ -1,6 +1,7 @@
 import Isotope.LambdaSeq.Models.Monadic.Denotation
 import Isotope.LambdaSeq.Models.Monadic.Alg
 import Isotope.LambdaSeq.Models.Monadic.Examples
+import Isotope.LambdaSeq.Models.Monadic.Nondet
 
 /-!
 # The monadic bridge for lambda-seq

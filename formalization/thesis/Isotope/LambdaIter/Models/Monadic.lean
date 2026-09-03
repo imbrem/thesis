@@ -1,15 +1,16 @@
-import Isotope.LambdaIter.Models.Monadic.Model
-import Isotope.LambdaIter.Models.Monadic.Coupling
-import Isotope.LambdaIter.Models.Monadic.Free
-import Isotope.LambdaIter.Models.Monadic.Denotation
-import Isotope.LambdaIter.Models.Monadic.Coherence
-import Isotope.LambdaIter.Models.Monadic.Soundness
 import Isotope.LambdaIter.Models.Monadic.Alg
-import Isotope.LambdaIter.Models.Monadic.Push
-import Isotope.LambdaIter.Models.Monadic.Examples
+import Isotope.LambdaIter.Models.Monadic.Coherence
 import Isotope.LambdaIter.Models.Monadic.Concrete
+import Isotope.LambdaIter.Models.Monadic.Coupling
+import Isotope.LambdaIter.Models.Monadic.Denotation
+import Isotope.LambdaIter.Models.Monadic.Examples
+import Isotope.LambdaIter.Models.Monadic.Free
 import Isotope.LambdaIter.Models.Monadic.Havoc
+import Isotope.LambdaIter.Models.Monadic.Model
+import Isotope.LambdaIter.Models.Monadic.Nondet
 import Isotope.LambdaIter.Models.Monadic.Payoff
+import Isotope.LambdaIter.Models.Monadic.Push
+import Isotope.LambdaIter.Models.Monadic.Soundness
 
 /-!
 # The monadic bridge
@@ -31,6 +32,8 @@ the bridge theorems that turn a monad into an algebra.
   `Alg.ofModel` |
 | `Monadic/Examples.lean` | the partiality algebra separates a divergent loop
   from a value |
+| `Monadic/Nondet.lean` | the ray signature; countable nondeterminism is a
+  model of lambda-iter, finite nondeterminism provably is not |
 
 The three bridges are stacked by hypothesis strength:
 

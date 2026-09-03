@@ -370,7 +370,14 @@ def ops (M : Model.{u, v} S m) : Alg.Ops.{u, v} S where
   iter x y := fun ρ => x ρ >>= Elgot.iter fun a =>
     y (ρ, a) >>= fun s => pure (M.coprodEquiv _ _ s)
 
-/-- The interpretation of a derivation by `ops` is the monadic denotation. -/
+omit [LawfulMonad m] [LawfulElgotMonad m] [InjectiveFormers S.Ty] in
+/-- The interpretation of a derivation by `ops` is the monadic denotation.
+
+Stated at the tightest hypotheses: `ops` is definitionally the clauses of
+`denote`, so neither lawfulness nor injectivity of the type formers is used.
+This matters for monads that are *not* Elgot — the finite-powerset monad, in
+particular — where `ops M` is still a well-defined collection of operations
+even though it is not (and provably cannot be) an algebra. -/
 @[simp] theorem ops_denote (M : Model.{u, v} S m) {n : Nat}
     {β : BoundCtx S.Ty n} {t : Tm Empty S.Instr n} {A : S.Ty}
     (h : HasType S.Instr Ctx.nil β t A) :
