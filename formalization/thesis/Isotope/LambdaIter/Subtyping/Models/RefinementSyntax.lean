@@ -94,4 +94,38 @@ theorem refinement_iff_syntax_le
   change Related S.pureEff Ctx.nil R ha hb ↔ Related S.pureEff Ctx.nil R ha hb
   rfl
 
+/-- Semantic refinement means ordering in every proof-relevant ordered algebra
+that validates the chosen primitive rewrite theory.  The order structure is
+passed explicitly so this definition quantifies over models rather than
+depending on a globally selected instance. -/
+def SemanticallyRefines
+    (R : Theory (Φ := S.Instr) (Ctx.nil : Ctx Empty S.Ty))
+    {n : Nat} {β : BoundCtx S.Ty n}
+    {a b : LambdaIter.LocallyNameless.Tm Empty S.Instr n} {A : S.Ty}
+    {ha : HasType S.Instr Ctx.nil β a A}
+    {hb : HasType S.Instr Ctx.nil β b A} : Prop :=
+  ∀ (X : Alg.{u, u} S) (order : LawfulOrder X),
+    @LawfulOrder.Validates S _ X order R →
+      @LawfulOrder.le S _ X order n β A (X.denote ha) (X.denote hb)
+
+/-- Soundness and completeness for the whole ordered algebraic semantics:
+generated refinement is exactly the ordering valid in every ordered algebra
+that validates the primitive rewrites. -/
+theorem semanticallyRefines_iff
+    (R : Theory (Φ := S.Instr) (Ctx.nil : Ctx Empty S.Ty))
+    {n : Nat} {β : BoundCtx S.Ty n}
+    {a b : LambdaIter.LocallyNameless.Tm Empty S.Instr n} {A : S.Ty}
+    {ha : HasType S.Instr Ctx.nil β a A}
+    {hb : HasType S.Instr Ctx.nil β b A} :
+    SemanticallyRefines R (ha := ha) (hb := hb) ↔
+      Related S.pureEff Ctx.nil R ha hb := by
+  constructor
+  · intro h
+    exact refinement_complete R
+      (h (refinementSyntax R) (refinementSyntax_lawfulOrder R)
+        (refinementSyntax_validates R))
+  · intro h X order hR
+    letI : LawfulOrder X := order
+    exact h.elim fun d => LawfulOrder.sound X hR d
+
 end Isotope.LambdaIter.Subtyping.Models
