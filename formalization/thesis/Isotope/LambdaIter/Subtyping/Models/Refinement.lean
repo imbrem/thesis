@@ -25,7 +25,6 @@ class LawfulOrder (X : Alg.{u, w} S) where
   le : ∀ {n} (β : BoundCtx S.Ty n) (A : S.Ty), X.El β A → X.El β A → Prop
   le_refl : ∀ {n β A} (x : X.El (n := n) β A), le β A x x
   le_trans : ∀ {n β A} {x y z : X.El (n := n) β A}, le β A x y → le β A y z → le β A x z
-  le_antisymm : ∀ {n β A} {x y : X.El (n := n) β A}, le β A x y → le β A y x → x = y
   op_mono : ∀ {n β} (f : S.Instr) {x y : X.El (n := n) β (instrSrc f)},
     le β _ x y → le β _ (X.op f x) (X.op f y)
   let₁_mono : ∀ {n β A B} {a a' : X.El (n := n) β A} {b b' : X.El (β.snoc A) B},
@@ -56,7 +55,8 @@ class LawfulOrder (X : Alg.{u, w} S) where
       {a b : LambdaIter.LocallyNameless.Tm Empty S.Instr n} {A : S.Ty}
       {ha : HasType S.Instr Ctx.nil β a A}
       {hb : HasType S.Instr Ctx.nil β b A},
-    TypedEquiv.Deriv S.pureEff Ctx.nil ha hb → X.denote ha = X.denote hb
+    TypedEquiv.Deriv S.pureEff Ctx.nil ha hb →
+      le β A (X.denote ha) (X.denote hb)
 
 namespace LawfulOrder
 
@@ -80,7 +80,7 @@ theorem sound (X : Alg.{u, w} S) [LawfulOrder X] {R} (hR : Validates X R) :
   | _, _, _, _, _, _, _, .refl _ => LawfulOrder.le_refl _
   | _, _, _, _, _, _, _, .trans h k => LawfulOrder.le_trans (sound X hR h) (sound X hR k)
   | _, _, _, _, _, ha, hb, .axiom h => hR ha hb h
-  | _, _, _, _, _, _, _, .equiv h => by rw [LawfulOrder.equiv_sound h]; exact LawfulOrder.le_refl _
+  | _, _, _, _, _, _, _, .equiv h => LawfulOrder.equiv_sound h
   | _, _, _, _, _, _, _, .sub h d => LawfulOrder.coeSub_mono d (sound X hR h)
   | _, _, _, _, _, _, _, .op h => LawfulOrder.op_mono _ (sound X hR h)
   | _, _, _, _, _, _, _, .let₁ h k => LawfulOrder.let₁_mono (sound X hR h) (sound X hR k)

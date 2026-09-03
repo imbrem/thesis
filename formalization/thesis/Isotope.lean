@@ -3,6 +3,7 @@ import Isotope.CategoryTheory.AddMonoidal
 import Isotope.CategoryTheory.Order
 import Isotope.LambdaIter.Subtyping.Models.Alg
 import Isotope.LambdaIter.Subtyping.Models.Refinement
+import Isotope.LambdaIter.Subtyping.Models.RefinementSyntax
 import Isotope.CategoryTheory.Freyd
 import Isotope.CategoryTheory.Ide
 import Isotope.CategoryTheory.Monad
