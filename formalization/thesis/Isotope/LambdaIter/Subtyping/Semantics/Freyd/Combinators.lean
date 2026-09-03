@@ -23,8 +23,12 @@ Three families appear:
   an arbitrary computation past the composite `J.map (toUnit R) ≫ unitIso.inv`.
 
 The distributive section adds the corresponding laws for `caseWithContext`:
-its two beta rules, its eta rule, and the fact that the inverse coproduct
-comparison turns a pure case split back into a value morphism.
+its two beta rules, its eta rule, and its naturality in the environment.  It
+records `splitMapCoprod_comp_desc_map`, which says that splitting a pure
+coproduct and descending two value branches stays pure.  (`TwoPoint.lean`
+already has the same statement under the name `splitMapCoprod_desc_map`, but
+only for a *strict* premonoidal `J`; the version here drops that hypothesis and
+should replace it in an integration pass.)
 -/
 
 universe v₁ v₂ u₁ u₂ u₃
@@ -254,8 +258,9 @@ injection by the inverse coproduct comparison. -/
   exact map_inr_inv_coprodComparison J
 
 /-- Splitting a pure coproduct and then descending two *value* branches is
-again a value morphism. -/
-theorem splitMapCoprod_desc_map {X Y Z : V} (l : X ⟶ Z) (r : Y ⟶ Z) :
+again a value morphism.  This is `TwoPoint.splitMapCoprod_desc_map` with the
+strictness hypothesis on `J` removed. -/
+theorem splitMapCoprod_comp_desc_map {X Y Z : V} (l : X ⟶ Z) (r : Y ⟶ Z) :
     splitMapCoprod J X Y ≫ coprod.desc (J.map l) (J.map r) =
       J.map (coprod.desc l r) := by
   rw [splitMapCoprod, IsIso.inv_comp_eq]
@@ -296,6 +301,36 @@ theorem caseWithContext_map_inr {R A B D : V} (f : J.obj R ⟶ J.obj B)
   rw [← Category.assoc, ← J.map_comp, hdist, map_inr_comp_splitMapCoprod_assoc,
     coprod.inr_desc]
 
+/-- Postcomposition is absorbed into both branches of a case analysis. -/
+theorem caseWithContext_comp {R A B D D' : V}
+    (scrutinee : J.obj R ⟶ J.obj (A ⨿ B))
+    (left : J.obj (R ⊗ A) ⟶ J.obj D) (right : J.obj (R ⊗ B) ⟶ J.obj D)
+    (k : J.obj D ⟶ J.obj D') :
+    caseWithContext J scrutinee left right ≫ k =
+      caseWithContext J scrutinee (left ≫ k) (right ≫ k) := by
+  simp only [caseWithContext, bind_comp, Category.assoc, ← coprod.desc_comp]
+
+/-- Naturality of case analysis in the environment. -/
+theorem map_comp_caseWithContext {R' R A B D : V} (p : R' ⟶ R)
+    (scrutinee : J.obj R ⟶ J.obj (A ⨿ B))
+    (left : J.obj (R ⊗ A) ⟶ J.obj D) (right : J.obj (R ⊗ B) ⟶ J.obj D) :
+    J.map p ≫ caseWithContext J scrutinee left right =
+      caseWithContext J (J.map p ≫ scrutinee)
+        (J.map (p ⊗ₘ 𝟙 A) ≫ left) (J.map (p ⊗ₘ 𝟙 B) ≫ right) := by
+  have hdist : (p ⊗ₘ 𝟙 (A ⨿ B)) ≫ (DistributiveTensor.leftIso R A B).inv =
+      (DistributiveTensor.leftIso R' A B).inv ≫
+        coprod.map (p ⊗ₘ 𝟙 A) (p ⊗ₘ 𝟙 B) := by
+    rw [Iso.comp_inv_eq, Category.assoc, Iso.eq_inv_comp]
+    apply coprod.hom_ext <;>
+      simp [DistributiveTensor.leftIso, MonoidalCategory.tensorHom_def,
+        MonoidalCategory.whisker_exchange]
+  rw [caseWithContext, caseWithContext, map_comp_bind]
+  congr 1
+  rw [← Category.assoc, ← J.map_comp, hdist, J.map_comp, Category.assoc]
+  congr 1
+  rw [splitMapCoprod, splitMapCoprod, ← Category.assoc,
+    ← coprodComparison_inv_natural, Category.assoc, coprod.map_desc]
+
 variable [Functor.StrongPremonoidalCentral J]
 
 /-- **Case eta.**  Re-injecting the scrutinee in each branch recovers the
@@ -311,7 +346,8 @@ theorem caseWithContext_eta {R A B : V} (f : J.obj R ⟶ J.obj (A ⨿ B)) :
     rw [Iso.inv_comp_eq]
     apply coprod.hom_ext <;>
       simp [DistributiveTensor.leftIso, ← MonoidalCategory.id_tensorHom]
-  rw [caseWithContext, splitMapCoprod_desc_map, ← J.map_comp, hdesc, bind_map_snd]
+  rw [caseWithContext, splitMapCoprod_comp_desc_map, ← J.map_comp, hdesc,
+    bind_map_snd]
 
 end Distributive
 
