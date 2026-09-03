@@ -16,6 +16,10 @@ two-way branching ray `n ↦ {inl n, inr (n + 1)}`).  Only the monad changes.
 | lambda-case | `finCaseAlg` — an algebra | `csetCaseAlg` — an algebra |
 | lambda-iter | **impossible** (`finSet_not_alg_lambdaIter`) | `csetIterAlg` — an algebra |
 
+Mathlib's `Finset` behaves identically (`finsetSeqAlg`, `finsetCaseAlg`,
+`finset_not_alg_lambdaIter`), so the boundary is not an artifact of the
+decidability-free presentation `FinSet`.
+
 ## Why the boundary falls exactly at iteration
 
 The monadic bridge is stacked by hypothesis strength, and the stack is tight:
@@ -56,9 +60,12 @@ start state.
   exactly what is quantified over.
 * The positive results are algebras of the *presentations*, i.e. objects of
   `Alg`; nothing here builds a Freyd or Elgot category.
-* The `Finset` analogue is recorded in `Isotope.Elgot.Nondet` at the level of
-  the monad only; this file's algebras are stated for the decidability-free
-  `FinSet`.
+* The `Finset` results are classical (`Monad Finset` needs
+  `[∀ P, Decidable P]`), hence `noncomputable` and guarded by
+  `open scoped Classical`.  Nothing else in this file is.
+* Only one instruction and one base type are interpreted.  The results say
+  nothing about signatures whose instructions are already unrepresentable in
+  finite nondeterminism for other reasons.
 -/
 
 namespace Isotope.LambdaSeq.Monadic
@@ -66,7 +73,8 @@ namespace Isotope.LambdaSeq.Monadic
 open Isotope.Elgot
 open Isotope.Elgot.Nondet
 open Isotope.LambdaIter (Sig TypeFormers)
-open Isotope.LambdaIter.Monadic (raySig rayInterp finRayModel csetRayModel)
+open Isotope.LambdaIter.Monadic (raySig rayInterp rayModel finRayModel
+  csetRayModel Γ₀ hloop hrhs eqv_fix iterate_fixpoint_of_denote_eq)
 
 /-! ### Finite nondeterminism models the iteration-free calculi -/
 
@@ -150,5 +158,47 @@ theorem not_equiv_inl_inr :
       (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty raySig.Ty)
       (.nil) (.inl .unit) (.inr .unit) boolT := fun he =>
   finCaseAlg_denote_inl_ne_inr (finCaseAlg.sound inlUnit inrUnit he)
+
+/-! ### The same for Mathlib's `Finset`
+
+Mathlib's finite-powerset monad is classical (`Monad Finset` needs
+`[∀ P, Decidable P]`), so every declaration below is guarded by
+`open scoped Classical`.  Repeating the result here shows that the boundary is
+not an artifact of the decidability-free presentation `FinSet`.
+-/
+
+open scoped Classical in
+/-- The `Finset` interpretation of the ray signature, with the same two-way
+branching body. -/
+noncomputable def finsetRayModel : Isotope.LambdaIter.Monadic.Model.{0, 0}
+    raySig Finset.{0} :=
+  rayModel Finset.{0} FinsetCounterexample.body
+
+open scoped Classical in
+/-- **Mathlib's finite nondeterminism is a model of lambda-seq.** -/
+noncomputable def finsetSeqAlg : LambdaSeq.Alg.{0, 0} raySig :=
+  LambdaSeq.Alg.ofSeqModel finsetRayModel.toSeqModel
+
+open scoped Classical in
+/-- **Mathlib's finite nondeterminism is a model of lambda-case.** -/
+noncomputable def finsetCaseAlg : LambdaCase.Alg.{0, 0} raySig :=
+  LambdaCase.Alg.ofModel finsetRayModel
+
+open scoped Classical in
+/-- **Mathlib's finite nondeterminism is not a model of lambda-iter**: for no
+iteration operator on `Finset` are the standard operations an algebra.  Same
+statement and same proof as for `FinSet`, through
+`FinsetCounterexample.no_lax_fixpoint`. -/
+theorem finset_not_alg_lambdaIter :
+    ¬ ∃ (I : Iterate Finset.{0}) (X : LambdaIter.Alg.{0, 0} raySig),
+        X.toOps = @Isotope.LambdaIter.Monadic.ops raySig Finset.{0} _ I
+          finsetRayModel := by
+  rintro ⟨I, X, hX⟩
+  have hd := X.sound hloop hrhs eqv_fix
+  rw [hX, Isotope.LambdaIter.Monadic.ops_denote,
+    Isotope.LambdaIter.Monadic.ops_denote] at hd
+  have hfix := iterate_fixpoint_of_denote_eq FinsetCounterexample.body hd
+  exact FinsetCounterexample.no_lax_fixpoint
+    (Elgot.iter FinsetCounterexample.body) (fun n _k hk => (hfix n) ▸ hk)
 
 end Isotope.LambdaSeq.Monadic
