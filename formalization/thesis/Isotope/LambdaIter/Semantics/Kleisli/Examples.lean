@@ -1,6 +1,7 @@
 import Isotope.LambdaIter.Semantics.Kleisli.Model
 import Isotope.LambdaIter.Subtyping.Semantics.KleisliModel
 import Isotope.Elgot.Nondet.Powerset
+import Isotope.LambdaIter.Models.Categorical.Initial
 
 /-!
 # Concrete categorical models of lambda-iter
@@ -122,6 +123,35 @@ theorem denote_var_ne_diverge :
   rw [h] at h0
   exact h0.fst
 
+section Algebra
+
+/-- The running example, packaged as a lambda-iter signature. -/
+@[reducible] def exSig : Sig.{0} where
+  Ty := Ty Unit
+  formers := inferInstance
+  Instr := Instr
+  Eff := Bool
+  pureEff := false
+  hasTy := inferInstance
+  hasEff := inferInstance
+
+/-- **A Freyd-categorical algebra of lambda-iter.**  The Kleisli category of
+the partiality monad, with the interpretation above, is an object of
+`Alg exSig` by `Alg.ofCategorical` -- the first algebra in this development
+built from a Freyd/Elgot category rather than from a monad directly. -/
+noncomputable def partCategoricalAlg : Alg.{0, 0} exSig := by
+  letI := Categorical.ofInstructionModel (τ := Ty Unit) (Φ := Instr)
+    (ε := Bool) (m := Part)
+  exact Alg.ofCategorical (S := exSig) (kleisliJ Part)
+    (Categorical.ofTypeModel (τ := Ty Unit))
+
+/-- **Categorical initiality, concretely.**  There is exactly one morphism of
+algebras from the quotiented syntax into the Freyd-categorical model above. -/
+noncomputable example : Unique (Syn.{0} exSig ⟶ partCategoricalAlg) :=
+  Syn.uniqueHom _
+
+end Algebra
+
 end Part
 
 section Nondet
@@ -186,5 +216,6 @@ theorem denote_var_ne_diverge_set :
   exact h0
 
 end Nondet
+
 
 end Isotope.LambdaIter.Semantics.Example
