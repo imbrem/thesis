@@ -35,8 +35,9 @@ theorem refinementSyntax_denote
     (R : Theory (Φ := S.Instr) (Ctx.nil : Ctx Empty S.Ty))
     {h : HasType S.Instr Ctx.nil β t A} :
     (refinementSyntax R).denote h = ⟨t, h⟩ := by
-  induction h <;> simp_all [Alg.denote, Alg.Ops.denote, refinementSyntax,
-    Ctx.lookup]
+  induction h with
+  | fv h => simp [Ctx.lookup] at h
+  | _ => simp_all [Alg.denote, Alg.Ops.denote, refinementSyntax]
 
 instance refinementSyntax_lawfulOrder
     (R : Theory (Φ := S.Instr) (Ctx.nil : Ctx Empty S.Ty)) :
@@ -54,7 +55,7 @@ instance refinementSyntax_lawfulOrder
   abort_mono := Related.abort
   iter_mono := Related.iter
   coeSub_mono := fun d _ _ h => Related.sub h d
-  equiv_sound {ha := ha} {hb := hb} h := by
+  equiv_sound := fun {ha} {hb} h => by
     rw [refinementSyntax_denote, refinementSyntax_denote]
     exact Related.ofEquiv ⟨h⟩
 
