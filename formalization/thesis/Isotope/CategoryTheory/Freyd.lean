@@ -1,4 +1,5 @@
 import Isotope.CategoryTheory.Freyd.Basic
+import Isotope.CategoryTheory.Freyd.Central
 import Isotope.CategoryTheory.Freyd.Distributive
 import Isotope.CategoryTheory.Freyd.Effectful
 import Isotope.CategoryTheory.Freyd.EffectfulElgot
