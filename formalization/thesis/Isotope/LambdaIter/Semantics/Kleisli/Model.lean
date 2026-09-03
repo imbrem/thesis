@@ -134,6 +134,22 @@ noncomputable instance instLawfulModelKleisli :
     exact denoteOfType_ext (ε := ε) (.iter ha hb) (.iter (.let₁ ha hh) hb')
       (fun γ ρ => sound_iterUniformity ha hh hp hb hb' hsq γ ρ)
 
+/-- **Categorical soundness at the Kleisli model.**  This is
+`LocallyNameless.Categorical.sound_between`, whose two class hypotheses are now
+discharged, so the categorical semantics validates the whole equational theory
+of lambda-iter at arbitrary endpoint derivations. -/
+theorem kleisli_sound_between {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+    {a b : Tm ν Φ n} {A : τ}
+    (e : Eqv (τ := τ) (ν := ν) (Φ := Φ) (ε := ε) (⊥ : ε) Γ β a b A)
+    (ha : HasType Φ Γ β a A) (hb : HasType Φ Γ β b A) :
+    Categorical.denoteOfType (ε := ε) (m := m) ha.toGeneric =
+      Categorical.denoteOfType (ε := ε) (m := m) hb.toGeneric :=
+  @LocallyNameless.Categorical.sound_between τ _ _ ν _ Φ _ ε _ (⊥ : ε)
+    (Type v) (Kleisli (CategoryTheory.ofTypeMonad m)) _ _ _ _ _ _ _ _ _ _ _ _
+    (kleisliJ m) _ (Categorical.ofTypeModel (τ := τ))
+    (Categorical.ofInstructionModel (ε := ε))
+    instTypingCoherentKleisli instLawfulModelKleisli Γ n β a b A e ha hb
+
 end Coherent
 
 end Isotope.LambdaIter.Semantics
