@@ -1,4 +1,5 @@
 import Isotope.Elgot.Transformer.Reader
+import Isotope.Elgot.Transformer.Refinement
 import Isotope.Elgot.Transformer.State
 import Isotope.Elgot.Transformer.Writer
 import Isotope.Elgot.Transformer.Writer.Divergence
