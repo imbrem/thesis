@@ -1,4 +1,5 @@
 import Isotope.CategoryTheory.Premonoidal.Subcategory
+import Isotope.CategoryTheory.AddMonoidal.Cocartesian
 import Mathlib.CategoryTheory.Limits.Constructions.FiniteProductsOfBinaryProducts
 import Mathlib.CategoryTheory.Limits.Preserves.Shapes.BinaryProducts
 import Mathlib.CategoryTheory.Limits.Preserves.Shapes.Terminal
@@ -10,19 +11,15 @@ A wide subcategory `P ⊆ C` inherits the finite coproducts of `C` as soon as th
 injections, the maps out of the initial object, and the copairing of two `P`-morphisms all lie
 in `P`.  This is `IsCocartesianSubcategory`.
 
-The resulting coproducts of `WideSubcategory P` are the coproducts of `C`, but only up to the
-canonical comparison isomorphism: Mathlib's `HasColimit` is a `Prop`, so the chosen colimit is
-not definitionally the cocone we supply.  `wideCoprodIso` names that comparison and the lemmas
-below let one compute with it.
+Crucially the condition is stated for the **chosen** coproduct of a
+`CocartesianMonoidalCategory`, not for `Limits.coprod`.  A `HasBinaryCoproducts` coproduct comes
+from `Classical.choice` and is pinned down only up to an arbitrary automorphism of its apex, so
+purity of *its* injections is not provable of any real model; the chosen injections are data, so
+it is.
 
-Note that `IsCocartesianSubcategory` asks for `P` to contain Mathlib's *globally chosen*
-coproduct injections.  That is a real constraint on the choice, not just on `P`: a chosen
-colimit cocone is determined only up to twisting by an automorphism of its apex, and such a
-twist need not be a `P`-morphism.  It therefore holds in categories whose coproducts are pinned
-down (for instance where every morphism is pure), but not in a Kleisli category presented
-through `HasColimit`.  Concrete models are consequently built through the functor presentation,
-in `Isotope.CategoryTheory.Monad.Effectful`; only the effect *laws* used by the semantics are
-stated twist-freely, as composites (see `DistributiveEffectModel`).
+The resulting coproducts of `WideSubcategory P` are Mathlib's, hence still only determined up to
+the comparison `wideCoprodIso` — but that comparison is an isomorphism *of the subcategory*, so
+both of its directions are automatically `P`-morphisms.
 -/
 
 universe v u
@@ -30,77 +27,91 @@ universe v u
 namespace CategoryTheory
 
 open Category Limits
-open scoped MonoidalCategory
+open scoped MonoidalCategory AddMonoidalCategory
 
 namespace PremonoidalCategory
 
 variable {C : Type u} [Category.{v} C] [PremonoidalCategory C] (P : MorphismProperty C)
 
-/-- A wide subcategory closed under the finite coproduct structure of `C`: it contains the
-injections and the maps out of the initial object, and the copairing of two of its morphisms is
-again one of its morphisms. -/
-class IsCocartesianSubcategory [HasFiniteCoproducts C] : Prop where
-  initial_to_mem (X : C) : P (initial.to X)
-  inl_mem (X Y : C) : P (coprod.inl : X ⟶ X ⨿ Y)
-  inr_mem (X Y : C) : P (coprod.inr : Y ⟶ X ⨿ Y)
-  desc_mem {X Y Z : C} {f : X ⟶ Z} {g : Y ⟶ Z} : P f → P g → P (coprod.desc f g)
+/-- A wide subcategory closed under the chosen finite coproduct structure of `C`: it contains
+the injections and the maps out of the initial object, and the copairing of two of its morphisms
+is again one of its morphisms. -/
+class IsCocartesianSubcategory [CocartesianMonoidalCategory C] : Prop where
+  fromZero_mem (X : C) : P (CocartesianMonoidalCategory.fromZero X)
+  inl_mem (X Y : C) : P (CocartesianMonoidalCategory.inl X Y)
+  inr_mem (X Y : C) : P (CocartesianMonoidalCategory.inr X Y)
+  desc_mem {X Y Z : C} {f : X ⟶ Z} {g : Y ⟶ Z} :
+    P f → P g → P (CocartesianMonoidalCategory.desc f g)
 
-export IsCocartesianSubcategory (initial_to_mem inl_mem inr_mem desc_mem)
+export IsCocartesianSubcategory (fromZero_mem inl_mem inr_mem desc_mem)
+
+/-- Every morphism is trivially closed under the coproduct structure. -/
+instance topIsCocartesianSubcategory [CocartesianMonoidalCategory C] :
+    IsCocartesianSubcategory (⊤ : MorphismProperty C) where
+  fromZero_mem _ := trivial
+  inl_mem _ _ := trivial
+  inr_mem _ _ := trivial
+  desc_mem _ _ := trivial
 
 section
 
-variable [HasFiniteCoproducts C] [IsPremonoidalSubcategory P] [IsCocartesianSubcategory P]
+open CocartesianMonoidalCategory
 
-/-- The initial object of `C`, viewed in the wide subcategory. -/
-noncomputable def wideInitial : WideSubcategory P := ⟨⊥_ C⟩
+variable [CocartesianMonoidalCategory C] [IsPremonoidalSubcategory P]
+  [IsCocartesianSubcategory P]
 
-/-- It is initial there: the unique `C`-morphism out of `⊥_ C` is pure. -/
-noncomputable def wideIsInitial : IsInitial (wideInitial P) :=
-  IsInitial.ofUniqueHom (fun X => ⟨initial.to X.obj, initial_to_mem (P := P) X.obj⟩)
-    (fun _ _ => Subtype.ext (initial.hom_ext _ _))
+/-- The chosen initial object of `C`, viewed in the wide subcategory. -/
+def wideInitial : WideSubcategory P := ⟨𝟘_ C⟩
+
+/-- It is initial there: the unique `C`-morphism out of `𝟘_ C` is pure. -/
+def wideIsInitial : IsInitial (wideInitial P) :=
+  IsInitial.ofUniqueHom (fun X => ⟨fromZero X.obj, fromZero_mem (P := P) X.obj⟩)
+    (fun _ _ => Subtype.ext (fromZero_unique _ _))
 
 instance wideHasInitial : HasInitial (WideSubcategory P) := (wideIsInitial P).hasInitial
 
-/-- The ambient left injection, as a morphism of the wide subcategory. -/
-noncomputable def wideInl (X Y : WideSubcategory P) : X ⟶ (⟨X.obj ⨿ Y.obj⟩ : WideSubcategory P) :=
-  ⟨coprod.inl, inl_mem (P := P) X.obj Y.obj⟩
+/-- The chosen left injection, as a morphism of the wide subcategory. -/
+def wideInl (X Y : WideSubcategory P) :
+    X ⟶ (⟨X.obj ⊕ₘ Y.obj⟩ : WideSubcategory P) :=
+  ⟨inl X.obj Y.obj, inl_mem (P := P) X.obj Y.obj⟩
 
-/-- The ambient right injection, as a morphism of the wide subcategory. -/
-noncomputable def wideInr (X Y : WideSubcategory P) : Y ⟶ (⟨X.obj ⨿ Y.obj⟩ : WideSubcategory P) :=
-  ⟨coprod.inr, inr_mem (P := P) X.obj Y.obj⟩
+/-- The chosen right injection, as a morphism of the wide subcategory. -/
+def wideInr (X Y : WideSubcategory P) :
+    Y ⟶ (⟨X.obj ⊕ₘ Y.obj⟩ : WideSubcategory P) :=
+  ⟨inr X.obj Y.obj, inr_mem (P := P) X.obj Y.obj⟩
 
 @[simp] theorem wideInl_val (X Y : WideSubcategory P) :
-    (wideInl P X Y).1 = (coprod.inl : X.obj ⟶ X.obj ⨿ Y.obj) := rfl
+    (wideInl P X Y).1 = inl X.obj Y.obj := rfl
 
 @[simp] theorem wideInr_val (X Y : WideSubcategory P) :
-    (wideInr P X Y).1 = (coprod.inr : Y.obj ⟶ X.obj ⨿ Y.obj) := rfl
+    (wideInr P X Y).1 = inr X.obj Y.obj := rfl
 
-/-- The binary coproduct cocone of `C`, viewed in the wide subcategory. -/
-noncomputable def wideBinaryCofan (X Y : WideSubcategory P) : BinaryCofan X Y :=
-  BinaryCofan.mk (P := (⟨X.obj ⨿ Y.obj⟩ : WideSubcategory P))
+/-- The chosen binary coproduct cocone of `C`, viewed in the wide subcategory. -/
+def wideBinaryCofan (X Y : WideSubcategory P) : BinaryCofan X Y :=
+  BinaryCofan.mk (P := (⟨X.obj ⊕ₘ Y.obj⟩ : WideSubcategory P))
     (wideInl P X Y) (wideInr P X Y)
 
 @[simp] theorem wideBinaryCofan_pt (X Y : WideSubcategory P) :
-    (wideBinaryCofan P X Y).pt = ⟨X.obj ⨿ Y.obj⟩ := rfl
+    (wideBinaryCofan P X Y).pt = ⟨X.obj ⊕ₘ Y.obj⟩ := rfl
 
 @[simp] theorem wideBinaryCofan_inl (X Y : WideSubcategory P) :
-    ((wideBinaryCofan P X Y).inl).1 = (coprod.inl : X.obj ⟶ X.obj ⨿ Y.obj) := rfl
+    ((wideBinaryCofan P X Y).inl).1 = inl X.obj Y.obj := rfl
 
 @[simp] theorem wideBinaryCofan_inr (X Y : WideSubcategory P) :
-    ((wideBinaryCofan P X Y).inr).1 = (coprod.inr : Y.obj ⟶ X.obj ⨿ Y.obj) := rfl
+    ((wideBinaryCofan P X Y).inr).1 = inr X.obj Y.obj := rfl
 
 /-- It is a coproduct there, because copairing preserves purity. -/
-noncomputable def wideBinaryCofanIsColimit (X Y : WideSubcategory P) :
+def wideBinaryCofanIsColimit (X Y : WideSubcategory P) :
     IsColimit (wideBinaryCofan P X Y) :=
   BinaryCofan.IsColimit.mk _
-    (fun f g => ⟨coprod.desc f.1 g.1, desc_mem (P := P) f.2 g.2⟩)
-    (fun f g => Subtype.ext (coprod.inl_desc _ _))
-    (fun f g => Subtype.ext (coprod.inr_desc _ _))
-    (fun f g m h₁ h₂ => Subtype.ext (by
-      refine coprod.hom_ext ?_ ?_
-      · rw [coprod.inl_desc]
+    (fun f g => ⟨desc f.1 g.1, desc_mem (P := P) f.2 g.2⟩)
+    (fun f g => Subtype.ext (inl_desc _ _))
+    (fun f g => Subtype.ext (inr_desc _ _))
+    (fun f g mm h₁ h₂ => Subtype.ext (by
+      refine CocartesianMonoidalCategory.hom_ext ?_ ?_
+      · rw [inl_desc]
         simpa [wideBinaryCofan] using congrArg Subtype.val h₁
-      · rw [coprod.inr_desc]
+      · rw [inr_desc]
         simpa [wideBinaryCofan] using congrArg Subtype.val h₂))
 
 instance wideHasBinaryCoproduct (X Y : WideSubcategory P) : HasColimit (pair X Y) :=
@@ -117,7 +128,7 @@ instance wideHasFiniteCoproducts : HasFiniteCoproducts (WideSubcategory P) :=
 instance wideInclusionPreservesBinary (X Y : WideSubcategory P) :
     PreservesColimit (pair X Y) (wideSubcategoryInclusion P) :=
   preservesColimit_of_preserves_colimit_cocone (wideBinaryCofanIsColimit P X Y)
-    ((isColimitMapCoconeBinaryCofanEquiv _ _ _).symm (coprodIsCoprod X.obj Y.obj))
+    ((isColimitMapCoconeBinaryCofanEquiv _ _ _).symm (addObjIsBinaryCoproduct X.obj Y.obj))
 
 instance wideInclusionPreservesBinaryShape :
     PreservesColimitsOfShape (Discrete WalkingPair) (wideSubcategoryInclusion P) :=
@@ -126,8 +137,9 @@ instance wideInclusionPreservesBinaryShape :
 instance wideInclusionPreservesInitial :
     PreservesColimit (Functor.empty.{0} (WideSubcategory P)) (wideSubcategoryInclusion P) :=
   preservesInitial_of_iso _
-    (((wideSubcategoryInclusion P).mapIso
-      (initialIsInitial.uniqueUpToIso (wideIsInitial P))).symm)
+    ((initialIsInitial.uniqueUpToIso isInitialAddUnit) ≪≫
+      ((wideSubcategoryInclusion P).mapIso
+        (initialIsInitial.uniqueUpToIso (wideIsInitial P))).symm)
 
 instance wideInclusionPreservesEmptyShape :
     PreservesColimitsOfShape (Discrete PEmpty.{1}) (wideSubcategoryInclusion P) :=
@@ -140,51 +152,39 @@ instance wideInclusionPreservesFiniteCoproducts :
 
 /-! ### The comparison isomorphism -/
 
-/-- Mathlib's chosen coproduct in the wide subcategory is the coproduct of `C`, but only up to
-this canonical comparison isomorphism. -/
+/-- Comparison, inside the subcategory, between the chosen coproduct of `C` and Mathlib's chosen
+coproduct.  Because it is an isomorphism *of the subcategory*, both directions are automatically
+`P`-morphisms — which is exactly what the `⨿`-based formulation could not deliver. -/
+noncomputable def wideCoprodCompare (X Y : WideSubcategory P) :
+    (⟨X.obj ⊕ₘ Y.obj⟩ : WideSubcategory P) ≅ X ⨿ Y :=
+  (wideBinaryCofanIsColimit P X Y).coconePointUniqueUpToIso (colimit.isColimit (pair X Y))
+
+/-- The comparison, at the level of `C`. -/
 noncomputable def wideCoprodIso (X Y : WideSubcategory P) :
-    X.obj ⨿ Y.obj ≅ (X ⨿ Y : WideSubcategory P).obj :=
-  PreservesColimitPair.iso (wideSubcategoryInclusion P) X Y
-
-theorem wideCoprodIso_hom (X Y : WideSubcategory P) :
-    (wideCoprodIso P X Y).hom = coprodComparison (wideSubcategoryInclusion P) X Y := rfl
-
-@[reassoc (attr := simp)] theorem inl_wideCoprodIso (X Y : WideSubcategory P) :
-    (coprod.inl : X.obj ⟶ X.obj ⨿ Y.obj) ≫ (wideCoprodIso P X Y).hom =
-      ((coprod.inl : X ⟶ X ⨿ Y)).1 :=
-  coprodComparison_inl (wideSubcategoryInclusion P)
-
-@[reassoc (attr := simp)] theorem inr_wideCoprodIso (X Y : WideSubcategory P) :
-    (coprod.inr : Y.obj ⟶ X.obj ⨿ Y.obj) ≫ (wideCoprodIso P X Y).hom =
-      ((coprod.inr : Y ⟶ X ⨿ Y)).1 :=
-  coprodComparison_inr (wideSubcategoryInclusion P)
+    (X.obj ⊕ₘ Y.obj) ≅ (X ⨿ Y : WideSubcategory P).obj :=
+  (wideSubcategoryInclusion P).mapIso (wideCoprodCompare P X Y)
 
 theorem wideCoprodIso_hom_mem (X Y : WideSubcategory P) :
-    P (wideCoprodIso P X Y).hom :=
-  desc_mem (P := P) (coprod.inl (X := X) (Y := Y)).2 (coprod.inr (X := X) (Y := Y)).2
-
-/-- The copairing, inside the subcategory, of the ambient injections. -/
-noncomputable def wideCoprodBack (X Y : WideSubcategory P) :
-    (X ⨿ Y : WideSubcategory P) ⟶ (⟨X.obj ⨿ Y.obj⟩ : WideSubcategory P) :=
-  coprod.desc (wideInl P X Y) (wideInr P X Y)
-
-theorem wideCoprodIso_inv_eq (X Y : WideSubcategory P) :
-    (wideCoprodIso P X Y).inv = (wideCoprodBack P X Y).1 := by
-  have h : (wideCoprodIso P X Y).hom ≫ (wideCoprodBack P X Y).1 = 𝟙 (X.obj ⨿ Y.obj) := by
-    refine coprod.hom_ext ?_ ?_
-    · rw [← Category.assoc, inl_wideCoprodIso, Category.comp_id]
-      have h := coprod.inl_desc (wideInl P X Y) (wideInr P X Y)
-      exact congrArg Subtype.val h
-    · rw [← Category.assoc, inr_wideCoprodIso, Category.comp_id]
-      have h := coprod.inr_desc (wideInl P X Y) (wideInr P X Y)
-      exact congrArg Subtype.val h
-  have h' := congrArg (fun k : X.obj ⨿ Y.obj ⟶ X.obj ⨿ Y.obj =>
-    (wideCoprodIso P X Y).inv ≫ k) h
-  simpa using h'.symm
+    P (wideCoprodIso P X Y).hom := (wideCoprodCompare P X Y).hom.2
 
 theorem wideCoprodIso_inv_mem (X Y : WideSubcategory P) :
-    P (wideCoprodIso P X Y).inv := by
-  rw [wideCoprodIso_inv_eq]; exact (wideCoprodBack P X Y).2
+    P (wideCoprodIso P X Y).inv := (wideCoprodCompare P X Y).inv.2
+
+@[reassoc (attr := simp)] theorem inl_wideCoprodIso (X Y : WideSubcategory P) :
+    inl X.obj Y.obj ≫ (wideCoprodIso P X Y).hom =
+      ((coprod.inl : X ⟶ X ⨿ Y)).1 := by
+  have := congrArg Subtype.val
+    ((wideBinaryCofanIsColimit P X Y).comp_coconePointUniqueUpToIso_hom
+      (colimit.isColimit (pair X Y)) (Discrete.mk WalkingPair.left))
+  simpa [wideCoprodIso, wideCoprodCompare, coprod.inl] using this
+
+@[reassoc (attr := simp)] theorem inr_wideCoprodIso (X Y : WideSubcategory P) :
+    inr X.obj Y.obj ≫ (wideCoprodIso P X Y).hom =
+      ((coprod.inr : Y ⟶ X ⨿ Y)).1 := by
+  have := congrArg Subtype.val
+    ((wideBinaryCofanIsColimit P X Y).comp_coconePointUniqueUpToIso_hom
+      (colimit.isColimit (pair X Y)) (Discrete.mk WalkingPair.right))
+  simpa [wideCoprodIso, wideCoprodCompare, coprod.inr] using this
 
 end
 
