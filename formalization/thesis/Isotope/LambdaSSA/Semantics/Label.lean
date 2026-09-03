@@ -31,7 +31,21 @@ noncomputable def labelInject (M : TypeModel τ V) {L : LCtx τ}
     have : L[i]? = some (L.get j) := by simp [j]
     rw [h] at this
     exact Option.some.inj this.symm
-  subst A
-  exact Sigma.ι (fun k : Fin L.length => M.obj (L.get k)) j
+  exact eqToHom (congrArg M.obj hj.symm) ≫
+    Sigma.ι (fun k : Fin L.length => M.obj (L.get k)) j
+
+/-- Expose the transport hidden by `labelInject` before the canonical
+coproduct injection.  This form is suitable for reassociation with a
+coproduct eliminator. -/
+@[reassoc]
+theorem labelInject_eq_sigma (M : TypeModel τ V) {L : LCtx τ}
+    (i : Nat) {A : τ} (h : At L i A) :
+    let hi : i < L.length := (List.getElem?_eq_some_iff.mp h).1
+    let j : Fin L.length := ⟨i, hi⟩
+    let hj : L.get j = A := (List.getElem?_eq_some_iff.mp h).2
+    labelInject M i h =
+      eqToHom (congrArg M.obj hj.symm) ≫
+        Sigma.ι (fun k : Fin L.length => M.obj (L.get k)) j := by
+  rfl
 
 end Isotope.LambdaSSA.Semantics.Categorical

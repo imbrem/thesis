@@ -76,8 +76,7 @@ noncomputable def closedTerm {t : Isotope.LambdaCase.Named.Tm ν Φ} {A : τ}
     (h : Isotope.LambdaCase.Named.HasType (Ctx.nil : Ctx ν τ) t A) :
     Σ t' : LambdaIter.LocallyNameless.Tm Empty Φ 0,
       LambdaIter.LocallyNameless.HasType Φ (Ctx.nil : Ctx Empty τ) .nil t' A :=
-  Classical.choice ((NamedToLocallyNameless.translateHasTypeClosed h.embed).map
-    Closed.erase)
+  Closed.erase (NamedToLocallyNameless.chooseHasTypeClosed h.embed)
 
 /-- Compile any well-typed closed named lambda-case term. -/
 noncomputable def compileTyped {t : Isotope.LambdaCase.Named.Tm ν Φ} {A : τ}

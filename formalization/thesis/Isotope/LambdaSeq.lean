@@ -7,3 +7,4 @@ import Isotope.LambdaSeq.Effects
 import Isotope.LambdaSeq.Metatheory
 import Isotope.LambdaSeq.Metatheory.Renaming
 import Isotope.LambdaSeq.Models
+import Isotope.LambdaSeq.Subtyping

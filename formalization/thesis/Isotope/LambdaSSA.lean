@@ -6,3 +6,4 @@ import Isotope.LambdaSSA.Named
 import Isotope.LambdaSSA.LocallyNameless
 import Isotope.LambdaSSA.Semantics
 import Isotope.LambdaSSA.Translation
+import Isotope.LambdaSSA.Subtyping

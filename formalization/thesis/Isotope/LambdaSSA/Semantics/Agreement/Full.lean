@@ -77,7 +77,8 @@ theorem categoricalRegionDenote_eq
     (h : Region.HasType Γ region L) (ρ : Monadic.Env Γ) :
     (categoricalRegionDenote (ε := ε) (m := m) h).of
         (envToCategorical ρ) =
-      Monadic.Region.denote (ε := ε) (m := m) h ρ := by
+      (Monadic.Region.denote (ε := ε) (m := m) h ρ >>= fun x =>
+        pure (Monadic.LabelValue.categoricalEquiv L x)) := by
   letI := Categorical.ofInstructionModel
     (τ := τ) (Φ := Φ) (ε := ε) (m := m)
   letI : Categorical.RegionTypingCoherent (Φ := Φ)

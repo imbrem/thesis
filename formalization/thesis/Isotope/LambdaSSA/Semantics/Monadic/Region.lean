@@ -1,4 +1,5 @@
 import Isotope.LambdaSSA.Semantics.Monadic.Term
+import Isotope.LambdaSSA.Semantics.Monadic.Label
 import Isotope.LambdaSSA.Semantics.Region
 import Isotope.LambdaIter.Subtyping.Semantics.Agreement
 
@@ -27,30 +28,98 @@ private noncomputable abbrev typeModel :=
 /-- The finite dependent sum of values accepted by the labels in `L`.
 Using the `Type` coproduct chosen by the categorical infrastructure makes the
 comparison map canonical rather than choosing a second encoding of finite sums. -/
-noncomputable def LabelDen (L : LCtx τ) : Type v :=
-  Categorical.labelObj (typeModel (τ := τ)) L
+def LabelDen (L : LCtx τ) : Type v := LabelValue L
 
-/-- The same finite label coproduct indexed before materializing `List.ofFn`. -/
-noncomputable def FiniteLabelDen {n : Nat} (R : Fin n → τ) : Type v :=
-  Categorical.finiteLabelObj (typeModel (τ := τ)) R
+/-- A directly inspectable finite label destination. -/
+def FiniteLabelDen {n : Nat} (R : Fin n → τ) : Type v :=
+  Σ i : Fin n, TyDen (R i)
 
-noncomputable def finiteLabelInject {n : Nat} (R : Fin n → τ) (i : Fin n) :
+def finiteLabelInject {n : Nat} (R : Fin n → τ) (i : Fin n) :
     TyDen (R i) → FiniteLabelDen R :=
-  Categorical.finiteLabelInject (typeModel (τ := τ)) R i
+  fun a => ⟨i, a⟩
+
+theorem finiteLabelDen_exists {n : Nat} (R : Fin n → τ)
+    (x : FiniteLabelDen R) :
+    ∃ (i : Fin n) (a : TyDen (R i)), finiteLabelInject R i a = x := by
+  exact ⟨x.1, x.2, rfl⟩
+
+noncomputable def finiteCategoricalEquiv {n : Nat} (R : Fin n → τ) :
+    FiniteLabelDen R ≃ Categorical.finiteLabelObj (typeModel (τ := τ)) R := by
+  let c : Cofan (fun i => TyDen (R i)) := Cofan.mk (f := fun i => TyDen (R i))
+    (∐ fun i => TyDen (R i)) (Limits.Sigma.ι fun i => TyDen (R i))
+  exact CofanTypes.equivOfIsColimit
+    ((Cofan.isColimit_cofanTypes_iff c).2
+      ⟨Limits.coproductIsCoproduct (fun i => TyDen (R i))⟩)
+
+theorem finiteLabelDen_funext {n : Nat} (R : Fin n → τ) {X : Sort*}
+    {f g : FiniteLabelDen R → X}
+    (h : ∀ i a, f (finiteLabelInject R i a) =
+      g (finiteLabelInject R i a)) : f = g := by
+  funext x
+  obtain ⟨i, a, rfl⟩ := finiteLabelDen_exists R x
+  exact h i a
 
 noncomputable def labelDenToFinite {n : Nat} (R : Fin n → τ) :
     LabelDen (List.ofFn R) → FiniteLabelDen R :=
-  Categorical.labelObjToFinite (typeModel (τ := τ)) R
+  (finiteCategoricalEquiv R).symm ∘
+    Categorical.labelObjToFinite (typeModel (τ := τ)) R ∘
+    LabelValue.categoricalEquiv (List.ofFn R)
 
 /-- Inject a value into the summand selected by typed label lookup evidence. -/
 noncomputable def labelInject {L : LCtx τ} (i : Nat) {A : τ} (h : At L i A) :
     TyDen A → LabelDen L :=
-  Categorical.labelInject (typeModel (τ := τ)) i h
+  fun a => (LabelValue.categoricalEquiv L).symm
+    (Categorical.labelInject (typeModel (τ := τ)) i h a)
+
+@[simp] theorem categoricalEquiv_labelInject {L : LCtx τ} (i : Nat)
+    {A : τ} (h : At L i A) (a : TyDen A) :
+    LabelValue.categoricalEquiv L (labelInject i h a) =
+      Categorical.labelInject (typeModel (τ := τ)) i h a := by
+  exact Equiv.apply_symm_apply _ _
+
+/-- The original categorical definition of monadic label injection computes
+to the canonical recursive label value. -/
+@[simp] theorem labelInject_eq_recursive {L : LCtx τ} (i : Nat)
+    {A : τ} (h : At L i A) (a : TyDen A) :
+    labelInject i h a = LabelValue.inject i h a := by
+  apply (LabelValue.categoricalEquiv L).injective
+  rw [categoricalEquiv_labelInject, LabelValue.categoricalEquiv_inject]
 
 /-- Separate external and locally bound destinations of a CFG. -/
 noncomputable def labelAppendSplit (R L : LCtx τ) :
     LabelDen (R ++ L) → (LabelDen L ⨿ LabelDen R) :=
-  Categorical.labelAppendSplit (typeModel (τ := τ)) R L
+  (Types.binaryCoproductIso (LabelDen L) (LabelDen R)).inv ∘
+    LabelValue.appendSplit R L
+
+@[simp] theorem binaryCoproductIso_hom_labelAppendSplit
+    (R L : LCtx τ) (x : LabelDen (R ++ L)) :
+    (Types.binaryCoproductIso (LabelDen L) (LabelDen R)).hom
+        (labelAppendSplit R L x) = LabelValue.appendSplit R L x := by
+  unfold labelAppendSplit
+  exact (Types.binaryCoproductIso (LabelDen L) (LabelDen R)).inv_hom_id_apply _
+
+theorem labelDenToFinite_inject {n : Nat} (R : Fin n → τ) (i : Fin n)
+    (h : At (List.ofFn R) i.val (R i)) (a : TyDen (R i)) :
+    labelDenToFinite R (labelInject i.val h a) = finiteLabelInject R i a := by
+  have hc := congrFun (Categorical.labelInject_labelObjToFinite
+    (typeModel (τ := τ)) R i h) a
+  unfold labelDenToFinite labelInject finiteLabelInject
+  simp only [Function.comp_apply, Equiv.apply_symm_apply]
+  change (finiteCategoricalEquiv R).symm
+    (Categorical.labelObjToFinite (typeModel (τ := τ)) R
+      (Categorical.labelInject (typeModel (τ := τ)) i.val h a)) = ⟨i, a⟩
+  have hc' : Categorical.labelObjToFinite (typeModel (τ := τ)) R
+      (Categorical.labelInject (typeModel (τ := τ)) i.val h a) =
+      Categorical.finiteLabelInject (typeModel (τ := τ)) R i a := hc
+  rw [hc']
+  unfold finiteCategoricalEquiv Categorical.finiteLabelInject
+  apply CofanTypes.equivOfIsColimit_symm_apply
+
+@[simp] theorem labelDenToFinite_recursiveInject {n : Nat} (R : Fin n → τ)
+    (i : Fin n) (h : At (List.ofFn R) i.val (R i)) (a : TyDen (R i)) :
+    labelDenToFinite R (LabelValue.inject i.val h a) = finiteLabelInject R i a := by
+  rw [← labelInject_eq_recursive]
+  exact labelDenToFinite_inject R i h a
 
 /-- A direct collective block function agrees with each constituent block on
 the corresponding local-label injection. -/
@@ -60,6 +129,31 @@ structure CollectiveDenotes (Γ : VCtx τ) {n : Nat} (R : Fin n → τ) (L : LCt
       m (LabelDen (List.ofFn R ++ L))) : Prop where
   restrict (i : Fin n) (ρ : Env Γ) (a : TyDen (R i)) :
     collective (ρ, finiteLabelInject R i a) = block i (ρ, a)
+
+theorem CollectiveDenotes.dispatch
+    {Γ : VCtx τ} {n : Nat} {R : Fin n → τ} {L : LCtx τ}
+    {block : ∀ i, Env (R i :: Γ) → m (LabelDen (List.ofFn R ++ L))}
+    {collective : Env Γ × FiniteLabelDen R →
+      m (LabelDen (List.ofFn R ++ L))}
+    (h : CollectiveDenotes Γ R L block collective)
+    (ρ : Env Γ) (x : FiniteLabelDen R) :
+    ∃ (i : Fin n) (a : TyDen (R i)),
+      x = finiteLabelInject R i a ∧ collective (ρ, x) = block i (ρ, a) := by
+  obtain ⟨i, a, ha⟩ := finiteLabelDen_exists R x
+  subst x
+  exact ⟨i, a, rfl, h.restrict i ρ a⟩
+
+theorem CollectiveDenotes.eq
+    {Γ : VCtx τ} {n : Nat} {R : Fin n → τ} {L : LCtx τ}
+    {block : ∀ i, Env (R i :: Γ) → m (LabelDen (List.ofFn R ++ L))}
+    {f g : Env Γ × FiniteLabelDen R →
+      m (LabelDen (List.ofFn R ++ L))}
+    (hf : CollectiveDenotes Γ R L block f)
+    (hg : CollectiveDenotes Γ R L block g) : f = g := by
+  funext p
+  obtain ⟨ρ, x⟩ := p
+  obtain ⟨i, a, rfl⟩ := finiteLabelDen_exists R x
+  exact (hf.restrict i ρ a).trans (hg.restrict i ρ a).symm
 
 private def envToCategorical : {Γ : VCtx τ} →
     Env Γ → Categorical.ctxObj (typeModel (τ := τ)) Γ
@@ -82,18 +176,8 @@ theorem collectiveDenotes_exists_succ (n : Nat) (Γ : VCtx τ)
     (R : Fin (n + 1) → τ) (L : LCtx τ)
     (block : ∀ i, Env (R i :: Γ) → m (LabelDen (List.ofFn R ++ L))) :
     ∃ collective, CollectiveDenotes Γ R L block collective := by
-  let J := CategoryTheory.Kleisli.Adjunction.toKleisli
-    (CategoryTheory.ofTypeMonad m)
-  let M := Categorical.ofTypeModel (τ := τ)
-  let block' : ∀ i, J.obj (Categorical.ctxObj M (R i :: Γ)) ⟶
-      J.obj (Categorical.labelObj M (List.ofFn R ++ L)) :=
-    fun i => CategoryTheory.Kleisli.Hom.mk (fun ρ => block i (envFromCategorical ρ))
-  rcases Categorical.finiteCollective_exists_succ J M n Γ R
-      (Categorical.labelObj M (List.ofFn R ++ L)) block' with ⟨f, hf⟩
-  refine ⟨fun p => f.of (envToCategorical p.1, p.2), ⟨fun i ρ a => ?_⟩⟩
-  have h := congrFun (congrArg CategoryTheory.Kleisli.Hom.of (hf.restrict i))
-    (envToCategorical ρ, a)
-  simpa [J, M, block', finiteLabelInject, envFromCategorical] using h
+  refine ⟨fun p => block p.2.1 (p.1, p.2.2), ⟨fun i ρ a => ?_⟩⟩
+  rfl
 
 /-- Relational graph of the direct monadic region semantics.  Recursive CFGs
 feed locally targeted branches back through `iter`; externally targeted

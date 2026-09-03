@@ -2,6 +2,7 @@ import Isotope.LambdaCase.Subtyping.Typing
 import Isotope.LambdaCase.Subtyping.TypingSubst
 import Isotope.LambdaCase.Subtyping.Equiv
 import Isotope.LambdaCase.Subtyping.Semantics
+import Isotope.LambdaCase.Subtyping.Semantics.Named
 import Isotope.LambdaCase.Subtyping.Semantics.Categorical
 import Isotope.LambdaCase.Subtyping.Semantics.Identity
 import Isotope.LambdaCase.Subtyping.Semantics.Substitution

@@ -65,23 +65,15 @@ theorem denote_embedIter [LawfulMonad m] [Isotope.Elgot.Iterate m]
     LambdaIter.Semantics.denote (ε := ε) (m := m) h.embedIter γ ρ =
       denote (ε := ε) (m := m) h γ ρ := by
   induction h with
-  | fv | bv =>
-      unfold LocallyNameless.HasType.embedIter LambdaIter.Semantics.denote
-      unfold LambdaIter.LocallyNameless.HasType.toGeneric
-      unfold LambdaIter.Subtyping.Semantics.denote denote
-      rfl
+  | fv | bv => rfl
   | op ha ih =>
-      unfold LambdaIter.Semantics.denote at ih ⊢
-      unfold LocallyNameless.HasType.embedIter
-      unfold LambdaIter.LocallyNameless.HasType.toGeneric
-      unfold LambdaIter.Subtyping.Semantics.denote denote
+      simp only [LocallyNameless.HasType.embedIter,
+        LambdaIter.Semantics.denote, denote]
       congr 1
       exact ih ρ
   | let₁ ha hb iha ihb =>
-      unfold LambdaIter.Semantics.denote at iha ihb ⊢
-      unfold LocallyNameless.HasType.embedIter
-      unfold LambdaIter.LocallyNameless.HasType.toGeneric
-      unfold LambdaIter.Subtyping.Semantics.denote denote
+      simp only [LocallyNameless.HasType.embedIter,
+        LambdaIter.Semantics.denote, denote]
       congr 1
       · exact iha ρ
       funext a

@@ -67,16 +67,29 @@ private theorem collective_toCategorical {Γ : VCtx τ} {n : Nat}
     (dc : Monadic.CollectiveDenotes Γ R L fb collective)
     {FB : ∀ i, (J (m := m)).obj (Categorical.ctxObj (M (τ := τ)) (R i :: Γ)) ⟶
       (J (m := m)).obj (Categorical.labelObj (M (τ := τ)) (List.ofFn R ++ L))}
-    (eFB : ∀ i ρ, (FB i).of (envToCategorical ρ) = fb i ρ) :
+    (eFB : ∀ i ρ, (FB i).of (envToCategorical ρ) =
+      (fb i ρ >>= fun x =>
+        (pure (Monadic.LabelValue.categoricalEquiv (List.ofFn R ++ L) x) :
+          m (Categorical.labelObj (M (τ := τ)) (List.ofFn R ++ L))))) :
     Categorical.CollectiveDenotes (J (m := m)) (M (τ := τ)) Γ R L FB
-      (Kleisli.Hom.mk (fun p => collective (envFromCategorical p.1, p.2))) := by
+      (Kleisli.Hom.mk (fun p =>
+        (show m (Categorical.labelObj (M (τ := τ)) (List.ofFn R ++ L)) from
+        collective (envFromCategorical p.1,
+            (Monadic.finiteCategoricalEquiv R).symm p.2) >>= fun x =>
+          (pure (Monadic.LabelValue.categoricalEquiv (List.ofFn R ++ L) x) :
+            m (Categorical.labelObj (M (τ := τ)) (List.ofFn R ++ L)))))) := by
   constructor
   intro i
   ext p
   rcases p with ⟨ρ, a⟩
   rw [Kleisli.Type.comp_of_eq_kcomp]
-  simp [Isotope.Elgot.kcomp, Monadic.finiteLabelInject, envFromCategorical]
-  change collective (envFromCategorical ρ, Monadic.finiteLabelInject R i a) = _
+  simp [Isotope.Elgot.kcomp, envFromCategorical]
+  have hfinite : (Monadic.finiteCategoricalEquiv R).symm
+      (Categorical.finiteLabelInject (M (τ := τ)) R i a) =
+      Monadic.finiteLabelInject R i a := by
+    unfold Monadic.finiteCategoricalEquiv Categorical.finiteLabelInject
+    apply CofanTypes.equivOfIsColimit_symm_apply
+  rw [hfinite]
   rw [dc.restrict]
   simpa [envToCategorical] using (eFB i (envFromCategorical ρ, a)).symm
 
@@ -89,7 +102,8 @@ theorem regionDenotes_toCategorical {Γ : VCtx τ} {region : Region Φ} {L : LCt
     letI := Categorical.ofInstructionModel
       (τ := τ) (Φ := Φ) (ε := ε) (m := m)
     ∃ F, Categorical.RegionDenotes (J (m := m)) (M (τ := τ)) h F ∧
-      (fun ρ => F.of (envToCategorical ρ)) = f := by
+      (fun ρ => F.of (envToCategorical ρ)) =
+        (fun ρ => f ρ >>= fun x => pure (Monadic.LabelValue.categoricalEquiv L x)) := by
   dsimp
   letI := Categorical.ofInstructionModel
     (τ := τ) (Φ := Φ) (ε := ε) (m := m)
@@ -116,11 +130,11 @@ theorem regionDenotes_toCategorical {Γ : VCtx τ} {region : Region Φ} {L : LCt
       | inl a =>
           simp only [Isotope.Elgot.liftPure, Function.comp_apply, pure_bind]
           rw [coprod_hom_agrees, he]
-          exact congrFun eFL (ρ, a)
+          simpa [envToCategorical, bind_pure_comp] using congrFun eFL (ρ, a)
       | inr b =>
           simp only [Isotope.Elgot.liftPure, Function.comp_apply, pure_bind]
           rw [coprod_hom_agrees, he]
-          exact congrFun eFR (ρ, b)
+          simpa [envToCategorical, bind_pure_comp] using congrFun eFR (ρ, b)
   | let₁ da db ihb =>
       rcases denotes_toCategorical da with ⟨F, dF, eF⟩
       rcases ihb with ⟨G, dG, eG⟩
@@ -130,7 +144,7 @@ theorem regionDenotes_toCategorical {Γ : VCtx τ} {region : Region Φ} {L : LCt
       simp [Isotope.Elgot.kcomp, congrFun eF ρ]
       apply bind_congr
       intro a
-      exact congrFun eG (ρ, a)
+      simpa [envToCategorical, bind_pure_comp] using congrFun eG (ρ, a)
   | let₂ da db ihb =>
       rcases denotes_toCategorical da with ⟨F, dF, eF⟩
       rcases ihb with ⟨G, dG, eG⟩
@@ -141,7 +155,7 @@ theorem regionDenotes_toCategorical {Γ : VCtx τ} {region : Region Φ} {L : LCt
       apply bind_congr
       intro ab
       rw [envPair_agrees]
-      exact congrFun eG _
+      simpa [bind_pure_comp] using congrFun eG _
   | cfgZero he hb de ih =>
       rcases ih with ⟨F, dF, eF⟩
       exact ⟨F, .cfgZero he hb dF, eF⟩
@@ -155,7 +169,11 @@ theorem regionDenotes_toCategorical {Γ : VCtx τ} {region : Region Φ} {L : LCt
             (List.ofFn R ++ L)) := Kleisli.Hom.mk (fun
         (p : Categorical.ctxObj (M (τ := τ)) Γ ×
           Categorical.finiteLabelObj (M (τ := τ)) R) =>
-        collective (envFromCategorical p.1, p.2))
+        (show m (Categorical.labelObj (M (τ := τ)) (List.ofFn R ++ L)) from
+        collective (envFromCategorical p.1,
+            (Monadic.finiteCategoricalEquiv R).symm p.2) >>= fun x =>
+          (pure (Monadic.LabelValue.categoricalEquiv (List.ofFn R ++ L) x) :
+            m (Categorical.labelObj (M (τ := τ)) (List.ofFn R ++ L)))))
       have dFC : Categorical.CollectiveDenotes (J (m := m)) (M (τ := τ))
           Γ R L FB FC := collective_toCategorical dc (fun i ρ => congrFun (eFB i) ρ)
       refine ⟨_, .cfg he hb dFE dFB dFC, ?_⟩
@@ -166,28 +184,106 @@ theorem regionDenotes_toCategorical {Γ : VCtx τ} {region : Region Φ} {L : LCt
         bind_pure_comp, congrFun eFE ρ]
       apply bind_congr
       intro target
-      generalize hs : (Types.binaryCoproductIso
-          (Categorical.labelObj (M (τ := τ)) L)
-          (Categorical.labelObj (M (τ := τ)) (List.ofFn R))).hom
-        (Categorical.labelAppendSplit (M (τ := τ))
-          (List.ofFn R) L target) = destination
-      have hsM : (Types.binaryCoproductIso
-          (Monadic.LabelDen L) (Monadic.LabelDen (List.ofFn R))).hom
-        (Monadic.labelAppendSplit (List.ofFn R) L target) = destination := hs
-      unfold Monadic.labelAppendSplit at hsM
+      rw [Monadic.LabelValue.categoricalEquiv_appendSplit]
+      generalize hsM : Monadic.LabelValue.appendSplit (List.ofFn R) L target = destination
       cases destination with
       | inl external =>
-          simp [hs, hsM]
-          rfl
+          simp [hsM]
       | inr loopTarget =>
-          simp only [hs, hsM]
+          have hinr := congrFun (Types.binaryCoproductIso_inr_comp_hom
+            (Categorical.labelObj (M (τ := τ)) L)
+            (Categorical.labelObj (M (τ := τ)) (List.ofFn R)))
+            (Monadic.LabelValue.categoricalEquiv (List.ofFn R) loopTarget)
+          change
+            (Types.binaryCoproductIso
+              (Categorical.labelObj (M (τ := τ)) L)
+              (Categorical.labelObj (M (τ := τ)) (List.ofFn R))).hom
+                ((coprod.inr :
+                    Categorical.labelObj (M (τ := τ)) (List.ofFn R) ⟶
+                      Categorical.labelObj (M (τ := τ)) L ⨿
+                        Categorical.labelObj (M (τ := τ)) (List.ofFn R))
+                  (Monadic.LabelValue.categoricalEquiv
+                    (List.ofFn R) loopTarget)) =
+              Sum.inr (Monadic.LabelValue.categoricalEquiv
+                (List.ofFn R) loopTarget) at hinr
+          simp only
+          rw [hinr]
+          simp only
           rw [Categorical.contextualLoop_of]
-          apply congrArg (fun q => Isotope.Elgot.iter (m := m) q loopTarget)
-          funext current
-          simp [Categorical.contextualLoop_of, Categorical.comp_map_of,
-            Monadic.labelDenToFinite, Monadic.labelAppendSplit, FC,
-            Isotope.Elgot.kcomp, joinM, bind_map_left, bind_pure_comp]
-          rfl
+          let f := fun current =>
+            Monadic.LabelValue.appendSplit (List.ofFn R) L <$>
+              collective (ρ, Monadic.labelDenToFinite R current)
+          let g := fun current =>
+            Isotope.Elgot.kcomp (m := m)
+              (J.map (MonoidalCategoryStruct.whiskerLeft
+                    (Categorical.ctxObj (M (τ := τ)) Γ)
+                    (Categorical.labelObjToFinite (M (τ := τ)) R)) ≫ FC ≫
+                J.map (Categorical.labelAppendSplit
+                  (M (τ := τ)) (List.ofFn R) L)).of
+              (fun s => pure ((Types.binaryCoproductIso
+                (Categorical.labelObj (M (τ := τ)) L)
+                (Categorical.labelObj (M (τ := τ)) (List.ofFn R))).hom s))
+              (envToCategorical ρ, current)
+          let k : Monadic.LabelValue L →
+              m (Categorical.labelObj (M (τ := τ)) L) :=
+            fun x => pure (Monadic.LabelValue.categoricalEquiv L x)
+          change Isotope.Elgot.iter (m := m) g
+              (Monadic.LabelValue.categoricalEquiv (List.ofFn R) loopTarget) =
+            (Monadic.LabelValue.categoricalEquiv L) <$>
+              Isotope.Elgot.iter (m := m) f loopTarget
+          rw [show (Monadic.LabelValue.categoricalEquiv L) <$>
+                Isotope.Elgot.iter (m := m) f loopTarget =
+              Isotope.Elgot.kcomp (Isotope.Elgot.iter (m := m) f) k loopTarget by
+            simp [Isotope.Elgot.kcomp, k]]
+          rw [LawfulElgotMonad.naturality]
+          symm
+          have hcomm :
+              Isotope.Elgot.kcomp (Isotope.Elgot.mapReturn f k)
+                  (Isotope.Elgot.liftPure (Sum.map id
+                    (Monadic.LabelValue.categoricalEquiv (List.ofFn R)))) =
+                Isotope.Elgot.kcomp
+                  (Isotope.Elgot.liftPure
+                    (Monadic.LabelValue.categoricalEquiv (List.ofFn R))) g := by
+            funext current
+            set_option maxRecDepth 4096 in
+              set_option maxHeartbeats 1000000 in
+                simp [f, g, k, Isotope.Elgot.mapReturn, Isotope.Elgot.kcomp,
+                Isotope.Elgot.liftPure, Categorical.comp_map_of,
+                Monadic.labelDenToFinite, Monadic.labelAppendSplit, FC,
+                joinM, bind_map_left, bind_assoc, Function.comp_def,
+                Monadic.LabelValue.categoricalEquiv_appendSplit]
+            simp only [← bind_pure_comp]
+            let input := (Monadic.finiteCategoricalEquiv R).symm
+              (Categorical.labelObjToFinite (M (τ := τ)) R
+                (Monadic.LabelValue.categoricalEquiv (List.ofFn R) current))
+            have ha := LawfulMonad.bind_assoc
+              (collective (ρ, input))
+              (fun a => pure (Monadic.LabelValue.appendSplit (List.ofFn R) L a))
+              (fun a =>
+                Sum.elim
+                  (fun b => pure (Sum.inl
+                    (Monadic.LabelValue.categoricalEquiv L b)))
+                  (fun x => pure (Sum.inr x)) a >>=
+                    pure ∘ Sum.map id
+                      (Monadic.LabelValue.categoricalEquiv (List.ofFn R)))
+            change ((collective (ρ, input) >>= fun a =>
+                pure (Monadic.LabelValue.appendSplit (List.ofFn R) L a)) >>=
+                  fun a => Sum.elim
+                    (fun b => pure (Sum.inl
+                      (Monadic.LabelValue.categoricalEquiv L b)))
+                    (fun x => pure (Sum.inr x)) a >>=
+                      pure ∘ Sum.map id
+                        (Monadic.LabelValue.categoricalEquiv (List.ofFn R))) = _
+            rw [ha]
+            simp only [LawfulMonad.pure_bind]
+            apply bind_congr
+            intro a
+            cases Monadic.LabelValue.appendSplit (List.ofFn R) L a <;>
+              simp [Category.comp_apply]
+          have hu := congrFun (LawfulElgotMonad.uniformity
+            (Isotope.Elgot.mapReturn f k) g
+            (Monadic.LabelValue.categoricalEquiv (List.ofFn R)) hcomm) loopTarget
+          simpa [Isotope.Elgot.liftPure, Isotope.Elgot.kcomp] using hu
 
 end Agreement
 end Isotope.LambdaSSA.Semantics
