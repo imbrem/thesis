@@ -11,6 +11,7 @@ import Isotope.Elgot.Brookes.SeqCst.Context
 import Isotope.Elgot.Brookes.SeqCst.Definability
 import Isotope.Elgot.Brookes.SeqCst.Examples
 import Isotope.Elgot.Brookes.SeqCst.FullAbstraction
+import Isotope.Elgot.Brookes.SeqCst.Iter
 import Isotope.Elgot.Brookes.SeqCst.Laws
 import Isotope.Elgot.Brookes.SeqCst.Litmus
 import Isotope.Elgot.Brookes.SeqCst.Op
@@ -94,6 +95,12 @@ consistency is that model with `S := Loc → Val`.
     `opFullAbstraction_eq` and the fully spelled-out `fullAbstraction_op` —
     **full abstraction stated entirely operationally**, both sides in terms of
     the machine.
+* **`while` is an Elgot iterate** (`Brookes/SeqCst/Iter.lean`):
+  `SeqCst.iter_eq_star` shows the Kleene star `z*;w` of Brookes's `while` clause
+  is `Elgot.iter (SeqCst.whileBody z w) ⋆`, the approximant union of
+  `Brookes/Iteration.lean`, and `SeqCst.den_wh_eq_iter` instantiates this at
+  `den (while B do C)`.  This is the joint at which the imperative `while` and
+  the loops of the lambda-iter and SSA semantics become the same operation.
 * `Brookes.ofFiniteTrace`, a morphism from the deterministic `FiniteTrace` model
   commuting with `pure`, `bind` and `iter` on the nose, together with the proof
   that it is not order-reflecting.

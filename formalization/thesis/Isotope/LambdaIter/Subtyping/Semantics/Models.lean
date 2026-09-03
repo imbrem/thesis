@@ -5,6 +5,9 @@ import Isotope.LambdaIter.Subtyping.Semantics.Models.EmptyExamples
 import Isotope.LambdaIter.Subtyping.Semantics.Models.Null
 import Isotope.LambdaIter.Subtyping.Semantics.Models.BitVec
 import Isotope.LambdaIter.Subtyping.Semantics.Models.Nat
+import Isotope.LambdaIter.Subtyping.Semantics.Models.Brookes
+import Isotope.LambdaIter.Subtyping.Semantics.Models.Brookes.Compile
+import Isotope.LambdaIter.Subtyping.Semantics.Models.Brookes.SSA
 
 /-!
 # Concrete type and instruction models
@@ -35,12 +38,21 @@ derivation, and the result satisfies `LawfulTypeModel`.
 | `Null` | `PEmpty` | none | none |
 | `BitVecModel` | `Nat` (widths) | `BitVec n` | `const`, `add`, `and`, `not`, `eqz` |
 | `NatModel` | `Unit` | `Nat` | `zero`, `succ`, `add`, `case` |
+| `BrookesModel` | `loc`, `val` | `Loc`, `Val` | `read`, `write` |
+| `BrookesModel` (coarse) | `loc`, `val` | `Loc`, `Val` | `skip`, `assign`, `test` |
 
 Effects are the two-element lattice `Eff`, with `⊥ = Eff.pure`.  Every
-instruction in all three signatures is pure, so `denotePure` is total and
-`denote_pure` holds definitionally; the effectful `denote` is `pure ∘ denotePure`
-in every monad.  This keeps the models usable with any `[Monad m]` while leaving
-the effectful case genuinely open for a future signature with memory operations.
+instruction of the bitvector and natural-number signatures is pure, so
+`denotePure` is total and `denote_pure` holds definitionally; the effectful
+`denote` is `pure ∘ denotePure` in every monad.  This keeps those models usable
+with any `[Monad m]`.
+
+`BrookesModel` is the exception, and is the reason the interface has an
+effectful half at all.  Its two instructions are annotated `Eff.impure`, so
+`denotePure` is vacuous, and they denote `SeqCst.read` and `SeqCst.write` in the
+Brookes trace monad `SeqCst.Comp Loc Val` — a *fixed* monad, not an arbitrary
+one.  It is the first model of this directory that is tied to a particular
+monad, and the first whose instructions are not pure.
 
 ## The three-way comparison
 
@@ -63,16 +75,49 @@ the effectful case genuinely open for a future signature with memory operations.
   the isomorphism above is deliberately stated as `Nonempty (… ≃ …)` rather
   than as a distinguished map, since the counting argument that produces it is
   not the structural map a translation would need.
-* **No soundness or adequacy result is instantiated.**  These models supply the
-  `TypeModel`/`LawfulTypeModel`/`InstructionModel` instances the generic
-  semantics asks for; connecting them to `Semantics.sound` at a concrete monad
-  is separate work.
+* **Soundness is instantiated only at the Brookes model.**  The pure models
+  supply `TypeModel`/`LawfulTypeModel`/`InstructionModel` instances but are
+  never connected to `Semantics.sound` at a named monad; `BrookesModel` is.
 * **The instruction sets are deliberately small and total.**  They are chosen to
   be enough to exercise the interfaces, not to be a complete or canonical ISA.
   In particular the bitvector signature has no shifts, comparisons, or
   multiplication, and the natural-number signature has no subtraction or
   recursion combinator beyond `case`.
-* **All instructions are pure**, so none of these models exercises the effectful
-  half of `InstructionModel`.  A memory-operation signature over one of the weak
-  memory models would.
+* **`BrookesModel`'s fine-grained signature is sound, not complete.**
+  Instantiating `Semantics.sound` at it gives `BrookesModel.brookes_sound`: the
+  lambda-iter equational theory is sound for Brookes trace semantics.  It does
+  not give the converse.
+* **The fine-grained signature does *not* match Brookes's own `Com`, and this is
+  now a theorem.**  `SeqCst.write` is atomic (`BrookesModel.write_eq_atom`), but
+  the composite `read y >>= write x` is not: it admits traces whose store changes
+  between the read and the write, so
+  `BrookesModel.not_readWrite_le_den_assign` and
+  `BrookesModel.readWrite_ne_den_assign` separate one concrete pair, assuming
+  two distinct values; nothing here quantifies over compilers.  `Models/Brookes/Compile.lean` therefore ships a
+  second, coarse-atom signature `CInstr` — whole `skip`s, assignments and tests —
+  for which `BrookesModel.den_compile` does hold, and derives full abstraction
+  against the operational contextual preorder of `Brookes/SeqCst/Op`
+  (`BrookesModel.lambdaIter_fullAbstraction`).
+* **The compilable fragment is narrow.**  It is closed, `unit`-typed at every
+  slot, and never `let`-binds a control value; its image is exactly the
+  `∥`-free, `await`-free sublanguage of `Com`
+  (`BrookesModel.exists_compilable`, `BrookesModel.sequential_compile`).  No
+  lambda-iter term is compiled to a *parallel* command: concurrency enters only
+  through the contexts quantified over on the right-hand side of full
+  abstraction.
+* **The SSA bridge reaches the loop-free fragment only.**
+  `Models/Brookes/SSA.lean` composes what exists: typing composes for the whole
+  compilable fragment (`BrookesModel.compile_region_hasType`), the ANF leg
+  composes for the whole fragment (`BrookesModel.anfDen_eq_den_compile`, with
+  `BrookesModel.anf_fullAbstraction`), and the SSA leg composes for `skip`,
+  `assign` and `;` (`BrookesModel.loopfree_region_denotes`, from the generic
+  `SSABridge.straight_denotes`).  What is missing is the CFG case: `ToSSA`
+  compiles a `case` to a one-block and an `iter` to a two-block control-flow
+  graph, and contracting those back to the source `Elgot.iter` needs uniformity,
+  codiagonal and a naturality theory for `renameVars` that does not exist here.
+  Two further obstacles are structural, and are why even the loop-free result is
+  a `RegionDenotes` rather than an equation: `Region.denote` is a
+  `Classical.choice` pick whose uniqueness needs
+  `RegionTypingCoherent`, and `LabelDen [unit]` is a colimit with no inverse for
+  `labelInject 0`.
 -/
