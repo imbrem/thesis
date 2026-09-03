@@ -159,6 +159,51 @@ theorem TypedEquiv.Related.toRefinementEquivalent
     (h : TypedEquiv.Related pureEff Γ ha hb) :
     Equivalent pureEff Γ R ha hb := Related.ofEquiv_both h
 
+/-- Refinement is invariant under replacing its left endpoint by a typed-equal
+derivation. -/
+theorem Related.congrLeft (h : TypedEquiv.Related pureEff Γ ha ha')
+    (r : Related pureEff Γ R ha hb) : Related pureEff Γ R ha' hb :=
+  h.elim fun d => r.elim fun q => ⟨.trans (.equiv (.symm d)) q⟩
+
+/-- Refinement is invariant under replacing its right endpoint by a
+typed-equal derivation. -/
+theorem Related.congrRight (r : Related pureEff Γ R ha hb)
+    (h : TypedEquiv.Related pureEff Γ hb hb') : Related pureEff Γ R ha hb' :=
+  r.elim fun q => h.elim fun d => ⟨.trans q (.equiv d)⟩
+
+theorem Related.congr (hl : TypedEquiv.Related pureEff Γ ha ha')
+    (r : Related pureEff Γ R ha hb)
+    (hr : TypedEquiv.Related pureEff Γ hb hb') : Related pureEff Γ R ha' hb' :=
+  (r.congrLeft hl).congrRight hr
+
+/-- Raw-term refinement existentially packages the exact typing evidence at
+both endpoints. -/
+def RefinesProp (pureEff : ε) (Γ : LambdaIter.Ctx ν τ)
+    (R : Theory (Φ := Φ) Γ) (β : BoundCtx τ n)
+    (a b : Tm ν Φ n) (A : τ) : Prop :=
+  Nonempty (Σ ha : HasType Φ Γ β a A,
+    Σ hb : HasType Φ Γ β b A, Deriv pureEff Γ R ha hb)
+
+theorem RefinesProp.refl (h : HasType Φ Γ β a A) :
+    RefinesProp pureEff Γ R β a a A := ⟨h, h, .refl h⟩
+
+theorem RefinesProp.trans_of_middle_equiv
+    (hab : RefinesProp pureEff Γ R β a b A)
+    (hbc : RefinesProp pureEff Γ R β b c A)
+    (middle : ∀ (hb hb' : HasType Φ Γ β b A),
+      TypedEquiv.Related pureEff Γ hb hb') :
+    RefinesProp pureEff Γ R β a c A := by
+  rcases hab with ⟨ha, hb, dab⟩
+  rcases hbc with ⟨hb', hc, dbc⟩
+  exact ⟨ha, hc, .trans dab (.trans (.equiv (middle hb hb').some) dbc)⟩
+
+/-- Mutual raw refinement, suitable as the equivalence relation before
+forming a syntactic quotient. -/
+def EqvProp (pureEff : ε) (Γ : LambdaIter.Ctx ν τ)
+    (R : Theory (Φ := Φ) Γ) (β : BoundCtx τ n)
+    (a b : Tm ν Φ n) (A : τ) : Prop :=
+  RefinesProp pureEff Γ R β a b A ∧ RefinesProp pureEff Γ R β b a A
+
 /-- The rewrite-free theory. -/
 def EmptyTheory : Theory (Φ := Φ) Γ where
   rel := fun _ _ => False
