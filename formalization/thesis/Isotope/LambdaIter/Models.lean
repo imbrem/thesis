@@ -15,6 +15,7 @@ import Isotope.LambdaIter.Models.Reindex
 import Isotope.LambdaIter.Models.SigAction
 import Isotope.LambdaIter.Models.ReindexAlg
 import Isotope.LambdaIter.Models.TotalInitial
+import Isotope.LambdaIter.Models.Monadic.Model
 
 /-!
 # Models of lambda-iter, and the category they form
