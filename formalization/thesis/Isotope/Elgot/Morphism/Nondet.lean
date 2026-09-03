@@ -139,7 +139,7 @@ end Part
 
 /-! ### `CSet → SetM`: forget countability -/
 
-namespace CSet
+namespace Nondet.CSet
 
 /-- **Forgetting countability is an Elgot monad morphism `CSet → SetM`.**
 Every law holds because `CSet`'s operations are defined as `Set`'s carried
@@ -157,12 +157,12 @@ def toSetHom : ElgotHom.{u} CSet SetM where
 
 @[simp] theorem toSetHom_app (x : CSet A) : toSetHom.app x = x.carrier := rfl
 
-end CSet
+end Nondet.CSet
 
 /-- **The comparison triangle commutes**: taking the graph of a partial value
 and forgetting countability is taking the graph. -/
 theorem Part.toCSetHom_comp_toSetHom :
-    Part.toCSetHom.{u}.comp CSet.toSetHom = Part.toSetHom :=
+    Part.toCSetHom.{u}.comp Nondet.CSet.toSetHom = Part.toSetHom :=
   ElgotHom.ext fun _ => rfl
 
 end

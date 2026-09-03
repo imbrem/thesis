@@ -235,7 +235,7 @@ noncomputable def partToSetAlgHom : partAlg ⟶ setAlg := freeAlgHom Part.toSetH
 noncomputable def partToCSetAlgHom : partAlg ⟶ csetAlg := freeAlgHom Part.toCSetHom
 
 /-- Forgetting countability. -/
-def csetToSetAlgHom : csetAlg ⟶ setAlg := freeAlgHom CSet.toSetHom
+def csetToSetAlgHom : csetAlg ⟶ setAlg := freeAlgHom Nondet.CSet.toSetHom
 
 /-- The deterministic trace algebra inside the nondeterministic one. -/
 noncomputable def traceToTraceSetAlgHom (Sigma Tau : Type)
@@ -248,7 +248,7 @@ theorem partToCSet_comp_csetToSet :
   apply Alg.Hom.ext
   intro k β A x
   funext ρ
-  show CSet.toSetHom.app (Part.toCSetHom.app (x _)) = Part.toSetHom.app (x _)
+  show Nondet.CSet.toSetHom.app (Part.toCSetHom.app (x _)) = Part.toSetHom.app (x _)
   rw [ofReinterpret_free_comp (m := Part) (n := Nondet.CSet) (q := SetM) ρ]
   rfl
 

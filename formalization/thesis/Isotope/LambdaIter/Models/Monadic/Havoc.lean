@@ -113,7 +113,7 @@ theorem havocSetModel_isTotal :
 /-- **The countable powerset realises total nondeterminism too**, collected
 along the forgetful morphism `CSet → SetM`. -/
 theorem havocCSetModel_isTotal :
-    IsTotal CSet.toSetHom.toMonadHom
+    IsTotal Nondet.CSet.toSetHom.toMonadHom
       (havocCSetModel.denoteInstr HavocInstr.havoc ()) := rfl
 
 /-- **No model of the havoc signature in `Part` is totally nondeterministic.**
@@ -147,7 +147,7 @@ the morphisms of `Models/Monadic/Concrete.lean` this one has a non-trivial
 instruction-compatibility obligation: the carrier of the countable full set is
 the full set. -/
 def havocCSetToSetAlgHom : havocCSetAlg ⟶ havocSetAlg :=
-  Alg.homOfReinterpret havocCSetModel CSet.toSetHom
+  Alg.homOfReinterpret havocCSetModel Nondet.CSet.toSetHom
     (fun _ _ => (Set.univ : Set (Unit ⊕ Unit)))
     (fun f hf _ => absurd hf (by cases f; exact Sig.havoc_not_isPure))
     (fun _ _ => rfl)
