@@ -8,6 +8,9 @@ import Isotope.Elgot.Basic
 import Isotope.Elgot.Brookes
 import Isotope.Elgot.ITree
 import Isotope.Elgot.Kleisli
+import Isotope.Elgot.Morphism
+import Isotope.Elgot.Morphism.Nondet
+import Isotope.Elgot.Morphism.Examples
 import Isotope.Elgot.Nondet
 import Isotope.Elgot.Opt
 import Isotope.Elgot.Par

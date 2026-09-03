@@ -22,4 +22,5 @@ import Isotope.LambdaIter.Subtyping.Minimal
 import Isotope.LambdaIter.Signature.Category
 import Isotope.LambdaIter.Signature.Examples
 import Isotope.LambdaIter.Signature.Initial
+import Isotope.LambdaIter.Signature.Havoc
 import Isotope.LambdaIter.Models

@@ -22,23 +22,29 @@ typable terms with the same denotation in every algebra are `Eqv`-related.
 
 Read the qualifier: a "model" is an object of `Alg S`, that is, an *algebra of
 the equational presentation* of lambda-iter.  It is **not** a Freyd or Elgot
-category, and nothing here proves that a monad or a Freyd category yields one.
-Doing that means discharging `Alg.coh` and `Alg.sound` in such a category,
-which is precisely the content of the two coherence classes
+category, and nothing here proves that a Freyd category yields one: doing that
+means discharging `Alg.coh` and `Alg.sound` in such a category, which is
+precisely the content of the two coherence classes
 (`Semantics.Categorical.TypingCoherent` and `.LawfulModel`) that have no
-instance anywhere in this repository.  So:
+instance anywhere in this repository.  A lawful Elgot *monad* does yield one
+(`Models/Monadic/Alg.lean`), so the statements below are about a class that
+demonstrably contains semantically interesting objects.  Still:
 
 * `Syn.isInitial` is initiality in the category of algebras;
 * `Syn.eqv_of_denote_eq` is completeness with respect to algebras;
 * neither statement may be weakened to "all models" in the informal sense, nor
   strengthened to Freyd/Elgot semantics.
 
-The non-vacuity of these statements comes from two directions.  `Alg S` is
+The non-vacuity of these statements comes from three directions.  `Alg S` is
 inhabited by objects other than `Syn S` (`Alg.terminal`, `Alg.const`, and
 products and powers of those, in `Models/Limits.lean` and
 `Models/Examples.lean`), so `Unique (Syn S ⟶ X)` is not a statement about an
-empty class; and `Syn S` itself distinguishes `Eqv`-inequivalent terms, which
-is what makes the completeness corollary informative rather than trivial.
+empty class; it is inhabited by *monadic* algebras, at ten concrete monads
+(`Models/Monadic/Concrete.lean`), with morphisms between them and parallel
+morphisms that differ; and `Syn S` itself distinguishes `Eqv`-inequivalent
+terms, which is what makes the completeness corollary informative rather than
+trivial.  `Models/Monadic/Payoff.lean` instantiates the theorem at those
+algebras.
 
 Universes: `Syn S : Alg.{u, u} S`, so the statements below quantify over
 algebras whose carrier lands in `Type u`.  Nothing forces that restriction
