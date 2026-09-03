@@ -14,3 +14,4 @@ import Isotope.LambdaIter.Subtyping.Semantics.IterationDiagrams
 import Isotope.LambdaIter.Subtyping.Semantics.Agreement.Full
 import Isotope.LambdaIter.Subtyping.Semantics.Models
 import Isotope.LambdaIter.Subtyping.Semantics.ModelHom
+import Isotope.LambdaIter.Subtyping.Semantics.Freyd
