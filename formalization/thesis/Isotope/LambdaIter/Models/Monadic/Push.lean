@@ -68,6 +68,18 @@ def Model.reinterpret (M : Model.{u, v} S m)
 @[simp] theorem Model.reinterpret_interp (M : Model.{u, v} S m) {d hd} :
     (M.reinterpret (n := n) d hd).interp = M.interp := rfl
 
+@[simp] theorem Model.reinterpret_tensorEquiv (M : Model.{u, v} S m) {d hd} :
+    (M.reinterpret (n := n) d hd).tensorEquiv = M.tensorEquiv := rfl
+
+@[simp] theorem Model.reinterpret_unitEquiv (M : Model.{u, v} S m) {d hd} :
+    (M.reinterpret (n := n) d hd).unitEquiv = M.unitEquiv := rfl
+
+@[simp] theorem Model.reinterpret_coprodEquiv (M : Model.{u, v} S m) {d hd} :
+    (M.reinterpret (n := n) d hd).coprodEquiv = M.coprodEquiv := rfl
+
+@[simp] theorem Model.reinterpret_emptyEquiv (M : Model.{u, v} S m) {d hd} :
+    (M.reinterpret (n := n) d hd).emptyEquiv = M.emptyEquiv := rfl
+
 @[simp] theorem Model.reinterpret_denoteInstr (M : Model.{u, v} S m) {d hd} :
     (M.reinterpret (n := n) d hd).denoteInstr = d := rfl
 
@@ -202,19 +214,24 @@ open SeqModel.Env
 /-- **An Elgot morphism of monads induces a morphism of algebras.**  Applying
 `φ` to the denotation of a term is the denotation of that term in the
 pushed-forward model, for all twelve term formers at once. -/
-def Alg.homOfElgotHom (M : Model.{u, v} S m) (φ : ElgotHom m n) :
-    Alg.ofModel M ⟶ Alg.ofModel (M.push φ.toMonadHom) where
-  map x := fun ρ => φ.app (x (ofPush M φ.toMonadHom ρ))
+def Alg.homOfReinterpret (M : Model.{u, v} S m) (φ : ElgotHom m n)
+    (d : ∀ f : S.Instr, M.interp (instrSrc f) → n (M.interp (instrTrg f)))
+    (hd : ∀ (f : S.Instr) (hf : IsPure S.pureEff f) (a : M.interp (instrSrc f)),
+      d f a = pure (M.denotePureInstr f hf a))
+    (hφ : ∀ (f : S.Instr) (a : M.interp (instrSrc f)),
+      φ.app (M.denoteInstr f a) = d f a) :
+    Alg.ofModel M ⟶ Alg.ofModel (M.reinterpret d hd) where
+  map x := fun ρ => φ.app (x (ofReinterpret M d hd ρ))
   map_var i := by
     funext ρ
-    show φ.app (pure (SeqModel.Env.get (ofPush M φ.toMonadHom ρ) _)) = _
+    show φ.app (pure (SeqModel.Env.get (ofReinterpret M d hd ρ) _)) = _
     rw [φ.app_pure, get_ofReinterpret]
     rfl
   map_op f a := by
     funext ρ
-    show φ.app (a _ >>= M.denoteInstr f) = φ.app (a _) >>= (M.push φ.toMonadHom).denoteInstr f
+    show φ.app (a _ >>= M.denoteInstr f) = φ.app (a _) >>= d f
     rw [φ.app_bind]
-    rfl
+    exact bind_congr fun x => hφ f x
   map_let₁ a b := by
     funext ρ
     show φ.app (a _ >>= fun x => b (_, x)) = φ.app (a _) >>= fun x => φ.app (b (_, x))
@@ -235,7 +252,7 @@ def Alg.homOfElgotHom (M : Model.{u, v} S m) (φ : ElgotHom m n) :
     funext ρ
     show φ.app (a _ >>= fun ab => c ((_, (M.tensorEquiv _ _ ab).1), (M.tensorEquiv _ _ ab).2)) =
       φ.app (a _) >>= fun ab =>
-        φ.app (c ((ofPush M φ.toMonadHom ρ, (M.tensorEquiv _ _ ab).1),
+        φ.app (c ((ofReinterpret M d hd ρ, (M.tensorEquiv _ _ ab).1),
           (M.tensorEquiv _ _ ab).2))
     rw [φ.app_bind]
   map_inl a := by
@@ -250,7 +267,7 @@ def Alg.homOfElgotHom (M : Model.{u, v} S m) (φ : ElgotHom m n) :
     exact bind_congr fun x => φ.app_pure _
   map_case e l r := by
     funext ρ
-    simp only [Alg.ofModel, ops, Model.push_coprodEquiv]
+    simp only [Alg.ofModel, ops, Model.reinterpret_coprodEquiv]
     refine (φ.app_bind _ _).trans (bind_congr fun x => ?_)
     cases M.coprodEquiv _ _ x <;> rfl
   map_abort a := by
@@ -269,9 +286,21 @@ def Alg.homOfElgotHom (M : Model.{u, v} S m) (φ : ElgotHom m n) :
     rw [φ.app_bind]
     exact bind_congr fun s => φ.app_pure _
 
+@[simp] theorem Alg.homOfReinterpret_map (M : Model.{u, v} S m) (φ : ElgotHom m n)
+    {d hd hφ} {k : Nat} {β : BoundCtx S.Ty k} {A : S.Ty} (x : (Alg.ofModel M).El β A) :
+    (Alg.homOfReinterpret M φ d hd hφ).map x =
+      fun ρ => φ.app (x (ofReinterpret M d hd ρ)) := rfl
+
+/-- **The morphism of algebras induced by an Elgot morphism of monads**, at the
+canonical pushforward model. -/
+def Alg.homOfElgotHom (M : Model.{u, v} S m) (φ : ElgotHom m n) :
+    Alg.ofModel M ⟶ Alg.ofModel (M.push φ.toMonadHom) :=
+  Alg.homOfReinterpret M φ _ _ (fun _ _ => rfl)
+
 @[simp] theorem Alg.homOfElgotHom_map (M : Model.{u, v} S m) (φ : ElgotHom m n)
     {k : Nat} {β : BoundCtx S.Ty k} {A : S.Ty} (x : (Alg.ofModel M).El β A) :
-    (Alg.homOfElgotHom M φ).map x = fun ρ => φ.app (x (ofPush M φ.toMonadHom ρ)) := rfl
+    (Alg.homOfElgotHom M φ).map x =
+      fun ρ => φ.app (x (ofPush M φ.toMonadHom ρ)) := rfl
 
 /-- **The pushed-forward denotation is the transported denotation.**  This is
 `Alg.Hom.map_denote` for `homOfElgotHom`, spelled out for the monadic
