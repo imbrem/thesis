@@ -119,9 +119,19 @@ theorem translate_injective_of_sameBinders {ν : Type u} {Φ : Type v} [Decidabl
   induction hs generalizing n with
   | var x y =>
       simp only [translate] at ht
-      have hr : ρ.resolve x = ρ.resolve y := by
-        cases hx : ρ.resolve x <;> cases hy : ρ.resolve y <;> simp_all
-      rw [ρ.resolve_injective hr]
+      cases hx : ρ.lookup x with
+      | none =>
+          cases hy : ρ.lookup y with
+          | none => simpa [hx, hy] using ht
+          | some j => simp [hx, hy] at ht
+      | some i =>
+          cases hy : ρ.lookup y with
+          | none => simp [hx, hy] at ht
+          | some j =>
+              have hij : i = j := by simpa [hx, hy] using ht
+              apply congrArg Tm.var
+              apply ρ.resolve_injective
+              simp [Scope.resolve, hx, hy, hij]
   | op h ih =>
       simp only [translate] at ht
       injection ht with _ _ ht

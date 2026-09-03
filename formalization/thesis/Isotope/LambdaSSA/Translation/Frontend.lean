@@ -3,3 +3,4 @@ import Isotope.LambdaSSA.Translation.Frontend.LambdaCase
 import Isotope.LambdaSSA.Translation.Frontend.LambdaSeq
 import Isotope.LambdaSSA.Translation.Frontend.ExactSemantics
 import Isotope.LambdaSSA.Translation.Frontend.Subtyping
+import Isotope.LambdaSSA.Translation.Frontend.SubtypingSemantics

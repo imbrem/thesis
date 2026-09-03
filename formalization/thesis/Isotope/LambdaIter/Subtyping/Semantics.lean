@@ -2,6 +2,7 @@ import Isotope.LambdaIter.Subtyping.Semantics.Model
 import Isotope.LambdaIter.Subtyping.Semantics.Instruction
 import Isotope.LambdaIter.Subtyping.Semantics.Denotation
 import Isotope.LambdaIter.Subtyping.Semantics.Named
+import Isotope.LambdaIter.Subtyping.Semantics.NamedToLocallyNameless
 import Isotope.LambdaIter.Subtyping.Semantics.Purity
 import Isotope.LambdaIter.Subtyping.Semantics.Substitution
 import Isotope.LambdaIter.Subtyping.Semantics.Soundness

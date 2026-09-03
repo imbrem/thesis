@@ -1,5 +1,8 @@
 import Isotope.LambdaCase.Semantics
 import Isotope.LambdaSeq.Semantics
+import Isotope.LambdaCase.Semantics.Categorical
+import Isotope.LambdaSeq.Categorical
+import Isotope.LambdaIter.Subtyping.Semantics.Agreement.Full
 import Isotope.LambdaSSA.Translation.Compile.Semantics
 import Isotope.LambdaSSA.Translation.Frontend.LambdaCase
 import Isotope.LambdaSSA.Translation.Frontend.LambdaSeq
@@ -52,6 +55,30 @@ theorem categoricalPreservation_of_monadic
     (d : RegionDenotes ε h f) : CategoricalPreservation (ε := ε) (m := m) h f := by
   exact Isotope.LambdaSSA.Semantics.Agreement.regionDenotes_toCategorical d
 
+/-- End-to-end categorical preservation against a chosen source categorical
+evaluator, with the result routed to the compiler's sole continuation. -/
+noncomputable def CategoricalSourcePreservation
+    {Γ : LambdaSSA.VCtx τ} {region : LambdaSSA.Region Φ} {A : τ}
+    (h : LambdaSSA.Region.HasType Γ region [A])
+    (source : Env Γ → m (TyDen A)) : Prop :=
+  CategoricalPreservation (ε := ε) (m := m) h (fun ρ =>
+    source ρ >>= fun a => pure (labelInject 0
+      (show LambdaSSA.At [A] 0 A by simp [LambdaSSA.At]) a))
+
+theorem categoricalSourcePreservation_of_monadic
+    {Γ : LambdaSSA.VCtx τ} {region : LambdaSSA.Region Φ} {A : τ}
+    {h : LambdaSSA.Region.HasType Γ region [A]}
+    {source monadic : Env Γ → m (TyDen A)}
+    (d : RegionDenotes ε h (fun ρ => monadic ρ >>= fun a => pure
+      (labelInject 0 (show LambdaSSA.At [A] 0 A by simp [LambdaSSA.At]) a)))
+    (agree : ∀ ρ, source ρ = monadic ρ) :
+    CategoricalSourcePreservation (ε := ε) (m := m) h source := by
+  unfold CategoricalSourcePreservation
+  convert categoricalPreservation_of_monadic d using 1
+  funext ρ
+  rw [agree ρ]
+  rfl
+
 namespace Core
 
 /-- The exact lambda-iter frontend preserves its independently defined
@@ -82,6 +109,23 @@ theorem compile_categorical_denotes
         pure (labelInject (L := [A]) 0
           (show LambdaSSA.At [A] 0 A by simp [LambdaSSA.At]) a)) :=
   categoricalPreservation_of_monadic (compile_denotes h)
+
+theorem compile_categorical_source_denotes
+    {β : LambdaIter.LocallyNameless.BoundCtx τ n}
+    {t : LambdaIter.LocallyNameless.Tm Empty Φ n} {A : τ}
+    (h : LambdaIter.LocallyNameless.HasType Φ
+      (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ) β t A) :
+    CategoricalSourcePreservation (ε := ε) (m := m) (compile_hasType h)
+      (fun ρ => (Isotope.LambdaIter.Subtyping.Semantics.Categorical.denoteOfType
+        (ε := ε) (m := m) h.toGeneric).of
+          (envToCategorical PUnit.unit (ANF.ToSSA.envToBound ρ))) := by
+  apply categoricalSourcePreservation_of_monadic (compile_denotes h)
+  intro ρ
+  exact (Isotope.LambdaIter.Subtyping.Semantics.categorical_denote_eq
+    (ε := ε) (m := m) h.toGeneric PUnit.unit
+    (ANF.ToSSA.envToBound ρ)).trans
+      (Compile.exact_denote_eq_generic h PUnit.unit
+        (ANF.ToSSA.envToBound ρ)).symm
 
 end Core
 
@@ -148,6 +192,25 @@ theorem compile_categorical_denotes
           (show LambdaSSA.At [A] 0 A by simp [LambdaSSA.At]) a)) :=
   categoricalPreservation_of_monadic (compile_denotes h)
 
+theorem compile_categorical_source_denotes
+    {β : Isotope.LambdaCase.LocallyNameless.BoundCtx τ n}
+    {t : Isotope.LambdaCase.LocallyNameless.Tm Empty Φ n} {A : τ}
+    (h : Isotope.LambdaCase.LocallyNameless.HasType Φ
+      (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ) β t A) :
+    CategoricalSourcePreservation (ε := ε) (m := m) (compile_hasType h)
+      (fun ρ => (Isotope.LambdaIter.Subtyping.Semantics.Categorical.denoteOfType
+        (ε := ε) (m := m) h.embed.toGeneric).of
+          (envToCategorical PUnit.unit (ANF.ToSSA.envToBound ρ))) := by
+  apply categoricalSourcePreservation_of_monadic (compile_denotes h)
+  intro ρ
+  exact (Isotope.LambdaIter.Subtyping.Semantics.categorical_denote_eq
+    (ε := ε) (m := m) h.embed.toGeneric PUnit.unit
+    (ANF.ToSSA.envToBound ρ)).trans
+      ((Compile.exact_denote_eq_generic h.embed PUnit.unit
+        (ANF.ToSSA.envToBound ρ)).symm.trans
+          (Isotope.LambdaCase.Semantics.denote_embed h PUnit.unit
+            (ANF.ToSSA.envToBound ρ)))
+
 end LambdaCase.LocallyNameless
 
 namespace LambdaCase.Named
@@ -212,6 +275,25 @@ theorem compile_categorical_denotes
         pure (labelInject (L := [A]) 0
           (show LambdaSSA.At [A] 0 A by simp [LambdaSSA.At]) a)) :=
   categoricalPreservation_of_monadic (compile_denotes h)
+
+theorem compile_categorical_source_denotes
+    {β : Isotope.LambdaSeq.LocallyNameless.BoundCtx τ n}
+    {t : Isotope.LambdaSeq.LocallyNameless.Tm Empty Φ n} {A : τ}
+    (h : Isotope.LambdaSeq.LocallyNameless.HasType Φ
+      (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ) β t A) :
+    CategoricalSourcePreservation (ε := ε) (m := m) (compile_hasType h)
+      (fun ρ => (Isotope.LambdaIter.Subtyping.Semantics.Categorical.denoteOfType
+        (ε := ε) (m := m) h.embedIter.toGeneric).of
+          (envToCategorical PUnit.unit (ANF.ToSSA.envToBound ρ))) := by
+  apply categoricalSourcePreservation_of_monadic (compile_denotes h)
+  intro ρ
+  exact (Isotope.LambdaIter.Subtyping.Semantics.categorical_denote_eq
+    (ε := ε) (m := m) h.embedIter.toGeneric
+    PUnit.unit (ANF.ToSSA.envToBound ρ)).trans
+      ((Compile.exact_denote_eq_generic h.embedIter PUnit.unit
+        (ANF.ToSSA.envToBound ρ)).symm.trans
+          (Isotope.LambdaSeq.Semantics.denote_embedIter h PUnit.unit
+            (ANF.ToSSA.envToBound ρ)))
 
 end LambdaSeq.LocallyNameless
 
