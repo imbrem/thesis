@@ -74,7 +74,9 @@ open Isotope.Elgot
 open Isotope.Elgot.Nondet
 open Isotope.LambdaIter (Sig TypeFormers)
 open Isotope.LambdaIter.Monadic (raySig rayInterp rayModel finRayModel
-  csetRayModel Γ₀ hloop hrhs eqv_fix iterate_fixpoint_of_denote_eq)
+  csetRayModel)
+open Isotope.LambdaIter.Monadic.Ray (hloop hrhs eqv_fix
+  iterate_fixpoint_of_denote_eq)
 
 /-! ### Finite nondeterminism models the iteration-free calculi -/
 

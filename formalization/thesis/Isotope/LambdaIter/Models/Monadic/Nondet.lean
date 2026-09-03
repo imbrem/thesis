@@ -126,7 +126,14 @@ def rayModel (m : Type → Type) [Monad m]
     (step : ULift.{0} ℕ → m (ULift.{0} ℕ ⊕ ULift.{0} ℕ)) :
     (rayModel m step).interp = rayInterp := rfl
 
-/-! ### The looping term and the fixpoint axiom instance -/
+/-! ### The looping term and the fixpoint axiom instance
+
+These live in the nested namespace `Ray` because their names (`N`, `β₁`,
+`hloop`, …) are short enough to collide with any other example file in
+`Isotope.LambdaIter.Monadic`.
+-/
+
+namespace Ray
 
 /-- The base type of states. -/
 abbrev N : raySig.Ty := .base .nat
@@ -268,6 +275,10 @@ theorem iterate_fixpoint_of_denote_eq
   exact h
 
 end Denote
+
+end Ray
+
+open Ray
 
 /-! ### Finite nondeterminism is not a model of lambda-iter -/
 
