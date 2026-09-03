@@ -5,3 +5,4 @@ import Isotope.LambdaIter.Semantics.Kleisli.Soundness
 import Isotope.LambdaIter.Semantics.Kleisli.Surjective
 import Isotope.LambdaIter.Semantics.Kleisli.Model
 import Isotope.LambdaIter.Semantics.Kleisli.Examples
+import Isotope.LambdaIter.Semantics.Kleisli.Calculi
