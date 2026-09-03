@@ -33,12 +33,9 @@ variable {V : Type u₁} {C : Type u₂}
   (M : TypeModel τ V)
   {Φ : Type u₄} [LambdaIter.HasTy Φ τ] [InstructionModel J M Φ]
 
-/-- Separate external from locally bound labels in an appended label context.
-The local labels occur first because label contexts use de Bruijn order. -/
-noncomputable def labelAppendSplit (R L : LCtx τ) :
-    labelObj M (R ++ L) ⟶ labelObj M L ⨿ labelObj M R := by
-  apply Limits.Sigma.desc
-  intro i
+noncomputable def labelAppendRoute (R L : LCtx τ)
+    (i : Fin (R ++ L).length) :
+    M.obj ((R ++ L).get i) ⟶ labelObj M L ⨿ labelObj M R := by
   by_cases hi : i.val < R.length
   · exact labelInject M i.val (by
       simp only [At, List.getElem?_eq_getElem, List.length_append]
@@ -49,6 +46,18 @@ noncomputable def labelAppendSplit (R L : LCtx τ) :
       have ht : (R ++ L)[i.val]? = some (R ++ L)[i.val] := by simp
       rw [List.getElem?_append_right (by omega)] at ht
       simpa [j] using ht) ≫ coprod.inl
+
+/-- Separate external from locally bound labels in an appended label context.
+The local labels occur first because label contexts use de Bruijn order. -/
+noncomputable def labelAppendSplit (R L : LCtx τ) :
+    labelObj M (R ++ L) ⟶ labelObj M L ⨿ labelObj M R :=
+  Limits.Sigma.desc (labelAppendRoute M R L)
+
+@[reassoc (attr := simp)] theorem labelAppendSplit_ι (R L : LCtx τ)
+    (i : Fin (R ++ L).length) :
+    Limits.Sigma.ι (fun k : Fin (R ++ L).length => M.obj ((R ++ L).get k)) i ≫
+      labelAppendSplit M R L = labelAppendRoute M R L i := by
+  rw [labelAppendSplit, Limits.Sigma.ι_desc]
 
 /-- A collective block arrow is characterized by its restriction to every
 local-label summand, with the read-only SSA context carried on the left. -/

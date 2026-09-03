@@ -44,7 +44,33 @@ variable [InstructionModel Φ τ ε m]
 /-- Monadic denotation of an exact derivation, with no semantic coercions. -/
 def denote {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n} {t : Tm ν Φ n} {A : τ}
     (h : HasType Φ Γ β t A) : CtxDen Γ → BoundDen β → m (TyDen A) :=
-  Subtyping.Semantics.denote (ε := ε) (m := m) h.toGeneric
+  match h with
+  | .fv h => fun γ _ => pure (CtxDen.lookup γ _ h)
+  | .bv => fun _ ρ => pure (BoundDen.get ρ _)
+  | .op ha => fun γ ρ => denote ha γ ρ >>= InstructionModel.denote (ε := ε) _
+  | .let₁ ha hb => fun γ ρ => denote ha γ ρ >>= fun a => denote hb γ (ρ, a)
+  | .unit => fun _ _ => pure (TypeModel.unitEquiv.symm ())
+  | .pair ha hb => fun γ ρ =>
+      denote ha γ ρ >>= fun a => denote hb γ ρ >>= fun b =>
+        pure ((TypeModel.tensorEquiv _ _).symm (a, b))
+  | .let₂ ha hb => fun γ ρ =>
+      denote ha γ ρ >>= fun ab =>
+        let p := TypeModel.tensorEquiv _ _ ab
+        denote hb γ ((ρ, p.1), p.2)
+  | .inl ha => fun γ ρ =>
+      denote ha γ ρ >>= fun a => pure ((TypeModel.coprodEquiv _ _).symm (.inl a))
+  | .inr hb => fun γ ρ =>
+      denote hb γ ρ >>= fun b => pure ((TypeModel.coprodEquiv _ _).symm (.inr b))
+  | .case he hl hr => fun γ ρ =>
+      denote he γ ρ >>= fun e =>
+        match TypeModel.coprodEquiv _ _ e with
+        | .inl a => denote hl γ (ρ, a)
+        | .inr b => denote hr γ (ρ, b)
+  | .abort ha => fun γ ρ =>
+      denote ha γ ρ >>= fun z => Empty.elim (TypeModel.emptyEquiv z)
+  | .iter ha hb => fun γ ρ =>
+      denote ha γ ρ >>= Isotope.Elgot.iter (fun a =>
+        denote hb γ (ρ, a) >>= fun s => pure (TypeModel.coprodEquiv _ _ s))
 
 /-- Optional coherence of monadic denotation with respect to exact typing
 witnesses.  As in the categorical model this need not follow from arbitrary,

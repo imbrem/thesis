@@ -1,4 +1,6 @@
 import Isotope.LambdaSSA.Translation.Compile
+import Isotope.LambdaSSA.Translation.Frontend.Closed
+import Isotope.LambdaSSA.Translation.Frontend.NamedToLocallyNameless
 
 /-! # Closed exact lambda-iter frontend for lambda-SSA -/
 
@@ -22,5 +24,30 @@ def compile_hasType {β : LambdaIter.LocallyNameless.BoundCtx τ n}
     LambdaSSA.Region.HasType
       (LambdaSSA.LocallyNameless.ToDeBruijn.context β) (compile t) [A] :=
   Compile.compile_hasType h (by simp [LambdaSSA.At])
+
+namespace Named
+
+variable {ν : Type w} [DecidableEq ν]
+
+/-- Resolve binders and erase impossible free names from a well-typed closed
+named lambda-iter term. -/
+noncomputable def closedTerm {t : LambdaIter.Named.Tm ν Φ} {A : τ}
+    (h : LambdaIter.Named.HasType Φ (LambdaIter.Ctx.nil : LambdaIter.Ctx ν τ) t A) :
+    Σ t' : LambdaIter.LocallyNameless.Tm Empty Φ 0,
+      LambdaIter.LocallyNameless.HasType Φ
+        (LambdaIter.Ctx.nil : LambdaIter.Ctx Empty τ) .nil t' A :=
+  Closed.erase (NamedToLocallyNameless.chooseHasTypeClosed h)
+
+/-- Compile any exactly typed closed named lambda-iter term. -/
+noncomputable def compileTyped {t : LambdaIter.Named.Tm ν Φ} {A : τ}
+    (h : LambdaIter.Named.HasType Φ (LambdaIter.Ctx.nil : LambdaIter.Ctx ν τ) t A) :
+    LambdaSSA.Region Φ := compile (closedTerm h).1
+
+def compileTyped_hasType {t : LambdaIter.Named.Tm ν Φ} {A : τ}
+    (h : LambdaIter.Named.HasType Φ (LambdaIter.Ctx.nil : LambdaIter.Ctx ν τ) t A) :
+    LambdaSSA.Region.HasType [] (compileTyped h) [A] :=
+  compile_hasType (closedTerm h).2
+
+end Named
 
 end Isotope.LambdaSSA.Translation.Frontend.Core

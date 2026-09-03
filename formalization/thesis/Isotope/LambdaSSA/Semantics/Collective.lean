@@ -55,6 +55,14 @@ noncomputable def finiteLabelToObj (R : Fin n → τ) :
     finiteLabelInject M R i ≫ finiteLabelToObj M R = finiteInject M R i := by
   exact Limits.Sigma.ι_desc _ _
 
+@[reassoc]
+theorem labelInject_labelObjToFinite (R : Fin n → τ) (i : Fin n)
+    (h : At (List.ofFn R) i.val (R i)) :
+    labelInject M i.val h ≫ labelObjToFinite M R = finiteLabelInject M R i := by
+  rw [labelInject_eq_sigma_assoc, labelObjToFinite]
+  erw [Category.assoc, Limits.Sigma.ι_desc]
+  simp [labelInject_eq_sigma, finiteLabelInject, eqToHom_trans_assoc]
+
 structure FiniteCollective (Γ : VCtx τ) {n : Nat} (R : Fin n → τ) (X : V)
     (block : ∀ i, J.obj (ctxObj M (R i :: Γ)) ⟶ J.obj X)
     (f : J.obj (ctxObj M Γ ⊗ finiteLabelObj M R) ⟶ J.obj X) : Prop where
