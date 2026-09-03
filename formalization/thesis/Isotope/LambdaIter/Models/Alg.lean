@@ -12,16 +12,18 @@ soundness for `Eqv`.
 ## Why this notion of model, and what it does not say
 
 The categorical interface in `Isotope/LambdaIter/Semantics/Categorical.lean`
-factors the same data through a Freyd category, but its two coherence classes
-(`TypingCoherent` and `LawfulModel`) have no instance anywhere in this
-repository.  Making them *fields* of the model structure, rather than global
-classes, is what makes a category of models and a statement of initiality
-possible at all.  The price, stated plainly:
+factors the same data through a Freyd category, through its two coherence
+classes (`TypingCoherent` and `LawfulModel`).  Making them *fields* of the
+model structure, rather than global classes, is what makes a category of models
+and a statement of initiality possible at all.  The price, stated plainly:
 
 * **A model in this sense is an algebra of the presentation, not a Freyd or
-  Elgot category.**  Nothing here proves that a Freyd category gives such an
-  algebra; that would require discharging `coh` and `sound` in the category,
-  which is exactly the work those two missing instances represent.
+  Elgot category.**  Nothing *in this file* builds an algebra from a Freyd
+  category; that is `Models/Categorical/Alg.lean`'s `Alg.ofCategorical`, which
+  discharges `coh` and `sound` from the two coherence classes.  Those classes
+  are instantiated at the Kleisli category of a lawful Elgot monad in
+  `Isotope/LambdaIter/Semantics/Kleisli/Model.lean`; no instance is known for a
+  general strong Elgot Freyd category.
 * Every lawful Elgot *monad* with an interpretation of the signature does give
   one: `Models/Monadic/Alg.lean`'s `Alg.ofModel`.  It is instantiated at ten
   concrete monads in `Models/Monadic/Concrete.lean`, so the class of algebras

@@ -51,11 +51,13 @@ These are **interface** theorems, and the qualifier matters.
   `InstructionModel`, hence a *total* denotation function, in every monad and
   in every Freyd category of the appropriate strength.  It is **not** proved
   that every monad or every Freyd category is a *lawful* model of λ-iter in the
-  sense of validating the equational theory.  That would need instances of
+  sense of validating the equational theory.  That needs instances of
   `LambdaIter.LocallyNameless.Categorical.TypingCoherent` and of the various
-  `LawfulModel`-style classes, and no such instance exists anywhere in
-  `Isotope/` for these calculi.  No statement of the form "every Freyd category
-  is a model of λ-iter *up to the equational theory*" is made or implied here.
+  `LawfulModel`-style classes; those exist only for the Kleisli category of a
+  lawful Elgot monad
+  (`Isotope/LambdaIter/Semantics/Kleisli/Model.lean`), not for a general Freyd
+  category.  No statement of the form "every Freyd category is a model of
+  λ-iter *up to the equational theory*" is made or implied here.
 * The instruction half of both theorems is **vacuous by construction**:
   `EmptyInstr` is `PEmpty`, so `denote` on instructions is `PEmpty.elim` and
   every law about it holds by `PEmpty.elim`.  The instruction-model

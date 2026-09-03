@@ -21,19 +21,21 @@ typable terms with the same denotation in every algebra are `Eqv`-related.
 ## Honest boundary
 
 Read the qualifier: a "model" is an object of `Alg S`, that is, an *algebra of
-the equational presentation* of lambda-iter.  It is **not** a Freyd or Elgot
-category, and nothing here proves that a Freyd category yields one: doing that
-means discharging `Alg.coh` and `Alg.sound` in such a category, which is
-precisely the content of the two coherence classes
-(`Semantics.Categorical.TypingCoherent` and `.LawfulModel`) that have no
-instance anywhere in this repository.  A lawful Elgot *monad* does yield one
-(`Models/Monadic/Alg.lean`), so the statements below are about a class that
-demonstrably contains semantically interesting objects.  Still:
+the equational presentation* of lambda-iter.  It is **not** itself a Freyd or
+Elgot category.  A Freyd category *does* yield one, given the two coherence
+classes (`Semantics.Categorical.TypingCoherent` and `.LawfulModel`): that is
+`Models/Categorical/Alg.lean`'s `Alg.ofCategorical`, and initiality into such a
+model is `Models/Categorical/Initial.lean`.  Those classes are instantiated at
+the Kleisli category of a lawful Elgot monad
+(`Isotope/LambdaIter/Semantics/Kleisli/Model.lean`) and at no other category so
+far.  A lawful Elgot *monad* also yields an algebra directly
+(`Models/Monadic/Alg.lean`).  Still:
 
 * `Syn.isInitial` is initiality in the category of algebras;
 * `Syn.eqv_of_denote_eq` is completeness with respect to algebras;
 * neither statement may be weakened to "all models" in the informal sense, nor
-  strengthened to Freyd/Elgot semantics.
+  strengthened to Freyd/Elgot semantics beyond the Freyd models that
+  `Alg.ofCategorical` actually turns into algebras.
 
 The non-vacuity of these statements comes from three directions.  `Alg S` is
 inhabited by objects other than `Syn S` (`Alg.terminal`, `Alg.const`, and

@@ -17,6 +17,7 @@ import Isotope.LambdaIter.Equiv
 import Isotope.LambdaIter.Metatheory
 import Isotope.LambdaIter.MinimalElaboration
 import Isotope.LambdaIter.Semantics
+import Isotope.LambdaIter.Semantics.Kleisli
 import Isotope.LambdaIter.Opsem
 import Isotope.LambdaIter.Subtyping.Minimal
 import Isotope.LambdaIter.Signature.Category
@@ -24,3 +25,4 @@ import Isotope.LambdaIter.Signature.Examples
 import Isotope.LambdaIter.Signature.Initial
 import Isotope.LambdaIter.Signature.Havoc
 import Isotope.LambdaIter.Models
+import Isotope.LambdaIter.Models.Categorical
