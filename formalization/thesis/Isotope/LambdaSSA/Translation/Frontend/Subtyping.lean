@@ -65,7 +65,10 @@ section Named
 
 variable {ν : Type w} [DecidableEq ν]
 
-private noncomputable def lowerNamed
+/-- Lower a closed proof-relevant named derivation to a closed locally
+nameless derivation, retaining every subtyping witness.  This is public so
+the semantic frontend can state and prove agreement with the chosen lowering. -/
+noncomputable def lowerNamed
     {t : Isotope.LambdaIter.Named.Tm ν Φ} {A : τ}
     (h : Isotope.LambdaIter.Subtyping.Named.HasType (Ctx.nil : Ctx ν τ) t A) :
     Σ t' : Isotope.LambdaIter.LocallyNameless.Tm Empty Φ 0,

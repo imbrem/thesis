@@ -133,11 +133,15 @@ private theorem translate_subst_var [DecidableEq ν] {ρ σ : Scope ν n}
       by_cases e : x = z
       · subst z
         simp only [Tm.subst_var_same, translate]
-        rw [hres x rfl]
-        simp
+        have hr := hres x rfl
+        simp only [if_pos rfl] at hr
+        cases hρx : ρ.lookup x <;> cases hσy : σ.lookup y <;>
+          simp [Scope.resolve, hρx, hσy] at hr ⊢ <;> assumption
       · simp only [Tm.subst_var_ne e, translate]
-        rw [hres z rfl]
-        simp [e]
+        have hr := hres z rfl
+        simp only [if_neg e] at hr
+        cases hρz : ρ.lookup z <;> cases hσz : σ.lookup z <;>
+          simp [Scope.resolve, hρz, hσz] at hr ⊢ <;> assumption
   | op f a ih =>
       simp only [Tm.subst, translate]
       rw [ih hfree hsafe (fun z hz => hres z hz)]

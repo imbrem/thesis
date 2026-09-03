@@ -55,8 +55,14 @@ theorem translateHasType {ρ : Scope ν n}
   | var hx =>
       unfold LambdaIter.Named.ToLocallyNameless.translate
       split <;> rename_i hr
-      · have ht := hρ hx; rw [hr] at ht; exact ⟨ht ▸ .bv⟩
-      · have ht := hρ hx; rw [hr] at ht; exact ⟨.fv ht⟩
+      · have ht := hρ hx
+        unfold LambdaIter.Named.ToLocallyNameless.Scope.resolve at ht
+        rw [hr] at ht
+        exact ⟨ht ▸ .bv⟩
+      · have ht := hρ hx
+        unfold LambdaIter.Named.ToLocallyNameless.Scope.resolve at ht
+        rw [hr] at ht
+        exact ⟨.fv ht⟩
   | op _ ih => exact (ih hρ).map LambdaIter.LocallyNameless.HasType.op
   | let₁ _ _ iha ihb =>
       obtain ⟨ha⟩ := iha hρ

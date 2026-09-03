@@ -57,6 +57,34 @@ theorem push (h : Aligned Γ ρ β Δ)
 
 end Aligned
 
+def translateVarAt {ρ : Scope ν n} {β : LocallyNameless.BoundCtx τ n}
+    {Γ Δ : LambdaIter.Ctx ν τ} {A : τ} (hρ : Aligned Γ ρ β Δ)
+    (x : ν) (hx : Δ.lookup x = some A) : (o : Option (Fin n)) →
+    ρ.lookup x = o → LocallyNameless.HasType Φ Γ β
+      (match o with
+       | some i => LocallyNameless.Tm.bv i
+       | none => LocallyNameless.Tm.fv x) A
+  | some i, hl => by
+      have h := hρ hx
+      unfold LambdaIter.Named.ToLocallyNameless.Scope.resolve at h
+      rw [hl] at h
+      exact h ▸ (LocallyNameless.HasType.bv (Φ := Φ) (Γ := Γ)
+        (β := β) (ι := i))
+  | none, hl => by
+      have h := hρ hx
+      unfold LambdaIter.Named.ToLocallyNameless.Scope.resolve at h
+      rw [hl] at h
+      exact LocallyNameless.HasType.fv (Φ := Φ) (β := β) h
+
+def translateVar {ρ : Scope ν n} {β : LocallyNameless.BoundCtx τ n}
+    {Γ Δ : LambdaIter.Ctx ν τ} {A : τ} (hρ : Aligned Γ ρ β Δ)
+    (x : ν) (hx : Δ.lookup x = some A) :
+    LocallyNameless.HasType Φ Γ β
+      (match ρ.lookup x with
+       | some i => LocallyNameless.Tm.bv i
+       | none => LocallyNameless.Tm.fv x) A :=
+  translateVarAt hρ x hx (ρ.lookup x) rfl
+
 /-- Translate a proof-relevant named typing derivation.  In the instruction
 case the input and output subtype witnesses carried by `InstTy` become the
 two explicit locally nameless coercion nodes, so no proof data is discarded. -/
@@ -65,15 +93,7 @@ def translateHasType {ρ : Scope ν n} {β : LocallyNameless.BoundCtx τ n}
     (hρ : Aligned Γ ρ β Δ) : Named.HasType Δ t A →
       LocallyNameless.HasType Φ Γ β
         (LambdaIter.Named.ToLocallyNameless.translate ρ t) A
-  | .var hx => by
-      unfold LambdaIter.Named.ToLocallyNameless.translate
-      split <;> rename_i hr
-      · have h := hρ hx
-        rw [hr] at h
-        exact h ▸ .bv
-      · have h := hρ hx
-        rw [hr] at h
-        exact .fv h
+  | .var (x := x) hx => translateVar (Φ := Φ) hρ x hx
   | .op hf ha =>
       .sub (.op (.sub (translateHasType hρ ha) hf.input)) hf.output
   | .let₁ ha hb => .let₁ (translateHasType hρ ha)

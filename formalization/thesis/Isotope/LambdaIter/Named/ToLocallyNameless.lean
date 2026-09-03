@@ -90,9 +90,9 @@ end Scope
 /-- Translate a named term relative to its enclosing named binders. -/
 def translate [DecidableEq ν] (ρ : Scope ν n) :
     Named.Tm ν Φ → LocallyNameless.Tm ν Φ n
-  | .var x => match ρ.resolve x with
-    | .inl i => .bv i
-    | .inr x => .fv x
+  | .var x => match ρ.lookup x with
+    | some i => .bv i
+    | none => .fv x
   | .op f a => .op f (translate ρ a)
   | .let₁ x a b => .let₁ (translate ρ a) (translate (.push x ρ) b)
   | .unit => .unit
@@ -112,7 +112,10 @@ theorem translate_congr [DecidableEq ν] {ρ σ : Scope ν n} (a : Named.Tm ν �
   induction a generalizing n with
   | var x =>
       simp only [Tm.Free] at h
-      rw [translate, translate, h x rfl]
+      have hr := h x rfl
+      unfold Scope.resolve at hr
+      cases hρ : ρ.lookup x <;> cases hσ : σ.lookup x <;>
+        simp_all [translate]
   | op f a ih =>
       simp only [translate]
       rw [ih fun x hx => h x hx]
@@ -226,13 +229,13 @@ end SameLocallyNameless
 
 @[simp] theorem translate_var_bound [DecidableEq ν] (x : ν) (ρ : Scope ν n) :
     translate (.push (some x) ρ) (Named.Tm.var x : Named.Tm ν Φ) = .bv 0 := by
-  simp [translate]
+  simp [translate, Scope.lookup]
 
 @[simp] theorem translate_var_under_anonymous [DecidableEq ν]
     (x : ν) (ρ : Scope ν n) :
     translate (.push none ρ) (Named.Tm.var x : Named.Tm ν Φ) =
       (translate ρ (.var x)).lift := by
-  simp only [translate, Scope.resolve_push_none, LocallyNameless.Tm.lift]
-  cases ρ.resolve x <;> rfl
+  simp only [translate, Scope.lookup, LocallyNameless.Tm.lift]
+  cases ρ.lookup x <;> rfl
 
 end Isotope.LambdaIter.Named.ToLocallyNameless

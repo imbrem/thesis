@@ -32,16 +32,17 @@ variable {V : Type u₁} {C : Type u₂}
 proof-relevant denotation and therefore retain every coercion witness. -/
 inductive RegionDenotes : {Γ : VCtx τ} → {r : LambdaSSA.Region Φ} → {L : LCtx τ} →
     Region.HasType Γ r L → (J.obj (ctxObj M Γ) ⟶ J.obj (labelObj M L)) → Prop where
-  | br : RegionDenotes (.br h ha)
-      (denote J M ha ≫ J.map (labelInject M _ h))
-  | case (dl : RegionDenotes hl fl) (dr : RegionDenotes hr fr) :
+  | br (dt : Denotes J M ha fa) : RegionDenotes (.br h ha)
+      (fa ≫ J.map (labelInject M _ h))
+  | case (de : Denotes J M he fe)
+      (dl : RegionDenotes hl fl) (dr : RegionDenotes hr fr) :
       RegionDenotes (.case he hl hr)
         (caseWithContext J
-          (denote J M he ≫ J.map (M.coprodIso _ _).hom) fl fr)
-  | let₁ (db : RegionDenotes hb fb) :
-      RegionDenotes (.let₁ ha hb) (bind J (denote J M ha) fb)
-  | let₂ (db : RegionDenotes hb fb) :
-      RegionDenotes (.let₂ ha hb) (bind J (denote J M ha) (
+          (fe ≫ J.map (M.coprodIso _ _).hom) fl fr)
+  | let₁ (da : Denotes J M ha fa) (db : RegionDenotes hb fb) :
+      RegionDenotes (.let₁ ha hb) (bind J fa fb)
+  | let₂ (da : Denotes J M ha fa) (db : RegionDenotes hb fb) :
+      RegionDenotes (.let₂ ha hb) (bind J fa (
         J.map ((𝟙 _) ⊗ₘ (M.tensorIso _ _).hom) ≫
           J.map (ctxPairIso M _ _ _).hom ≫ fb))
   | cfgZero {R : Fin 0 → τ} {entry : LambdaSSA.Region Φ}
@@ -73,17 +74,17 @@ inductive RegionDenotes : {Γ : VCtx τ} → {r : LambdaSSA.Region Φ} → {L : 
 private theorem exists_denotation { Γ : VCtx τ} {r : LambdaSSA.Region Φ} {L : LCtx τ}
     (h : Region.HasType Γ r L) : ∃ f, RegionDenotes J M h f := by
   induction h with
-  | br h ha => exact ⟨_, .br (h := h)⟩
+  | br h ha => exact ⟨_, .br (h := h) (denote_spec J M ha)⟩
   | case he hl hr ihl ihr =>
       rcases ihl with ⟨fl, dl⟩
       rcases ihr with ⟨fr, dr⟩
-      exact ⟨_, .case dl dr⟩
+      exact ⟨_, .case (denote_spec J M he) dl dr⟩
   | let₁ ha hb ih =>
       rcases ih with ⟨fb, db⟩
-      exact ⟨_, .let₁ db⟩
+      exact ⟨_, .let₁ (denote_spec J M ha) db⟩
   | let₂ ha hb ih =>
       rcases ih with ⟨fb, db⟩
-      exact ⟨_, .let₂ db⟩
+      exact ⟨_, .let₂ (denote_spec J M ha) db⟩
   | @cfg _ _ _ n _ R he hb ihe ihb =>
       cases n with
       | zero =>
@@ -103,5 +104,19 @@ noncomputable def denoteRegion {Γ : VCtx τ} {r : LambdaSSA.Region Φ} {L : LCt
 theorem denoteRegion_spec {Γ : VCtx τ} {r : LambdaSSA.Region Φ} {L : LCtx τ}
     (h : Region.HasType Γ r L) : RegionDenotes J M h (denoteRegion J M h) :=
   (exists_denotation J M h).choose_spec
+
+/-- Optional coherence for proof-relevant region typing derivations. -/
+class RegionTypingCoherent : Prop where
+  denotes_eq {Γ : VCtx τ} {r : LambdaSSA.Region Φ} {L : LCtx τ}
+      {h : Region.HasType Γ r L}
+      {f g : J.obj (ctxObj M Γ) ⟶ J.obj (labelObj M L)} :
+      RegionDenotes J M h f → RegionDenotes J M h g → f = g
+
+theorem RegionDenotes.eq_denote [RegionTypingCoherent (Φ := Φ) J M]
+    {Γ : VCtx τ} {r : LambdaSSA.Region Φ} {L : LCtx τ}
+    {h : Region.HasType Γ r L}
+    {f : J.obj (ctxObj M Γ) ⟶ J.obj (labelObj M L)}
+    (d : RegionDenotes J M h f) : f = denoteRegion J M h :=
+  RegionTypingCoherent.denotes_eq d (denoteRegion_spec J M h)
 
 end Isotope.LambdaSSA.Subtyping.Semantics.Categorical
