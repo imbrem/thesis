@@ -8,6 +8,7 @@ import Isotope.LambdaIter.Models.Monadic.Alg
 import Isotope.LambdaIter.Models.Monadic.Push
 import Isotope.LambdaIter.Models.Monadic.Examples
 import Isotope.LambdaIter.Models.Monadic.Concrete
+import Isotope.LambdaIter.Models.Monadic.Havoc
 
 /-!
 # The monadic bridge
