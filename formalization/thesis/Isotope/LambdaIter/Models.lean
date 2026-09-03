@@ -74,10 +74,12 @@ and the equational theory provably does not identify them.
 ## Honest boundary
 
 * A model here is an algebra of the *presentation*.  It is **not** a Freyd or
-  Elgot category, and nothing in this directory proves that a *Freyd* category
-  gives such an algebra; that is still the work the two coherence classes
-  (`Semantics.Categorical.TypingCoherent` and `.LawfulModel`) represent.  The
-  monadic case is proved.
+  Elgot category.  `Models/Categorical/Alg.lean` builds an algebra from a
+  strong Elgot Freyd model given the two coherence classes
+  (`Semantics.Categorical.TypingCoherent` and `.LawfulModel`), which are
+  instantiated at the Kleisli category of a lawful Elgot monad in
+  `Isotope/LambdaIter/Semantics/Kleisli/Model.lean` and nowhere else.  The
+  monadic case is proved directly as well.
 * Apart from the syntactic model `Syn S` and the monadic algebras, every
   algebra constructed here is terminal, constant, or built from those by
   products and powers.
@@ -85,8 +87,10 @@ and the equational theory provably does not identify them.
   among algebras of the presentation — a class that now provably contains the
   monadic models, so the statement has semantic content.  Likewise
   `Syn.eqv_of_denote_eq` is completeness with respect to algebras.  Neither
-  may be restated as initiality or completeness for Freyd/Elgot *categories*:
-  that would still require an `Alg` built from a Freyd category.
+  may be restated as initiality or completeness for arbitrary Freyd/Elgot
+  *categories*: `Models/Categorical/Initial.lean` gives initiality into those
+  Freyd models that satisfy the two coherence classes, and completeness would
+  need every algebra to arise that way, which is not proved.
 * The syntactic category (`Models/SynCategory.lean`, `Models/SynCoproduct.lean`)
   is proved to be a category with binary coproducts, and its iteration
   operator is proved well defined on classes and to satisfy the **fixpoint,
