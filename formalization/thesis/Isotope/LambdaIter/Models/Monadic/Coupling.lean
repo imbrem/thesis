@@ -235,7 +235,147 @@ theorem eq [InjectiveFormers S.Ty] {A : S.Ty} {u v : m (M.interp A)}
   rw [hu, hv]
   exact bind_congr fun p => congrArg _ p.property.eq_of
 
+/-- Two coupled computations bound into continuations that agree on related
+pairs are equal.  This is the form in which couplings are used when the two
+sides of an equation have sub-derivations at different types. -/
+theorem bind_eq [InjectiveFormers S.Ty] {A₁ A₂ B : S.Ty} {u : m (M.interp A₁)}
+    {v : m (M.interp A₂)} (h : Coupled M u v) {f : M.interp A₁ → m (M.interp B)}
+    {g : M.interp A₂ → m (M.interp B)}
+    (hfg : ∀ p : VPair M A₁ A₂, Coupled M (f p.val.1) (g p.val.2)) :
+    u >>= f = v >>= g := Coupled.eq (h.bind' hfg)
+
 end Coupled
+
+
+section Iteration
+
+open Isotope.Elgot
+
+variable {M : Model.{u, v} S m} [LawfulMonad m] [Iterate m]
+  [InjectiveFormers S.Ty]
+
+omit [LawfulMonad m] [Iterate m] in
+/-- At a coproduct, a related pair really does come from one summand on both
+sides. -/
+theorem VPair.coprod_left {B₁ A₁ B₂ A₂ : S.Ty}
+    (r : VPair M (coprod B₁ A₁) (coprod B₂ A₂))
+    (h : ¬ ∃ q : VPair M B₁ B₂,
+      M.coprodEquiv B₁ A₁ r.val.1 = .inl q.val.1 ∧
+        M.coprodEquiv B₂ A₂ r.val.2 = .inl q.val.2) :
+    ∃ q : VPair M A₁ A₂,
+      M.coprodEquiv B₁ A₁ r.val.1 = .inr q.val.1 ∧
+        M.coprodEquiv B₂ A₂ r.val.2 = .inr q.val.2 := by
+  rcases r.property.coprod_inv with ⟨a, a', h1, h2, hr⟩ | ⟨c, c', h1, h2, hr⟩
+  · exact absurd ⟨⟨(a, a'), hr⟩, h1, h2⟩ h
+  · exact ⟨⟨(c, c'), hr⟩, h1, h2⟩
+
+/-- Split a related pair at a coproduct into a related pair on the summand
+that *both* sides take.  Well defined because `VRel` at a coproduct forces the
+two sides into the same summand (`VRel.coprod_inv`). -/
+noncomputable def splitPair {B₁ A₁ B₂ A₂ : S.Ty}
+    (r : VPair M (coprod B₁ A₁) (coprod B₂ A₂)) :
+    VPair M B₁ B₂ ⊕ VPair M A₁ A₂ :=
+  open Classical in
+  if h : ∃ q : VPair M B₁ B₂,
+      M.coprodEquiv B₁ A₁ r.val.1 = .inl q.val.1 ∧
+        M.coprodEquiv B₂ A₂ r.val.2 = .inl q.val.2
+    then .inl h.choose
+    else .inr (VPair.coprod_left r h).choose
+
+omit [LawfulMonad m] [Iterate m] in
+@[simp] theorem splitPair_fst {B₁ A₁ B₂ A₂ : S.Ty}
+    (r : VPair M (coprod B₁ A₁) (coprod B₂ A₂)) :
+    Sum.map (fun p : VPair M B₁ B₂ => p.val.1)
+        (fun p : VPair M A₁ A₂ => p.val.1) (splitPair r) =
+      M.coprodEquiv B₁ A₁ r.val.1 := by
+  classical
+  unfold splitPair
+  split
+  · rename_i h; exact (h.choose_spec.1).symm
+  · rename_i h; exact ((VPair.coprod_left r h).choose_spec.1).symm
+
+omit [LawfulMonad m] [Iterate m] in
+@[simp] theorem splitPair_snd {B₁ A₁ B₂ A₂ : S.Ty}
+    (r : VPair M (coprod B₁ A₁) (coprod B₂ A₂)) :
+    Sum.map (fun p : VPair M B₁ B₂ => p.val.2)
+        (fun p : VPair M A₁ A₂ => p.val.2) (splitPair r) =
+      M.coprodEquiv B₂ A₂ r.val.2 := by
+  classical
+  unfold splitPair
+  split
+  · rename_i h; exact (h.choose_spec.2).symm
+  · rename_i h; exact ((VPair.coprod_left r h).choose_spec.2).symm
+
+/-- **A span of Elgot iterations.**  If a loop `F` projects onto a loop `g`
+— every step of `F`, read through the projections `π` on results and `pr` on
+states, is a step of `g` — then the projection of the iteration of `F` is the
+iteration of `g`.
+
+This is Elgot naturality followed by Elgot uniformity along `pr`, and it is the
+only route from "the two bodies agree up to a span" to "the two iterations
+agree up to a span": no fixpoint or codiagonal law relates iterations over
+different state spaces. -/
+theorem proj_iterate' [LawfulElgotMonad m]
+    {X Y C D : Type v} (F : X → m (Y ⊕ X)) (π : Y → D) (pr : X → C)
+    (g : C → m (D ⊕ C))
+    (hkey : ∀ q, F q >>= (fun z => pure (Sum.map π pr z)) = g (pr q))
+    (q : X) :
+    Elgot.iter F q >>= (fun z => pure (π z)) = Elgot.iter g (pr q) := by
+  have hnat : Elgot.kcomp (Elgot.iter F) (Elgot.liftPure π) =
+      Elgot.iter (Elgot.mapReturn F (Elgot.liftPure π)) :=
+    LawfulElgotMonad.naturality F (Elgot.liftPure π)
+  have hcomm : Elgot.kcomp (Elgot.mapReturn F (Elgot.liftPure π))
+      (Elgot.liftPure (Sum.map id pr)) = Elgot.kcomp (Elgot.liftPure pr) g := by
+    funext q'
+    unfold Elgot.kcomp Elgot.mapReturn Elgot.liftPure
+    simp only [Function.comp_apply, bind_assoc, pure_bind]
+    rw [← hkey q']
+    refine bind_congr fun z => ?_
+    cases z <;> simp [Function.comp_apply]
+  have huni := LawfulElgotMonad.uniformity
+    (Elgot.mapReturn F (Elgot.liftPure π)) g pr hcomm
+  have h1 : Elgot.iter (Elgot.mapReturn F (Elgot.liftPure π)) q =
+      Elgot.iter g (pr q) := by
+    rw [huni]
+    unfold Elgot.kcomp Elgot.liftPure
+    simp [Function.comp_apply]
+  rw [← h1, ← hnat]
+  rfl
+
+/-- **Iteration preserves couplings.**  Given loop bodies coupled at every
+related pair of states, the two iterations are coupled.
+
+The proof runs the two loops as *one* loop over related pairs, then identifies
+each projection of that loop with the corresponding original loop by Elgot
+naturality followed by Elgot uniformity along the projection — the only two
+laws that can relate an iteration to one over a different state space.  This
+is where `LawfulElgotMonad` is genuinely needed for *coherence*, not only for
+soundness. -/
+theorem Coupled.iterate [LawfulElgotMonad m] {A₁ A₂ B₁ B₂ : S.Ty}
+    {u : M.interp A₁ → m (M.interp (coprod B₁ A₁))}
+    {v : M.interp A₂ → m (M.interp (coprod B₂ A₂))}
+    (h : ∀ p : VPair M A₁ A₂, Coupled M (u p.val.1) (v p.val.2))
+    (p : VPair M A₁ A₂) :
+    Coupled M
+      (Elgot.iter (fun x => u x >>= fun s => pure (M.coprodEquiv B₁ A₁ s))
+        p.val.1)
+      (Elgot.iter (fun y => v y >>= fun s => pure (M.coprodEquiv B₂ A₂ s))
+        p.val.2) := by
+  classical
+  choose w hw₁ hw₂ using h
+  refine ⟨Elgot.iter (fun q => w q >>= fun r => pure (splitPair r)) p, ?_, ?_⟩
+  · refine (proj_iterate' (fun q => w q >>= fun r => pure (splitPair r))
+      (fun p : VPair M B₁ B₂ => p.val.1) (fun p : VPair M A₁ A₂ => p.val.1)
+      (fun x => u x >>= fun s => pure (M.coprodEquiv B₁ A₁ s)) ?_ p).symm
+    intro q
+    simp only [bind_assoc, pure_bind, splitPair_fst, hw₁ q]
+  · refine (proj_iterate' (fun q => w q >>= fun r => pure (splitPair r))
+      (fun p : VPair M B₁ B₂ => p.val.2) (fun p : VPair M A₁ A₂ => p.val.2)
+      (fun y => v y >>= fun s => pure (M.coprodEquiv B₂ A₂ s)) ?_ p).symm
+    intro q
+    simp only [bind_assoc, pure_bind, splitPair_snd, hw₂ q]
+
+end Iteration
 
 namespace SeqModel
 

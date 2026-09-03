@@ -15,9 +15,7 @@ import Isotope.LambdaIter.Models.Reindex
 import Isotope.LambdaIter.Models.SigAction
 import Isotope.LambdaIter.Models.ReindexAlg
 import Isotope.LambdaIter.Models.TotalInitial
-import Isotope.LambdaIter.Models.Monadic.Model
-import Isotope.LambdaIter.Models.Monadic.Coupling
-import Isotope.LambdaIter.Models.Monadic.Free
+import Isotope.LambdaIter.Models.Monadic
 
 /-!
 # Models of lambda-iter, and the category they form
@@ -48,27 +46,47 @@ result type, one operation per term former, and two propositional obligations
 | `Models/SigAction.lean` | `HasType.map`, `Eqv.map`: the action on typing and on `Eqv` |
 | `Models/ReindexAlg.lean` | `Alg.reindex`, via `Alg.Ops.reindex_denote` |
 | `Models/TotalInitial.lean` | `(Sig.empty, Syn Sig.empty)` is initial in the total category |
+| `Models/Monadic/` | the monadic bridge: `Alg.ofModel` turns any lawful Elgot |
+| | monad with an interpretation of the signature into an algebra |
+
+## The monadic bridge
+
+`Models/Monadic/` closes what used to be the central gap of this directory:
+`Alg.ofModel` builds an algebra from any monad `m` with `[LawfulMonad m]`,
+`[Iterate m]`, `[LawfulElgotMonad m]` together with a set-valued
+interpretation of the signature's types (`Monadic.Model`), assuming the two
+binary type formers are injective and disjoint (`InjectiveFormers`).  Both
+propositional fields are discharged:
+
+* `sound` — the four Elgot laws are used one per iteration axiom, and
+  `Eqv.ax`'s raw axiom schemes are handled by inverting one endpoint's
+  derivation and building the other's.
+* `coh` — a coupling (parametricity) argument.  Lambda-iter typing is *not*
+  unique, and the naive statement ("derivations at different types agree after
+  any continuation") is false; `Monadic/Coupling.lean` says instead that the
+  two denotations are projections of a single computation over related pairs,
+  which for `iter` needs Elgot naturality and uniformity.
+
+`Monadic/Examples.lean` instantiates this at `Part` over the empty signature
+and separates a divergent loop from a value, so the algebra is not terminal
+and the equational theory provably does not identify them.
 
 ## Honest boundary
 
 * A model here is an algebra of the *presentation*.  It is **not** a Freyd or
-  Elgot category, and nothing in this directory proves that a monad or a Freyd
-  category gives such an algebra.  Doing so means discharging the fields `coh`
-  and `sound`, which are exactly the two coherence classes
-  (`Semantics.Categorical.TypingCoherent` and `.LawfulModel`) that have no
-  instance anywhere in this repository.
-* Apart from the syntactic model `Syn S`, every algebra constructed here is
-  terminal, constant, or built from those by products and powers; none has
-  semantic content.  `Syn S` does distinguish `Eqv`-inequivalent terms — by
-  construction, since it *is* the quotient — which is what makes the
-  completeness corollary non-vacuous.  Whether an algebra with genuinely
-  semantic content (a monad, a Freyd category) exists is still open.
+  Elgot category, and nothing in this directory proves that a *Freyd* category
+  gives such an algebra; that is still the work the two coherence classes
+  (`Semantics.Categorical.TypingCoherent` and `.LawfulModel`) represent.  The
+  monadic case is proved.
+* Apart from the syntactic model `Syn S` and the monadic algebras, every
+  algebra constructed here is terminal, constant, or built from those by
+  products and powers.
 * Initiality (`Models/Initial.lean`) is initiality **in `Alg S`**, that is,
-  among algebras of the presentation.  Likewise `Syn.eqv_of_denote_eq` is
-  completeness with respect to algebras.  Neither may be restated as
-  initiality or completeness for Freyd/Elgot models: that would require an
-  `Alg` built from a Freyd category, which needs exactly the two missing
-  coherence instances above.
+  among algebras of the presentation — a class that now provably contains the
+  monadic models, so the statement has semantic content.  Likewise
+  `Syn.eqv_of_denote_eq` is completeness with respect to algebras.  Neither
+  may be restated as initiality or completeness for Freyd/Elgot *categories*:
+  that would still require an `Alg` built from a Freyd category.
 * The syntactic category (`Models/SynCategory.lean`, `Models/SynCoproduct.lean`)
   is proved to be a category with binary coproducts, and its iteration
   operator is proved well defined on classes and to satisfy the **fixpoint,
