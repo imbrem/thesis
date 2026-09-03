@@ -233,6 +233,15 @@ theorem eq [InjectiveFormers τ] {A : τ} {u v : m (TyDen A)}
   rw [hu, hv]
   exact bind_congr fun p => congrArg _ p.property.eq_of
 
+/-- Two coupled computations bound into continuations that agree on related
+pairs are equal.  This is the form in which couplings are used when the two
+sides of an equation have sub-derivations at different types. -/
+theorem bind_eq [InjectiveFormers τ] {A₁ A₂ B : τ} {u : m (TyDen A₁)}
+    {v : m (TyDen A₂)} (h : Coupled (τ := τ) m u v)
+    {f : TyDen A₁ → m (TyDen B)} {g : TyDen A₂ → m (TyDen B)}
+    (hfg : ∀ p : VPair τ A₁ A₂, Coupled (τ := τ) m (f p.val.1) (g p.val.2)) :
+    u >>= f = v >>= g := Coupled.eq (h.bind' hfg)
+
 end Coupled
 
 section Iteration

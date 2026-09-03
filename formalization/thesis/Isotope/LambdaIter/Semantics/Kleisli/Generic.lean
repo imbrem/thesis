@@ -20,7 +20,7 @@ canonical *exact* derivation.
 
 namespace Isotope.LambdaIter.LocallyNameless
 
-universe u v w q
+universe u v w q r
 
 variable {τ : Type u} [TypeFormers τ] [Subtyping τ]
 variable {ν : Type w} [DecidableEq ν]
@@ -353,5 +353,25 @@ theorem toGeneric_bsubst {n : Nat} {β : BoundCtx τ n} :
   refine Fin.cases ?_ (fun j => ?_) i <;> rfl
 
 end HasType
+
+/-- Syntactic purity for the coercion-free calculus is syntactic purity for the
+subtyping calculus: the two inductive definitions have the same clauses over the
+same terms. -/
+theorem Pure.toGeneric {ε : Type r} [HasEff Φ ε] {pureEff : ε} :
+    ∀ {n : Nat} {t : Tm ν Φ n}, Pure (Φ := Φ) (ν := ν) pureEff t →
+      Subtyping.LocallyNameless.Pure (Φ := Φ) (ν := ν) pureEff t := by
+  intro n t h
+  induction h with
+  | fv => exact .fv
+  | bv => exact .bv
+  | op hf _ ih => exact .op hf ih
+  | let₁ _ _ iha ihb => exact .let₁ iha ihb
+  | unit => exact .unit
+  | pair _ _ iha ihb => exact .pair iha ihb
+  | let₂ _ _ iha ihb => exact .let₂ iha ihb
+  | inl _ ih => exact .inl ih
+  | inr _ ih => exact .inr ih
+  | case _ _ _ ihe ihl ihr => exact .case ihe ihl ihr
+  | abort _ ih => exact .abort ih
 
 end Isotope.LambdaIter.LocallyNameless
