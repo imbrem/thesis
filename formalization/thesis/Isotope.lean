@@ -1,5 +1,6 @@
 import Isotope.Basic
 import Isotope.CategoryTheory.AddMonoidal
+import Isotope.CategoryTheory.Order
 import Isotope.CategoryTheory.Freyd
 import Isotope.CategoryTheory.Ide
 import Isotope.CategoryTheory.Monad
