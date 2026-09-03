@@ -11,19 +11,10 @@ stated for the *constructed* derivations of the two endpoints, exactly as the
 monadic `Subtyping.Semantics.sound_*` lemmas are; connecting them to arbitrary
 endpoint derivations is the separate job of typing coherence.
 
-Covered: `letEta`, `unitEta`, `caseBetaL`, `caseBetaR`, `caseEta` and
-`emptyInitial` — six of the nine structural schemes.  `letBeta` and `pairBeta`
-need the categorical substitution and weakening lemmas, which this directory
-does not yet provide.  `pairEta` needs neither, and reduces to the single
-cartesian identity
-
-    envPairHom M Γ β A B ≫ lift (boundVar M 1) (boundVar M 0) =
-      snd (envObj M Γ β) (M.obj A ⊗ M.obj B)
-
-together with `bind_map_snd` and `pair_map_map` (both proved in
-`Freyd/Combinators.lean`); it is left open only because that identity resisted
-`simp`, `cat_disch` and a hand-written associator chase in this instance
-setting.
+Covered: `letEta`, `unitEta`, `pairEta`, `caseBetaL`, `caseBetaR`, `caseEta`
+and `emptyInitial` — seven of the nine structural schemes.  The remaining two,
+`letBeta` and `pairBeta`, need the categorical substitution and weakening
+lemmas, which this directory does not yet provide.
 -/
 
 universe v₁ v₂ u₁ u₂ u₃ u₄ u₅
@@ -205,6 +196,90 @@ theorem sound_caseEta {Γ : Ctx ν τ} {n : Nat} {β : LocallyNameless.BoundCtx 
   show (denote J M he ≫ J.map (M.coprodIso A B).hom) ≫ J.map (M.coprodIso A B).inv =
     denote J M he
   rw [Category.assoc, ← J.map_comp, Iso.hom_inv_id, J.map_id, Category.comp_id]
+
+/-- Cartesian reassociation underlying `envPairHom`, at the first component. -/
+theorem assoc_snd_fst_snd (X Y A B : V) :
+    (α_ X Y (A ⊗ B)).hom ≫ X ◁ (α_ Y A B).inv ≫
+        CartesianMonoidalCategory.snd X ((Y ⊗ A) ⊗ B) ≫
+        CartesianMonoidalCategory.fst (Y ⊗ A) B ≫
+        CartesianMonoidalCategory.snd Y A =
+      CartesianMonoidalCategory.snd (X ⊗ Y) (A ⊗ B) ≫
+        CartesianMonoidalCategory.fst A B := by
+  simp
+
+/-- Cartesian reassociation underlying `envPairHom`, at the second component. -/
+theorem assoc_snd_snd (X Y A B : V) :
+    (α_ X Y (A ⊗ B)).hom ≫ X ◁ (α_ Y A B).inv ≫
+        CartesianMonoidalCategory.snd X ((Y ⊗ A) ⊗ B) ≫
+        CartesianMonoidalCategory.snd (Y ⊗ A) B =
+      CartesianMonoidalCategory.snd (X ⊗ Y) (A ⊗ B) ≫
+        CartesianMonoidalCategory.snd A B := by
+  simp
+
+/-- Reassociating an environment extended by a pair, and then reading the two
+new slots back, is the second projection. -/
+theorem envPairHom_comp_lift (Γ : Ctx ν τ) {n : Nat}
+    (β : LocallyNameless.BoundCtx τ n) (A B : τ) :
+    envPairHom M Γ β A B ≫
+        CartesianMonoidalCategory.lift (X := M.obj A) (Y := M.obj B)
+          (boundVar M (1 : Fin (n + 2))) (boundVar M (0 : Fin (n + 2))) =
+      CartesianMonoidalCategory.snd (envObj M Γ β) (M.obj A ⊗ M.obj B) := by
+  apply CartesianMonoidalCategory.hom_ext
+  · simp only [Category.assoc, CartesianMonoidalCategory.lift_fst, envPairHom,
+      boundVar, boundLookup_one, envObj, ctxObj, boundObj]
+    exact assoc_snd_fst_snd (ctxObj M Γ) (boundObj M β) (M.obj A) (M.obj B)
+  · simp only [Category.assoc, CartesianMonoidalCategory.lift_snd, envPairHom,
+      boundVar, boundLookup_zero, envObj, ctxObj, boundObj]
+    exact assoc_snd_snd (ctxObj M Γ) (boundObj M β) (M.obj A) (M.obj B)
+
+/-- **Pair eta.** -/
+theorem sound_pairEta {Γ : Ctx ν τ} {n : Nat} {β : LocallyNameless.BoundCtx τ n}
+    {a : LocallyNameless.Tm ν Φ n} {A B : τ}
+    (ha : LocallyNameless.HasType Φ Γ β a (TypeFormers.tensor A B)) :
+    denote J M
+        (.let₂ ha (.pair LocallyNameless.HasType.previous
+          LocallyNameless.HasType.newest)) = denote J M ha := by
+  have hpair : denote J M
+      (LocallyNameless.HasType.pair
+        (LocallyNameless.HasType.previous (Φ := Φ) (Γ := Γ) (β := β) (A := A) (B := B))
+        (LocallyNameless.HasType.newest (Φ := Φ) (Γ := Γ)
+          (β := LocallyNameless.BoundCtx.snoc β A) (A := B))) =
+      J.map (CartesianMonoidalCategory.lift (X := M.obj A) (Y := M.obj B)
+        (boundVar M (1 : Fin (n + 2))) (boundVar M (0 : Fin (n + 2))) ≫
+          (M.tensorIso A B).inv) := by
+    rw [denote, denote_previous, denote_newest]
+    exact (congrArg (fun q => q ≫ J.map (M.tensorIso A B).inv)
+      (pair_map_map J (A := M.obj A) (B := M.obj B)
+        (boundVar M (Γ := Γ) (β := LocallyNameless.BoundCtx.snoc
+          (LocallyNameless.BoundCtx.snoc β A) B) (1 : Fin (n + 2)))
+        (boundVar M (Γ := Γ) (β := LocallyNameless.BoundCtx.snoc
+          (LocallyNameless.BoundCtx.snoc β A) B) (0 : Fin (n + 2))))).trans
+      (J.map_comp _ _).symm
+  have hkey : (𝟙 (envObj M Γ β) ⊗ₘ (M.tensorIso A B).hom) ≫
+      (envPairHom M Γ β A B ≫
+        (CartesianMonoidalCategory.lift (X := M.obj A) (Y := M.obj B)
+          (boundVar M (1 : Fin (n + 2))) (boundVar M (0 : Fin (n + 2))) ≫
+            (M.tensorIso A B).inv)) =
+      CartesianMonoidalCategory.snd (envObj M Γ β)
+        (M.obj (TypeFormers.tensor A B)) := by
+    rw [← Category.assoc (envPairHom M Γ β A B), envPairHom_comp_lift,
+      ← Category.assoc, CartesianMonoidalCategory.tensorHom_snd,
+      Category.assoc, Iso.hom_inv_id, Category.comp_id]
+  have hcont : J.map ((𝟙 (envObj M Γ β)) ⊗ₘ (M.tensorIso A B).hom) ≫
+      J.map (envPairHom M Γ β A B) ≫
+        denote J M (LocallyNameless.HasType.pair
+          (LocallyNameless.HasType.previous (Φ := Φ) (Γ := Γ) (β := β) (A := A) (B := B))
+          (LocallyNameless.HasType.newest (Φ := Φ) (Γ := Γ)
+            (β := LocallyNameless.BoundCtx.snoc β A) (A := B))) =
+      J.map (CartesianMonoidalCategory.snd (envObj M Γ β)
+        (M.obj (TypeFormers.tensor A B))) := by
+    rw [hpair]
+    exact (((congrArg (fun q => J.map ((𝟙 (envObj M Γ β)) ⊗ₘ (M.tensorIso A B).hom) ≫ q)
+        (J.map_comp _ _).symm).trans (J.map_comp _ _).symm)).trans
+      (congrArg J.map hkey)
+  rw [denote]
+  exact (congrArg (bind J (denote J M ha)) hcont).trans
+    (bind_map_snd J (denote J M ha))
 
 /-- **Empty initiality.**  Once an empty-typed computation has run, both the
 continuation and the type at which `abort` was used are irrelevant. -/
