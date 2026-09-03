@@ -31,51 +31,80 @@ namespace PremonoidalCategory
 
 variable {C : Type u} [Category.{v} C] [PremonoidalCategory C] (P : MorphismProperty C)
 
-/-- The ambient left distributor has a pure inverse. -/
-class IsDistributiveSubcategory [HasFiniteCoproducts C] [DistributiveTensor C] : Prop where
-  leftInv_mem (X Y Z : C) : P (DistributiveTensor.leftIso X Y Z).inv
+open scoped AddMonoidalCategory in
+/-- The distributor of the *chosen* coproduct of `C`. -/
+noncomputable def addLeftHom [CocartesianMonoidalCategory C] (X Y Z : C) :
+    (X ⊗ Y) ⊕ₘ (X ⊗ Z) ⟶ X ⊗ (Y ⊕ₘ Z) :=
+  CocartesianMonoidalCategory.desc
+    (X ◁ CocartesianMonoidalCategory.inl Y Z) (X ◁ CocartesianMonoidalCategory.inr Y Z)
+
+open scoped AddMonoidalCategory in
+/-- The distributor of the chosen coproduct has a pure inverse.  As with
+`IsCocartesianSubcategory`, this is stated for the chosen coproduct rather than for
+`Limits.coprod`, so that it is checkable of a concrete model. -/
+class IsDistributiveSubcategory [CocartesianMonoidalCategory C] : Prop where
+  exists_addLeftInv (X Y Z : C) :
+    ∃ k : X ⊗ (Y ⊕ₘ Z) ⟶ (X ⊗ Y) ⊕ₘ (X ⊗ Z),
+      P k ∧ addLeftHom X Y Z ≫ k = 𝟙 _ ∧ k ≫ addLeftHom X Y Z = 𝟙 _
 
 section Distributive
 
-variable [SymmetricPremonoidalCategory C] [HasFiniteCoproducts C] [DistributiveTensor C]
+open scoped AddMonoidalCategory
+
+variable [SymmetricPremonoidalCategory C] [CocartesianMonoidalCategory C] [DistributiveTensor C]
   [IsCentralSubcategory P] [IsCocartesianSubcategory P] [IsDistributiveSubcategory P]
 
+/-- The chosen inverse distributor. -/
+noncomputable def addLeftInv (X Y Z : C) :
+    X ⊗ (Y ⊕ₘ Z) ⟶ (X ⊗ Y) ⊕ₘ (X ⊗ Z) :=
+  (IsDistributiveSubcategory.exists_addLeftInv (P := P) X Y Z).choose
+
+theorem addLeftInv_mem (X Y Z : C) : P (addLeftInv P X Y Z) :=
+  (IsDistributiveSubcategory.exists_addLeftInv (P := P) X Y Z).choose_spec.1
+
+@[reassoc (attr := simp)] theorem addLeftHom_addLeftInv (X Y Z : C) :
+    addLeftHom X Y Z ≫ addLeftInv P X Y Z = 𝟙 _ :=
+  (IsDistributiveSubcategory.exists_addLeftInv (P := P) X Y Z).choose_spec.2.1
+
+@[reassoc (attr := simp)] theorem addLeftInv_addLeftHom (X Y Z : C) :
+    addLeftInv P X Y Z ≫ addLeftHom X Y Z = 𝟙 _ :=
+  (IsDistributiveSubcategory.exists_addLeftInv (P := P) X Y Z).choose_spec.2.2
+
+omit [DistributiveTensor C] [IsDistributiveSubcategory P] in
 /-- The distributor of the wide subcategory, conjugated into `C` along the coproduct
-comparison, is the distributor of `C`. -/
+comparison, is the chosen distributor of `C`. -/
 theorem wideLeftHom_aux (X Y Z : WideSubcategory P) :
     (wideCoprodIso P (X ⊗ Y) (X ⊗ Z)).hom ≫ (DistributiveTensor.leftHom X Y Z).1 =
-      DistributiveTensor.leftHom X.obj Y.obj Z.obj ≫
-        (X.obj ◁ (wideCoprodIso P Y Z).hom) := by
-  refine coprod.hom_ext ?_ ?_
+      addLeftHom X.obj Y.obj Z.obj ≫ (X.obj ◁ (wideCoprodIso P Y Z).hom) := by
+  refine CocartesianMonoidalCategory.hom_ext ?_ ?_
   · have hV := congrArg Subtype.val (DistributiveTensor.inl_leftHom X Y Z)
     simp only [WideSubcategory.comp_def, whiskerLeft_val] at hV
-    rw [← Category.assoc, inl_wideCoprodIso, hV, ← Category.assoc,
-      DistributiveTensor.inl_leftHom, ← PremonoidalCategory.whiskerLeft_comp,
+    rw [← Category.assoc, inl_wideCoprodIso, hV, ← Category.assoc, addLeftHom,
+      CocartesianMonoidalCategory.inl_desc, ← PremonoidalCategory.whiskerLeft_comp,
       inl_wideCoprodIso]
   · have hV := congrArg Subtype.val (DistributiveTensor.inr_leftHom X Y Z)
     simp only [WideSubcategory.comp_def, whiskerLeft_val] at hV
-    rw [← Category.assoc, inr_wideCoprodIso, hV, ← Category.assoc,
-      DistributiveTensor.inr_leftHom, ← PremonoidalCategory.whiskerLeft_comp,
+    rw [← Category.assoc, inr_wideCoprodIso, hV, ← Category.assoc, addLeftHom,
+      CocartesianMonoidalCategory.inr_desc, ← PremonoidalCategory.whiskerLeft_comp,
       inr_wideCoprodIso]
 
 theorem wideLeftHom_val (X Y Z : WideSubcategory P) :
     (DistributiveTensor.leftHom X Y Z).1 =
       (wideCoprodIso P (X ⊗ Y) (X ⊗ Z)).inv ≫
-        DistributiveTensor.leftHom X.obj Y.obj Z.obj ≫
-        (X.obj ◁ (wideCoprodIso P Y Z).hom) := by
+        addLeftHom X.obj Y.obj Z.obj ≫ (X.obj ◁ (wideCoprodIso P Y Z).hom) := by
   rw [← wideLeftHom_aux, Iso.inv_hom_id_assoc]
 
 /-- The inverse distributor of the wide subcategory, at the level of `C`. -/
 noncomputable def wideLeftInvVal (X Y Z : WideSubcategory P) :
     (X ⊗ (Y ⨿ Z) : WideSubcategory P).obj ⟶ ((X ⊗ Y) ⨿ (X ⊗ Z) : WideSubcategory P).obj :=
   (X.obj ◁ (wideCoprodIso P Y Z).inv) ≫
-    (DistributiveTensor.leftIso X.obj Y.obj Z.obj).inv ≫
+    addLeftInv P X.obj Y.obj Z.obj ≫
     (wideCoprodIso P (X ⊗ Y) (X ⊗ Z)).hom
 
 theorem wideLeftInvVal_mem (X Y Z : WideSubcategory P) : P (wideLeftInvVal P X Y Z) :=
   P.comp_mem _ _
     (IsPremonoidalSubcategory.whiskerLeft_mem _ (wideCoprodIso_inv_mem P Y Z))
-    (P.comp_mem _ _ (IsDistributiveSubcategory.leftInv_mem X.obj Y.obj Z.obj)
+    (P.comp_mem _ _ (addLeftInv_mem P X.obj Y.obj Z.obj)
       (wideCoprodIso_hom_mem P _ _))
 
 /-- **The pure subcategory is distributive.** -/
@@ -85,15 +114,15 @@ instance wideDistributiveTensor : DistributiveTensor (WideSubcategory P) where
     · apply Subtype.ext
       simp only [WideSubcategory.comp_def, WideSubcategory.id_def]
       rw [wideLeftHom_val, wideLeftInvVal]
-      simp only [Category.assoc, DistributiveTensor.leftIso, asIso_inv]
+      simp only [Category.assoc]
       rw [← PremonoidalCategory.whiskerLeft_comp_assoc, Iso.hom_inv_id,
-        PremonoidalCategory.whiskerLeft_id, Category.id_comp, IsIso.hom_inv_id_assoc,
+        PremonoidalCategory.whiskerLeft_id, Category.id_comp, addLeftHom_addLeftInv_assoc,
         Iso.inv_hom_id]
     · apply Subtype.ext
       simp only [WideSubcategory.comp_def, WideSubcategory.id_def]
       rw [wideLeftHom_val, wideLeftInvVal]
-      simp only [Category.assoc, DistributiveTensor.leftIso, asIso_inv]
-      rw [Iso.hom_inv_id_assoc, IsIso.inv_hom_id_assoc,
+      simp only [Category.assoc]
+      rw [Iso.hom_inv_id_assoc, addLeftInv_addLeftHom_assoc,
         ← PremonoidalCategory.whiskerLeft_comp, Iso.inv_hom_id,
         PremonoidalCategory.whiskerLeft_id]
       rfl
@@ -103,21 +132,21 @@ end Distributive
 /-! ### The Elgot axioms -/
 
 /-- Uniformity of the ambient iteration operator with respect to `P`-morphisms. -/
-class IsUniformIteration [HasFiniteCoproducts C] [Iteration C] : Prop where
+class IsUniformIteration [Limits.HasFiniteCoproducts C] [Iteration C] : Prop where
   uniformity {A D B : C} (f : A ⟶ B ⨿ A) (g : D ⟶ B ⨿ D) {h : A ⟶ D} (hh : P h)
     (comm : f ≫ coprod.map (𝟙 B) h = h ≫ g) : iterate f = h ≫ iterate g
 
 /-- Strength of the ambient iteration operator.  This is a statement about `C` alone. -/
 class IsStrongIteration (C : Type u) [Category.{v} C] [PremonoidalCategory C]
-    [SymmetricPremonoidalCategory C] [HasFiniteCoproducts C]
+    [SymmetricPremonoidalCategory C] [Limits.HasFiniteCoproducts C]
     [DistributivePremonoidalCategory C] [Iteration C] : Prop where
   iterate_whiskerLeft {X Y : C} (Z : C) (f : X ⟶ Y ⨿ X) :
     iterate ((Z ◁ f) ≫ DistributivePremonoidalCategory.leftInv Z Y X) = Z ◁ iterate f
 
 section Elgot
 
-variable [SymmetricPremonoidalCategory C] [HasFiniteCoproducts C] [DistributiveTensor C]
-  [Iteration C] [ElgotCategory C]
+variable [SymmetricPremonoidalCategory C] [CocartesianMonoidalCategory C]
+  [DistributiveTensor C] [Iteration C] [ElgotCategory C]
   [IsCentralSubcategory P] [IsSemiCartesianSubcategory P] [IsCartesianSubcategory P]
   [IsCocartesianSubcategory P] [IsDistributiveSubcategory P]
 

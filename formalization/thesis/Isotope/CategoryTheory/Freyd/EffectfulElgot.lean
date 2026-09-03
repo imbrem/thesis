@@ -19,15 +19,7 @@ open Category Limits PremonoidalCategory
 open scoped MonoidalCategory
 
 variable {C : Type u₂} [Category.{v₂} C] [PremonoidalCategory C]
-  [SymmetricPremonoidalCategory C] [HasFiniteCoproducts C]
-
-/-- Every effect is closed under the finite coproduct structure of `C`: the injections and the
-maps out of the initial object are pure, and case analysis stays inside an effect. -/
-class IsCocartesianEffectLattice (E : Type u₃) [Preorder E]
-    (eff : E → MorphismProperty C) : Prop where
-  eff_cocartesian (e : E) : IsCocartesianSubcategory (eff e)
-
-attribute [instance] IsCocartesianEffectLattice.eff_cocartesian
+  [SymmetricPremonoidalCategory C]
 
 /-- The effects closed under iteration: the paper's `E^∞`.
 
@@ -41,6 +33,18 @@ class IterativeEffects (E : Type u₃) [Preorder E] {V : Type u₁} [Category.{v
     (eff : E → MorphismProperty C) (iterative : E → Prop) : Prop where
   iterate_mem {e : E} (he : iterative e) {A B : V} {f : J.obj A ⟶ J.obj (B ⨿ A)} :
     eff e f → eff e (iterate (f ≫ inv (Limits.coprodComparison J B A)))
+
+section Cocartesian
+
+variable [CocartesianMonoidalCategory C]
+
+/-- Every effect is closed under the chosen finite coproduct structure of `C`: the injections
+and the maps out of the initial object are pure, and case analysis stays inside an effect. -/
+class IsCocartesianEffectLattice (E : Type u₃) [Preorder E]
+    (eff : E → MorphismProperty C) : Prop where
+  eff_cocartesian (e : E) : IsCocartesianSubcategory (eff e)
+
+attribute [instance] IsCocartesianEffectLattice.eff_cocartesian
 
 namespace EffectfulFreydCategory
 
@@ -77,5 +81,7 @@ end Elgot
 end Distributive
 
 end EffectfulFreydCategory
+
+end Cocartesian
 
 end CategoryTheory

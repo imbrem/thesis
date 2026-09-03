@@ -317,20 +317,13 @@ open CategoryTheory.EffectfulFreydCategory LocallyNameless
 
 variable {E : Type u₅} [Preorder E] [OrderBot E]
   {C : Type u₂} [Category.{v₂} C] [PremonoidalCategory C] [SymmetricPremonoidalCategory C]
-  [HasFiniteCoproducts C] [DistributiveTensor C] [Iteration C] [ElgotCategory C]
+  [CocartesianMonoidalCategory C] [DistributiveTensor C] [Iteration C] [ElgotCategory C]
   [IsStrongIteration C]
   (eff : E → MorphismProperty C)
   [IsCentralSubcategory (eff ⊥)] [IsSemiCartesianSubcategory (eff ⊥)]
   [IsCartesianSubcategory (eff ⊥)] [EffectfulFreydCategory E eff]
   [IsCocartesianEffectLattice E eff] [IsDistributiveSubcategory (eff ⊥)]
   [IsUniformIteration (eff ⊥)]
-
-theorem splitMapCoprod_inclusion_eq (A B : EffectfulFreydCategory.Value eff) :
-    splitMapCoprod (EffectfulFreydCategory.inclusion eff) A B = (wideCoprodIso (eff ⊥) A B).inv := by
-  show inv (coprodComparison (EffectfulFreydCategory.inclusion eff) A B) = _
-  refine IsIso.inv_eq_of_hom_inv_id ?_
-  rw [← wideCoprodIso_hom]
-  exact (wideCoprodIso (eff ⊥) A B).hom_inv_id
 
 /-- **The effect lattice of an Elgot effectful Freyd category is an effect model for its own
 pure inclusion.**  This is what makes the soundness theorem apply to the subcategory
@@ -340,12 +333,52 @@ instance inclusionEffectModel : EffectModel E (EffectfulFreydCategory.inclusion 
   tensorIso_hom_mem _ _ := MorphismProperty.id_mem _ _
   tensorIso_inv_mem _ _ := MorphismProperty.id_mem _ _
 
+omit [DistributiveTensor C] [Iteration C] [ElgotCategory C] [IsStrongIteration C]
+  [IsDistributiveSubcategory (eff ⊥)] in
+open CocartesianMonoidalCategory in
+/-- The chosen left injection of `C`, followed by the comparison with Mathlib's coproduct in the
+pure subcategory, is the pure subcategory's own left injection. -/
+private theorem inl_wideCoprodIso' (A B : EffectfulFreydCategory.Value eff) :
+    inl A.obj B.obj ≫ (wideCoprodIso (eff ⊥) A B).hom = (coprod.inl : A ⟶ A ⨿ B).1 :=
+  congrArg Subtype.val
+    ((wideBinaryCofanIsColimit (eff ⊥) A B).comp_coconePointUniqueUpToIso_hom
+      (colimit.isColimit (Limits.pair A B)) (Discrete.mk WalkingPair.left))
+
+omit [DistributiveTensor C] [Iteration C] [ElgotCategory C] [IsStrongIteration C]
+  [IsDistributiveSubcategory (eff ⊥)] in
+open CocartesianMonoidalCategory in
+/-- The right injection, likewise. -/
+private theorem inr_wideCoprodIso' (A B : EffectfulFreydCategory.Value eff) :
+    inr A.obj B.obj ≫ (wideCoprodIso (eff ⊥) A B).hom = (coprod.inr : B ⟶ A ⨿ B).1 :=
+  congrArg Subtype.val
+    ((wideBinaryCofanIsColimit (eff ⊥) A B).comp_coconePointUniqueUpToIso_hom
+      (colimit.isColimit (Limits.pair A B)) (Discrete.mk WalkingPair.right))
+
+omit [Iteration C] [ElgotCategory C] [IsStrongIteration C] [IsUniformIteration (eff ⊥)] in
+open CocartesianMonoidalCategory in
+/-- Splitting the image of a pure coproduct and then copairing is the same as comparing with the
+*chosen* coproduct of `C` and copairing there.  Neither factor on the left has a well-determined
+effect, but this composite does. -/
+private theorem splitMapCoprod_desc_eq {A B : EffectfulFreydCategory.Value eff} {D : C}
+    (l : (EffectfulFreydCategory.inclusion eff).obj A ⟶ D)
+    (r : (EffectfulFreydCategory.inclusion eff).obj B ⟶ D) :
+    splitMapCoprod (EffectfulFreydCategory.inclusion eff) A B ≫ coprod.desc l r =
+      (wideCoprodIso (eff ⊥) A B).inv ≫ desc l r := by
+  rw [splitMapCoprod, IsIso.inv_comp_eq]
+  refine coprod.hom_ext ?_ ?_
+  · rw [coprod.inl_desc, coprodComparison_inl_assoc]
+    change l = (coprod.inl : A ⟶ A ⨿ B).1 ≫ (wideCoprodIso (eff ⊥) A B).inv ≫ desc l r
+    rw [← inl_wideCoprodIso' eff A B, Category.assoc, Iso.hom_inv_id_assoc, inl_desc]
+  · rw [coprod.inr_desc, coprodComparison_inr_assoc]
+    change r = (coprod.inr : B ⟶ A ⨿ B).1 ≫ (wideCoprodIso (eff ⊥) A B).inv ≫ desc l r
+    rw [← inr_wideCoprodIso' eff A B, Category.assoc, Iso.hom_inv_id_assoc, inr_desc]
+
 instance inclusionDistributiveEffectModel :
     DistributiveEffectModel E (EffectfulFreydCategory.inclusion eff) eff where
-  splitDesc_mem hl hr :=
-    EffectModel.comp_mem
-      (EffectModel.pure_mem
-        (by rw [splitMapCoprod_inclusion_eq]; exact wideCoprodIso_inv_mem (eff ⊥) _ _) _)
+  splitDesc_mem hl hr := by
+    rw [splitMapCoprod_desc_eq]
+    exact MorphismProperty.comp_mem _ _ _
+      (EffectLattice.eff_mono (eff := eff) bot_le _ (wideCoprodIso_inv_mem (eff ⊥) _ _))
       (IsCocartesianSubcategory.desc_mem hl hr)
 
 variable {τ : Type u₃} [TypeFormers τ] [Subtyping τ] (M : TypeModel τ (EffectfulFreydCategory.Value eff))
