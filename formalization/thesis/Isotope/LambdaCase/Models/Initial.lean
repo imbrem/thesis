@@ -34,10 +34,11 @@ the equational presentation* of lambda-case.  It is **not** a Freyd category,
 and nothing here proves that a monad or a Freyd category yields one.  Doing
 that means discharging `Alg.coh` and `Alg.sound` in such a category, which is
 precisely the content of the two coherence classes
-(`LambdaIter.Subtyping.Semantics.Categorical.TypingCoherent` and the
-corresponding lawfulness class) that have no instance anywhere in this
-repository; and no theorem in this repository states that any denotation of
-lambda-case respects `Equiv`.  So:
+(`LambdaIter.LocallyNameless.Categorical.TypingCoherent` and the corresponding
+lawfulness class), which are instantiated only at the Kleisli category of a
+lawful Elgot monad (`Isotope/LambdaIter/Semantics/Kleisli/Model.lean`) and are
+not used to build a lambda-case algebra here; and no theorem in this repository
+states that any denotation of lambda-case respects `Equiv`.  So:
 
 * `Syn.isInitial` is initiality in the category of algebras;
 * `Syn.equiv_of_denote_eq` is completeness with respect to algebras;

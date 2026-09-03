@@ -26,7 +26,9 @@ is genuinely a different structure from `LambdaIter.Alg`; only `Sig` is shared.
 The categorical interface in `Isotope/LambdaCase/Semantics/Categorical.lean`
 factors comparable data through a distributive Freyd category, but the two
 coherence classes it would need (`TypingCoherent` and `LawfulModel`, in the
-lambda-iter subtyping namespace) have no instance anywhere in this repository.
+lambda-iter namespace) are instantiated only at the Kleisli category of a
+lawful Elgot monad (`Isotope/LambdaIter/Semantics/Kleisli/Model.lean`), and no
+lambda-case algebra is built from them here.
 Making coherence and soundness *fields* of the model structure, rather than
 global classes, is what makes a category of models and a statement of
 initiality possible at all.  The price, stated plainly:
