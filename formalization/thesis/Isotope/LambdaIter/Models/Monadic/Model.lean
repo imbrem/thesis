@@ -50,12 +50,15 @@ class InjectiveFormers (τ : Type u) [TypeFormers τ] : Prop where
   tensor_inj {A B A' B' : τ} : tensor A B = tensor A' B' → A = A' ∧ B = B'
   /-- The coproduct former is injective in both arguments. -/
   coprod_inj {A B A' B' : τ} : coprod A B = coprod A' B' → A = A' ∧ B = B'
+  /-- A tensor is never a coproduct. -/
+  tensor_ne_coprod {A B A' B' : τ} : tensor A B ≠ coprod A' B'
 
 instance : InjectiveFormers (Ty α) where
   tensor_inj h := by
     cases h with | _ => exact ⟨rfl, rfl⟩
   coprod_inj h := by
     cases h with | _ => exact ⟨rfl, rfl⟩
+  tensor_ne_coprod h := by cases h
 
 namespace Monadic
 
