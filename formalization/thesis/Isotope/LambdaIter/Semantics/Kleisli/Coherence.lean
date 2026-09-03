@@ -272,4 +272,89 @@ theorem exactDenote_coh {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
     exactDenote (ε := ε) (m := m) h γ ρ = exactDenote (ε := ε) k γ ρ :=
   (denote_coupled (ε := ε) h k γ ρ ρ (EnvRel.refl' ρ)).eq
 
+
+/-- The coercion-free denotation of `Semantics/Denotation.lean` is the generic
+denotation of the embedded derivation.  The two are defined by the same
+structural recursion; only the judgment differs. -/
+theorem denote_eq_exactDenote {Γ : Ctx ν τ} {n : Nat} {β : BoundCtx τ n}
+    {t : Tm ν Φ n} {A : τ} (h : HasType Φ Γ β t A) :
+    ∀ (γ : CtxDen Γ) (ρ : BoundDen β),
+      _root_.Isotope.LambdaIter.Semantics.denote (ε := ε) (m := m) h γ ρ =
+        exactDenote (ε := ε) (m := m) h γ ρ := by
+  induction h with
+  | fv hx =>
+      intro γ ρ
+      simp only [_root_.Isotope.LambdaIter.Semantics.denote, exactDenote_fv]
+  | bv =>
+      intro γ ρ
+      simp only [_root_.Isotope.LambdaIter.Semantics.denote, exactDenote_bv]
+  | op ha ih =>
+      intro γ ρ
+      simp only [_root_.Isotope.LambdaIter.Semantics.denote, exactDenote_op,
+        ih]
+  | let₁ ha hb iha ihb =>
+      intro γ ρ
+      simp only [_root_.Isotope.LambdaIter.Semantics.denote, exactDenote_let₁,
+        iha]
+      exact bind_congr fun x => ihb γ (ρ, x)
+  | unit =>
+      intro γ ρ
+      simp only [_root_.Isotope.LambdaIter.Semantics.denote, exactDenote_unit]
+      rfl
+  | pair ha hb iha ihb =>
+      intro γ ρ
+      simp only [_root_.Isotope.LambdaIter.Semantics.denote, exactDenote_pair,
+        iha]
+      exact bind_congr fun x => by rw [ihb γ ρ]; rfl
+  | let₂ ha hc iha ihc =>
+      intro γ ρ
+      simp only [_root_.Isotope.LambdaIter.Semantics.denote, exactDenote_let₂,
+        iha]
+      exact bind_congr fun p => ihc γ _
+  | inl ha ih =>
+      intro γ ρ
+      simp only [_root_.Isotope.LambdaIter.Semantics.denote, exactDenote_inl,
+        ih]
+      rfl
+  | inr hb ih =>
+      intro γ ρ
+      simp only [_root_.Isotope.LambdaIter.Semantics.denote, exactDenote_inr,
+        ih]
+      rfl
+  | case he hl hr ihe ihl ihr =>
+      intro γ ρ
+      simp only [_root_.Isotope.LambdaIter.Semantics.denote, exactDenote_case,
+        ihe]
+      refine bind_congr fun s => ?_
+      cases TypeModel.coprodEquiv _ _ s with
+      | inl x => exact ihl γ (ρ, x)
+      | inr y => exact ihr γ (ρ, y)
+  | abort ha ih =>
+      intro γ ρ
+      simp only [_root_.Isotope.LambdaIter.Semantics.denote, exactDenote_abort,
+        ih]
+      rfl
+  | iter ha hb iha ihb =>
+      intro γ ρ
+      simp only [_root_.Isotope.LambdaIter.Semantics.denote, exactDenote_iter,
+        iha]
+      refine bind_congr fun x => ?_
+      congr 1
+      funext y
+      rw [ihb γ (ρ, y)]
+      rfl
+
+/-- **Coherence of the coercion-free monadic denotation.**  This is the first
+instance of `Semantics.TypingCoherent`, which
+`LambdaSSA/Translation/Frontend/NamedToLocallyNameless.lean` takes as a
+hypothesis. -/
+instance instTypingCoherent :
+    _root_.Isotope.LambdaIter.Semantics.TypingCoherent
+      (τ := τ) (ν := ν) (Φ := Φ) (ε := ε) (m := m) where
+  denote_eq h k := by
+    funext γ ρ
+    rw [denote_eq_exactDenote (ε := ε) h γ ρ,
+      denote_eq_exactDenote (ε := ε) k γ ρ]
+    exact exactDenote_coh (ε := ε) h k γ ρ
+
 end Isotope.LambdaIter.Semantics
