@@ -6,6 +6,7 @@ import Isotope.LambdaSeq.Models.Syntax
 import Isotope.LambdaSeq.Models.Initial
 import Isotope.LambdaSeq.Models.Comparison
 import Isotope.LambdaSeq.Models.SynCategory
+import Isotope.LambdaSeq.Models.Monadic
 
 /-!
 # Models of lambda-seq, the category they form, and the initial one
@@ -41,14 +42,22 @@ obligations (coherence in the typing derivation, soundness for `Equiv`).
   lambda-case models, and the fact that the map it forces out of the initial
   lambda-seq model is the term embedding.
 
+* `Alg.ofSeqModel` (`Models/Monadic/`) — **every lawful monad with an
+  interpretation of the signature is an algebra**: the monadic denotation is
+  coherent in the typing derivation (`denote_coh`) and sound for `Equiv`
+  (`sound`).  Hypotheses: `[Monad m]`, `[LawfulMonad m]`; no iteration
+  operator, no type former.  `Monadic/Examples.lean` instantiates it at the
+  partiality monad and exhibits two terms it separates, so the model class is
+  not merely the terminal algebra.
+
 ## Honest boundary
 
 A model here is an algebra of the *presentation*.  It is **not** a Freyd
-category, and nothing in this directory proves that a monad or a Freyd
-category gives such an algebra; that would mean discharging `coh` and `sound`,
-and this repository proves no soundness theorem for any lambda-seq denotation
-with respect to `Equiv`.  `Syn.isInitial` says: initial *among algebras of the
-equational presentation*.
+category, and nothing in this directory proves that a *Freyd* category gives
+such an algebra.  What is proved is the monadic case: `Alg.ofSeqModel` turns a
+lawful monad into an algebra, so `Syn.isInitial` is initiality among a class
+that contains genuine semantic models.  It still says: initial *among algebras
+of the equational presentation*.
 
 The syntactic *category* of `Models/SynCategory.lean` carries exactly the three
 category laws.  No monoidal, premonoidal or Freyd structure is built on it, and

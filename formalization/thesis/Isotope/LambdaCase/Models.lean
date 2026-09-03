@@ -7,6 +7,7 @@ import Isotope.LambdaCase.Models.Initial
 import Isotope.LambdaCase.Models.CompareIter
 import Isotope.LambdaCase.Models.SynCategory
 import Isotope.LambdaCase.Models.SynCoproduct
+import Isotope.LambdaCase.Models.Monadic
 
 /-!
 # Models of lambda-case, the category they form, and the initial one
@@ -55,18 +56,25 @@ are exactly the parameters lambda-case's judgments take.
   stability of the lambda-case theory under the inclusion into lambda-iter that
   `Equiv.lean` had left deferred.
 
+* `Alg.ofModel` (`Models/Monadic/`) — **every lawful monad with an
+  interpretation of the signature is an algebra**.  Soundness for `Equiv` is
+  `Monadic/Alg.lean`; coherence in the typing derivation is
+  `Monadic/Coherence.lean`, a coupling (parametricity) argument, needed
+  because lambda-case typing is genuinely non-unique.  Hypotheses:
+  `[Monad m]`, `[LawfulMonad m]`, `[InjectiveFormers S.Ty]` — no iteration
+  operator and no Elgot law.  `Monadic/Examples.lean` instantiates at the
+  partiality monad and separates the two booleans.
+
 ## Honest boundary
 
 * A model here is an algebra of the *presentation*.  It is **not** a Freyd
-  category, and nothing in this directory proves that a monad or a Freyd
-  category gives such an algebra.  Doing so means discharging the fields `coh`
-  and `sound`, which are exactly the coherence and lawfulness conditions that
-  have no instance anywhere in this repository.  In particular there is still
-  no theorem in this repository saying that the monadic or categorical
-  denotation of lambda-case respects `Equiv`.
+  category, and nothing in this directory proves that a *Freyd* category gives
+  such an algebra.  The monadic case is proved: `Alg.ofModel` discharges both
+  `coh` and `sound` for the monadic denotation.
 * `Syn.isInitial` therefore says: initial *among algebras of the equational
-  presentation*.  It does not say initial among Freyd categories, and it must
-  not be restated that way.
+  presentation* — a class that now provably contains the monadic models.  It
+  does not say initial among Freyd categories, and it must not be restated
+  that way.
 * The syntactic *category* of `Models/SynCategory.lean` carries exactly the
   three category laws, and `Models/SynCoproduct.lean` adds binary coproducts.
   No premonoidal, Freyd, cartesian-value or distributive structure is
