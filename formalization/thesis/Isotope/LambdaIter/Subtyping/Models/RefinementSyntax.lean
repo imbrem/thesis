@@ -55,7 +55,8 @@ instance refinementSyntax_lawfulOrder
   abort_mono := Related.abort
   iter_mono := Related.iter
   coeSub_mono := fun d _ _ h => Related.sub h d
-  equiv_sound := fun {ha} {hb} h => by
+  equiv_sound := by
+    intro n β a b A ha hb h
     rw [refinementSyntax_denote, refinementSyntax_denote]
     exact Related.ofEquiv ⟨h⟩
 
