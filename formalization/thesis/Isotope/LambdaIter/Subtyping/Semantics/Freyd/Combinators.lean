@@ -156,6 +156,36 @@ theorem pair_map_map {R A B : V} (u : R ⟶ A) (w : R ⟶ B) :
   congr 1
   apply CartesianMonoidalCategory.hom_ext <;> simp
 
+/-- Naturality of sequential pairing in the environment. -/
+theorem map_comp_pair {R' R A B : V} (p : R' ⟶ R)
+    (f : J.obj R ⟶ J.obj A) (g : J.obj R ⟶ J.obj B) :
+    J.map p ≫ pair J f g = pair J (J.map p ≫ f) (J.map p ≫ g) := by
+  have hfst : (p ⊗ₘ 𝟙 A) ≫ CartesianMonoidalCategory.fst R A =
+      CartesianMonoidalCategory.fst R' A ≫ p := by simp
+  have hk : ((p ⊗ₘ 𝟙 A) ⊗ₘ 𝟙 B) ≫ CartesianMonoidalCategory.lift
+        (CartesianMonoidalCategory.fst (R ⊗ A) B ≫
+          CartesianMonoidalCategory.snd R A)
+        (CartesianMonoidalCategory.snd (R ⊗ A) B) =
+      CartesianMonoidalCategory.lift
+        (CartesianMonoidalCategory.fst (R' ⊗ A) B ≫
+          CartesianMonoidalCategory.snd R' A)
+        (CartesianMonoidalCategory.snd (R' ⊗ A) B) := by
+    apply CartesianMonoidalCategory.hom_ext <;> simp
+  have h1 : J.map (p ⊗ₘ 𝟙 A) ≫ J.map (CartesianMonoidalCategory.fst R A) ≫ g =
+      J.map (CartesianMonoidalCategory.fst R' A) ≫ J.map p ≫ g := by
+    rw [← Category.assoc, ← J.map_comp, hfst, J.map_comp, Category.assoc]
+  have h2 : J.map ((p ⊗ₘ 𝟙 A) ⊗ₘ 𝟙 B) ≫ J.map (CartesianMonoidalCategory.lift
+        (CartesianMonoidalCategory.fst (R ⊗ A) B ≫
+          CartesianMonoidalCategory.snd R A)
+        (CartesianMonoidalCategory.snd (R ⊗ A) B)) =
+      J.map (CartesianMonoidalCategory.lift
+        (CartesianMonoidalCategory.fst (R' ⊗ A) B ≫
+          CartesianMonoidalCategory.snd R' A)
+        (CartesianMonoidalCategory.snd (R' ⊗ A) B)) := by
+    rw [← J.map_comp, hk]
+  simp only [pair, retainedContext]
+  rw [map_comp_bind, map_comp_bind, h1, h2]
+
 /-- The computation-side projection determined by a value environment: the
 image of the terminal map followed by the inverse unit coherence isomorphism. -/
 noncomputable def discard (R : V) : J.obj R ⟶ 𝟙_ C :=
@@ -352,6 +382,13 @@ theorem caseWithContext_eta {R A B : V} (f : J.obj R ⟶ J.obj (A ⨿ B)) :
       simp [DistributiveTensor.leftIso, ← MonoidalCategory.id_tensorHom]
   rw [caseWithContext, splitMapCoprod_comp_desc_map, ← J.map_comp, hdesc,
     bind_map_snd]
+
+/-- Naturality of `abort` in the environment. -/
+theorem map_comp_abort {τ : Type u₃} [TypeFormers τ] [Subtyping τ]
+    (M : TypeModel τ V) {R' R : V} {A : τ} (p : R' ⟶ R)
+    (z : J.obj R ⟶ J.obj (M.obj (TypeFormers.empty : τ))) :
+    J.map p ≫ abort J M (A := A) z = abort J M (A := A) (J.map p ≫ z) :=
+  (Category.assoc _ _ _).symm
 
 end Distributive
 
