@@ -310,6 +310,16 @@ theorem caseWithContext_comp {R A B D D' : V}
       caseWithContext J scrutinee (left ≫ k) (right ≫ k) := by
   simp only [caseWithContext, bind_comp, Category.assoc, ← coprod.desc_comp]
 
+/-- The left distributor is natural in the retained environment. -/
+theorem tensor_comp_leftIso_inv {R' R X Y : V} (p : R' ⟶ R) :
+    (p ⊗ₘ 𝟙 (X ⨿ Y)) ≫ (DistributiveTensor.leftIso R X Y).inv =
+      (DistributiveTensor.leftIso R' X Y).inv ≫
+        coprod.map (p ⊗ₘ 𝟙 X) (p ⊗ₘ 𝟙 Y) := by
+  rw [Iso.comp_inv_eq, Category.assoc, Iso.eq_inv_comp]
+  apply coprod.hom_ext <;>
+    simp [DistributiveTensor.leftIso, MonoidalCategory.tensorHom_def,
+      MonoidalCategory.whisker_exchange]
+
 /-- Naturality of case analysis in the environment. -/
 theorem map_comp_caseWithContext {R' R A B D : V} (p : R' ⟶ R)
     (scrutinee : J.obj R ⟶ J.obj (A ⨿ B))
@@ -317,13 +327,7 @@ theorem map_comp_caseWithContext {R' R A B D : V} (p : R' ⟶ R)
     J.map p ≫ caseWithContext J scrutinee left right =
       caseWithContext J (J.map p ≫ scrutinee)
         (J.map (p ⊗ₘ 𝟙 A) ≫ left) (J.map (p ⊗ₘ 𝟙 B) ≫ right) := by
-  have hdist : (p ⊗ₘ 𝟙 (A ⨿ B)) ≫ (DistributiveTensor.leftIso R A B).inv =
-      (DistributiveTensor.leftIso R' A B).inv ≫
-        coprod.map (p ⊗ₘ 𝟙 A) (p ⊗ₘ 𝟙 B) := by
-    rw [Iso.comp_inv_eq, Category.assoc, Iso.eq_inv_comp]
-    apply coprod.hom_ext <;>
-      simp [DistributiveTensor.leftIso, MonoidalCategory.tensorHom_def,
-        MonoidalCategory.whisker_exchange]
+  have hdist := tensor_comp_leftIso_inv p (X := A) (Y := B)
   rw [caseWithContext, caseWithContext, map_comp_bind]
   congr 1
   rw [← Category.assoc, ← J.map_comp, hdist, J.map_comp, Category.assoc]
