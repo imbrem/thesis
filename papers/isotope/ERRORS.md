@@ -90,6 +90,16 @@
 
 ## 3. `complete-refinement-ssa.tex` — A Complete Refinement System for Substructural SSA
 
+### Paper build compatibility
+
+The papers use `thmtools` for named theorem restatements. LaTeX 2026-06-01
+also creates sibling-counter aliases, conflicting with `thmtools`' alias setup
+([upstream issue #75](https://github.com/muzimuzhi/thmtools/issues/75)). The shared
+`paper-theorems.sty` compatibility wrapper retains theorem naming and restatement
+hooks while leaving alias creation to the new kernel. Older formats retain the
+original package behavior. This fixes the `\c@conjecture already defined` error
+reported by PR CI before reaching the corrected refinement rules.
+
 ### Corrected refinement-rule formation
 
 The following corrections were checked while mechanizing the written calculus.
