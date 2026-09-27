@@ -4,6 +4,7 @@
 // Sections: all appendices
 // Source lines: 3309--end
 // Conversion: prose preserved verbatim; LaTeX presentation translated mechanically to Typst.
+// Authorized rule corrections: see thesis/paper-imports/README.md, Refinement rule corrections.
 
 #import "/lib/prelude.typ": *
 = Refinement Rules and Notation
@@ -44,8 +45,15 @@ executes before $a$, hence the requirement that their effects commute.
 We can also derive a simplified rule for uniformity, given below, by
 simply choosing $q_l = q_c$ and $c = z$ in unif$""^p$:
 #rule-set(
-  prooftree(rule(label: msc("simp-unif^p"), $eta harpoon.rt epsilon.alt$, $Gamma^(upright(bold(q))_l) \, x : A tack.r cal(R) kw("let") med y = s ; #h(0em) b arrow.r.twohead^p kw("case") med b' #h(0em) { iota_l #h(0em) x : iota_l #h(0em) x \, iota_r #h(0em) x : iota_r #h(0em) s } : B + S$, $Gamma^(upright(bold(q))) tack.r cal(R) kw("let") med x = a ; #h(0em) sans(i t e r) #h(0em) s #h(0em) { iota_r #h(0em) y : b } arrow.r.twohead^p sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b' } : B$)),
+  prooftree(rule(label: msc("simp-unif^p"), $eta harpoon.rt^p epsilon.alt$, $Gamma^(upright(bold(q))_l) \, x : A tack.r cal(R) kw("let") med y = s ; #h(0em) b arrow.r.twohead^p kw("case") med b' #h(0em) { iota_l #h(0em) x : iota_l #h(0em) x \, iota_r #h(0em) x : iota_r #h(0em) s } : B + S$, $Gamma^(upright(bold(q))) tack.r cal(R) kw("let") med x = a ; #h(0em) sans(i t e r) #h(0em) s #h(0em) { iota_r #h(0em) y : b } arrow.r.twohead^p sans(i t e r) #h(0em) a #h(0em) { iota_r #h(0em) x : b' } : B$)),
 )
+$ "where" quad Gamma tack.r upright(bold(q)) = upright(bold(q))_l + upright(bold(q))_r \
+sans(q) \( Gamma^(upright(bold(q))_l) \) = top quad epsilon.alt in cal(E)^oo \
+Gamma^(upright(bold(q))_r) tack.r_(epsilon.alt) a : A quad
+Gamma^(upright(bold(q))_l) \, x : A tack.r_(eta) s : S \
+Gamma^(upright(bold(q))_l) \, y : S tack.r_(epsilon.alt) b : B + S quad
+Gamma^(upright(bold(q))_l) \, x : A tack.r b' : B + A $
+
 
 We define #emph[pattern binding] $kw("let") med P = a ; #h(0em) b$
 of patterns $P : := x divides \( P \, P' \)$ inductively as follows

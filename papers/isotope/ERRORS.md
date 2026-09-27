@@ -90,6 +90,40 @@
 
 ## 3. `complete-refinement-ssa.tex` — A Complete Refinement System for Substructural SSA
 
+### Corrected refinement-rule formation
+
+The following corrections were checked while mechanizing the written calculus.
+Line numbers in this subsection refer to commit
+`3691b30e7a4e2f9cd263a9f6701507329b457d6b`. They are applied to the
+LaTeX source and the corresponding Typst imports; unrelated entries below
+remain an audit ledger, not a claim that all listed issues are fixed.
+
+| Rule / original lines | Correction | Reason |
+|---|---|---|
+| `let1-beta`, 1177–1188; `let1-beta^p`, 1414–1424 | Use `alquant(Gamma^q_l)` in the resource bound. | This is the context typing the substituted expression `a`; `Gamma^q_r` types the body. |
+| Both beta rules | Require the body to type under the ordinary binder `x : A` as well as `x : A^q`. | The former constructs the let-expression; the latter justifies substitution at the specified usage. Neither premise subsumes the other for arbitrary signatures. |
+| Symmetric `let1-beta`, 1182 | Replace the undefined unpolarized effect quantity by the meet of its positive and negative quantities. | The equation uses both directed beta rules. |
+| `let1-beta^p`, 1418; `unif^p`, 1519; `simp-unif^p`, 3354 | Add polarity `p` to the mover relation. | The negative rule requires the dual mover, as specified by the effect-system definition and the surrounding beta discussion. |
+| `unif^p`, 1538 | Change the result type of the `S`-state body from `C + A` to `C + S`. | Its recursive summand must be the loop state `S`. |
+| `simp-unif^p`, 3372 | Change the result type of the `S`-state body from `B + A` to `B + S`. | Same state-type check as full uniformity. |
+| Typst full and simplified uniformity | Restore the context-splitting, unrestricted-context, iterable-effect, and typing side conditions. | These were present in the LaTeX `where` clauses but omitted from the imports. |
+
+The additional beta formation premise is substantive. Take a linear type `A`,
+a pure primitive `f : 1 -> A`, `a = f ()`, and body `b = ()` with binder quantity
+zero. The quantitative body and the corrected resource bound hold in the empty
+outer context. But `let x = f (); ()` cannot type under the ordinary let rule:
+its default binder `x : A` cannot be discarded. The signature definition places
+no quantity compatibility restriction on primitives. Explicit ordinary-binder
+body typing excludes this case without adding such a restriction.
+
+A separate issue remains open: the literal substitution-cons premise can reject
+identity substitutions. For linear `A` and target context `x : A^top`, it demands
+`top <= alquant(x : A^top) = linear`. Thus closure under the printed pure
+substitutions alone must not be used to infer arbitrary rewrite-rule weakening.
+The formal development states structural stability separately. Changing the
+substitution premise to an effective target quantity would require a separate
+metatheory audit; this correction does not make that change.
+
 ### Typos/Spelling Errors
 
 | Line | Issue | Fix |

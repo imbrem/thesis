@@ -1157,7 +1157,7 @@ Property~\ref{item:does-computation} is addressed via the reduction rules
 However, the rule \brle{let$_1$-$\beta^p$} is \emph{directional}: it expresses that
 $\letexpr{x}{a}{b}$ refines $[x/a]b$ when the effect $\epsilon$ of $a$ is a right-mover with respect
 to the effect $\eta$ of $b$, and when $x$ is used in a way compatible with $\epsilon$ and the
-context. We also require that the context $\Gamma^{\mb{q}_r}$ used to type $a$ has a linearity
+context. We also require that the context $\Gamma^{\mb{q}_l}$ used to type $a$ has a linearity
 compatible with the usage of $x$ in $b$, as well as with the effect $\epsilon$ (for example, since
 printing is linear, if $a$ performs printing then $x$ must be used linearly in $b$ even if $b$ is
 pure). The reverse direction is permitted only under the dual (left-mover) condition. Thus, the
@@ -1178,14 +1178,15 @@ In particular, this means that the following more standard typing rule is \emph{
   {\qsp{\Gamma}{\mb{q}}{\mb{q}_l}{\mb{q}_r}}
   {\hasty{\Gamma^{\mb{q}_l}}{\epsilon}{a}{A}}
   {\hasty{\Gamma^{\mb{q}_r}, x : A^q}{\eta}{b}{B}}
+  {\hasty{\Gamma^{\mb{q}_r}, x : A}{\eta}{b}{B}}
   {\epsilon \slides \eta}
-  {q \leq \alquant(\Gamma^{\mb{q}_r}) \sqcap \alquant(\epsilon)}
+  {q \leq \alquant(\Gamma^{\mb{q}_l}) \sqcap \alquant^+(\epsilon) \sqcap \alquant^-(\epsilon)}
   {
     \tmeq{\Gamma^{\mb{q}}}{\mc{R}}{\letexpr{x}{a}{b}}{[x/a]b}{B}
   }
 \end{equation}
 In particular, this obviously holds for pure expressions with $\epsilon = \bot$ (modulo linearity of
-$\Gamma^{\mb{q}_r}$), as we would normally expect in an effectful language.
+$\Gamma^{\mb{q}_l}$), as we would normally expect in an effectful language.
 
 The last thing that remains is to treat iteration. Our rules for iteration, given in
 Figure~\ref{fig:iteration-rules}, are based on the properties of a Conway iteration operator as
@@ -1416,8 +1417,9 @@ satisfies $\mc{R} \subseteq \ms{Th}(\mc{R})$, making it a closure operator.
       {\qsp{\Gamma}{\mb{q}}{\mb{q}_l}{\mb{q}_r}}
       {\hasty{\Gamma^{\mb{q}_l}}{\epsilon}{a}{A}}
       {\hasty{\Gamma^{\mb{q}_r}, x : A^q}{\eta}{b}{B}}
-      {\epsilon \rightmove \eta}
-      {q \leq \alquant(\Gamma^{\mb{q}_r}) \sqcap \alquant^p(\epsilon)}
+      {\hasty{\Gamma^{\mb{q}_r}, x : A}{\eta}{b}{B}}
+      {\epsilon \rightmove^p \eta}
+      {q \leq \alquant(\Gamma^{\mb{q}_l}) \sqcap \alquant^p(\epsilon)}
       {
         \tmlep{\Gamma^{\mb{q}}}{\mc{R}}{\letexpr{x}{a}{b}}{[x/a]b}{B}{p}
       }
@@ -1516,7 +1518,7 @@ satisfies $\mc{R} \subseteq \ms{Th}(\mc{R})$, making it a closure operator.
   % \end{gather*} 
   \begin{gather*}
     \prftree[r]{\rle{unif$^p$}}
-      {\eta \rightmove \epsilon}
+      {\eta \rightmove^p \epsilon}
       {\tmlep{\Gamma^{\mb{q}_c}, x : A}{\mc{R}}
         {\letexpr{y}{s}{b}}
         {\caseexpr{b'}{z}{\linl{c}}{x}{\linr{s}}}{C + S}{p}}
@@ -1535,7 +1537,7 @@ satisfies $\mc{R} \subseteq \ms{Th}(\mc{R})$, making it a closure operator.
     {\hasty{\Gamma^{\mb{q}_r}}{\epsilon}{a}{A}}
     \\
     \qquad {\hasty{\Gamma^{\mb{q}_c}, x : A}{\eta}{s}{S}}
-    \qquad {\hasty{\Gamma^{\mb{q}_l}, y : S}{\epsilon}{b}{C + A}}
+    \qquad {\hasty{\Gamma^{\mb{q}_l}, y : S}{\epsilon}{b}{C + S}}
     \qquad {\hasty{\Gamma^{\mb{q}_l}, x : A}{}{b'}{B + A}}
     \qquad {\hasty{\Gamma^{\mb{q}_c}, z : B}{}{c}{C}}
   \end{gather*} 
@@ -3351,7 +3353,7 @@ simplified rule for uniformity, given below, by simply choosing $q_l = q_c$ and 
 \brle{unif$^p$}:
   \begin{gather*}
     \prftree[r]{\rle{simp-unif$^p$}}
-      {\eta \rightmove \epsilon}
+      {\eta \rightmove^p \epsilon}
       {\tmlep{\Gamma^{\mb{q}_l}, x : A}{\mc{R}}
         {\letexpr{y}{s}{b}}
         {\caseexpr{b'}{x}{\linl{x}}{x}{\linr{s}}}{B + S}{p}}
@@ -3368,7 +3370,7 @@ simplified rule for uniformity, given below, by simply choosing $q_l = q_c$ and 
     \einf{\epsilon} \qquad {\hasty{\Gamma^{\mb{q}_r}}{\epsilon}{a}{A}}
     \\
     \qquad {\hasty{\Gamma^{\mb{q}_l}, x : A}{\eta}{s}{S}}
-    \qquad {\hasty{\Gamma^{\mb{q}_l}, y : S}{\epsilon}{b}{B + A}}
+    \qquad {\hasty{\Gamma^{\mb{q}_l}, y : S}{\epsilon}{b}{B + S}}
     \qquad {\hasty{\Gamma^{\mb{q}_l}, x : A}{}{b'}{B + A}}
   \end{gather*}
 

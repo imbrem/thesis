@@ -1,8 +1,8 @@
 # Paper transcription ledger
 
 This ledger tracks mechanical LaTeX-to-Typst ingestion. Imported prose remains
-word-for-word; editorial or mathematical changes are recorded only as Typst
-`#todo[...]` items.
+word-for-word except for explicitly authorized corrections recorded below.
+Proposed editorial or mathematical changes remain Typst `#todo[...]` items.
 
 ## Conventions
 
@@ -38,3 +38,27 @@ word-for-word; editorial or mathematical changes are recorded only as Typst
 | Complete Refinement System for Substructural SSA | `9480278f2503902f0fa632d05d7f0c8faae893f3` | Expression semantics, lines 2255–2572; SSA typing, semantics, and interconversion, lines 2573–2955 | `thesis/refinement/imports/expression-semantics-raw.typ`, `thesis/refinement/imports/ssa-semantics-raw.typ` | `transcription/refinement-all`, `transcription/refinement-native` | transcribed; integrated compile green | The already imported Models of lambda_iter range at lines 1653–2254 is not duplicated. All equations and rule tables are native Typst. |
 | Complete Refinement System for Substructural SSA | `9480278f2503902f0fa632d05d7f0c8faae893f3` | Concrete Models, lines 2956–3204; Discussion and Related Work, lines 3205–3308 | `thesis/models/imports/refinement-models-raw.typ`, `thesis/related-work/imports/refinement-discussion-raw.typ` | `transcription/refinement-all`, `transcription/refinement-native` | transcribed; integrated compile green | Source prose preserved verbatim; integration and deduplication notes occur only in TODOs. All equations and figures are native Typst. |
 | Complete Refinement System for Substructural SSA | `9480278f2503902f0fa632d05d7f0c8faae893f3` | All appendices, lines 3309–end | `thesis/appendix/paper-imports/refinement/complete-refinement-appendices-raw.typ` | `transcription/refinement-all`, `transcription/refinement-native` | transcribed; integrated compile green | Includes refinement rules, completeness, syntactic model, packing/unpacking, expression-to-SSA compilation, ANF, and model appendices. All equations, rule tables, and figures are native Typst. |
+
+
+## Refinement rule corrections
+
+The branch `fix/refinement-rule-formation` applies explicitly requested
+mathematical corrections to `papers/isotope/complete-refinement-ssa.tex` and its
+`calculus-raw.typ` and `complete-refinement-appendices-raw.typ` imports. Their
+original transcription provenance above is unchanged; these leaves now include
+the following recorded departures from the pinned source:
+
+- Both beta rules bound the quantity of the context typing the substituted
+  expression, and require ordinary-binder body typing to form the let endpoint.
+- Symmetric beta uses both polarity-specific effect quantities.
+- Directed beta and both uniformity rules use the polarity-specific mover.
+- Uniformity's recursive summand is the state type `S`.
+- Both Typst uniformity displays include the omitted `where` clauses.
+- The two prose occurrences identifying beta's substituted-expression context
+  use the corrected context subscript; no explanatory body prose was added.
+
+The counterexample motivating beta formation and the separate, unresolved
+identity-substitution limitation are recorded in
+[`papers/isotope/ERRORS.md`](../../papers/isotope/ERRORS.md), under
+“Corrected refinement-rule formation”. Correction line references there use
+source commit `3691b30e7a4e2f9cd263a9f6701507329b457d6b`.
