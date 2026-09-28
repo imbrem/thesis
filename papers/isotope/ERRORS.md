@@ -128,6 +128,22 @@ the categorical requirement to match the calculus; it is not asserted to follow
 from the narrower condition. Effect membership is explicitly not closed under
 refinement, so the missing bound cannot be inferred from the premise inequality.
 
+The additional beta formation premise is substantive. Take a linear type `A`,
+a pure primitive `f : 1 -> A`, `a = f ()`, and body `b = ()` with binder quantity
+zero. The quantitative body and the corrected resource bound hold in the empty
+outer context. But `let x = f (); ()` cannot type under the ordinary let rule:
+its default binder `x : A` cannot be discarded. The signature definition places
+no quantity compatibility restriction on primitives. Explicit ordinary-binder
+body typing excludes this case without adding such a restriction.
+
+A separate issue remains open: the literal substitution-cons premise can reject
+identity substitutions. For linear `A` and target context `x : A^top`, it demands
+`top <= alquant(x : A^top) = linear`. Thus closure under the printed pure
+substitutions alone must not be used to infer arbitrary rewrite-rule weakening.
+The formal development states structural stability separately. Changing the
+substitution premise to an effective target quantity would require a separate
+metatheory audit; this correction does not make that change.
+
 ### Corrected directed copying condition
 
 The model definition's copying condition now requires only
@@ -147,22 +163,6 @@ iterative calculus in this state model has been established. Exchange requires
 a separate hypothesis; the syntactic-model argument only supplies the directed
 copy law. The corrected model class is correspondingly weaker. The native
 refinement rules are unchanged.
-
-The additional beta formation premise is substantive. Take a linear type `A`,
-a pure primitive `f : 1 -> A`, `a = f ()`, and body `b = ()` with binder quantity
-zero. The quantitative body and the corrected resource bound hold in the empty
-outer context. But `let x = f (); ()` cannot type under the ordinary let rule:
-its default binder `x : A` cannot be discarded. The signature definition places
-no quantity compatibility restriction on primitives. Explicit ordinary-binder
-body typing excludes this case without adding such a restriction.
-
-A separate issue remains open: the literal substitution-cons premise can reject
-identity substitutions. For linear `A` and target context `x : A^top`, it demands
-`top <= alquant(x : A^top) = linear`. Thus closure under the printed pure
-substitutions alone must not be used to infer arbitrary rewrite-rule weakening.
-The formal development states structural stability separately. Changing the
-substitution premise to an effective target quantity would require a separate
-metatheory audit; this correction does not make that change.
 
 ### Typos/Spelling Errors
 
