@@ -367,7 +367,7 @@ $\( lambda x . a \) : sans(T m)_epsilon.alt \( cal(R) \) \( A \, B \)$
 
 - If $omega^(+) lt.eq sans(q)^p \( epsilon.alt \)$ and $A \, B$
   relevant, by let$""_1$-$beta^p$,
-  $ \( lambda x . a \) ; Delta_B & = \( lambda x . a \) ; \( lambda y . \( y \, y \) \) = \( lambda x . kw("let") med y = a ; #h(0em) \( y \, y \) \) = \( lambda x . \( a \, a \) \)\
+  $ \( lambda x . a \) ; Delta_B & = \( lambda x . a \) ; \( lambda y . \( y \, y \) \) = \( lambda x . kw("let") med y = a ; #h(0em) \( y \, y \) \) arrow.r.twohead^p \( lambda x . \( a \, a \) \)\
    & = \( lambda x . \( kw("let") med y = x ; #h(0em) \[ y \/ x \] a \, kw("let") med z = x ; #h(0em) \[ z \/ x \] a \) \)\
    & = \( lambda x . kw("let") med y = x ; #h(0em) kw("let") med z = x ; #h(0em) \( \[ y \/ x \] a \, \[ z \/ x \] a \) \)\
    & = \( lambda x . kw("let") med \( y \, z \) = \( x \, x \) ; #h(0em) \( \[ y \/ x \] a \, \[ z \/ x \] a \) \)\

@@ -128,6 +128,26 @@ the categorical requirement to match the calculus; it is not asserted to follow
 from the narrower condition. Effect membership is explicitly not closed under
 refinement, so the missing bound cannot be inferred from the premise inequality.
 
+### Corrected directed copying condition
+
+The model definition's copying condition now requires only
+`f ; Delta_B <=^p Delta_A ; (f left-tensor f)`. The additional equality with
+the right evaluation order has been removed, and the syntactic-model proof's
+use of directed beta now carries the relation `<=^p` instead of `=`. These
+corrections are synchronized in the categorical and appendix Typst imports.
+
+A single directed copying inequality does not itself imply that equality.
+For monotone computations with inflationary natural-number state, evaluating
+once and copying the result is pointwise below both repeated evaluation orders.
+In particular, `tick(s) = (s, s + 1)` gives `((s, s), s + 1)` after one
+evaluation, versus `((s, s + 1), s + 2)` and `((s + 1, s), s + 2)` for the two
+orders. The latter are unequal and incomparable. This is a local counterexample
+to the proposed implication, not a claim that an interpretation of the entire
+iterative calculus in this state model has been established. Exchange requires
+a separate hypothesis; the syntactic-model argument only supplies the directed
+copy law. The corrected model class is correspondingly weaker. The native
+refinement rules are unchanged.
+
 The additional beta formation premise is substantive. Take a linear type `A`,
 a pure primitive `f : 1 -> A`, `a = f ()`, and body `b = ()` with binder quantity
 zero. The quantitative body and the corrected resource bound hold in the empty

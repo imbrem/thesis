@@ -2181,9 +2181,12 @@ as follows: \subiterexp{}:
     \item If $\zeroq \leq \alquant^p(\epsilon)$ and $A$ relevant, $B$ affine, 
       $\dmor{A} ; (f ; \tmor{B}) \otimes \dnt{A} \cref^p \rho^{-1}$
     \item If $\cpyq \leq \alquant^p(\epsilon)$ and $A, B$ relevant, 
-    $f ; \dmor{B} \cref^p \dmor{A} ; f \ltimes f = \dmor{A} ; f \rtimes f$
+    $f ; \dmor{B} \cref^p \dmor{A} ; f \ltimes f$
   \end{itemize}
-  where
+  The copying condition is directed. Equality of the two evaluation orders
+  $\dmor{A} ; f \ltimes f$ and $\dmor{A} ; f \rtimes f$ requires a separate
+  commutation hypothesis; it is not part of this condition.
+  The type formers are interpreted as follows:
   \begin{itemize}
     \item $\dnt{\mb{1}} = I$, $\dnt{A \otimes B} = \dnt{A} \otimes \dnt{B}$, 
           $\tmor{\mb{1}} = \ms{id}_I$, and $\dmor{\mb{1}} = \lambda^{-1} = \rho^{-1}$
@@ -3912,7 +3915,7 @@ x.a) : \ms{Tm}_\epsilon(\mc{R})(A, B)$
   \begin{align*}
     (\lambda x.a) ; \dmor{B} &= (\lambda x.a) ; (\lambda y.(y, y)) 
     = (\lambda x.\letexpr{y}{a}{(y, y)})
-    = (\lambda x. (a, a)) \\
+    \cref^p (\lambda x. (a, a)) \\
     &= (\lambda x. (\letexpr{y}{x}{[y/x]a}, \letexpr{z}{x}{[z/x]a})) \\
     &= (\lambda x. \letexpr{y}{x}{\letexpr{z}{x}{([y/x]a, [z/x]a)}}) \\
     &= (\lambda x . \letexpr{(y, z)}{(x, x)}{([y/x]a, [z/x]a)}) \\

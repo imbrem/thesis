@@ -69,3 +69,11 @@ is oriented from the simulation map's effect toward that bound. This strengthens
 the subcategory-only reading to match the written rule's unrestricted right body
 and exit continuation. See the refinement-rule errata above for the scope of this
 change; it is not claimed as a consequence of the narrower model condition.
+
+The categorical import's directed copying condition also drops the separate
+equality of the left and right evaluation orders. The appendix's use of directed
+beta in the corresponding proof now displays a directed refinement instead of
+an equation. Explanatory prose records the need for a separate commutation
+hypothesis. The local state counterexample and the precise scope of this weaker
+model condition are recorded under “Corrected directed copying condition” in
+the same errata; no native refinement rule is changed.

@@ -427,9 +427,13 @@ we have
 
 - If $omega^(+) lt.eq sans(q)^p \( epsilon.alt \)$ and $A \, B$
   relevant,
-  $f ; Delta_B arrow.r.twohead^p Delta_A ; f times.l f = Delta_A ; f times.r f$
+  $f ; Delta_B arrow.r.twohead^p Delta_A ; f times.l f$
 
-where
+The copying condition is directed. Equality of the two evaluation orders
+$Delta_A ; f times.l f$ and $Delta_A ; f times.r f$ requires a separate
+commutation hypothesis; it is not part of this condition.
+
+The type formers are interpreted as follows:
 
 - $⟦ upright(bold(1)) ⟧ = I$,
   $⟦ A ⊗ B ⟧ = ⟦ A ⟧ ⊗ ⟦ B ⟧$,
