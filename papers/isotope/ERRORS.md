@@ -118,6 +118,16 @@ remain an audit ledger, not a claim that all listed issues are fixed.
 | `simp-unif^p`, 3372 | Change the result type of the `S`-state body from `B + A` to `B + S`. | Same state-type check as full uniformity. |
 | Typst full and simplified uniformity | Restore the context-splitting, unrestricted-context, iterable-effect, and typing side conditions. | These were present in the LaTeX `where` clauses but omitted from the imports. |
 
+The categorical Elgot definition is also made explicitly asymmetric: the left
+loop body has effect `epsilon`, the simulation map has effect `eta`, and the
+right loop body is unrestricted. Its mover premise is `eta rightmove^p epsilon`,
+matching the written rule. The original wording about uniformity *of the
+subcategory* can be read as bounding both loop bodies, which does not cover the
+rule's unrestricted `b'` and exit continuation `c`. This correction strengthens
+the categorical requirement to match the calculus; it is not asserted to follow
+from the narrower condition. Effect membership is explicitly not closed under
+refinement, so the missing bound cannot be inferred from the premise inequality.
+
 The additional beta formation premise is substantive. Take a linear type `A`,
 a pure primitive `f : 1 -> A`, `a = f ()`, and body `b = ()` with binder quantity
 zero. The quantitative body and the corrected resource bound hold in the empty

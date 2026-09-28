@@ -2134,8 +2134,18 @@ call this notion an (effectful) Elgot category:
   We say a distributive effectful category $\mc{C}$ is \emph{Elgot} if it has an iterative effect
   system and is equipped with a strong Conway iteration operator, such that, for all effects
   $\epsilon, \eta$ where $\epsilon \in \mc{E}^\infty$, the wide subcategory $\mc{C}_\epsilon$ is
-  closed under iteration, and, iff $\epsilon \rightmove^p \eta$, then $\mc{C}_\epsilon$ is
-  $\mc{C}_\eta^p$-uniform. 
+  closed under iteration, and, for all
+  \[
+    \begin{gathered}
+    h : A \to_{\mc{C}_\eta} S,\quad
+    f : S \to_{\mc{C}_\epsilon} B + S,\quad
+    g : A \to_{\mc{C}} B + A,\\
+    \eta \rightmove^p \epsilon \quad\land\quad
+    h ; f \cref^p g ; B + h
+    \quad\implies\quad h ; f^\dagger \cref^p g^\dagger.
+    \end{gathered}
+  \]
+
   %
   In particular, we note that $\mc{C}$ and hence every $\mc{C}_\epsilon$ is
   $\mc{C}_\bot$-uniform.
