@@ -1,8 +1,8 @@
 # Paper transcription ledger
 
 This ledger tracks mechanical LaTeX-to-Typst ingestion. Imported prose remains
-word-for-word; editorial or mathematical changes are recorded only as Typst
-`#todo[...]` items.
+word-for-word except for explicitly authorized corrections recorded below.
+Proposed editorial or mathematical changes remain Typst `#todo[...]` items.
 
 ## Conventions
 
@@ -33,8 +33,47 @@ word-for-word; editorial or mathematical changes are recorded only as Typst
 | Denotational Semantics of SSA | `afa82558acf643f53a3e038e635ed9520ace88c6` | Denotational Semantics, lines 3085–4533 | `thesis/denotational-semantics/paper-raw.typ` | `transcription/dssa-semantics-models`, `transcription/dssa-semantics-native` | transcribed; standalone compile green | Source prose, definitions, theorems, and equations are present. Twenty-two cross-leaf references remain exact-position TODOs. All eight source TikZ/string diagrams are native CeTZ figures in `lib/figures/dssa-string.typ` and `lib/figures/conway.typ`. |
 | Denotational Semantics of SSA | `afa82558acf643f53a3e038e635ed9520ace88c6` | Concrete Models, lines 4534–5217 | `thesis/models/denotational-ssa-raw.typ` | `transcription/dssa-semantics-models`, `transcription/dssa-semantics-native` | transcribed; standalone compile green | Source prose and equations are present. The Brookes-monad unit/bind display is native Typst; one cross-leaf equation reference remains a TODO. |
 | Denotational Semantics of SSA | `afa82558acf643f53a3e038e635ed9520ace88c6` | Records and Enums through Environment Comonad, lines 5625–6596 | `thesis/appendix/paper-imports/denotational-ssa-records-enums-environment.typ` | `transcription/dssa-semantics-models`, `transcription/dssa-semantics-native` | transcribed; standalone compile green | Source prose and equations are present. All eleven proof-tree/aligned displays are native Typst, and the four environment-comonad diagrams are native CeTZ figures. Eight references to material outside this leaf remain TODOs. |
-| Complete Refinement System for Substructural SSA | `9480278f2503902f0fa632d05d7f0c8faae893f3` | Semantics / Models of lambda_iter, lines 1653–2254 | `thesis/category-theory/refinement-models-raw.typ` | `transcription/refinement-category-theory` | transcribed; standalone compile green | Source labels preserved by Pandoc where possible. The four TikZ Conway/string diagrams at lines 1889–2057 are rendered by the reusable native Typst/CeTZ implementation in `lib/figures/conway.typ`. The structural-semantics figure at lines 2193–2242 is present as a mechanical conversion and has a TODO for native Typst layout review. `fig:unif-cfg`, defined outside the imported range, is represented by an exact-position TODO until its source section is imported. Required citations are present in the centralized full-paper bibliography import. No prose or mathematical correction applied. |
+| Complete Refinement System for Substructural SSA | `9480278f2503902f0fa632d05d7f0c8faae893f3` | Semantics / Models of lambda_iter, lines 1653–2254 | `thesis/category-theory/refinement-models-raw.typ` | `transcription/refinement-category-theory` | transcribed; standalone compile green | Source labels preserved by Pandoc where possible. The four TikZ Conway/string diagrams at lines 1889–2057 are rendered by the reusable native Typst/CeTZ implementation in `lib/figures/conway.typ`. The structural-semantics figure at lines 2193–2242 is present as a mechanical conversion and has a TODO for native Typst layout review. `fig:unif-cfg`, defined outside the imported range, is represented by an exact-position TODO until its source section is imported. Required citations are present in the centralized full-paper bibliography import. The explicitly authorized categorical uniformity correction below applies; other imported text remains unchanged. |
 | Complete Refinement System for Substructural SSA | `9480278f2503902f0fa632d05d7f0c8faae893f3` | Abstract, lines 277–295; Introduction through refinement theory, lines 326–1652 | `thesis/type-theoretic-ssa/refinement/calculus-raw.typ` | `transcription/refinement-all`, `transcription/refinement-native` | transcribed; integrated compile green | Source prose preserved verbatim. Imported labels use the `refall:` prefix where they overlap existing imports. All equations, rule tables, and figures are native Typst. |
 | Complete Refinement System for Substructural SSA | `9480278f2503902f0fa632d05d7f0c8faae893f3` | Expression semantics, lines 2255–2572; SSA typing, semantics, and interconversion, lines 2573–2955 | `thesis/refinement/imports/expression-semantics-raw.typ`, `thesis/refinement/imports/ssa-semantics-raw.typ` | `transcription/refinement-all`, `transcription/refinement-native` | transcribed; integrated compile green | The already imported Models of lambda_iter range at lines 1653–2254 is not duplicated. All equations and rule tables are native Typst. |
 | Complete Refinement System for Substructural SSA | `9480278f2503902f0fa632d05d7f0c8faae893f3` | Concrete Models, lines 2956–3204; Discussion and Related Work, lines 3205–3308 | `thesis/models/imports/refinement-models-raw.typ`, `thesis/related-work/imports/refinement-discussion-raw.typ` | `transcription/refinement-all`, `transcription/refinement-native` | transcribed; integrated compile green | Source prose preserved verbatim; integration and deduplication notes occur only in TODOs. All equations and figures are native Typst. |
 | Complete Refinement System for Substructural SSA | `9480278f2503902f0fa632d05d7f0c8faae893f3` | All appendices, lines 3309–end | `thesis/appendix/paper-imports/refinement/complete-refinement-appendices-raw.typ` | `transcription/refinement-all`, `transcription/refinement-native` | transcribed; integrated compile green | Includes refinement rules, completeness, syntactic model, packing/unpacking, expression-to-SSA compilation, ANF, and model appendices. All equations, rule tables, and figures are native Typst. |
+
+
+## Refinement rule corrections
+
+The branch `fix/refinement-rule-formation` applies explicitly requested
+mathematical corrections to `papers/isotope/complete-refinement-ssa.tex` and its
+`calculus-raw.typ` and `complete-refinement-appendices-raw.typ` imports. Their
+original transcription provenance above is unchanged; these leaves now include
+the following recorded departures from the pinned source:
+
+- Both beta rules bound the quantity of the context typing the substituted
+  expression, and require ordinary-binder body typing to form the let endpoint.
+- Symmetric beta uses both polarity-specific effect quantities.
+- Directed beta and both uniformity rules use the polarity-specific mover.
+- Uniformity's recursive summand is the state type `S`.
+- Both Typst uniformity displays include the omitted `where` clauses.
+- The two prose occurrences identifying beta's substituted-expression context
+  use the corrected context subscript; no explanatory body prose was added.
+
+The counterexample motivating beta formation and the separate, unresolved
+identity-substitution limitation are recorded in
+[`papers/isotope/ERRORS.md`](../../papers/isotope/ERRORS.md), under
+“Corrected refinement-rule formation”. Correction line references there use
+source commit `3691b30e7a4e2f9cd263a9f6701507329b457d6b`.
+
+The Models of lambda_iter import also records an explicit categorical uniformity
+condition: only the left loop body has the iterable effect bound, and the mover
+is oriented from the simulation map's effect toward that bound. This strengthens
+the subcategory-only reading to match the written rule's unrestricted right body
+and exit continuation. See the refinement-rule errata above for the scope of this
+change; it is not claimed as a consequence of the narrower model condition.
+
+The categorical import's directed copying condition also drops the separate
+equality of the left and right evaluation orders. The appendix's use of directed
+beta in the corresponding proof now displays a directed refinement instead of
+an equation. Explanatory prose records the need for a separate commutation
+hypothesis. The local state counterexample and the precise scope of this weaker
+model condition are recorded under “Corrected directed copying condition” in
+the same errata; no native refinement rule is changed.

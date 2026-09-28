@@ -4,7 +4,8 @@
 // Section: Semantics / Models of lambda_iter
 // Source lines: 1653--2254
 // Conversion: LaTeX presentation mechanics translated to Typst by Pandoc,
-// followed only by compile repairs and explicit TODO markers.
+// followed by compile repairs and explicit TODO markers.
+// Authorized uniformity correction: see thesis/paper-imports/README.md.
 
 #import "/lib/prelude.typ": *
 #show: chapter.with(title: [Models of #liter])
@@ -368,9 +369,13 @@ We say a distributive effectful category $cal(C)$ is #emph[Elgot] if it
 has an iterative effect system and is equipped with a strong Conway
 iteration operator, such that, for all effects $epsilon.alt \, eta$
 where $epsilon.alt in cal(E)^oo$, the wide subcategory
-$cal(C)_epsilon.alt$ is closed under iteration, and, iff
-$epsilon.alt harpoon.rt^p eta$, then $cal(C)_epsilon.alt$ is
-$cal(C)_eta^p$-uniform. In particular, we note that $cal(C)$ and hence
+$cal(C)_epsilon.alt$ is closed under iteration, and, for all
+$ h : A arrow.r_(cal(C)_eta) S, quad
+  f : S arrow.r_(cal(C)_epsilon.alt) B + S, quad
+  g : A arrow.r_(cal(C)) B + A, \
+  eta harpoon.rt^p epsilon.alt and h ; f arrow.r.twohead^p g ; B + h
+  arrow.r.double h ; f^dagger arrow.r.twohead^p g^dagger. $
+In particular, we note that $cal(C)$ and hence
 every $cal(C)_epsilon.alt$ is $cal(C)_tack.t$-uniform.
 
 ]
@@ -422,9 +427,13 @@ we have
 
 - If $omega^(+) lt.eq sans(q)^p \( epsilon.alt \)$ and $A \, B$
   relevant,
-  $f ; Delta_B arrow.r.twohead^p Delta_A ; f times.l f = Delta_A ; f times.r f$
+  $f ; Delta_B arrow.r.twohead^p Delta_A ; f times.l f$
 
-where
+The copying condition is directed. Equality of the two evaluation orders
+$Delta_A ; f times.l f$ and $Delta_A ; f times.r f$ requires a separate
+commutation hypothesis; it is not part of this condition.
+
+The type formers are interpreted as follows:
 
 - $⟦ upright(bold(1)) ⟧ = I$,
   $⟦ A ⊗ B ⟧ = ⟦ A ⟧ ⊗ ⟦ B ⟧$,

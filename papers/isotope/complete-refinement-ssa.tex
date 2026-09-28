@@ -26,7 +26,7 @@
 \usepackage{enumitem}
 \usepackage{string-diagrams}
 \usepackage{cancel}
-\usepackage{thmtools}
+\usepackage{paper-theorems}
 \usepackage{pifont}
 \usepackage{stmaryrd}
 \usepackage[export]{adjustbox}
@@ -1157,7 +1157,7 @@ Property~\ref{item:does-computation} is addressed via the reduction rules
 However, the rule \brle{let$_1$-$\beta^p$} is \emph{directional}: it expresses that
 $\letexpr{x}{a}{b}$ refines $[x/a]b$ when the effect $\epsilon$ of $a$ is a right-mover with respect
 to the effect $\eta$ of $b$, and when $x$ is used in a way compatible with $\epsilon$ and the
-context. We also require that the context $\Gamma^{\mb{q}_r}$ used to type $a$ has a linearity
+context. We also require that the context $\Gamma^{\mb{q}_l}$ used to type $a$ has a linearity
 compatible with the usage of $x$ in $b$, as well as with the effect $\epsilon$ (for example, since
 printing is linear, if $a$ performs printing then $x$ must be used linearly in $b$ even if $b$ is
 pure). The reverse direction is permitted only under the dual (left-mover) condition. Thus, the
@@ -1178,14 +1178,15 @@ In particular, this means that the following more standard typing rule is \emph{
   {\qsp{\Gamma}{\mb{q}}{\mb{q}_l}{\mb{q}_r}}
   {\hasty{\Gamma^{\mb{q}_l}}{\epsilon}{a}{A}}
   {\hasty{\Gamma^{\mb{q}_r}, x : A^q}{\eta}{b}{B}}
+  {\hasty{\Gamma^{\mb{q}_r}, x : A}{\eta}{b}{B}}
   {\epsilon \slides \eta}
-  {q \leq \alquant(\Gamma^{\mb{q}_r}) \sqcap \alquant(\epsilon)}
+  {q \leq \alquant(\Gamma^{\mb{q}_l}) \sqcap \alquant^+(\epsilon) \sqcap \alquant^-(\epsilon)}
   {
     \tmeq{\Gamma^{\mb{q}}}{\mc{R}}{\letexpr{x}{a}{b}}{[x/a]b}{B}
   }
 \end{equation}
 In particular, this obviously holds for pure expressions with $\epsilon = \bot$ (modulo linearity of
-$\Gamma^{\mb{q}_r}$), as we would normally expect in an effectful language.
+$\Gamma^{\mb{q}_l}$), as we would normally expect in an effectful language.
 
 The last thing that remains is to treat iteration. Our rules for iteration, given in
 Figure~\ref{fig:iteration-rules}, are based on the properties of a Conway iteration operator as
@@ -1416,8 +1417,9 @@ satisfies $\mc{R} \subseteq \ms{Th}(\mc{R})$, making it a closure operator.
       {\qsp{\Gamma}{\mb{q}}{\mb{q}_l}{\mb{q}_r}}
       {\hasty{\Gamma^{\mb{q}_l}}{\epsilon}{a}{A}}
       {\hasty{\Gamma^{\mb{q}_r}, x : A^q}{\eta}{b}{B}}
-      {\epsilon \rightmove \eta}
-      {q \leq \alquant(\Gamma^{\mb{q}_r}) \sqcap \alquant^p(\epsilon)}
+      {\hasty{\Gamma^{\mb{q}_r}, x : A}{\eta}{b}{B}}
+      {\epsilon \rightmove^p \eta}
+      {q \leq \alquant(\Gamma^{\mb{q}_l}) \sqcap \alquant^p(\epsilon)}
       {
         \tmlep{\Gamma^{\mb{q}}}{\mc{R}}{\letexpr{x}{a}{b}}{[x/a]b}{B}{p}
       }
@@ -1516,7 +1518,7 @@ satisfies $\mc{R} \subseteq \ms{Th}(\mc{R})$, making it a closure operator.
   % \end{gather*} 
   \begin{gather*}
     \prftree[r]{\rle{unif$^p$}}
-      {\eta \rightmove \epsilon}
+      {\eta \rightmove^p \epsilon}
       {\tmlep{\Gamma^{\mb{q}_c}, x : A}{\mc{R}}
         {\letexpr{y}{s}{b}}
         {\caseexpr{b'}{z}{\linl{c}}{x}{\linr{s}}}{C + S}{p}}
@@ -1535,7 +1537,7 @@ satisfies $\mc{R} \subseteq \ms{Th}(\mc{R})$, making it a closure operator.
     {\hasty{\Gamma^{\mb{q}_r}}{\epsilon}{a}{A}}
     \\
     \qquad {\hasty{\Gamma^{\mb{q}_c}, x : A}{\eta}{s}{S}}
-    \qquad {\hasty{\Gamma^{\mb{q}_l}, y : S}{\epsilon}{b}{C + A}}
+    \qquad {\hasty{\Gamma^{\mb{q}_l}, y : S}{\epsilon}{b}{C + S}}
     \qquad {\hasty{\Gamma^{\mb{q}_l}, x : A}{}{b'}{B + A}}
     \qquad {\hasty{\Gamma^{\mb{q}_c}, z : B}{}{c}{C}}
   \end{gather*} 
@@ -2132,8 +2134,18 @@ call this notion an (effectful) Elgot category:
   We say a distributive effectful category $\mc{C}$ is \emph{Elgot} if it has an iterative effect
   system and is equipped with a strong Conway iteration operator, such that, for all effects
   $\epsilon, \eta$ where $\epsilon \in \mc{E}^\infty$, the wide subcategory $\mc{C}_\epsilon$ is
-  closed under iteration, and, iff $\epsilon \rightmove^p \eta$, then $\mc{C}_\epsilon$ is
-  $\mc{C}_\eta^p$-uniform. 
+  closed under iteration, and, for all
+  \[
+    \begin{gathered}
+    h : A \to_{\mc{C}_\eta} S,\quad
+    f : S \to_{\mc{C}_\epsilon} B + S,\quad
+    g : A \to_{\mc{C}} B + A,\\
+    \eta \rightmove^p \epsilon \quad\land\quad
+    h ; f \cref^p g ; B + h
+    \quad\implies\quad h ; f^\dagger \cref^p g^\dagger.
+    \end{gathered}
+  \]
+
   %
   In particular, we note that $\mc{C}$ and hence every $\mc{C}_\epsilon$ is
   $\mc{C}_\bot$-uniform.
@@ -2169,9 +2181,12 @@ as follows: \subiterexp{}:
     \item If $\zeroq \leq \alquant^p(\epsilon)$ and $A$ relevant, $B$ affine, 
       $\dmor{A} ; (f ; \tmor{B}) \otimes \dnt{A} \cref^p \rho^{-1}$
     \item If $\cpyq \leq \alquant^p(\epsilon)$ and $A, B$ relevant, 
-    $f ; \dmor{B} \cref^p \dmor{A} ; f \ltimes f = \dmor{A} ; f \rtimes f$
+    $f ; \dmor{B} \cref^p \dmor{A} ; f \ltimes f$
   \end{itemize}
-  where
+  The copying condition is directed. Equality of the two evaluation orders
+  $\dmor{A} ; f \ltimes f$ and $\dmor{A} ; f \rtimes f$ requires a separate
+  commutation hypothesis; it is not part of this condition.
+  The type formers are interpreted as follows:
   \begin{itemize}
     \item $\dnt{\mb{1}} = I$, $\dnt{A \otimes B} = \dnt{A} \otimes \dnt{B}$, 
           $\tmor{\mb{1}} = \ms{id}_I$, and $\dmor{\mb{1}} = \lambda^{-1} = \rho^{-1}$
@@ -3351,7 +3366,7 @@ simplified rule for uniformity, given below, by simply choosing $q_l = q_c$ and 
 \brle{unif$^p$}:
   \begin{gather*}
     \prftree[r]{\rle{simp-unif$^p$}}
-      {\eta \rightmove \epsilon}
+      {\eta \rightmove^p \epsilon}
       {\tmlep{\Gamma^{\mb{q}_l}, x : A}{\mc{R}}
         {\letexpr{y}{s}{b}}
         {\caseexpr{b'}{x}{\linl{x}}{x}{\linr{s}}}{B + S}{p}}
@@ -3368,7 +3383,7 @@ simplified rule for uniformity, given below, by simply choosing $q_l = q_c$ and 
     \einf{\epsilon} \qquad {\hasty{\Gamma^{\mb{q}_r}}{\epsilon}{a}{A}}
     \\
     \qquad {\hasty{\Gamma^{\mb{q}_l}, x : A}{\eta}{s}{S}}
-    \qquad {\hasty{\Gamma^{\mb{q}_l}, y : S}{\epsilon}{b}{B + A}}
+    \qquad {\hasty{\Gamma^{\mb{q}_l}, y : S}{\epsilon}{b}{B + S}}
     \qquad {\hasty{\Gamma^{\mb{q}_l}, x : A}{}{b'}{B + A}}
   \end{gather*}
 
@@ -3900,7 +3915,7 @@ x.a) : \ms{Tm}_\epsilon(\mc{R})(A, B)$
   \begin{align*}
     (\lambda x.a) ; \dmor{B} &= (\lambda x.a) ; (\lambda y.(y, y)) 
     = (\lambda x.\letexpr{y}{a}{(y, y)})
-    = (\lambda x. (a, a)) \\
+    \cref^p (\lambda x. (a, a)) \\
     &= (\lambda x. (\letexpr{y}{x}{[y/x]a}, \letexpr{z}{x}{[z/x]a})) \\
     &= (\lambda x. \letexpr{y}{x}{\letexpr{z}{x}{([y/x]a, [z/x]a)}}) \\
     &= (\lambda x . \letexpr{(y, z)}{(x, x)}{([y/x]a, [z/x]a)}) \\

@@ -90,6 +90,80 @@
 
 ## 3. `complete-refinement-ssa.tex` — A Complete Refinement System for Substructural SSA
 
+### Paper build compatibility
+
+The papers use `thmtools` for named theorem restatements. LaTeX 2026-06-01
+also creates sibling-counter aliases, conflicting with `thmtools`' alias setup
+([upstream issue #75](https://github.com/muzimuzhi/thmtools/issues/75)). The shared
+`paper-theorems.sty` compatibility wrapper retains theorem naming and restatement
+hooks while leaving alias creation to the new kernel. Older formats retain the
+original package behavior. This fixes the `\c@conjecture already defined` error
+reported by PR CI before reaching the corrected refinement rules.
+
+### Corrected refinement-rule formation
+
+The following corrections were checked while mechanizing the written calculus.
+Line numbers in this subsection refer to commit
+`3691b30e7a4e2f9cd263a9f6701507329b457d6b`. They are applied to the
+LaTeX source and the corresponding Typst imports; unrelated entries below
+remain an audit ledger, not a claim that all listed issues are fixed.
+
+| Rule / original lines | Correction | Reason |
+|---|---|---|
+| `let1-beta`, 1177–1188; `let1-beta^p`, 1414–1424 | Use `alquant(Gamma^q_l)` in the resource bound. | This is the context typing the substituted expression `a`; `Gamma^q_r` types the body. |
+| Both beta rules | Require the body to type under the ordinary binder `x : A` as well as `x : A^q`. | The former constructs the let-expression; the latter justifies substitution at the specified usage. Neither premise subsumes the other for arbitrary signatures. |
+| Symmetric `let1-beta`, 1182 | Replace the undefined unpolarized effect quantity by the meet of its positive and negative quantities. | The equation uses both directed beta rules. |
+| `let1-beta^p`, 1418; `unif^p`, 1519; `simp-unif^p`, 3354 | Add polarity `p` to the mover relation. | The negative rule requires the dual mover, as specified by the effect-system definition and the surrounding beta discussion. |
+| `unif^p`, 1538 | Change the result type of the `S`-state body from `C + A` to `C + S`. | Its recursive summand must be the loop state `S`. |
+| `simp-unif^p`, 3372 | Change the result type of the `S`-state body from `B + A` to `B + S`. | Same state-type check as full uniformity. |
+| Typst full and simplified uniformity | Restore the context-splitting, unrestricted-context, iterable-effect, and typing side conditions. | These were present in the LaTeX `where` clauses but omitted from the imports. |
+
+The categorical Elgot definition is also made explicitly asymmetric: the left
+loop body has effect `epsilon`, the simulation map has effect `eta`, and the
+right loop body is unrestricted. Its mover premise is `eta rightmove^p epsilon`,
+matching the written rule. The original wording about uniformity *of the
+subcategory* can be read as bounding both loop bodies, which does not cover the
+rule's unrestricted `b'` and exit continuation `c`. This correction strengthens
+the categorical requirement to match the calculus; it is not asserted to follow
+from the narrower condition. Effect membership is explicitly not closed under
+refinement, so the missing bound cannot be inferred from the premise inequality.
+
+The additional beta formation premise is substantive. Take a linear type `A`,
+a pure primitive `f : 1 -> A`, `a = f ()`, and body `b = ()` with binder quantity
+zero. The quantitative body and the corrected resource bound hold in the empty
+outer context. But `let x = f (); ()` cannot type under the ordinary let rule:
+its default binder `x : A` cannot be discarded. The signature definition places
+no quantity compatibility restriction on primitives. Explicit ordinary-binder
+body typing excludes this case without adding such a restriction.
+
+A separate issue remains open: the literal substitution-cons premise can reject
+identity substitutions. For linear `A` and target context `x : A^top`, it demands
+`top <= alquant(x : A^top) = linear`. Thus closure under the printed pure
+substitutions alone must not be used to infer arbitrary rewrite-rule weakening.
+The formal development states structural stability separately. Changing the
+substitution premise to an effective target quantity would require a separate
+metatheory audit; this correction does not make that change.
+
+### Corrected directed copying condition
+
+The model definition's copying condition now requires only
+`f ; Delta_B <=^p Delta_A ; (f left-tensor f)`. The additional equality with
+the right evaluation order has been removed, and the syntactic-model proof's
+use of directed beta now carries the relation `<=^p` instead of `=`. These
+corrections are synchronized in the categorical and appendix Typst imports.
+
+A single directed copying inequality does not itself imply that equality.
+For monotone computations with inflationary natural-number state, evaluating
+once and copying the result is pointwise below both repeated evaluation orders.
+In particular, `tick(s) = (s, s + 1)` gives `((s, s), s + 1)` after one
+evaluation, versus `((s, s + 1), s + 2)` and `((s + 1, s), s + 2)` for the two
+orders. The latter are unequal and incomparable. This is a local counterexample
+to the proposed implication, not a claim that an interpretation of the entire
+iterative calculus in this state model has been established. Exchange requires
+a separate hypothesis; the syntactic-model argument only supplies the directed
+copy law. The corrected model class is correspondingly weaker. The native
+refinement rules are unchanged.
+
 ### Typos/Spelling Errors
 
 | Line | Issue | Fix |

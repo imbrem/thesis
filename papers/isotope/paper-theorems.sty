@@ -1,0 +1,13 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{paper-theorems}[2026/09/27 Theorem restatement compatibility]
+\RequirePackage{thmtools}
+
+% Since LaTeX 2026-06-01 the theorem kernel creates sibling-counter aliases.
+% Keep thmtools' names and restatement hooks, but do not create each alias twice.
+% Upstream issue: https://github.com/muzimuzhi/thmtools/issues/75
+\IfFormatAtLeastTF{2026-06-01}{%
+  \renewcommand*\thmt@autorefsetup{%
+    \expandafter\protected@edef\csname\thmt@envname autorefname\endcsname{\thmt@thmname}%
+  }%
+}{}
+\endinput
