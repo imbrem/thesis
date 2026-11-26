@@ -18,6 +18,41 @@
 
 ## 2. `denotational-semantics-of-ssa.tex` — The Denotational Semantics of SSA
 
+### Entry-let sequencing for regions
+
+The written region judgment in the equational-theory section has CFG eta at
+arbitrary finite arity, as used by the Regions completeness theorem. An
+explicit derivation now shows where label substitution weakens the block
+table under the moved entry let. The legacy `debruijn-ssa` artifact also has
+arbitrary-arity re-entry substitution in `Region.Eqv.cfg_eq_ucfg`. Standard
+Silmaril `Paper.Eqv` is a selected exact region presentation with unary
+literal CFG eta, unary codiagonal and structural uniformity, and
+constructor-value guards on substitution. The obstruction concerns this
+selected presentation. The written full region relation and the legacy
+quotient both admit the entry-let derivation. The loop-free Expressions theorem
+and the directed substructural refinement theorem have different judgments.
+[Standard relation](https://github.com/hiloopai/silmaril-lean/blob/73957f930c001ac0b4d74abb8e5d6a00e947249c/Silmaril/SSA/Isotope/LambdaSSA/Rewrite/Theory/Closure/Paper/Defs.lean#L29) · [Legacy re-entry equation](https://github.com/imbrem/debruijn-ssa/blob/316bd9a6511d165b5d1d0042956a72e0f5547091/DeBruijnSSA/BinSyntax/Rewrite/Region/LSubst.lean#L682)
+
+- Merged #4035 proves `flatRequest_ne_moved` and
+  `flatRequest_arrow_ne_moved` for the two-transfer unit witness. Merged
+  #4049 proves `flatRequest_denoteArrow_eq` and `denoteArrow_not_injective`
+  for those same singleton classes. The model hypotheses are a strong
+  Elgot Freyd functor between distributive categories with finite
+  coproducts, a central unit, an equality-induced shared tensor comparison,
+  exact type and instruction interpretations, and `RegionTypingCoherent`.
+  The paper's categorical interpretation uses the wide pure subcategory
+  with shared tensor. The mechanized claim uses its explicitly stated
+  hypotheses. The separate one-transfer readback fixture from #3989 is
+  outside the separation result.
+  [Non-derivability](https://github.com/hiloopai/silmaril-lean/blob/73957f930c001ac0b4d74abb8e5d6a00e947249c/Silmaril/SSA/Isotope/LambdaSSA/Rewrite/Theory/Closure/Paper/EntryLet/Obstruction/Thms.lean#L46) · [Categorical reflection boundary](https://github.com/hiloopai/silmaril-lean/blob/96bd094b4bb229ef2e0fa076b0bfa55dbce27c25/Silmaril/SSA/Isotope/LambdaSSA/Rewrite/Theory/Closure/Paper/EntryLet/Obstruction/Categorical/Thms.lean#L37)
+- `denoteRegion_cfgEntryLet` proves soundness for arbitrary exactly typed
+  tables. The opt-in `Paper.WithEntryLet` API merged in #4066
+  uses the constructor-branch instance as its typed seed and closes it
+  under contexts. The extension equates the witness. The structural
+  uniformity proof for commuting squares in the extended quotient remains
+  a term-model obligation.
+  [Soundness at arbitrary arity](https://github.com/hiloopai/silmaril-lean/blob/96bd094b4bb229ef2e0fa076b0bfa55dbce27c25/Silmaril/SSA/Isotope/LambdaSSA/Rewrite/Theory/Dispatcher/Sequencing/EntryLet/Thms.lean#L36) · [Opt-in witness equality](https://github.com/hiloopai/silmaril-lean/blob/882c892e7e47db328ac917ce67ae8b9dfda36c1a/Silmaril/SSA/Isotope/LambdaSSA/Rewrite/Theory/Closure/Paper/WithEntryLet/Example/Thms.lean#L27) · [Merged #4066](https://github.com/hiloopai/silmaril-lean/pull/4066)
+
 ### Typos/Spelling Errors
 
 | Line | Issue | Fix |
