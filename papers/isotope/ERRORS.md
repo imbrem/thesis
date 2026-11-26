@@ -83,6 +83,13 @@ LambdaIter manuscript governing this theorem. [arXiv v2](https://arxiv.org/abs/2
   profiles, including pure sum instructions and arbitrary compound or
   empty primitive endpoints, require a further source reflection argument
   or a direct proof of effect-weakening injectivity. [Fixed-effect quotient #2837](https://github.com/hiloopai/silmaril-lean/pull/2837) · [Atomic results #3163](https://github.com/hiloopai/silmaril-lean/pull/3163) · [Structured results #3190](https://github.com/hiloopai/silmaril-lean/pull/3190) · [Pure contexts #3201](https://github.com/hiloopai/silmaril-lean/pull/3201)
+- The opt-in intrinsic API in #3218 exposes `abortClass_eq_iff` for
+  `AbortEquiv pe` at fixed contexts, result type, and endpoint effect bound.
+  The default thesis `Syn.setoid` uses exact `LocallyNameless.Eqv`.
+  At bottom purity, `abortClass_ofLowering_eq_iff` restates #3201 as
+  equality of intrinsic classes under the same hypotheses. Identifying
+  these classes with the paper's syntactic expression model is a separate
+  comparison. [Pinned intrinsic API](https://github.com/hiloopai/silmaril-lean/tree/936ebcfcb7d19c28387a3d2ac441da1770ff4b29/Silmaril/SSA/Isotope/LetIter/AbortSequence/Intrinsic)
 - The native nonrepresentability theorem uses an iterate that makes a
   visible sum request, returning on a left reply and looping on a right
   reply. It has observable prefixes of unbounded length. Each candidate
