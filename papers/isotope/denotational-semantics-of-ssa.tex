@@ -2145,15 +2145,65 @@ on the labels $\kappa$ in $\ms{L}$ as described above), the following rule:
 Our $\eta$-rule, \brle{cfg-$\eta$}, says that any \ms{where}-block of the form
 $\where{r}{(\wbranch{\ell_i}{x_i}{t_i},)_i}$ has the same semantics as the label-substitution
 $[\cfgsubst{(\wbranch{\ell_i}{x_i}{t_i},)_i}]r$, which in effect propagates the where-block to the
-branches of $r$, if any. While we called this rule \brle{cfg-$\eta$}, it also functions similarly
-to a binding rule in that it allows us to derive many of the expected commutativity properties of
-\ms{where}; for example, we have that
-\begin{align*}
-  \where{\letexpr{y}{a}{r}}{(\wbranch{\ell_i}{x_i}{\brb{\ell_j}{a_j}},)_i}
-  &\teqv [\cfgsubst{(\wbranch{\ell_i}{x_i}{\brb{\ell_j}{a_j}},)_i}](\letexpr{y}{a}{r}) \\
-  &\teqv \letexpr{y}{a}{[\cfgsubst{(\wbranch{\ell_i}{x_i}{\brb{\ell_j}{a_j}},)_i}]r} \\
-  &\teqv \letexpr{y}{a}{\where{r}{(\wbranch{\ell_i}{x_i}{\brb{\ell_j}{a_j}},)_i}}
-\end{align*}
+branches of $r$, if any. Because this rule applies at arbitrary finite arity,
+it gives the following entry-let equation for arbitrary block bodies.
+Write $\ms{R}=(\lhyp{\ell_i}{A_i},)_{i\in I}$ and
+$T=(\wbranch{\ell_i}{x_i}{t_i},)_{i\in I}$.
+Suppose $\hasty{\Gamma}{\epsilon}{a}{S}$,
+$\haslb{\Gamma,\bhyp{y}{S}}{r}{\ms{L},\ms{R}}$, and
+$\haslb{\Gamma,\bhyp{x_i}{A_i}}{t_i}{\ms{L},\ms{R}}$ for each $i\in I$.
+Choose $y$ fresh for the table, renaming binders as needed. Write $T^{\uparrow y}$
+for the table weakened into $\Gamma,y:S$, with each block's own payload binder kept
+in scope.
+\begin{equation}
+  \lbeq{\Gamma}
+    {\where{(\letstmt{y}{a}{r})}{T}}
+    {(\letstmt{y}{a}{(\where{r}{T^{\uparrow y}})})}
+    {\ms{L}}
+  \label{eqn:cfg-entry-let}
+\end{equation}
+Apply \brle{cfg-$\eta$} on the left. By the definition of label substitution
+(Figure~\ref{fig:ssa-label-subst-def}), this yields
+$\letstmt{y}{a}{([\cfgsubst{T^{\uparrow y}}]r)}$,
+since lifting $\cfgsubst{T}$ under $y$ gives $\cfgsubst{T^{\uparrow y}}$.
+Apply \brle{cfg-$\eta$} in reverse under the let to obtain the right side.
+The initializer may be effectful and runs once on each side.
+
+\paragraph{The unary CFG $\eta$ presentation.}
+Consider the exact region relation \texttt{Paper.Eqv} in Silmaril, whose
+literal CFG $\eta$ has one local label and whose substitution rules use
+constructor-valued branch arguments. In that presentation, take
+$\Gamma=(u:\mb{1})$, $\ms{L}=(\lhyp{\kappa}{\mb{1}})$, and a
+primitive $\ms{tick}:\mb{1}\to\mb{1}$ which may be effectful. Set
+$a=\ms{tick}\;u$, $r=\brb{\ell_0}{y}$, and
+\begin{equation*}
+  T=(\wbranch{\ell_0}{x}{\brb{\ell_1}{x}},\;
+     \wbranch{\ell_1}{z}{\brb{\kappa}{z}}),
+\end{equation*}
+where both local labels have unit payload. The two sides of
+\eqref{eqn:cfg-entry-let} are inequivalent in \texttt{Paper.Eqv}.
+Every equation in that relation preserves a terminating-run observation
+that, within a table of at least two local labels, records an effectful
+segment followed by two local transfers. The witness takes both transfers
+inside the table, and moving the let makes the effect occur outside it.
+The two regions have equal denotations in every typing-coherent, shared-tensor,
+central-unit strong Elgot Freyd model of the exact syntax, for any
+interpretation of $\ms{tick}$.\footnote{
+  \href{https://github.com/hiloopai/silmaril-lean/pull/4035}{Separation in the exact relation}
+  and \href{https://github.com/hiloopai/silmaril-lean/pull/4049}{categorical equality of the same regions}.
+}
+
+Thus the interpretation of this presentation fails to reflect equality even
+at the singleton unit interface.
+
+For the unary-$\eta$ presentation, adding \eqref{eqn:cfg-entry-let} at every finite
+arity, with exact typing and constructor-valued branches in $r$ and $T$, is a
+sound repair in this model class. The categorical proof uses CFG $\eta$ with
+each branch argument bound once, and the pure projection that forgets the
+extra capture $y$ compares iteration of the weakened and original tables.
+This repairs reflection for the displayed witness. Completeness of the
+extended calculus requires a separate argument.
+
 One particularly important application of the $\eta$-rule for control-flow graphs is in validating
 the rewrite
 \begin{equation}
@@ -4518,7 +4568,9 @@ by a relatively straightforward induction. A much more tedious induction is requ
 \end{equation*}
 since the case for \ms{where}-statements is particularly complex. With a little bit more book-keeping (which can be found in the mechanization), we can state the completeness theorem as follows:
 \begin{theorem}[name=Completeness (Regions), restate=completenessregions]
-  We have that, for all pure $\ms{eff}(\Gamma) = \bot$,
+  With the full region equations, including the arbitrary-arity CFG $\eta$
+  of Figure~\ref{fig:ssa-where-rules}, we have that, for all pure
+  $\ms{eff}(\Gamma) = \bot$,
   $$
     \lbeq{\Gamma}{r}{r'}{\ms{L}} 
     \iff \dnt{\haslb{\Gamma}{r}{\ms{L}}}_{\ms{Th}(\cdot, \cdot)} 
