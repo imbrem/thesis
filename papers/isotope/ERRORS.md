@@ -46,12 +46,12 @@ and the directed substructural refinement theorem have different judgments.
   outside the separation result.
   [Non-derivability](https://github.com/hiloopai/silmaril-lean/blob/73957f930c001ac0b4d74abb8e5d6a00e947249c/Silmaril/SSA/Isotope/LambdaSSA/Rewrite/Theory/Closure/Paper/EntryLet/Obstruction/Thms.lean#L46) · [Categorical reflection boundary](https://github.com/hiloopai/silmaril-lean/blob/96bd094b4bb229ef2e0fa076b0bfa55dbce27c25/Silmaril/SSA/Isotope/LambdaSSA/Rewrite/Theory/Closure/Paper/EntryLet/Obstruction/Categorical/Thms.lean#L37)
 - `denoteRegion_cfgEntryLet` proves soundness for arbitrary exactly typed
-  tables. The opt-in `Paper.WithEntryLet` API proposed in pending #4066
+  tables. The opt-in `Paper.WithEntryLet` API merged in #4066
   uses the constructor-branch instance as its typed seed and closes it
   under contexts. The extension equates the witness. The structural
   uniformity proof for commuting squares in the extended quotient remains
   a term-model obligation.
-  [Soundness at arbitrary arity](https://github.com/hiloopai/silmaril-lean/blob/96bd094b4bb229ef2e0fa076b0bfa55dbce27c25/Silmaril/SSA/Isotope/LambdaSSA/Rewrite/Theory/Dispatcher/Sequencing/EntryLet/Thms.lean#L36) · [Opt-in API #4066](https://github.com/hiloopai/silmaril-lean/pull/4066)
+  [Soundness at arbitrary arity](https://github.com/hiloopai/silmaril-lean/blob/96bd094b4bb229ef2e0fa076b0bfa55dbce27c25/Silmaril/SSA/Isotope/LambdaSSA/Rewrite/Theory/Dispatcher/Sequencing/EntryLet/Thms.lean#L36) · [Opt-in witness equality](https://github.com/hiloopai/silmaril-lean/blob/882c892e7e47db328ac917ce67ae8b9dfda36c1a/Silmaril/SSA/Isotope/LambdaSSA/Rewrite/Theory/Closure/Paper/WithEntryLet/Example/Thms.lean#L27) · [Merged #4066](https://github.com/hiloopai/silmaril-lean/pull/4066)
 
 ### Typos/Spelling Errors
 
