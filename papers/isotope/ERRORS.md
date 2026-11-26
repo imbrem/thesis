@@ -75,7 +75,7 @@ continuations stay fixed throughout. [Pinned term rules](https://github.com/imbr
   primitive operand before supplying a reply. This is a mismatch between
   default `Paper.Eqv` and the full printed region equations.
   [Exact separation](https://github.com/hiloopai/silmaril-lean/blob/1d214b1b8a075d7ff492a9a6f608f8fac4d77a3c/Silmaril/SSA/Isotope/LambdaSSA/Rewrite/Theory/Closure/Paper/WithCaseBind/BitQuery/RequestTree/Readback/Decision/Obstruction/Thms.lean#L17)
-- At the pinned head of #4836, `default_denote_not_faithful` uses the
+- In merged #4836, `default_denote_not_faithful` uses the
   same pair at label `false` and tag `false`. The categorical witness and
   `closed_packed_eq` apply to both choices of each. The model functor and
   contextual lifting theorem use a strong Elgot Freyd functor between
@@ -87,7 +87,7 @@ continuations stay fixed throughout. [Pinned term rules](https://github.com/imbr
   operands under the same opcode and typed reply continuations. It repairs
   this witness in the opt-in quotient. Faithfulness of the extended
   quotient is a separate obligation.
-  [Categorical proof and focused repair](https://github.com/hiloopai/silmaril-lean/blob/7058cd1b0cc41d0e4c2958cdc77510a950229261/Silmaril/SSA/Isotope/LambdaSSA/Rewrite/Theory/Closure/Paper/WithCaseBind/BitQuery/RequestTree/Readback/Decision/WithCaseOperandBeta/Thms.lean#L90)
+  [Categorical proof and focused repair](https://github.com/hiloopai/silmaril-lean/blob/432e09c5ee11cc2371150ec94a3183766a6e5ecb/Silmaril/SSA/Isotope/LambdaSSA/Rewrite/Theory/Closure/Paper/WithCaseBind/BitQuery/RequestTree/Readback/Decision/WithCaseOperandBeta/Thms.lean#L90)
 - #4805 instead separates sequencing of a computed primitive operand in
   `WithTripling`. #4812's Bit separation persists after adding just the
   returned-call sequencing seed to default Paper. CALCO 2019 Remark 15
