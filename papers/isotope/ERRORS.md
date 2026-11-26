@@ -18,6 +18,86 @@
 
 ## 2. `denotational-semantics-of-ssa.tex` — The Denotational Semantics of SSA
 
+### Corrected expression equations and completeness
+
+This is the maintained LaTeX source for the equality calculus in the expression
+completeness theorem at `69a8126`, line 4408. The arXiv entry points to the
+`debruijn-ssa` mechanization, whose artifact branch contains Lean. The separate
+`complete-refinement-ssa.tex` submission presents directed substructural
+refinement. The thesis LambdaIter chapter also presents a separate iterative
+calculus. The repository and publication records identify no standalone
+LambdaIter manuscript governing this theorem. [arXiv v2](https://arxiv.org/abs/2411.09347v2) · [artifact branch](https://github.com/imbrem/debruijn-ssa/tree/toplas-artifact)
+
+- The rule figures now use the right summand type in `case`, both primed
+  components in pair congruence, explicit primitive congruence, capture-avoiding
+  substitution of the pure argument into the body in unary beta, and the
+  product's two component types in `let1-let2`. In `let1-abort`, the scrutinee
+  must be the premise `a : 0`; the printed `b` is a continuation under `y : A`.
+  The corrected rule with `b = y`, bracketed by let eta, gives
+  `abort a ≈ let x = a; abort x` even at an impure bound. The pinned Lean
+  mechanization already uses this conversion in `Eqv.seq_zero` and
+  `Eqv.packed_abort_den`. [Pinned rewrite](https://github.com/imbrem/debruijn-ssa/blob/316bd9a6511d165b5d1d0042956a72e0f5547091/DeBruijnSSA/BinSyntax/Syntax/Rewrite/Term/Step.lean#L28) · [Pinned abort calculation](https://github.com/imbrem/debruijn-ssa/blob/316bd9a6511d165b5d1d0042956a72e0f5547091/DeBruijnSSA/BinSyntax/Rewrite/Term/Compose/Sum.lean#L446)
+- Silmaril's `PaperExpression.Wf` uses invariant types, a common upper effect
+  bound, and bottom-annotated binders. The displayed manuscript contexts are
+  the all-bottom instance. Its `Source.Eqv` uses a structurally initial pure
+  slot for the initial rule. Such a slot gives a pure term of type `0` by
+  destructuring a product or casing on a sum of initial types. Conversely,
+  given any pure `e : 0`, let-bind it to a fresh variable, use initiality
+  under that binder, and eliminate the let by pure beta on each side. Thus
+  the written pure-witness form and the slot-based form generate the same
+  initial equations. [Written typing](https://github.com/hiloopai/silmaril-lean/blob/570a0b75f62f4cab39908f86596e8f08d2ff1fa3/Silmaril/SSA/Isotope/LetIter/PaperExpression/Defs.lean#L70) · [Source equations](https://github.com/hiloopai/silmaril-lean/blob/570a0b75f62f4cab39908f86596e8f08d2ff1fa3/Silmaril/SSA/Isotope/LetIter/PaperExpression/Source/Defs.lean#L15)
+- Native exact LetIter has a genuine missing equation. `closedReflection_fails`
+  separates `abort (op true ())` from its sequenced form in the exact
+  quotient despite equality of their categorical denotations. `AbortEquiv`
+  adds the two orientations as typed primitive steps. The corrected written
+  calculus derives them already. The thesis's pure let distribution over
+  abort also gives the equation for a pure scrutinee by let eta. Its directed
+  distribution rule carries a polarity, a mover premise, and an unrestricted
+  effect quantity. The abort calculation here uses symmetric equality with
+  no such refinement premises. [Native obstruction #2522](https://github.com/hiloopai/silmaril-lean/pull/2522) · [Repair #2670](https://github.com/hiloopai/silmaril-lean/pull/2670) · [Source derivation #2894](https://github.com/hiloopai/silmaril-lean/pull/2894) · [Thesis abort rules](https://github.com/imbrem/thesis/blob/69a8126f2d3eb6d32050e0bd9511251b33dbcea7/thesis/type-theoretic-ssa/lambda-iter/theory.typ#L723)
+- The paper's expression models are distributive Freyd categories with a
+  wide pure subcategory and shared finite coproducts, including the empty
+  coproduct. The top-effect syntactic model takes the image of pure arrows
+  under effect weakening as its wide pure subcategory. Native categorical
+  validity theorems quantify over typing-coherent strong Elgot Freyd models
+  with shared tensor, central unit, and pure interpretations of pure
+  primitives. The first theorem uses the signature universe for objects and
+  homs. The locally small version uses small signatures, `Type 1` objects
+  and `Category.{0}` homs. Both allow arbitrary finite bound contexts and
+  empty free context. The named variant additionally allows free contexts
+  with all slots addressable by name. The conclusion is native `AbortEquiv`.
+  [Same universe #2753](https://github.com/hiloopai/silmaril-lean/pull/2753) · [Locally small #2759](https://github.com/hiloopai/silmaril-lean/pull/2759) · [Named #2778](https://github.com/hiloopai/silmaril-lean/pull/2778)
+- Fixed-bound packing and unpacking are inverse. Reflecting equality after
+  weakening to top additionally requires injectivity on the packed hom-set.
+  Native validity and reflection of individual native generators leave open
+  proofs with above-bound or iterative intermediate terms. The mixed-signature
+  conservativity theorems handle arbitrary native intermediates with two
+  written endpoints at their original bound. #3163 covers atomic results,
+  #3190 covers arbitrary result types, and #3201 covers arbitrary pure finite
+  contexts. The first two require pure atomic inputs. All use decidable base
+  sorts and finite-arity primitives with atomic arguments and either an
+  atomic result or a binary sum of atomic payloads, with non-bottom sum
+  instructions. Empty result endpoints are impossible at atomic inputs
+  under these hypotheses. The two directions at top and at the original
+  bound imply injectivity for the supported signature. General primitive
+  profiles, including pure sum instructions and arbitrary compound or
+  empty primitive endpoints, require a further source reflection argument
+  or a direct proof of effect-weakening injectivity. [Fixed-effect quotient #2837](https://github.com/hiloopai/silmaril-lean/pull/2837) · [Atomic results #3163](https://github.com/hiloopai/silmaril-lean/pull/3163) · [Structured results #3190](https://github.com/hiloopai/silmaril-lean/pull/3190) · [Pure contexts #3201](https://github.com/hiloopai/silmaril-lean/pull/3201)
+- The opt-in intrinsic API in #3218 exposes `abortClass_eq_iff` for
+  `AbortEquiv pe` at fixed contexts, result type, and endpoint effect bound.
+  The default thesis `Syn.setoid` uses exact `LocallyNameless.Eqv`.
+  At bottom purity, `abortClass_ofLowering_eq_iff` restates #3201 as
+  equality of intrinsic classes under the same hypotheses. Identifying
+  these classes with the paper's syntactic expression model is a separate
+  comparison. [Pinned intrinsic API](https://github.com/hiloopai/silmaril-lean/tree/936ebcfcb7d19c28387a3d2ac441da1770ff4b29/Silmaril/SSA/Isotope/LetIter/AbortSequence/Intrinsic)
+- The native nonrepresentability theorem uses an iterate that makes a
+  visible sum request, returning on a left reply and looping on a right
+  reply. It has observable prefixes of unbounded length. Each candidate
+  written expression has a finite visible-depth bound in the same model.
+  This excludes a readback for that native endpoint. Source-to-source
+  conservativity compares two endpoints in the image of the translation.
+  [Nonrepresentability #3152](https://github.com/hiloopai/silmaril-lean/pull/3152)
+
 ### Typos/Spelling Errors
 
 | Line | Issue | Fix |
@@ -51,16 +131,9 @@
 
 | Line | Issue | Fix |
 |------|-------|-----|
-| 1337 | Case typing rule: right branch has `\bhyp{y}{A}` | Should be `\bhyp{y}{B}` — when casing on `A + B`, right branch binds type `B` |
 | 1505 | Substitution lemma (d): `\lbsubst{[\gamma]\sigma}{\Delta}` | Context argument appears swapped; should use `\Gamma` |
 | 1538 | `[\lupg{\Gamma}_\Xi]` | Should be `[\lupg{\gamma}_\Xi]` (lowercase gamma = substitution, not context) |
-| 1673 | Pair congruence rule: RHS is `(a', b)` | Should be `(a', b')` — both components primed |
-| 1748 | Beta rule states `[b/x]a` | Should be `[a/x]b` — substitutes `a` for `x` in body `b` |
-| 1779 | `A \times B` in let2-let2 rule | Should be `A \otimes B` (tensor product, consistent with rest of paper) |
-| 1780 | `\bhyp{y}{C}` in let2-let2 rule | Should be `\bhyp{y}{B}` (second component of tensor) |
-| 1802 | `\labort{b}` on RHS | Should be `\labort{a}` — aborting on the value of type `0` |
 | 2613 | `(\lhyp{\kappa_j}{B_j},)_{j \in I}` | Index set should be `J`, not `I` |
-| 3179–3180 | Left and right unitors swapped: `\lambda_A : A \otimes I \to A` and `\rho_A : I \otimes A \to A` | Standard convention: `\lambda_A : I \otimes A \to A` (left), `\rho_A : A \otimes I \to A` (right) |
 | 4952 | `d_A + B` | Should be `d_{A + B}` (subscript should include whole sum type) |
 | 5571 | `P \lor C` | Should be `P \lor Q` (consistent with surrounding text) |
 | 5649 | `\pi_r` typed as returning `A` | Should return `B` — right projection from `A \otimes B` |

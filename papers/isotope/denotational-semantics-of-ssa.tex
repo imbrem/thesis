@@ -226,12 +226,12 @@
   give a type theory for a variant of SSA, including its equational
   theory, which are strong enough to validate a variety of control and
   data flow transformations. We also give a categorical semantics for
-  SSA, and show that the type theory is sound and complete with
-  respect to the categorical axiomatization. We demonstrate the
+  SSA, and prove soundness and syntactic-model reflection, with the
+  effect bounds for expression reflection stated explicitly. We demonstrate the
   utility of our model by exhibiting a variety of concrete models
   satisfying our axioms, including in particular a model of TSO weak
-  memory. The correctness of the syntactic metatheory, as well as the
-  completeness proof has been mechanized in the Lean proof assistant.
+  memory. The syntactic metatheory and the packing calculations used
+  for reflection have been mechanized in the Lean proof assistant.
 \end{abstract}
 
 \begin{CCSXML}
@@ -370,10 +370,10 @@ This is exactly what we provide in this paper. Concretely, our contributions are
   We show that any category with this structure is a model of SSA. This establishes that all of the
   equations we give are sound with respect to the categorical structure.
 
-\item We also show, in Section~\ref{ssec:completeness}, that syntax quotiented by the equational
-  theory yields the initial distributive Elgot category. This establishes that our set of syntactic
-  equations is complete, and that there are no equations which the denotational semantics validates,
-  but which cannot be proved syntactically. 
+\item In Section~\ref{ssec:completeness}, we construct syntactic models from quotients by the
+  equational theory. For expressions, packing reflects equality at a fixed effect bound, and the
+  distributive Freyd expression model gives completeness at the top effect.
+  We also construct the initial model of regions with Elgot iteration.
   
   Theoretically, this leads us to the surprising discovery that SSA is actually a syntactic
   presentation of distributive Elgot categories, thereby establishing a surprising connection
@@ -1271,10 +1271,9 @@ categories, each associated with a judgement:
 \begin{itemize}
   \item \emph{Expressions} $a, b, c, e$, which are typed with the judgement
   $\hasty{\Gamma}{\epsilon}{a}{A}$, which says that under the typing context $\Gamma$, the
-  expression $a$ has type $A$ and effect $\epsilon$. We say a term is \emph{pure} if it has effect
-  $\bot$; note that whether an expression is pure or not depends both on the expression itself and
-  on the purity of the variables used in the expression; this is to allow reasoning about impure
-  substitutions.
+  expression $a$ has type $A$ and effect at most $\epsilon$. We say a term is \emph{pure} if it
+  types at $\bot$. Variables in the displayed contexts denote values and are pure, including
+  the variables bound by \ms{let} and \ms{case}.
   \item \emph{Regions} $r, s, t$, which recursively define a lexically-scoped SSA program with a
   single entry and (potentially) multiple exits. This is typed with the judgement
   $\haslb{\Gamma}{r}{\ms{L}}$, which states that given that $\Gamma$ is live at the unique entry
@@ -1334,7 +1333,7 @@ unit payloads, so that $\ite{e_1}{e_2}{e_3} := \caseexpr{e_1}{()}{e_2}{()}{e_3}$
     \prftree[r]{\rle{case}}
       {\hasty{\Gamma}{\epsilon}{e}{A + B}}
       {\hasty{\Gamma, \bhyp{x}{A}}{\epsilon}{a}{C}}
-      {\hasty{\Gamma, \bhyp{y}{A}}{\epsilon}{b}{C}}
+      {\hasty{\Gamma, \bhyp{y}{B}}{\epsilon}{b}{C}}
       {\hasty{\Gamma}{\epsilon}{\caseexpr{e}{x}{a}{y}{b}}{C}}
   \end{gather*}
   \caption{Rules for typing \isotopessa{} expressions}
@@ -1636,16 +1635,16 @@ in Figure~\ref{fig:ssa-expr-congr-rules}, consist of:
   \item \brle{refl}, \brle{symm}, \brle{trans}, which state that
   $\tmeq{\Gamma}{\epsilon}{\cdot}{\cdot}{A}$ is reflexive, transitive, and symmetric respectively
   for each choice of $\Gamma, \epsilon, A$, and therefore an equivalence relation.
-  \item \brle{let$_1$}, \brle{let$_2$}, \brle{pair}, \brle{inl}, \brle{inr}, \brle{case}, and
+  \item \brle{op}, \brle{let$_1$}, \brle{let$_2$}, \brle{pair}, \brle{inl}, \brle{inr}, \brle{case}, and
   \brle{abort}, which state that $\tmeq{\Gamma}{\epsilon}{\cdot}{\cdot}{A}$ is a \emph{congruence}
   with respect to the corresponding expression constructor, and, in particular, that the expression
   constructors are well-defined functions on the quotient of expressions up to $\teqv$.
 \end{itemize} 
 We also include the following \emph{type-directed} rules as part of our congruence relation:
 \begin{itemize}
-  \item \brle{initial}, which equates \emph{all} terms in a context containing the empty type
-  $\mb{0}$, since we will deem any such context to be \emph{unreachable} by control flow. In
-  particular, any instruction or function call returning $\mb{0}$ is assumed to diverge. 
+  \item \brle{initial}, which equates all terms of the same type and effect bound in a context
+  admitting a pure expression of type $\mb{0}$. Such a context is unreachable. An effectful
+  computation of type $\mb{0}$ can perform effects before failing to return a value.
   \item \brle{terminal}, which equates all \emph{pure} terms of unit type $\mb{1}$. Note that
   \emph{impure} terms may be disequal, since while their result values are the same, their side
   effects may differ!
@@ -1662,6 +1661,11 @@ We also include the following \emph{type-directed} rules as part of our congruen
       {\tmeq{\Gamma}{\epsilon}{a}{b}{A}}
       {\tmeq{\Gamma}{\epsilon}{b}{a}{A}}
     \\
+    \prftree[r]{\rle{op}}
+      {\isop{f}{A}{B}{\epsilon}}
+      {\tmeq{\Gamma}{\epsilon}{a}{a'}{A}}
+      {\tmeq{\Gamma}{\epsilon}{f\;a}{f\;a'}{B}}
+    \\
     \prftree[r]{\rle{let$_1$}}
       {\tmeq{\Gamma}{\epsilon}{a}{a'}{A}}
       {\tmeq{\Gamma, \bhyp{x}{A}}{\epsilon}{b}{b'}{B}}
@@ -1670,7 +1674,7 @@ We also include the following \emph{type-directed} rules as part of our congruen
     \prftree[r]{\rle{pair}}
       {\tmeq{\Gamma}{\epsilon}{a}{a'}{A}}
       {\tmeq{\Gamma}{\epsilon}{b}{b'}{B}}
-      {\tmeq{\Gamma}{\epsilon}{(a, b)}{(a', b)}{A \otimes B}}
+      {\tmeq{\Gamma}{\epsilon}{(a, b)}{(a', b')}{A \otimes B}}
     \\
     \prftree[r]{\rle{let$_2$}}
       {\tmeq{\Gamma}{\epsilon}{e}{e'}{A \otimes B}}
@@ -1729,7 +1733,7 @@ summarized in Figure~\ref{fig:ssa-unary-let-expr}:
   
   For example, \brle{let$_1$-case} says that, if both
   $\letexpr{z}{\caseexpr{e}{x}{a}{y}{b}}{d}$ and
-  $\caseexpr{e}{x}{\letexpr{z}{a}{d}}{y}{\letexpr{z}{b}{d}}{y}$,
+  $\caseexpr{e}{x}{\letexpr{z}{a}{d}}{y}{\letexpr{z}{b}{d}}$,
   are well typed, then both must have the same behaviour:
   \begin{enumerate}
     \item Compute $e$
@@ -1745,7 +1749,7 @@ summarized in Figure~\ref{fig:ssa-unary-let-expr}:
     \prftree[r]{\rle{let$_1$-$\beta$}}
       {\hasty{\Gamma}{\bot}{a}{A}}
       {\hasty{\Gamma, \bhyp{x}{A}}{\epsilon}{b}{B}}
-      {\tmeq{\Gamma}{\epsilon}{\letexpr{x}{a}{b}}{[b/x]a}{B}}
+      {\tmeq{\Gamma}{\epsilon}{\letexpr{x}{a}{b}}{[a/x]b}{B}}
     \qquad
     \prftree[r]{\rle{let$_1$-$\eta$}}
       {\hasty{\Gamma}{\epsilon}{a}{A}}
@@ -1776,8 +1780,8 @@ summarized in Figure~\ref{fig:ssa-unary-let-expr}:
     %       \letexpr{y}{b}{\letexpr{z}{(x, y)}{c}}}}{C}}
     % \\
     \prftree[r]{\rle{let$_1$-let$_2$}}
-      {\hasty{\Gamma}{\epsilon}{e}{A \times B}}
-      {\hasty{\Gamma, \bhyp{x}{A}, \bhyp{y}{C}}{\epsilon}{c}{C}}
+      {\hasty{\Gamma}{\epsilon}{e}{A \otimes B}}
+      {\hasty{\Gamma, \bhyp{x}{A}, \bhyp{y}{B}}{\epsilon}{c}{C}}
       {\hasty{\Gamma, \bhyp{z}{C}}{\epsilon}{d}{D}}
       {\tmeq{\Gamma}{\epsilon}
         {\letexpr{z}{(\letexpr{(x, y)}{e}{c})}{d}}
@@ -1799,7 +1803,7 @@ summarized in Figure~\ref{fig:ssa-unary-let-expr}:
       {\hasty{\Gamma}{\epsilon}{a}{\mb{0}}}
       {\hasty{\Gamma, \bhyp{y}{A}}{\epsilon}{b}{B}}
       {\tmeq{\Gamma}{\epsilon}
-        {\letexpr{y}{\labort{b}}{b}}
+        {\letexpr{y}{\labort{a}}{b}}
         {\letexpr{x}{a}{\letexpr{y}{\labort{x}}{b}}}{B}}
     \\
     \prftree[r]{\rle{let$_1$-case}}
@@ -1817,6 +1821,18 @@ summarized in Figure~\ref{fig:ssa-unary-let-expr}:
   \caption{Rewriting rules for \isotopessa{} unary \ms{let} expressions}
   \label{fig:ssa-unary-let-expr}
 \end{figure}
+
+In particular, given $\hasty{\Gamma}{\epsilon}{a}{\mb{0}}$ and fresh $x,y$, we have
+\begin{equation}
+  \labort{a}
+  \;\teqv\; (\letexpr{y}{\labort{a}}{y})
+  \;\teqv\; (\letexpr{x}{a}{\letexpr{y}{\labort{x}}{y}})
+  \;\teqv\; (\letexpr{x}{a}{\labort{x}}).
+  \label{eq:abort-sequencing}
+\end{equation}
+The steps use let$_1$-$\eta$, let$_1$-abort, and let$_1$-$\eta$ under the outer binder.
+All terms have the same chosen result type and are typed at $\epsilon$. The scrutinee $a$
+is evaluated once on each side.
 
 Handling the other type constructors is a little simpler: by providing a ``binding'' rule, we
 generally only need to specify how to interact with $\ms{let}_1$, as well as an $\eta$ and $\beta$
@@ -3177,11 +3193,11 @@ follows:
     \item For each triple of objects $A, B, C \in |\mc{C}|$, a central, natural isomorphism
     $\alpha_{A, B, C} : (A \otimes B) \otimes C \to A \otimes (B \otimes C)$, the \emph{associator}
     \item For each object $A$, central, natural isomorphisms $\lambda_A : A \otimes I \to A$ and
-    $\rho_A : I \otimes A \to A$, the \emph{left} and \emph{right unitors}
+    $\rho_A : I \otimes A \to A$, the \emph{right} and \emph{left unitors}
   \end{itemize}
   satisfying the \emph{triangle} and \emph{pentagon identity}
   $$
-  \alpha_{A, I, B} ; A \otimes \lambda_B = \rho_A \otimes B \qquad
+  \alpha_{A, I, B} ; A \otimes \rho_B = \lambda_A \otimes B \qquad
   \alpha_{A \otimes B, C, D} ; \alpha_{A, B, C \otimes D}
   = \alpha_{A, B, C} \otimes D ; \alpha_{A, B \otimes C, D} ; A \otimes \alpha_{B, C, D}
   $$
@@ -3252,6 +3268,7 @@ If we generalize this structure to an arbitrary premonoidal category, we get the
   A \emph{Freyd category} is a premonoidal category $\mc{C}$ equipped with a wide subcategory
   $\mc{C}_\bot \subseteq \mc{C}$ of \emph{pure} morphisms such that
   \begin{itemize}
+    \item Every morphism of $\mc{C}_\bot$ is central in $\mc{C}$
     \item $\mc{C}_\bot$ contains all associators, unitors, and symmetries
     \item $I$ is a terminal object in $\mc{C}_\bot$. In particular, this implies the terminal
     morphisms $!_A: A \to I$ are pure.
@@ -3263,6 +3280,7 @@ If we generalize this structure to an arbitrary premonoidal category, we get the
 
   Alternatively, it is equivalent to require
   \begin{itemize}
+    \item Every morphism of $\mc{C}_\bot$ is central in $\mc{C}$
     \item $\mc{C}_\bot$ contains all associators, unitors, and symmetries
     \item $I$ is a terminal object in $\mc{C}_\bot$
     \item For each $A$, there exists a pure morphism $\dmor{A} : A \to A \otimes A$ forming a
@@ -3315,17 +3333,17 @@ sometimes also write $\alpha^+_B$ for clarity.
 It turns out that our coproducts must be \emph{distributive} to allow us to use variables in scope
 before a branch. In particular, we define a \emph{distributive} premonoidal category as follows:
 \begin{definition}[Distributive category]
-  A premonoidal category $\mc{C}$ with all coproducts is \emph{distributive} if, for all $A, B, C$,
+  A premonoidal category $\mc{C}$ with finite coproducts is \emph{distributive} if, for all $A, B, C$,
   the obvious morphism
   $$
   \delta_{A, B, C} 
-    = [(A + \iota_l), (A + \iota_r)] : (A \otimes B) + (A \otimes C) \to A \otimes (B + C)
+    = [(A \otimes \iota_l), (A \otimes \iota_r)] : (A \otimes B) + (A \otimes C) \to A \otimes (B + C)
   $$
-  has an inverse $\delta^{-1}$. 
+  has an inverse $\delta^{-1}$, and the unique map $\mb{0} \to A \otimes \mb{0}$ is an isomorphism.
   %
-  We will say a Freyd category $\mc{C}$ is distributive if it has all coproducts and the subcategory
-  of pure morphisms $\mc{C}_\bot$ is distributive (which implies, in particular, that $\mc{C}$ is
-  distributive when taken as a premonoidal category).
+  A Freyd category is distributive if it has finite coproducts shared with $\mc{C}_\bot$, including
+  their injections and the initial object, and $\mc{C}_\bot$ is distributive. The same
+  distributor and its inverse then give distributivity in $\mc{C}$.
 \end{definition}
 We note in particular that every cartesian closed category with coproducts is a distributive Freyd
 category, as is the Kleisli category of a monad over a CCC with coproducts. 
@@ -4262,10 +4280,9 @@ precisely, we have the following:
   See Appendix~\ref{proof:soundness-eqn}
 \end{proof}
 
-Now that we've proved the \emph{soundness} of our equational theory, what remains is to prove that
-it is \emph{complete}, i.e., that every equation which holds in all \isotopessa{} models can be
-derived from it, or, stated more categorically, that our syntax quotiented by the equational theory
-forms an initial \isotopessa{} model.
+We now use syntactic models to reflect denotational equality into derivable equations. For
+expressions, the argument retains the effect bound through packing and then accounts for the
+passage to the top-effect expression model. For regions, we construct an Elgot model.
 %
 Our strategy for doing this is as follows:
 \begin{enumerate}
@@ -4315,11 +4332,9 @@ Our strategy for doing this is as follows:
       {\pckd{r}}{\ms{L}, \outlb(\pckd{\ms{K}})}
     \end{gathered}
   \end{equation}
-  where $\ms{ret}\;a := \brb{\outlb}{a}$. Since the packing operator $\pckd{\cdot}$ on terms and
-  regions from Appendix~\ref{apx:records-enums} is injective for pure contexts $\ms{eff}(\Gamma) =
-  \bot$, and hence in particular for $\Gamma = \cdot$, $\ms{L} = \cdot$, it follows that in this
-  case the category of expressions and the category of regions are the initial distributive
-  \isotopessa{} expression model and \isotopessa{} model respectively.
+  where $\ms{ret}\;a := \brb{\outlb}{a}$. Taking $\Gamma = \cdot$ and $\ms{L} = \cdot$ removes
+  the ambient variables and labels. Unpacking then recovers the equations in $\Delta$,
+  with expression packing and unpacking both taken at the same effect bound.
 \end{enumerate}
 
 \subsection{Expressions}
@@ -4342,9 +4357,9 @@ with effect $\epsilon$ as follows:
   $$
   We may verify that this satisfies the axioms of a category w.r.t. our equational theory
 \end{itemize}
-In general, the category of expressions $\ms{Th}^\otimes(\Gamma)$ is simply then given by
-$\ms{Th}_\top^\otimes(\Gamma)$, which can be viewed as the union of all
-$\ms{Th}_\epsilon^\otimes(\Gamma)$.
+Write $\ms{Th}^\otimes(\Gamma) = \ms{Th}_\top^\otimes(\Gamma)$. Effect weakening is a functor
+$w_{\epsilon,\top} : \ms{Th}_\epsilon^\otimes(\Gamma) \to \ms{Th}^\otimes(\Gamma)$ that sends
+the class of a term at $\epsilon$ to its class at $\top$.
 
 We now need to equip $\ms{Th}_\epsilon^\otimes(\Gamma)$ with the structure of a premonoidal
 category. Obviously, we wish to define the tensor product of types $A$ and $B$ to be simply $A
@@ -4353,16 +4368,21 @@ category. Obviously, we wish to define the tensor product of types $A$ and $B$ t
   \hasty{\Gamma, \invar : A \otimes B}{\epsilon}{\pi_l := \ms{let}\;(x, y) = \invar; x}{A} \qquad 
   \hasty{\Gamma, \invar : A \otimes B}{\epsilon}{\ms{let}\;(x, y) = \invar; y}{B}
 \end{equation}
-By simply using the pair constructor as a cartesian product $\langle a, b \rangle = (a, b)$, this
-can be shown to endow $\ms{Th}_\bot^\otimes(\Gamma)$ with the structure of a cartesian category,
-allowing us to define the associators, symmetries, and unitors in the natural manner. If we then
-define tensor functors
+The pure subcategory of $\ms{Th}^\otimes(\Gamma)$ is the image of $w_{\bot,\top}$. Pairing of
+pure representatives descends to this image by pair congruence at $\top$. Product $\beta$ and
+$\eta$ give the projection and uniqueness laws, and terminal gives uniqueness into $\mb{1}$
+for pure representatives. Define the tensor functors on a representative $f$ with input
+variable $\invar$ by
 \begin{equation}
-  - \otimes X : e \mapsto \ms{let}\;(\invar, x) = \invar; (e ; (\invar, x)) \qquad
-  X \otimes - : e \mapsto \ms{let}\;(x, \invar) = \invar; (e ; (x, \invar))
+  \begin{aligned}
+    - \otimes X &: f \mapsto \letexpr{(a,x)}{\invar}{\letexpr{b}{[a/\invar]f}{(b,x)}}, \\
+    X \otimes - &: f \mapsto \letexpr{(x,a)}{\invar}{\letexpr{b}{[a/\invar]f}{(x,b)}},
+  \end{aligned}
 \end{equation}
-we find that $\ms{Th}_\epsilon^\otimes(\Gamma)$ and hence in particular $\ms{Th}^\otimes(\Gamma)$ is
-endowed with the structure of a Freyd category with pure subcategory $\ms{Th}_\bot^\otimes(\Gamma)$.
+with fresh binders. These respect the top-effect quotient by congruence. Pure substitution
+commutes past a computation on the other component by let$_1$-$\beta$, so the arrows
+with pure representatives are central. The associators, symmetries, and unitors are the
+pure maps rearranging the components.
 
 Similarly, we wish to show that $A + B$ is the coproduct of $A$ and $B$ in
 $\ms{Th}_\epsilon^\otimes(\Gamma)$. Since we already have obvious injection morphisms
@@ -4375,49 +4395,66 @@ $\hasty{\Gamma, \invar : B}{\epsilon}{b}{C}$ to be simply given by
 \begin{equation}
   \hasty{\Gamma, \invar : A + B}{\epsilon}{[a, b] := \caseexpr{\invar}{\invar}{a}{\invar}{b}}{C}
 \end{equation}
-It is straightforward to verify that this indeed induces a coproduct on
-$\ms{Th}_\epsilon^\otimes(\Gamma)$ and hence on $\ms{Th}^\otimes(\Gamma)$ All that remains is to
-show that $\ms{Th}_\epsilon^\otimes(\Gamma)$ is in fact a \emph{distributive} Freyd category. To do
-so, we may define an inverse distributor morphism
+The case $\beta$ laws give the restrictions of the copair to the two injections. Case $\eta$
+followed by let$_1$-case reconstructs any arrow from its two restrictions. The nullary
+coproduct is $\mb{0}$, with unique arrow represented by $\labort{\invar}$ at each result
+type by initiality in the context $\invar:\mb{0}$. The same constructions on pure
+representatives give finite coproducts in the pure subcategory. For binary distributivity,
+define an inverse distributor morphism
 \begin{equation}
   \hasty{\Gamma, \invar : A \otimes (B + C)}
     {\epsilon}
     {\delta^{-1} := \ms{let}\;(x, y) = \invar; \caseexpr{y}{z}{\iota_l(x, z)}{z}{\iota_r(x, z)}}
     {A \otimes B + A \otimes C}
 \end{equation}
-which can easily be shown to be an inverse to the obvious distributor morphism. We may now note that
+which is inverse to the copair of the tensored injections. Nullary distributivity follows
+from the initial rule using the pure second projection from $A \otimes \mb{0}$ to $\mb{0}$.
+Thus $\ms{Th}^\otimes(\cdot)$ is a distributive Freyd expression model, with each instruction
+represented by $f\,\invar$. Its pure instructions are in the image of $w_{\bot,\top}$. We have
 \begin{equation}
   \dnt{\cdot}_{\ms{Th}^\otimes(\Gamma)} = \mb{1}, \quad
   \dnt{\Delta, \bhyp{x}{A}}_{\ms{Th}^\otimes(\Gamma)} 
-    = \dnt{\Delta}_{\ms{Th}^\otimes(\Gamma)} \otimes A
-  \qquad \implies \qquad
-  \dnt{\Delta}_{\ms{Th}^\otimes(\Gamma)} = \pckd{\Gamma}
+    = \dnt{\Delta}_{\ms{Th}^\otimes(\Gamma)} \otimes A .
 \end{equation}
-Therefore, it follows that, as expected, that
-$
-  \hasty{\Gamma, \invar : \pckd{\Delta}}{\epsilon}
-          {\dnt{\hasty{\Delta}{\epsilon}{a}{A}}_{\ms{Th}^\otimes(\Gamma)}}{A}
-$
-and it remains to show that we in fact have
-$$
-  \tmeq{\Gamma, \invar : \pckd{\Delta}}{\epsilon}
-        {\dnt{\hasty{\Delta}{\epsilon}{a}{A}}_{\ms{Th}^\otimes(\Gamma)}}{[a]}{A}
-$$
-which can be done by a relatively straightforward induction, implying, since $[\cdot]$ is injective
-w.r.t. our equational theory for pure contexts, the following theorem:
+Thus the object interpreting a context $\Gamma$ is $\pckd{\Gamma}$. Write $\pckd{e}$ for
+the expression obtained by substituting the projections from a fresh variable of type
+$\pckd{\Gamma}$ for the variables of $\Gamma$. Write $[a]_\epsilon$ for the class of an
+expression at bound $\epsilon$.
 \begin{theorem}[name=Completeness (Expressions), restate=completenessexpr]
-  We have that, for all pure $\ms{eff}(\Gamma) = \bot$,
+  Let $e$ and $e'$ be typed at $A$ and at the common bound $\epsilon$ in a pure context $\Gamma$.
   $$
-    \tmeq{\Gamma}{\epsilon}{e}{e'}{A} 
-    \iff \dnt{\hasty{\Gamma}{\epsilon}{e}{A}}_{\ms{Th}^\otimes(\cdot)} 
-         = \dnt{\hasty{\Gamma}{\epsilon}{e'}{A}}_{\ms{Th}^\otimes(\cdot)}
+    \tmeq{\Gamma}{\epsilon}{e}{e'}{A}
+    \iff [\pckd{e}]_\epsilon = [\pckd{e'}]_\epsilon
+    \quad\text{in }\ms{Th}_\epsilon^\otimes(\cdot)(\pckd{\Gamma},A).
   $$
-  In particular, this implies that $\ms{Th}(\cdot)$ is the initial \isotopessa{} expression model
+  Their denotations in $\ms{Th}^\otimes(\cdot)$ are
+  $w_{\epsilon,\top}([\pckd{e}]_\epsilon)$ and $w_{\epsilon,\top}([\pckd{e'}]_\epsilon)$.
+  The implication from equal denotations to a derivable equation at $\epsilon$ holds for all
+  such pairs if and only if $w_{\epsilon,\top}$ is injective on this hom-set. In particular,
+  reflection in the distributive Freyd expression model holds at $\epsilon=\top$.
   \label{thm:complete-expr}
 \end{theorem}
 \begin{proof}
   See Appendix~\ref{proof:complete-expr}
 \end{proof}
+
+By soundness, top-effect expression equality is therefore equivalent to validity in every
+distributive Freyd expression model of the signature. A proof of the corresponding claim at
+a lower bound by this construction requires injectivity of effect weakening.
+
+For one class of signatures this injectivity follows from a mechanized conservativity
+result for the translation into native LetIter with abort sequencing.\footnote{
+  \href{https://github.com/hiloopai/silmaril-lean/pull/3201}{The Lean result}
+  extends atomic-context reflection to all pure input contexts.
+} The signature has decidable equality on the base sorts. Each primitive takes a
+finite tuple of base types ending in unit and returns a base type or a binary sum of
+base types. Sum-returning primitives are impure. At any bound, in a pure context, two
+written expressions are equal exactly when their lowerings are equal in the native
+abort-extended theory. Apply the forward implication at $\top$ and the reverse
+implication at $\epsilon$ to obtain injectivity. For general signatures, reflection
+through this translation remains a separate obligation. The comparison concerns equality
+of written loop-free endpoints. The directed refinement judgment of the substructural
+calculus has its own semantics and proof obligations.
 
 \subsection{Regions}
 
@@ -5406,9 +5443,9 @@ Most other formalizations oF SSA have given \emph{specific} semantics for it, wh
 denotational. One of the features which makes our work distinctive is that we give our type theory
 semantics relative to a categorical axiomatization. Essentially, we have parameterized our
 interpretation over any model satisfying the Freyd-Elgot axioms. First, this lets us show that many
-different concrete semantics are valid models of SSA, as can be seen in section 6. This also let us
-show that our equational theory is complete: we have exactly the equations valid in all Freyd-Elgot
-models, no more and (crucially) no less. As a result, implementors and researchers proving things
+different concrete semantics are valid models of SSA, as can be seen in section 6. The syntactic
+models give the expression and region reflection results in Section~\ref{ssec:completeness}.
+As a result, implementors and researchers proving things
 about compiler optimizations do not have to deal with any of the messy details of (for example) weak
 memory semantics, unless they are trying to study optimizations specifically involving weak memory.
 All the usual  equations used in control- and data-flow optimizations are independent of those
@@ -8503,8 +8540,15 @@ We may now state our desired result as follows:
   \ref{itm:eqn-sound-expr}, by rule induction.
   \begin{itemize}[leftmargin=*]
     \item \emph{Congruence}: these follow trivially by induction
-    \item \brle{initial}, \brle{terminal}: both of these follow trivially from the universal
-    property of the initial/terminal object, respectively.
+    \item \brle{initial}: the pure witness $e$ gives a map
+    $p : \dnt{\Gamma} \to \mb{0}$ in the pure subcategory. Writing $R = \dnt{\Gamma}$,
+    the maps $\langle \ms{id}_R,p\rangle : R \to R \otimes \mb{0}$ and
+    $\pi_l : R \otimes \mb{0} \to R$ are inverse. The first projection of their
+    composite on $R \otimes \mb{0}$ is $\pi_l$, and the second is unique because
+    $R \otimes \mb{0}$ is initial by nullary distributivity. Hence $R$ is initial
+    in both categories, so the two denotations out of $R$ agree.
+    \item \brle{terminal}: both denotations are pure maps into the terminal object of
+    the pure subcategory.
     \item \brle{let$_1$-$\beta$}: this follows directly from Corollary~\ref{corr:single-subst}
     \item \brle{let$_1$-$\eta$}: we have
     \begin{align*}
@@ -8535,7 +8579,10 @@ We may now state our desired result as follows:
         ; \dnt{\hasty{\Gamma, \bhyp{y}{B}}{\epsilon}{c}{C}} \\
       & = \dnt{\hasty{\Gamma}{\epsilon}{\letexpr{y}{f\;a}{c}}{C}}
     \end{align*}
-    as desired. The \brle{let$_1$-abort} case is analogous.
+    as desired. For \brle{let$_1$-abort}, replace the primitive morphism in the
+    calculation by the pure initial arrow $\mb{0}\to\dnt{A}$. Equivalently,
+    in Equation~\eqref{eq:abort-sequencing} the two sides apply that same arrow
+    after computing the empty-typed scrutinee.
     \item \brle{let$_1$-let$_1$}: we have that
     \begin{align*}
       & \dnt{\hasty{\Gamma}{\epsilon}{\letexpr{y}{(\letexpr{x}{a}{b}}{c})}{C}} \\
@@ -9434,8 +9481,20 @@ We may now state our desired result as follows:
 \label{proof:complete-expr}
 
 \begin{proof}
-  We begin by showing $\ms{Th}^\otimes(\Gamma)$ is an \isotopessa{} expression model by validating
-  all the equations for a distributive Freyd category. These are formalized as follows:
+  Packing and unpacking use pure substitutions, so both preserve equations at the
+  original bound $\epsilon$. The inverse substitutions of Appendix~\ref{apx:records-enums}
+  show that they induce inverse maps on classes. In particular, every element of the
+  packed hom-set arises this way.
+
+  In the expression model, interpretation of a judgment gives the top-effect class
+  of its packed term. The calculation proceeds by typing induction, using the
+  retained-input tuple in the let and case clauses. In the abort clause the induction
+  hypothesis gives the packed scrutinee $a$ at type $\mb{0}$. Postcomposing with the
+  initial arrow is represented by $\letexpr{x}{\pckd{a}}{\labort{x}}$. Equation~\eqref{eq:abort-sequencing}
+  identifies its class with that of $\labort{\pckd{a}}$. This calculation uses the
+  same equational steps at $\epsilon$ and at $\top$.
+
+  The syntactic calculations used here are formalized as follows:
   \begin{itemize}
     \item $\ms{Th}^\otimes(\Gamma)$ is a category: formalized in
     \texttt{Rewrite/Term/Compose/Seq.lean}
@@ -9446,11 +9505,14 @@ We may now state our desired result as follows:
     \item $\ms{Th}^\otimes(\Gamma)$ is distributive: formalized in
     \texttt{Rewrite/Term/Compose/Distrib.lean}
   \end{itemize}
-  We then prove that the packing of each type constructor is equivalent to its denotational
-  semantics in $\ms{Th}^\otimes(\Gamma)$ in \texttt{Rewrite/Term/Compose/Completeness.lean}.
-  Finally, we show that packing and unpacking are mutual inverses for $\Gamma$ pure in
-  \texttt{Term.Eqv.packed_unpacked} and \texttt{Term.Eqv.unpacked_packed} in
-  \texttt{Rewrite/Term/Structural/Product.lean}, completing the proof of initiality.
+  The abort calculation is \texttt{packed\_abort\_den} in
+  \nolinkurl{Rewrite/Term/Compose/Completeness.lean}. The inverse laws are
+  \texttt{packed\_unpacked} and \texttt{unpacked\_packed} in
+  \nolinkurl{Rewrite/Term/Structural/Product.lean}.
+
+  Since packing is bijective at $\epsilon$, reflection after weakening holds for
+  every pair exactly when weakening is injective. At $\epsilon=\top$ the weakening
+  is the identity.
 \end{proof}
 
 \completenessregions*
