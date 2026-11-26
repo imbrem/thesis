@@ -2115,6 +2115,57 @@ not necessary, as these are derivable from binding and the $\eta$-rules for expr
   \label{fig:ssa-reg-let2-case-expr}
 \end{figure}
 
+\paragraph{A constructor-known case in a primitive operand.}
+Let $B=\mb{1}+\mb{1}$, write $\iota_0=\iota_l$, $\iota_1=\iota_r$, and set
+$v_b=\iota_b()$ for $b\in\{0,1\}$. Take the two effectful primitives
+$f_\ell:B\to B+B$, indexed by $\ell\in\{0,1\}$. For any operand $e:B$ let
+$C(e)=\caseexpr{e}{x_0}{v_0}{x_1}{v_1}$.
+Given continuations $r_0,r_1$ with one new $B$-typed payload each and a
+common exit context, write $K(e)=\casestmt{e}{p_0}{r_0}{p_1}{r_1}$ for
+an expression $e:B+B$. Use $H(w)$ for $\letstmt{z}{f_\ell\,w}{K(z)}$,
+with fresh binders.
+For a pure $u:\mb{1}$ the region equations give
+\begin{align}
+  K(f_\ell\,C(\iota_b u))
+    &\teqv H(C(\iota_b u))
+      && \text{case-bind} \notag\\
+    &\teqv (\letstmt{w}{C(\iota_b u)}{H(w)})
+      && \text{let$_1$-op} \notag\\
+    &\teqv \casestmt{\iota_b u}{x_0}{\letstmt{w}{v_0}{H(w)}}
+                            {x_1}{\letstmt{w}{v_1}{H(w)}}
+      && \text{let$_1$-case} \notag\\
+    &\teqv (\letstmt{x_b}{u}{\letstmt{w}{v_b}{H(w)}})
+      && \text{case-inl or case-inr} \notag\\
+    &\teqv H(v_b)
+      && \text{let$_1$-$\beta$ twice} \notag\\
+    &\teqv K(f_\ell\,v_b)
+      && \text{case-bind in reverse}.
+  \label{eqn:bit-operand-beta}
+\end{align}
+The only substituted expressions are the pure unit payload and the pure
+literal. Both sides call the primitive once and preserve its two reply
+continuations.
+
+The closed-operand witness takes $u=()$ in a singleton unit input context
+and $r_i=\brb{\kappa_i}{p_i}$ for two distinct $B$-typed exits.
+The same derivation applies after packing the exits, by taking the
+continuations to branch to the packed exit with the corresponding tags.
+For this fixed signature, the packed witness has two distinct classes in
+Silmaril's default \texttt{Paper.Eqv} presentation, while their images
+coincide in every typing-coherent, central-unit, shared-tensor strong
+Elgot Freyd model of that presentation.\footnote{
+  \href{https://github.com/hiloopai/silmaril-lean/pull/4812}{Default separation}
+  and
+  \href{https://github.com/hiloopai/silmaril-lean/pull/4836}{categorical equality and opt-in repair}.
+}
+Equation~\eqref{eqn:bit-operand-beta} exhibits the difference between that
+implementation and the full region rules used in
+Theorem~\ref{thm:complete-reg}. A focused opt-in rule for the fixed signature
+uses the same equation with $u$ the newest unit variable and with
+constructor-valued branch arguments in both reply continuations. Its
+contextual closure is sound in the stated model class and equates the
+packed witness.
+
 Dealing with \ms{where}-blocks, on the other hand, is a little bit more complicated, as shown by the
 number of rules in Figure~\ref{fig:ssa-where-rules}. One difficulty is that, unlike the other region
 constructors, we will need an $\eta$-rule as well as \emph{two} $\beta$-rules. The latter are simple

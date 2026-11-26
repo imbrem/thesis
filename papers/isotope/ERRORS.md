@@ -53,6 +53,50 @@ and the directed substructural refinement theorem have different judgments.
   a term-model obligation.
   [Soundness at arbitrary arity](https://github.com/hiloopai/silmaril-lean/blob/96bd094b4bb229ef2e0fa076b0bfa55dbce27c25/Silmaril/SSA/Isotope/LambdaSSA/Rewrite/Theory/Dispatcher/Sequencing/EntryLet/Thms.lean#L36) · [Opt-in witness equality](https://github.com/hiloopai/silmaril-lean/blob/882c892e7e47db328ac917ce67ae8b9dfda36c1a/Silmaril/SSA/Isotope/LambdaSSA/Rewrite/Theory/Closure/Paper/WithEntryLet/Example/Thms.lean#L27) · [Merged #4066](https://github.com/hiloopai/silmaril-lean/pull/4066)
 
+### Constructor-known Bit operand
+
+The printed Regions rules derive the exact witness via region case binding,
+`let1-op`, `let1-case`, the selected region case beta rule, and two pure
+region let beta steps. This route uses the correctly printed region
+substitution `[a/x]r`. It works independently of the reversed substitution
+in the printed expression beta figure and the omitted primitive congruence.
+The expression case rules already select the branch as a let, and the
+artifact's `Term.InS.let1_beta` performs the corresponding substitution.
+The region derivation also works with both exits packed, since the reply
+continuations stay fixed throughout. [Pinned term rules](https://github.com/imbrem/debruijn-ssa/blob/316bd9a6511d165b5d1d0042956a72e0f5547091/DeBruijnSSA/BinSyntax/Rewrite/Term/Setoid.lean#L217)
+
+- #4812 proves `packed_ne` in default `Paper.Eqv` for both primitive labels
+  and both known tags of `Bit = 1 + 1`. The `ask` primitive has type
+  `Bit → Bit + Bit`. The singleton input has type `1`; the primitive
+  operand is closed. Both cases pass the actual reply payload to its
+  ordered exit, then Lean's `packExits` uses `inl p` and `inr (inl p)`
+  to tag the payload `p` in the single exit type `Bit + (Bit + 0)`. The
+  separating observation preserves default equations and inspects the
+  primitive operand before supplying a reply. This is a mismatch between
+  default `Paper.Eqv` and the full printed region equations.
+  [Exact separation](https://github.com/hiloopai/silmaril-lean/blob/1d214b1b8a075d7ff492a9a6f608f8fac4d77a3c/Silmaril/SSA/Isotope/LambdaSSA/Rewrite/Theory/Closure/Paper/WithCaseBind/BitQuery/RequestTree/Readback/Decision/Obstruction/Thms.lean#L17)
+- At the pinned head of #4836, `default_denote_not_faithful` uses the
+  same pair at label `false` and tag `false`. The categorical witness and
+  `closed_packed_eq` apply to both choices of each. The model functor and
+  contextual lifting theorem use a strong Elgot Freyd functor between
+  distributive categories with finite coproducts, exact type and fixed
+  instruction interpretations, `RegionTypingCoherent`, a central unit, and
+  an equality-induced shared tensor comparison. The direct common
+  denotation witnesses exist before adding the last three assumptions.
+  The focused `WithCaseOperandBeta.Step.reduce` seed compares the two
+  operands under the same opcode and typed reply continuations. It repairs
+  this witness in the opt-in quotient. Faithfulness of the extended
+  quotient is a separate obligation.
+  [Categorical proof and focused repair](https://github.com/hiloopai/silmaril-lean/blob/7058cd1b0cc41d0e4c2958cdc77510a950229261/Silmaril/SSA/Isotope/LambdaSSA/Rewrite/Theory/Closure/Paper/WithCaseBind/BitQuery/RequestTree/Readback/Decision/WithCaseOperandBeta/Thms.lean#L90)
+- #4805 instead separates sequencing of a computed primitive operand in
+  `WithTripling`. #4812's Bit separation persists after adding just the
+  returned-call sequencing seed to default Paper. CALCO 2019 Remark 15
+  concerns total Conway iteration terms and the commutative identities.
+  Its equational completeness comparison is between semantic classes of
+  iteration models. The judgment here is equality of typed SSA regions
+  with interpreted primitives.
+  [Computed-call result #4805](https://github.com/hiloopai/silmaril-lean/pull/4805) · [CALCO article](https://doi.org/10.4230/LIPIcs.CALCO.2019.13) · [Remark 15 formalization](https://github.com/hiloopai/silmaril-lean/pull/2644)
+
 ### Typos/Spelling Errors
 
 | Line | Issue | Fix |
